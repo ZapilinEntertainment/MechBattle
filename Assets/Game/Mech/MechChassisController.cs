@@ -1,7 +1,7 @@
 using UnityEngine;
 using Unity.Mathematics;
 
-namespace ZE.MechBattle
+namespace ZE.MechBattle.Movement
 {
     public class MechChassisController : MonoBehaviour
     {
@@ -15,6 +15,7 @@ namespace ZE.MechBattle
         [Space]
         [Range(0,1)][SerializeField] private float _stepDistanceCf = 0.5f;
         [Range(0, 0.99f)][SerializeField] private float _chassisDownCf = 0.9f;
+        [SerializeField] private StepSettings _stepSettings;
 
         private bool _isProcessingStep = false;
         private bool _leftLegTurn = false;
@@ -22,6 +23,7 @@ namespace ZE.MechBattle
         private float _ankleLength;
         private Vector3 _defaultLeftFootPos;
         private Vector3 _defaultRightFootPos;
+        private StepFrame _stepFrame;
         private float LegLength => _ankleLength + _hipLength;
         private float StepLength => _stepDistanceCf * LegLength;
 
@@ -38,9 +40,11 @@ namespace ZE.MechBattle
         {
             if (_isProcessingStep)
             {
-                if (_leftLegTurn)
+                _stepFrame = _stepFrame.Update(Time.deltaTime);
+                var nextPos = _stepFrame.Position;
+
+                if (!_leftLegTurn)
                 {
-                    var nextPos = DefineRightLegNextPosition();
                     var leftFootPos = _leftFoot.position;
                     PositionChassisCenter(leftLegPos: leftFootPos, rightLegPos: nextPos);
                     MoveLegToPosition(nextPos, _rightHip, _rightAnkle, _rightFoot);
@@ -48,42 +52,40 @@ namespace ZE.MechBattle
                     _leftFoot.position = leftFootPos;
                 }
                 else
-                {
-                    var nextPos = DefineLeftLegNextPosition();
-                    var rightFootPos = _rightFoot.position;
+                {                    
+                    var rightFootPos = _rightFoot.position;                   
                     PositionChassisCenter(leftLegPos: nextPos, rightLegPos: rightFootPos);
                     MoveLegToPosition(nextPos, _leftHip, _leftAnkle, _leftFoot);
                     MoveLegToPosition(rightFootPos, _rightHip, _rightAnkle, _rightFoot);
                     _rightFoot.position = rightFootPos;
                 }
-                _leftLegTurn = !_leftLegTurn;
-                _isProcessingStep = false;
+                if (_stepFrame.IsFinished)
+                {
+                    _leftLegTurn = !_leftLegTurn;
+                    _isProcessingStep = false;
+                }                
             }
             else
             {
-                _isProcessingStep = Input.GetKeyDown(KeyCode.Space);
+                if (Input.GetKeyDown(KeyCode.Space))
+                {
+                    _isProcessingStep = true;
+                    if (_leftLegTurn)
+                        _stepFrame = new StepFrame(_leftFoot.position, DefineFootNextPosition(_leftFoot, _defaultLeftFootPos), _stepSettings);
+                    else
+                        _stepFrame = new StepFrame(_rightFoot.position, DefineFootNextPosition(_rightFoot,_defaultRightFootPos), _stepSettings);
+                }
             }
         }
 
-        private Vector3 DefineLeftLegNextPosition()
+        private Vector3 DefineFootNextPosition(Transform foot, Vector3 defaultLocalPos)
         {
-            var pos = transform.InverseTransformPoint(_leftFoot.position).z + StepLength;
+            var pos = transform.InverseTransformPoint(foot.position).z + StepLength;
             pos = math.min(pos, StepLength * 0.5f);
 
             // todo: steer shift
             // todo: raycast check
-            var result = transform.TransformPoint(_defaultLeftFootPos.x, _defaultLeftFootPos.y, pos);
-            result.y = 0;
-            return result;
-        }
-
-        private Vector3 DefineRightLegNextPosition()
-        {
-            var pos = transform.InverseTransformPoint(_rightFoot.position).z + StepLength;
-            pos = math.min(pos, StepLength * 0.5f);
-            // todo: steer shift
-            // todo: raycast check
-            var result = transform.TransformPoint(_defaultRightFootPos.x, _defaultRightFootPos.y, pos);
+            var result = transform.TransformPoint(defaultLocalPos.x, defaultLocalPos.y, pos);
             result.y = 0;
             return result;
         }
@@ -112,6 +114,10 @@ namespace ZE.MechBattle
             var middlePoint = hipPosition + x * dir.normalized + y * upVector.normalized;
 
             var hipDir = (middlePoint - hipPosition).normalized;
+
+            // todo: Need investigation and fix!
+            if (hipDir.sqrMagnitude == 0f)
+                return;
             hip.rotation = Quaternion.LookRotation(hipDir, Vector3.Cross(hipDir, hip.right).normalized);
 
             var ankleDir = (pos - middlePoint).normalized;
