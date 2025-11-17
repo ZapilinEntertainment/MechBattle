@@ -1,58 +1,63 @@
 using UnityEngine;
+using Unity.Mathematics;
 
 namespace ZE.MechBattle.Movement
 {
     public readonly struct StepFrame
     {
         public bool IsFinished => Progress == 1f;
-        public Vector3 Position
+        public RigidTransform CurrentPoint
         {
             get
             {
-                var dir = Vector3.Lerp(StartPos, _targetPosXZ, Settings.SpeedCurve.Evaluate(Progress));
+                var dir = Vector3.Lerp(StartPoint.pos, _targetPosXZ, Settings.SpeedCurve.Evaluate(Progress));
                 var riseHeight = Settings.StepRaiseHeight * Settings.HeightCurve.Evaluate(Progress);
-                var height = Mathf.Lerp(StartPos.y, TargetPos.y, Progress) + riseHeight;
+                var height = Mathf.Lerp(StartPoint.pos.y, TargetPoint.pos.y, Progress) + riseHeight;
                 dir.y = Mathf.Clamp(height, _minHeight, _maxHeight + Settings.StepRaiseHeight);
-                return dir;
+
+                var rot = Quaternion.Slerp(StartPoint.rot, TargetPoint.rot, Progress);
+                return new(rot, dir);
             }
         }
 
         public readonly float Progress;
-        public readonly Vector3 StartPos;
-        public readonly Vector3 TargetPos;
+        public readonly RigidTransform StartPoint;
+        public readonly RigidTransform TargetPoint;
         public readonly StepSettings Settings;
 
-        private readonly Vector3 _targetPosXZ;
+        private readonly float3 _targetPosXZ;
         private readonly float _minHeight;
         private readonly float _maxHeight;
         
-        public StepFrame(Vector3 start, Vector3 end, StepSettings settings)
+        public StepFrame(RigidTransform start, RigidTransform end, StepSettings settings)
         {
-            StartPos = start;
-            TargetPos = end;
+            StartPoint = start;
+            TargetPoint = end;
             Settings = settings;
             Progress = 0f;
 
-            var dir = TargetPos - StartPos;
-            var planeProjection = Vector3.ProjectOnPlane(dir, Vector3.up);
-            _targetPosXZ = StartPos + planeProjection;
+            var startPos = StartPoint.pos;
+            var targetPos = TargetPoint.pos;
+            var dir = targetPos - startPos;
+            var planeProjection = dir.ProjectOnPlane(Vector3.up);
+            _targetPosXZ = startPos + planeProjection;
 
-            if (StartPos.y > TargetPos.y)
+            if (startPos.y > targetPos.y)
             {
-                _minHeight = TargetPos.y;
-                _maxHeight = StartPos.y;
+                _minHeight = targetPos.y;
+                _maxHeight = startPos.y;
             }
             else
             {
-                _maxHeight = TargetPos.y;
-                _minHeight = StartPos.y;
+                _maxHeight = targetPos.y;
+                _minHeight = startPos.y;
             }
         }
 
         private StepFrame(StepFrame previous, float progress) 
         {
-            StartPos = previous.StartPos;
-            TargetPos = previous.TargetPos;
+            StartPoint = previous.StartPoint;
+            TargetPoint = previous.TargetPoint;
             Settings = previous.Settings; 
 
             Progress = progress;

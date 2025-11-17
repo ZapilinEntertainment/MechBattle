@@ -5,13 +5,8 @@ namespace ZE.MechBattle.Movement
 {
     public class MechChassisController : MonoBehaviour
     {
-        [SerializeField] private Transform _leftHip;
-        [SerializeField] private Transform _leftAnkle;
-        [SerializeField] private Transform _leftFoot;
-        [Space]
-        [SerializeField] private Transform _rightHip;
-        [SerializeField] private Transform _rightAnkle;
-        [SerializeField] private Transform _rightFoot;
+        [SerializeField] private LegView _leftLeg;
+        [SerializeField] private LegView _rightLeg;
         [Space]
         [Range(0,1)][SerializeField] private float _stepDistanceCf = 0.5f;
         [Range(0, 0.99f)][SerializeField] private float _chassisDownCf = 0.9f;
@@ -19,45 +14,60 @@ namespace ZE.MechBattle.Movement
 
         private bool _isProcessingStep = false;
         private bool _leftLegTurn = false;
-        private float _hipLength;
-        private float _ankleLength;
+        private float _hipsDistance;
+        private float _steerValue;
+        private float _speedValue;
         private Vector3 _defaultLeftFootPos;
         private Vector3 _defaultRightFootPos;
         private StepFrame _stepFrame;
-        private float LegLength => _ankleLength + _hipLength;
+        private ChassisParameters _chassisParameters;
+        private float LegLength => _chassisParameters.LegLength;
         private float StepLength => _stepDistanceCf * LegLength;
+        private float HipsLength => _chassisParameters.HipLength;
+        private float AnkleLength => _chassisParameters.AnkleLength;
+        private float HipsDistance => _chassisParameters.HipsDistance;
+
+        // note: smooth, but can be too slow for small fast mechs
+        private float ChassisRotationSpeed => _stepSettings.MaxSteerAngle / (_stepSettings.Duration * 1.5f);
 
         private void Start()
         {
-            _defaultLeftFootPos = transform.InverseTransformPoint(_leftFoot.position);
-            _defaultRightFootPos = transform.InverseTransformPoint(_rightFoot.position);
+            _defaultLeftFootPos = transform.InverseTransformPoint(_leftLeg.FootPosition);
+            _defaultRightFootPos = transform.InverseTransformPoint(_rightLeg.FootPosition);
 
-            _hipLength = Vector3.Distance(_leftHip.position, _leftAnkle.position);
-            _ankleLength = Vector3.Distance(_leftAnkle.position, _leftFoot.position);
+            var hipLength = Vector3.Distance(_leftLeg.HipPosition, _leftLeg.AnklePosition);
+            var ankleLength = Vector3.Distance(_leftLeg.AnklePosition, _leftLeg.FootPosition);
+            var hipsDistance = Vector3.Distance(_leftLeg.HipPosition, _rightLeg.HipPosition);
+            _chassisParameters = new(hipLength: hipLength, ankleLength: ankleLength, hipsDistance: hipsDistance);
+
+            _rightLeg.SetParameters(_chassisParameters);
+            _leftLeg.SetParameters(_chassisParameters);
         }
 
         private void Update()
         {
+            _speedValue = Input.GetAxis("Vertical");
+            _steerValue = Input.GetAxis("Horizontal");
+
             if (_isProcessingStep)
             {
-                _stepFrame = _stepFrame.Update(Time.deltaTime);
-                var nextPos = _stepFrame.Position;
+                var dt = Time.deltaTime;
+                _stepFrame = _stepFrame.Update(dt);
+                var currentPoint = _stepFrame.CurrentPoint;
 
                 if (!_leftLegTurn)
                 {
-                    var leftFootPos = _leftFoot.position;
-                    PositionChassisCenter(leftLegPos: leftFootPos, rightLegPos: nextPos);
-                    MoveLegToPosition(nextPos, _rightHip, _rightAnkle, _rightFoot);
-                    MoveLegToPosition(leftFootPos, _leftHip, _leftAnkle, _leftFoot);
-                    _leftFoot.position = leftFootPos;
+                    var leftFootPoint = _leftLeg.GetFootPoint();
+                    PositionChassisCenter(leftFootPoint: leftFootPoint, rightFootPoint: currentPoint, dt);
+                    _rightLeg.MoveLegToPoint(currentPoint);
+                    _leftLeg.MoveLegToPoint(leftFootPoint);
                 }
                 else
                 {                    
-                    var rightFootPos = _rightFoot.position;                   
-                    PositionChassisCenter(leftLegPos: nextPos, rightLegPos: rightFootPos);
-                    MoveLegToPosition(nextPos, _leftHip, _leftAnkle, _leftFoot);
-                    MoveLegToPosition(rightFootPos, _rightHip, _rightAnkle, _rightFoot);
-                    _rightFoot.position = rightFootPos;
+                    var rightFootPoint = _rightLeg.GetFootPoint();                   
+                    PositionChassisCenter(leftFootPoint: currentPoint, rightFootPoint: rightFootPoint, dt);
+                    _leftLeg.MoveLegToPoint(currentPoint);
+                    _rightLeg.MoveLegToPoint(rightFootPoint);
                 }
                 if (_stepFrame.IsFinished)
                 {
@@ -67,65 +77,90 @@ namespace ZE.MechBattle.Movement
             }
             else
             {
-                if (Input.GetKeyDown(KeyCode.Space))
+                if (_speedValue != 0f || _steerValue != 0f)
                 {
                     _isProcessingStep = true;
                     if (_leftLegTurn)
-                        _stepFrame = new StepFrame(_leftFoot.position, DefineFootNextPosition(_leftFoot, _defaultLeftFootPos), _stepSettings);
+                    {
+                        var prevTransform = _leftLeg.GetFootPoint();
+                        _stepFrame = new StepFrame(prevTransform, DefineFootNextPosition(prevTransform.pos, _defaultLeftFootPos), _stepSettings);
+                    }                        
                     else
-                        _stepFrame = new StepFrame(_rightFoot.position, DefineFootNextPosition(_rightFoot,_defaultRightFootPos), _stepSettings);
+                    {
+                        var prevTransform = _rightLeg.GetFootPoint();
+                        _stepFrame = new StepFrame(prevTransform, DefineFootNextPosition(prevTransform.pos, _defaultRightFootPos), _stepSettings);
+                    }
+                       
                 }
             }
         }
 
-        private Vector3 DefineFootNextPosition(Transform foot, Vector3 defaultLocalPos)
+        private RigidTransform DefineFootNextPosition(Vector3 footPosition, Vector3 defaultLocalPos)
         {
-            var pos = transform.InverseTransformPoint(foot.position).z + StepLength;
-            pos = math.min(pos, StepLength * 0.5f);
+            var k = 1f;
+            var moveDirection = math.forward();
+            if (_steerValue != 0f)
+            {
+                var fwd = math.forward();
+                var rotation = quaternion.AxisAngle(math.up(), _steerValue * _stepSettings.MaxSteerAngle * math.TORADIANS);
+                moveDirection = math.mul(rotation, fwd);
+                if (moveDirection.z < 0f) 
+                    Debug.LogError($"{fwd} x {math.Euler(rotation)} = {moveDirection}");
+                var sinAngle = math.length(math.cross(fwd, moveDirection));
 
-            // todo: steer shift
+                if (sinAngle != 0f)
+                {
+                    var x = StepLength / (math.sqrt(sinAngle)) - _hipsDistance;
+                    k = x / (StepLength + x);
+
+                    if (x < 0f)
+                        Debug.LogError("negative x");
+                }
+                if (sinAngle < 0f)
+                    Debug.LogError("negative sin");
+
+               
+            }
+            Vector3 nextFootLocalPos;
+
+            if (_speedValue != 0f)
+            {
+                float stepCf;
+                if (moveDirection.x > 0 == !_leftLegTurn)
+                    stepCf = k;
+                else
+                    stepCf = 1f;
+
+
+                float3 localFootPos = transform.InverseTransformPoint(footPosition);
+                nextFootLocalPos = localFootPos + _speedValue * stepCf * StepLength * moveDirection;
+
+                // should not move leg more than half a step afore chassis center
+                var xzMovementDir = new Vector3(nextFootLocalPos.x - defaultLocalPos.x, 0f, nextFootLocalPos.z - defaultLocalPos.z);
+                var xzStepLength = Mathf.Clamp(xzMovementDir.magnitude, 0.1f, StepLength * 0.5f);
+                nextFootLocalPos = xzStepLength * xzMovementDir.normalized + defaultLocalPos;               
+            }
+            else
+            {
+                // rotation without movement
+                nextFootLocalPos = defaultLocalPos;
+            }
             // todo: raycast check
-            var result = transform.TransformPoint(defaultLocalPos.x, defaultLocalPos.y, pos);
-            result.y = 0;
-            return result;
+            var nextPos = transform.TransformPoint(nextFootLocalPos);
+            nextPos.y = 0f;
+
+            return new(Quaternion.LookRotation(transform.TransformDirection(moveDirection), Vector3.up), nextPos);
         }
 
-        private void PositionChassisCenter(Vector3 leftLegPos, Vector3 rightLegPos)
+        private void PositionChassisCenter(RigidTransform leftFootPoint, RigidTransform rightFootPoint, float dt)
         {
-            var dir = leftLegPos - rightLegPos;
-            var halfDist = dir.magnitude * 0.5f;
+            var dir = leftFootPoint.pos - rightFootPoint.pos;
+            var halfDist = math.length(dir) * 0.5f;
             var height = math.sqrt(LegLength * LegLength - halfDist * halfDist) * _chassisDownCf;
-            transform.position = rightLegPos + halfDist * dir.normalized + height * Vector3.up;
-        }
+            transform.position = rightFootPoint.pos + halfDist * math.normalize(dir)+ new float3(0f, height, 0f);
 
-        private void MoveLegToPosition(Vector3 pos, Transform hip, Transform ankle, Transform foot)
-        {
-            var hipPosition = hip.position;
-            var dir = pos - hipPosition;
-            var directLength = dir.magnitude;
-            var a = _hipLength * _hipLength + directLength * directLength - _ankleLength * _ankleLength;
-            var b = 2 * _hipLength * directLength;
-            var cosA = a / b;
-
-            var x = cosA * _hipLength;
-            var y = math.sqrt(_hipLength * _hipLength - x * x);
-            var right = Vector3.ProjectOnPlane(transform.right, Vector3.up);
-            var upVector = Vector3.Cross(dir, right);
-            var middlePoint = hipPosition + x * dir.normalized + y * upVector.normalized;
-
-            var hipDir = (middlePoint - hipPosition).normalized;
-
-            // todo: Need investigation and fix!
-            if (hipDir.sqrMagnitude == 0f)
-                return;
-            hip.rotation = Quaternion.LookRotation(hipDir, Vector3.Cross(hipDir, hip.right).normalized);
-
-            var ankleDir = (pos - middlePoint).normalized;
-            ankle.position = middlePoint;
-            ankle.rotation = Quaternion.LookRotation(ankleDir, Vector3.Cross(ankleDir, ankle.right).normalized);
-
-            foot.rotation = Quaternion.LookRotation(transform.forward, Vector3.up);
-            foot.position = pos;
+            var targetRotation = Quaternion.Lerp(rightFootPoint.rot, leftFootPoint.rot,  _steerValue * 0.5f + 0.5f);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, ChassisRotationSpeed * dt);
         }
     }
 }
