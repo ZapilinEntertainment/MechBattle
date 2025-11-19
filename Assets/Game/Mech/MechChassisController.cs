@@ -8,13 +8,13 @@ namespace ZE.MechBattle.Movement
         [SerializeField] private LegView _leftLegView;
         [SerializeField] private LegView _rightLegView;
         [Space]
-        [SerializeField] private float _stepDistanceCf = 0.5f;
-        [Range(0, 0.99f)][SerializeField] private float _chassisDownCf = 0.9f;
+        [Range(0, 0.99f)][SerializeField] private float _defaultChassisHeight = 0.93f;
+        [Range(0, 0.99f)][SerializeField] private float _minStepChassisHeight = 0.9f;
+        [Range(0.1f, 1f)][SerializeField] private float _stepLengthCf = 1f;
         [SerializeField] private StepSettings _stepSettings;
 
         private bool _isProcessingStep = false;
         private bool _leftLegTurn = false;
-        private float _hipsDistance;
         private float _steerValue;
         private float _speedValue;
         private StepFrame _stepFrame;
@@ -23,10 +23,12 @@ namespace ZE.MechBattle.Movement
         private LegController _leftLeg;
         private LegController _rightLeg;
         private float LegLength => _chassis.LegLength;
-        private float MaxStepLength => _stepDistanceCf * LegLength;
+        private float StepLength => _maxStepLength * _stepLengthCf;
+        private float MaxHeightDelta => _chassis.AnkleLength;
 
         // note: smooth, but can be too slow for small fast mechs
         private float ChassisRotationSpeed => _stepSettings.MaxSteerAngle / (_stepSettings.Duration * 1.5f);
+        private float _maxStepLength;
 
         private void Start()
         {
@@ -39,6 +41,8 @@ namespace ZE.MechBattle.Movement
             _rightLeg = new(_rightLegView,  _chassis);
 
             _groundCaster = new PhysicsGroundCaster();
+
+            _maxStepLength = math.sin(_minStepChassisHeight * math.PI * 0.5f) * ankleLength;
         }
 
         private void Update()
@@ -103,70 +107,74 @@ namespace ZE.MechBattle.Movement
 
         private RigidTransform DefineFootNextPosition(LegController movingLeg, LegController backLeg)
         {
-            var footPoint = movingLeg.CurrentFootPoint;
-            var footPosition = footPoint.pos;
             var defaultLocalPos = movingLeg.DefaultFootLocalPosition;
+            var backLegLocalPos = _chassis.Transform.InverseTransformPoint(backLeg.CurrentFootPosition);
+            backLegLocalPos.y = 0;
+            var stepLength = StepLength;
 
-            var k = 1f;
-            var moveDirection = math.forward();
+            var moveDirection = Vector3.forward;
+            var rotation = Quaternion.identity;
             if (_steerValue != 0f)
             {
                 var fwd = math.forward();
-                var rotation = quaternion.AxisAngle(math.up(), _steerValue * _stepSettings.MaxSteerAngle * math.TORADIANS);
-                moveDirection = math.mul(rotation, fwd);
-               // if (moveDirection.z < 0f) 
-               //     Debug.LogError($"{fwd} x {math.Euler(rotation)} = {moveDirection}");
-                var sinAngle = math.length(math.cross(fwd, moveDirection));
-
-                if (sinAngle != 0f)
-                {
-                    var x = MaxStepLength / (math.sqrt(sinAngle)) - _hipsDistance;
-                    k = x / (MaxStepLength + x);
-                }               
+                rotation = Quaternion.AngleAxis(_steerValue * _stepSettings.MaxSteerAngle, Vector3.up);
+                moveDirection = math.mul(rotation, fwd);            
             }
-            float3 nextFootLocalPos;
 
-            if (_speedValue != 0f)
+            // next local pos should be outside the hips distance circle,
+            // but inside max step circle
+            // counting from other leg point
+
+            var startPos = rotation * defaultLocalPos;
+            startPos.y = 0f;
+
+            var nextFootLocalPos = startPos + _speedValue * stepLength * moveDirection;
+            var hipsDir = nextFootLocalPos - backLegLocalPos;
+           // var cachedDir = moveDirection;
+            var mindistance = _chassis.HipsDistance * 0.8f;
+            if (hipsDir.sqrMagnitude < mindistance * mindistance)
             {
-                float stepCf;
-                if (moveDirection.x > 0 == !_leftLegTurn)
-                    stepCf = k;
-                else
-                    stepCf = 1f;
-
-                //Debug.Log($"{(_leftLegTurn ? "step left" : "step right")} : {stepCf}");
-
-
-                float3 localFootPos = transform.InverseTransformPoint(footPosition);
-                nextFootLocalPos = localFootPos + _speedValue * stepCf * MaxStepLength * moveDirection;
-                nextFootLocalPos.z = math.clamp(nextFootLocalPos.z, -MaxStepLength * 0.5f, MaxStepLength * 0.5f);  
-
-                // should not move leg more than half a step afore chassis center
-                var xzMovementDir = new Vector3(nextFootLocalPos.x - defaultLocalPos.x, 0f, nextFootLocalPos.z - defaultLocalPos.z);
-                nextFootLocalPos = xzMovementDir + defaultLocalPos;
-                if (_leftLegTurn)
-                    nextFootLocalPos.x = math.clamp(nextFootLocalPos.x, -MaxStepLength * 0.5f, _leftLeg.DefaultFootLocalPosition.x) ;
-                else
-                    nextFootLocalPos.x = math.clamp(nextFootLocalPos.x, _rightLeg.DefaultFootLocalPosition.x, MaxStepLength * 0.5f);
+                // inside hip distance circle
+                var intersection = backLegLocalPos + _chassis.HipsDistance * hipsDir.normalized;
+                var iv = intersection - startPos;
+                if (iv.sqrMagnitude > stepLength * stepLength)
+                    iv = stepLength * iv.normalized;
+                nextFootLocalPos = startPos + iv;
+                moveDirection = iv.normalized;
+               // Debug.Log($"backleg: {backLegLocalPos}, nextpos: {nextFootLocalPos}, inter: {intersection}, dist: {hipsDir.magnitude}");
+               // Debug.Log($"too close, corrected: {cachedDir} -> {moveDirection}");
             }
             else
             {
-                // rotation without movement
-                nextFootLocalPos = defaultLocalPos;
+                if (hipsDir.sqrMagnitude > _maxStepLength * _maxStepLength)
+                {
+                    // outside of max step circle
+                    var intersection = backLegLocalPos + _maxStepLength * hipsDir.normalized;
+                    var iv = intersection - startPos;
+                    if (iv.sqrMagnitude > stepLength * stepLength)
+                        iv = stepLength * iv.normalized;
+                    nextFootLocalPos = startPos + iv;
+                    moveDirection = iv.normalized;
+                    //Debug.Log($"too far, corrected: {cachedDir} -> {moveDirection}");
+                }
             }
 
-            // check if next step is too high
-            // already found more closer option if possible
-            var nextPos = _chassis.Transform.TransformPoint(nextFootLocalPos);
-            nextPos = AdjustNextStepAccordingToOtherLeg(movingLeg, nextPos, backLeg.CurrentFootPosition);
-            return AdjustNextStepAccordingToHeight(footPoint, nextPos, moveDirection, movingLeg);
+            nextFootLocalPos.y = defaultLocalPos.y;
+            moveDirection.y = 0;
+            if (moveDirection.z < 0f)
+                moveDirection *= -1f;
+
+            var nextPosWorld = _chassis.Transform.TransformPoint(nextFootLocalPos);
+            nextPosWorld.y = 0f;
+
+            return AdjustNextStepAccordingToHeight(nextPosWorld, moveDirection, movingLeg);
         }
 
         private void PositionChassisCenter(RigidTransform leftFootPoint, RigidTransform rightFootPoint, float dt)
         {
             var dir = leftFootPoint.pos - rightFootPoint.pos;
             var halfDist = math.length(dir) * 0.5f;
-            var height = math.sqrt(LegLength * LegLength - halfDist * halfDist) * _chassisDownCf;
+            var height = math.sqrt(LegLength * LegLength - halfDist * halfDist) * _defaultChassisHeight;
             transform.position = rightFootPoint.pos + halfDist * math.normalize(dir)+ new float3(0f, height, 0f);
 
             var targetRotation = Quaternion.Lerp(rightFootPoint.rot, leftFootPoint.rot,  _steerValue * 0.5f + 0.5f);
@@ -176,50 +184,26 @@ namespace ZE.MechBattle.Movement
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, ChassisRotationSpeed * dt);
         }
 
-        // prevents foot overlapping
-        private Vector3 AdjustNextStepAccordingToOtherLeg(
-            LegController movingLeg,
-            Vector3 targetFootPos, 
-            Vector3 otherFootCurrentPos)
+        private RigidTransform AdjustNextStepAccordingToHeight(Vector3 targetFootPos, Vector3 moveVectorLocal, LegController leg)
         {
-           
-            var startFootPos = movingLeg.CurrentFootPosition;
-            startFootPos.y = 0f;
-            targetFootPos.y = 0f;
-            otherFootCurrentPos.y = 0f;
+            // todo: do interface note if height is not reachable
 
-            var dir = targetFootPos - startFootPos;
-            var footRadius = _stepSettings.FootRadius;            
-
-            var dirToOtherFootCurrentPos = otherFootCurrentPos - targetFootPos;
-            if (dirToOtherFootCurrentPos.sqrMagnitude < footRadius * footRadius)
-            {
-                return otherFootCurrentPos + _stepSettings.FootRadius * 2f * Vector3.Cross(dir.normalized, _leftLegTurn ? Vector3.up : Vector3.down);
-            }
-            return targetFootPos;
-        }
-
-        // note: use cached start foot point, not read from leg, because it already can be changed
-        private RigidTransform AdjustNextStepAccordingToHeight(RigidTransform startFootPoint, Vector3 targetFootPos, Vector3 moveVectorLocal, LegController leg)
-        {
+            var currentLegPoint = leg.CurrentFootPoint;
             if (!_groundCaster.TryGetGroundPoint(targetFootPos.x, targetFootPos.z, out var point))
-                return startFootPoint;            
+                return currentLegPoint;            
 
-            var hip = leg.HipPosition;
-            var dir = point.Position - hip;
+            var deltaHeight = leg.DefaultFootLocalPosition.y - _chassis.Transform.InverseTransformPoint(point.Position).y;
 
-            var maxDistance = _chassis.LegLength + _chassis.HipsDistance + MaxStepLength;
-            if (dir.sqrMagnitude > maxDistance * maxDistance)
+            if (math.abs(deltaHeight) > MaxHeightDelta)
             {
-                var startFootPos = startFootPoint.pos;
+                var startFootPos = currentLegPoint.pos;
                 var projectedStart = new float2(startFootPos.x,  startFootPos.z);
                 var projectedEnd = new float2(targetFootPos.x, targetFootPos.z);
                 var pos = math.lerp( projectedStart, projectedEnd, 0.5f);
-                if (math.lengthsq(projectedStart - pos) < _stepSettings.FootRadius * _stepSettings.FootRadius * 0.25f)
-                    return startFootPoint;
+                if (math.lengthsq(projectedStart - pos) < _chassis.HipsDistance * _chassis.HipsDistance * 0.25f)
+                    return currentLegPoint;
 
-                Debug.Log("cut " + Time.frameCount);
-                return AdjustNextStepAccordingToHeight(startFootPoint, new Vector3(pos.x,0f, pos.y),moveVectorLocal, leg);
+                return AdjustNextStepAccordingToHeight(new Vector3(pos.x,0f, pos.y),moveVectorLocal, leg);
             }
             return new(Quaternion.LookRotation(transform.TransformDirection(moveVectorLocal), point.Normal), point.Position);
         }

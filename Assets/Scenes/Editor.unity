@@ -1712,7 +1712,7 @@ Transform:
   m_GameObject: {fileID: 720017638}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: -0.49999905, z: 14.010549}
+  m_LocalPosition: {x: 0, y: 0, z: 14.010549}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3136,7 +3136,7 @@ Transform:
   m_GameObject: {fileID: 1529584580}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: -0.49999905, z: 14.010551}
+  m_LocalPosition: {x: 0, y: 0, z: 14.010551}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3302,8 +3302,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ZE.MechBattle.MechChassisController
   _leftLegView: {fileID: 545732528}
   _rightLegView: {fileID: 1060380501}
-  _stepDistanceCf: 2
-  _chassisDownCf: 0.93
+  _defaultChassisHeight: 0.93
+  _minStepChassisHeight: 0.9
+  _stepLengthCf: 1
   _stepSettings:
     <Duration>k__BackingField: 0.75
     <StepRaiseHeight>k__BackingField: 4
@@ -3365,7 +3366,6 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
     <MaxSteerAngle>k__BackingField: 30
-    <FootRadius>k__BackingField: 5.6
 --- !u!1 &1753696245
 GameObject:
   m_ObjectHideFlags: 0
@@ -4398,7 +4398,7 @@ Transform:
   m_GameObject: {fileID: 6390372324043704297}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalPosition: {x: 0, y: 3, z: -0.4999988}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4971,8 +4971,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3015913665056520141}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071067}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalRotation: {x: -0.7071069, y: -0, z: -0, w: 0.70710677}
+  m_LocalPosition: {x: 0, y: 3, z: -0.4999988}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
