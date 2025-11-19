@@ -11,5 +11,6 @@ namespace ZE.MechBattle.Movement
         [field: SerializeField] public AnimationCurve SpeedCurve { get; private set; }
         [field: SerializeField] public AnimationCurve HeightCurve { get; private set; }
         [field: SerializeField] public float MaxSteerAngle { get; private set; }
+        [field: SerializeField] public float FootRadius { get; private set; }
     }
 }
