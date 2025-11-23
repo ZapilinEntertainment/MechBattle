@@ -5,11 +5,13 @@ namespace ZE.MechBattle.Weapons
     public class MechCannon : MechWeapon
     {
         [SerializeField] private float _aimSpeed = 30f;
+        [SerializeField] private Vector2 _aimLimits;
+
 
         public override bool ShowInterfaceAim => true;
-        public override Transform AimingObject => transform;
-
         public override float AimSpeed => _aimSpeed;
+        public override float YRotationLimitDegrees => _aimLimits.y;
+        public override float XRotationLimitDegrees => _aimLimits.x;
 
         public override void Fire()
         {

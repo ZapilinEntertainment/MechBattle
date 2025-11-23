@@ -23,7 +23,7 @@ namespace ZE.MechBattle.UI
         {
             _designatorSubscription?.Dispose();
             _camera = camera;
-            _aimingObject = weapon.AimingObject;
+            _aimingObject = weapon.AimingPart;
             _designatorSubscription = weapon.TargetDesignator.TargetDataProperty.Subscribe(x => _targetData = x);
             _isTracking = _aimingObject != null;
         }
