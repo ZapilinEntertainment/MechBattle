@@ -7,6 +7,7 @@ using R3;
 namespace ZE.MechBattle.UI
 {
     // todo: need special contrast shader
+    // todo: make factory
 
     public class UIWeaponAimTracker : MonoBehaviour
     {
@@ -15,12 +16,14 @@ namespace ZE.MechBattle.UI
         private TargetData _targetData;
         private Camera _camera;
         private Transform _aimingObject;
+        private IUILinesParent _linesParent;
         private IDisposable _designatorSubscription;
         private ReactiveProperty<bool> _isMarkerVisibleProperty = new (false);
 
         
-        public void TrackWeapon(Camera camera, MechWeapon weapon)
+        public void TrackWeapon(Camera camera, MechWeapon weapon, IUILinesParent linesParent)
         {
+            _linesParent = linesParent;
             _designatorSubscription?.Dispose();
             _camera = camera;
             _aimingObject = weapon.AimingPart;

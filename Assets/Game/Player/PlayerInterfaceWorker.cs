@@ -10,14 +10,17 @@ namespace ZE.MechBattle.UI
         private readonly SessionData _sessionData;
         private readonly WindowsManager _windows;
         private readonly CameraController _cameraController;
+        private readonly UiRoot _uiRoot;
+        private readonly IUILinesParent _linesParent;
 
         private UIAimWindow _aimWindow;
 
-        public PlayerInterfaceWorker(SessionData sessionData, WindowsManager windows, CameraController cameraController)
+        public PlayerInterfaceWorker(SessionData sessionData, WindowsManager windows, CameraController cameraController, IUILinesParent linesParent)
         {
             _sessionData = sessionData;
             _windows = windows;
             _cameraController = cameraController;
+            _linesParent = linesParent;
         }
 
         public override void Start()
@@ -36,7 +39,7 @@ namespace ZE.MechBattle.UI
                 {
                     // todo: pooling and release
                     var marker = GameObject.Instantiate(_aimWindow.AimTrackerPrefab, _aimWindow.MarkersHost);
-                    marker.TrackWeapon(camera, weapon);
+                    marker.TrackWeapon(camera, weapon, _linesParent);
                 }
             }
         }

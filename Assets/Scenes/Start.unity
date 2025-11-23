@@ -383,7 +383,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1593632244538965068, guid: 026b89acf922b66409d7e4368ff4dfbf, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4983383585550509886, guid: 026b89acf922b66409d7e4368ff4dfbf, type: 3}
       propertyPath: m_Enabled
@@ -558,7 +558,7 @@ MonoBehaviour:
   autoInjectGameObjects:
   - {fileID: 1127800011}
   _mainCamera: {fileID: 330585545}
-  _uiRootPrefab: {fileID: 4983383585550509886, guid: 026b89acf922b66409d7e4368ff4dfbf, type: 3}
+  _uiRootPrefab: {fileID: 4166187317439397386, guid: 026b89acf922b66409d7e4368ff4dfbf, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

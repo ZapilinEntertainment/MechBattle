@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4594575284570068552}
   - component: {fileID: 7088037099144746538}
   - component: {fileID: 3394111947142642088}
-  - component: {fileID: 4983383585550509886}
+  - component: {fileID: 4166187317439397386}
   m_Layer: 5
   m_Name: UIRoot
   m_TagString: Untagged
@@ -33,6 +33,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4370346035526119405}
+  - {fileID: 6036091475207578475}
   - {fileID: 4505080018275696402}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -104,7 +105,7 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
---- !u!114 &4983383585550509886
+--- !u!114 &4166187317439397386
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -113,11 +114,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1593632244538965068}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc022e65bbb648d4ca1210cfba0cd45a, type: 3}
+  m_Script: {fileID: 11500000, guid: 105e6e0e239da5c46b06b0800271dd99, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ZE.UiService.UiRoot
+  m_EditorClassIdentifier: Assembly-CSharp::ZE.MechBattle.MechGameUIRoot
   <ActiveWindowsContainer>k__BackingField: {fileID: 4505080018275696402}
   <DisabledWindowsContainer>k__BackingField: {fileID: 4370346035526119405}
+  <LinesContainer>k__BackingField: {fileID: 6036091475207578475}
 --- !u!1 &3589848864498704110
 GameObject:
   m_ObjectHideFlags: 0
@@ -176,6 +178,41 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5610298583176658989}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 803746958872535161}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &5972788450658378601
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6036091475207578475}
+  m_Layer: 5
+  m_Name: LinesContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &6036091475207578475
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5972788450658378601}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
