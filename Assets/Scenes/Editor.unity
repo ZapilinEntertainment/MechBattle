@@ -341,6 +341,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8201366}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &42811278
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 42811279}
+  m_Layer: 0
+  m_Name: gunPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &42811279
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 42811278}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 15.18}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 956255884}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &80030320
 GameObject:
   m_ObjectHideFlags: 0
@@ -1704,8 +1735,8 @@ Transform:
   m_GameObject: {fileID: 674355992}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.5, y: -2, z: 435}
-  m_LocalScale: {x: 1000, y: 4, z: 1000}
+  m_LocalPosition: {x: 0.5, y: -10, z: 435}
+  m_LocalScale: {x: 1000, y: 20, z: 1000}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1247844288}
@@ -1790,6 +1821,8 @@ MonoBehaviour:
   _aimingPart: {fileID: 1494985187}
   _aimSpeed: 30
   _aimLimits: {x: 15, y: 30}
+  _gunPoint: {fileID: 1704891435}
+  _projectileId: mech_cannon_projectile
 --- !u!1 &819675638
 GameObject:
   m_ObjectHideFlags: 0
@@ -2043,6 +2076,7 @@ Transform:
   m_Children:
   - {fileID: 1159548632}
   - {fileID: 1221161498}
+  - {fileID: 42811279}
   m_Father: {fileID: 1522614554}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &998747431
@@ -3443,6 +3477,7 @@ Transform:
   m_Children:
   - {fileID: 80030321}
   - {fileID: 571653137}
+  - {fileID: 1704891435}
   m_Father: {fileID: 779334342}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1522614553
@@ -3493,6 +3528,8 @@ MonoBehaviour:
   _aimingPart: {fileID: 956255884}
   _aimSpeed: 30
   _aimLimits: {x: 15, y: 30}
+  _gunPoint: {fileID: 42811279}
+  _projectileId: mech_cannon_projectile
 --- !u!1 &1529584580
 GameObject:
   m_ObjectHideFlags: 0
@@ -3636,6 +3673,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1663343836}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1704891434
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1704891435}
+  m_Layer: 0
+  m_Name: gunPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1704891435
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1704891434}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 15.18}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1494985187}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1705072863
 GameObject:
   m_ObjectHideFlags: 0
@@ -3827,9 +3895,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ZE.MechBattle.SceneScope
   parentReference:
-    TypeName: ZE.MechBattle.AppScope
+    TypeName: ZE.MechBattle.Ecs.AppScope
   autoRun: 1
-  autoInjectGameObjects: []
+  autoInjectGameObjects:
+  - {fileID: 779334341}
+  - {fileID: 1522614553}
 --- !u!4 &1761267475
 Transform:
   m_ObjectHideFlags: 0

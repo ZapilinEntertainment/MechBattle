@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 using R3;
 using ZE.MechBattle.Weapons;
 
@@ -11,9 +12,20 @@ namespace ZE.MechBattle
         public MechWeapon RightWeapon;
         public MechWeapon LeftWeapon;
 
-        public void AssignPlayer(Player player)
+        public void Init()
         {
+            Observable.EveryUpdate()
+                .Where(_ => Input.GetMouseButtonDown(0))
+                .Subscribe(_ => Fire())
+                .AddTo(LifetimeObject);
+        }
+
+        public void SetPlayerAffinity(Player player)
+        {
+            RightWeapon.SetPlayerAffinity(player.EcsEntity);
             RightWeapon.SetDesignator(player.TargetDesignator);
+
+            LeftWeapon.SetPlayerAffinity(player.EcsEntity);
             LeftWeapon.SetDesignator(player.TargetDesignator);
         }
 

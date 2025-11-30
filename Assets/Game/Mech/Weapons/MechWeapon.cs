@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Scellecs.Morpeh;
 using R3;
 
 namespace ZE.MechBattle.Weapons
@@ -13,6 +14,9 @@ namespace ZE.MechBattle.Weapons
         public abstract bool ShowInterfaceAim { get; }
         public Transform AimingPart => _aimingPart;
         public ITargetDesignator TargetDesignator { get; private set; }
+        protected Entity PlayerEntity { get; private set; }
+
+
         private TargetData _targetData;
         private IDisposable _designatorSubscription;
         private float _yRotationDotLimit;
@@ -28,6 +32,8 @@ namespace ZE.MechBattle.Weapons
                 .TargetDataProperty
                 .Subscribe(data => _targetData = data);
         }
+
+        public virtual void SetPlayerAffinity(Entity player) => PlayerEntity = player;
 
         public abstract void Fire();
 

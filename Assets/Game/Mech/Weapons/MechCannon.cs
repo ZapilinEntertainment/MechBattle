@@ -1,4 +1,5 @@
 using UnityEngine;
+using VContainer;
 
 namespace ZE.MechBattle.Weapons
 {
@@ -6,7 +7,9 @@ namespace ZE.MechBattle.Weapons
     {
         [SerializeField] private float _aimSpeed = 30f;
         [SerializeField] private Vector2 _aimLimits;
-
+        [SerializeField] private Transform _gunPoint;
+        [SerializeField] private string _projectileId;
+        [Inject] private ProjectileRequestsFactory _requestsFactory;
 
         public override bool ShowInterfaceAim => true;
         public override float AimSpeed => _aimSpeed;
@@ -15,7 +18,8 @@ namespace ZE.MechBattle.Weapons
 
         public override void Fire()
         {
-            
+            var point = _gunPoint.ToRigidTransform();
+            _requestsFactory.CreateProjectileRequest(_projectileId, point, PlayerEntity);
         }
 
 #if UNITY_EDITOR
