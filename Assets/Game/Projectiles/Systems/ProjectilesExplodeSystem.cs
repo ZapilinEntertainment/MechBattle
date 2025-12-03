@@ -12,12 +12,14 @@ namespace ZE.MechBattle.Ecs {
         public World World { get; set;}
         private Filter _selfExplodedProjectiles;
         private Filter _collidedProjectiles;
-        private Stash<TransformComponent> _transforms;
         private Stash<DamageComponent> _damageComponents;
         private Stash<ExplosionParametersComponent> _explosionParametersComponents;
         private Stash<CollisionComponent> _collisionComponents;
         private Stash<ProjectileComponent> _projectileComponents;
         private Stash<OwnerAffinityComponent> _ownerComponents;
+        private Stash<EntityDisposeTag> _entityDisposeTags;
+        private Stash<PositionComponent> _positionComponents;
+        private Stash<RotationComponent> _rotationComponents;
 
         private readonly CollidersTable _collidersTable;
         private readonly VfxRequestsBuilder _vfxRequestsBuilder;
@@ -51,12 +53,15 @@ namespace ZE.MechBattle.Ecs {
                 .With<CollisionComponent>()
                 .Build();
 
-            _transforms = World.GetStash<TransformComponent>();
             _damageComponents = World.GetStash<DamageComponent>();
             _explosionParametersComponents = World.GetStash<ExplosionParametersComponent>();
             _collisionComponents = World.GetStash<CollisionComponent>();
             _projectileComponents = World.GetStash<ProjectileComponent>();
             _ownerComponents = World.GetStash<OwnerAffinityComponent>();
+            _entityDisposeTags = World.GetStash<EntityDisposeTag>();
+
+            _positionComponents = World.GetStash<PositionComponent>();
+            _rotationComponents = World.GetStash<RotationComponent>();
         }
 
         public void OnUpdate(float deltaTime) 
@@ -65,13 +70,15 @@ namespace ZE.MechBattle.Ecs {
             {
                 foreach (var projectile in _selfExplodedProjectiles)
                 {
-                    var transform = _transforms.Get(projectile);
-                    CreateVfxExplosion(projectile, transform.Position, transform.Rotation);
+                    var position = _positionComponents.Get(projectile).Value;
+                    var rotationComponent = _rotationComponents.Get(projectile, out var rotationPresented).Value;
+
+                    CreateVfxExplosion(projectile, position, rotationPresented ? rotationComponent.value : UnityEngine.Random.rotation);
                     var explosionComponent = _explosionParametersComponents.Get(projectile, out var isExplosible);
                     if (isExplosible)
                         CreateDamagingExplosion(projectile, explosionComponent.Parameters);
 
-                    World.RemoveEntity(projectile);
+                    _entityDisposeTags.Add(projectile);
                 }
             }
 
@@ -90,12 +97,13 @@ namespace ZE.MechBattle.Ecs {
                     {                        
                         if (_collidersTable.TryGetColliderOwner(collisionResult.HitColliderId, out var targetEntity))
                             RequestDirectDamage(projectile, targetEntity);
+                        //else UnityEngine.Debug.Log("no collider defined: " + collisionResult.HitColliderId.ToString());
                     }
 
-                    var transform = _transforms.Get(projectile);
-                    CreateVfxExplosion(projectile, transform.Position, quaternion.LookRotation(collisionResult.HitNormal, math.up()));
+                    var position = _positionComponents.Get(projectile).Value;
+                    CreateVfxExplosion(projectile, position, quaternion.LookRotation(collisionResult.HitNormal, math.up()));
 
-                    World.RemoveEntity(projectile);
+                    _entityDisposeTags.Add(projectile);
                 }
             }
         }
@@ -106,15 +114,12 @@ namespace ZE.MechBattle.Ecs {
         {
             var vfxExplosionKey = _projectileComponents.Get(projectile).ExplosionEffectKey;
             if (vfxExplosionKey.IsDefined)
-            {
-                var transform = _transforms.Get(projectile);
-                _vfxRequestsBuilder.Build(vfxExplosionKey, transform.Position, transform.Rotation);
-            }
+                _vfxRequestsBuilder.Build(vfxExplosionKey, position, rotation);
         }
 
         private void CreateDamagingExplosion(Entity projectile, ExplosionParameters parameters) 
         {
-            var position = _transforms.Get(projectile).Position;
+            var position = _positionComponents.Get(projectile).Value;
             var damage = _damageComponents.Get(projectile, out var isDamagingProjectile);
             if (isDamagingProjectile)
                 _explosionRequestsBuilder.RequestExplosion(position, parameters, damage.DamageParameters);
@@ -130,6 +135,7 @@ namespace ZE.MechBattle.Ecs {
                     damager: projectileOwnerExists ? projectileOwnerComponent.OwnerEntity : default,
                     target: target,
                     damageParameters: damageComponent.DamageParameters);
+                //UnityEngine.Debug.Log("request damage: " + damageComponent.DamageParameters.Value.ToString());
             }
         }
     }

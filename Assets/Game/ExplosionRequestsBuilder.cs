@@ -10,7 +10,7 @@ namespace ZE.MechBattle
     {
         private readonly World _world;
         private readonly Stash<ExplosionParametersComponent> _explosions;
-        private readonly Stash<VirtualPositionComponent> _virtualPosition;
+        private readonly Stash<PositionComponent> _virtualPosition;
         private readonly Stash<DamageComponent> _damage;
 
         [Inject]
@@ -18,7 +18,7 @@ namespace ZE.MechBattle
         {
             _world = world;
             _explosions = _world.GetStash<ExplosionParametersComponent>();
-            _virtualPosition = _world.GetStash<VirtualPositionComponent>();
+            _virtualPosition = _world.GetStash<PositionComponent>();
             _damage = _world.GetStash<DamageComponent>();
         }
 

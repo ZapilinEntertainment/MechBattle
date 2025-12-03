@@ -9,6 +9,6 @@ public static class MathExtensions
         return vector - dot * planeNormal;
     }
 
-    public static RigidTransform ToRigidTransform(this Transform transform) => new(transform.rotation, transform.position);
-    public static float3 GetRightVector(this RigidTransform transform) => math.mul(transform.rot, math.right());
+    public static RigidTransform ToRigidTransform(this Transform transform) => new(transform.rotation, transform.position);    
+    public static float3 GetRightVector(this RigidTransform transform) => math.mul(transform.rot, math.right());    
 }

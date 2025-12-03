@@ -2,10 +2,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Collections;
 using Unity.Mathematics;
+using VContainer;
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
-using System;
-using Unity.Jobs;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -15,18 +14,21 @@ namespace ZE.MechBattle.Ecs {
     // TODO: add pause handling
     public sealed class ProjectileMoveSystem : IFixedSystem 
     {
+
         public World World { get; set;}
         private Filter _filter;
         private Stash<SpeedComponent> _speed;
         private Stash<ExplosionTimerComponent> _explosionTimer;
         private Stash<ExplodeTag> _explodeTags;
-        private Stash<TransformComponent> _transforms;
         private Stash<CollisionComponent> _collisionResults;
+        private TransformAspectHandler _transformAspect;
 
-        private readonly List<Entity> _projectilesList = new(32);
+        private readonly List<float3> _movementVectorsCache = new (DEFAULT_CAPACITY);
+        private readonly List<Entity> _projectilesList = new(DEFAULT_CAPACITY);
         private readonly QueryParameters _queryParameters;
-        private const int MAX_PROJECTILES_PER_FRAME = 4096;
+        private const int DEFAULT_CAPACITY = 32;
 
+        [Inject]
         public ProjectileMoveSystem()
         {
             _queryParameters = new QueryParameters()
@@ -49,9 +51,9 @@ namespace ZE.MechBattle.Ecs {
             _speed = World.GetStash<SpeedComponent>();
             _explosionTimer = World.GetStash<ExplosionTimerComponent>();
             _explodeTags = World.GetStash<ExplodeTag>();
-            _transforms = World.GetStash<TransformComponent>();
             _collisionResults = World.GetStash<CollisionComponent>();
-            Debug.Log("move system awake");
+
+            _transformAspect = new(World);
         }
 
         public void OnUpdate(float dt)
@@ -74,26 +76,20 @@ namespace ZE.MechBattle.Ecs {
                     }
                 }
 
-                // excessive defence measure (stackalloc). Note that list can be longer
-                count = math.clamp(count, 0, MAX_PROJECTILES_PER_FRAME);
-
                 if (count != 0)
                 {
                     // TODO: do not use jobs when only few projectiles exists
 
                     var raycastCommands = new NativeArray<RaycastCommand>(count, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
 
-                    Span<float> stepsBuffer = stackalloc float[count];
-
                     for (var i = 0; i < count; i++)
                     {
                         var projectile = _projectilesList[i];
-                        var transform = _transforms.Get(projectile);
-                        var position = transform.Position;
-                        var direction = transform.Forward;
+                        var position = _transformAspect.GetPosition(projectile);
+                        var direction = _transformAspect.GetForward(projectile);
                         var step = _speed.Get(projectile).Value * dt;
                         raycastCommands[i] = new RaycastCommand(position, direction, _queryParameters, step);
-                        stepsBuffer[i] = step;
+                        _movementVectorsCache.Add(step * direction);
                     }
 
                     var results = new NativeArray<RaycastHit>(2 * count, Allocator.TempJob);
@@ -112,12 +108,13 @@ namespace ZE.MechBattle.Ecs {
                         }
                         else
                         {
-                            _transforms.Get(projectile).Value.Translate(new Vector3(0f, 0f, stepsBuffer[i]), Space.Self);
+                            _transformAspect.Translate(projectile, _movementVectorsCache[i], Space.World);
                         }
                     }
 
                     raycastCommands.Dispose();
                     results.Dispose();
+                    _movementVectorsCache.Clear();
                 }
 
                 _projectilesList.Clear();
@@ -127,6 +124,7 @@ namespace ZE.MechBattle.Ecs {
         public void Dispose()
         {
             _projectilesList.Clear();
+            _movementVectorsCache.Clear();
         }
     }
 }

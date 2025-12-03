@@ -11,20 +11,23 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<ViewRequestComponent> _viewRequests;
         private readonly Stash<ViewInfoComponent> _viewInfos;
         private readonly Stash<ViewComponent> _viewComponents;
+        private readonly EntityFactory _factory;
 
         [Inject]
-        public ProjectileViewBuilder(World world, ViewReceiversList receiversList)
+        public ProjectileViewBuilder(World world, ViewReceiversList receiversList, EntityFactory factory)
         {
             _viewReceivers = receiversList;
+            _factory = factory;
             _viewRequests = world.GetStash<ViewRequestComponent>();
             _viewInfos = world.GetStash<ViewInfoComponent>();
             _viewComponents = world.GetStash<ViewComponent>();
         }
         
         // creates GO and requests view (should be loaded asynchronously in next frames)
-        public Projectile BuildView(int idkey, Entity entity)
+        public Entity BuildView(int idkey)
         {           
             var viewReceiver = new GameObject(idkey.ToString()).AddComponent<Projectile>();
+            var entity = _factory.Build(viewReceiver);
             _viewComponents.Set(entity, new() { Value = viewReceiver });
             
             _viewInfos.Set(entity, new() { Value = new ViewKey() { IdKey = idkey} });
@@ -32,7 +35,7 @@ namespace ZE.MechBattle.Ecs
             var receiverId = _viewReceivers.Register(viewReceiver);
             _viewRequests.Set(entity, new() { ReceiverId = receiverId });
             
-            return viewReceiver;
+            return entity;
         }    
     }
 }

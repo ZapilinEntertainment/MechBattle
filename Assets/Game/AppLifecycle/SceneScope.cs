@@ -12,6 +12,7 @@ namespace ZE.MechBattle
             MorpehInstaller.SceneScopeInstall(builder);
 
             builder.Register<SessionData>(Lifetime.Scoped); 
+            builder.Register<TransformAccessManager>(Lifetime.Scoped);
             
             builder.Register<MechBuilder>(Lifetime.Scoped);
             builder.Register<PlayerFactory>(Lifetime.Scoped);
@@ -20,7 +21,7 @@ namespace ZE.MechBattle
             builder.Register<LoadingProcessesTable>(Lifetime.Scoped);
             builder.Register<RestorablesList>(Lifetime.Scoped);
             builder.Register<ViewReceiversList>(Lifetime.Scoped);
-            builder.Register<CollidersTable>(Lifetime.Scoped);
+            builder.Register<CollidersTable>(Lifetime.Scoped);            
 
             builder.RegisterEntryPoint<SceneBootstrap>();
         }

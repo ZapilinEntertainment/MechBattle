@@ -37,7 +37,9 @@ namespace ZE.MechBattle
                     player = _vfxFactory.CreateEffect(data);
                     _players.Add(key.IdKey, player);
                 }
-                
+#if UNITY_EDITOR
+                else Debug.LogWarning(key.IdKey + " effect data not found");
+#endif
             }
             player?.Play(position, rotation);
         }

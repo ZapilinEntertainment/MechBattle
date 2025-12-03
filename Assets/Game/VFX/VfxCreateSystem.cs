@@ -13,8 +13,8 @@ namespace ZE.MechBattle.Ecs {
         public World World { get; set;}
         private Filter _vfxCreateFilter;
         private Stash<VfxRequestComponent> _vfxRequests;
-        private Stash<VirtualPositionComponent> _vfxVirtualPositions;
-        private Stash<VirtualRotationComponent> _vfxVirtualRotations;
+        private Stash<PositionComponent> _vfxVirtualPositions;
+        private Stash<RotationComponent> _vfxVirtualRotations;
         private readonly VfxManager _vfxManager;
 
         [Inject]
@@ -27,8 +27,8 @@ namespace ZE.MechBattle.Ecs {
         {
             _vfxCreateFilter = World.Filter.With<VfxRequestComponent>().Build();
             _vfxRequests = World.GetStash<VfxRequestComponent>();
-            _vfxVirtualPositions = World.GetStash<VirtualPositionComponent>();
-            _vfxVirtualRotations = World.GetStash<VirtualRotationComponent>();
+            _vfxVirtualPositions = World.GetStash<PositionComponent>();
+            _vfxVirtualRotations = World.GetStash<RotationComponent>();
         }
 
         public void OnUpdate(float deltaTime) 

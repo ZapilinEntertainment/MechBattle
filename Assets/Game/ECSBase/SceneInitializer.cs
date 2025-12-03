@@ -2,7 +2,7 @@ using Scellecs.Morpeh;
 
 namespace ZE.MechBattle.Ecs
 {
-    public class Initializer : IInitializer
+    public class SceneInitializer : IInitializer
     {
         public World World { get;set; }       
 

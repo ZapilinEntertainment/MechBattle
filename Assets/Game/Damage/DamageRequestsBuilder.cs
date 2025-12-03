@@ -6,13 +6,13 @@ namespace ZE.MechBattle.Ecs
     public class DamageRequestsBuilder
     {
         private readonly World _world;
-        private readonly Stash<DamageApplyRequest> _requests;
+        private readonly Stash<CalculateDamageRequest> _requests;
 
         [Inject]
         public DamageRequestsBuilder(World world)
         {
             _world = world;
-            _requests = _world.GetStash<DamageApplyRequest>();
+            _requests = _world.GetStash<CalculateDamageRequest>();
         }
 
         public void Build(Entity damager, Entity target, DamageApplyParameters damageParameters)

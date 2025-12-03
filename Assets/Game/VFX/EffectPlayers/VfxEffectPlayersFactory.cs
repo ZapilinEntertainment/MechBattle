@@ -62,6 +62,8 @@ namespace ZE.MechBattle.Vfx
 
         public void Dispose()
         {
+            if (_emitter == null)
+                return; 
             GameObject.Destroy(_emitter.gameObject);
         }
     }

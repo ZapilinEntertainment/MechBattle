@@ -16,10 +16,15 @@ namespace ZE.MechBattle
             return key;
         }
 
-        public void Unregister(TKey key) => Dictionary.Remove(key);
+        public void Unregister(TKey key) 
+        {
+            if (Dictionary.Remove(key))
+                OnElementRemoved(key);
+        }
 
         public virtual bool TryGetElement(TKey key, out TValue value) => Dictionary.TryGetValue(key, out value);
         public virtual void OnElementAdded(TKey key, TValue value) { }
+        public virtual void OnElementRemoved(TKey key) { }
 
         public virtual void Dispose()
         {

@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace ZE.MechBattle.Views
+namespace ZE.MechBattle
 {
     public interface IView : IDisposable
     {

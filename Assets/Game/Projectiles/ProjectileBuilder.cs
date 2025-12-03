@@ -11,8 +11,8 @@ namespace ZE.MechBattle.Ecs
         private readonly ProjectileViewBuilder _viewBuilder;
         private readonly StringDataDictionary _stringDict;
         private readonly ProjectilesData _projectileData;
+        private readonly TransformAspectHandler _transformAspectHandler;
 
-        private readonly Stash<TransformComponent> _transforms;
         private readonly Stash<SpeedComponent> _speed;
         private readonly Stash<ProjectileComponent> _projectiles;
         private readonly Stash<DamageComponent> _damage;
@@ -31,8 +31,8 @@ namespace ZE.MechBattle.Ecs
             _viewBuilder = viewBuilder;
             _stringDict = stringDict;
             _projectileData = projectileData;
+            _transformAspectHandler = new(world);
             
-            _transforms = _world.GetStash<TransformComponent>();
             _projectiles = _world.GetStash<ProjectileComponent>();
             _explosionTimer = _world.GetStash<ExplosionTimerComponent>();
             _explosionComponents = _world.GetStash<ExplosionParametersComponent>();
@@ -53,13 +53,9 @@ namespace ZE.MechBattle.Ecs
                 return default;
             }
 
-            var entity =  _world.CreateEntity();
-            var projectile = _viewBuilder.BuildView(idkey, entity);
+            var entity = _viewBuilder.BuildView(idkey);
+            _transformAspectHandler.MoveToPoint(entity, point);
 
-            var transform = projectile.transform;
-            transform.SetPositionAndRotation(point.pos, point.rot);
-
-            _transforms.Set(entity, new() { Value = transform});
             _speed.Set(entity,new() { Value = projectileData.Speed});
             _explosionTimer.Set(entity, new() { Value = projectileData.Lifetime});
             _projectilesOwner.Set(entity, new() { OwnerEntity = shooter});

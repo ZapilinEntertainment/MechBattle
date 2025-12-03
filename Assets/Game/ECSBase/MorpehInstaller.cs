@@ -6,10 +6,13 @@ namespace ZE.MechBattle
 {
     public static class MorpehInstaller
     {
-          private enum SystemGroupOrder : byte { Initialization = 0, Default = 1, FixedUpdateGroup = 2}
+          private enum SystemGroupOrder : byte { Initialization = 0, Default = 1, FixedUpdateGroup , LateUpdateGroup, ClearSystems}
 
         public static void AppScopeInstall(IContainerBuilder builder)
         {
+            RegisterInitializer<SceneInitializer>();
+            RegisterInitializer<DamageablesInitializer>();
+
             RegisterSystem<ViewRequestsHandleSystem>();            
             RegisterSystem<VfxCreateSystem>();
             RegisterSystem<RestorationSystem>();
@@ -18,7 +21,20 @@ namespace ZE.MechBattle
             RegisterSystem<ProjectileMoveSystem>();
             RegisterSystem<ProjectilesExplodeSystem>();
             
+            RegisterSystem<DamageCalculationSystem>();
+            RegisterSystem<DamageApplySystem>();
+
+            RegisterSystem<TransformsSyncSystem>();
+
+            RegisterSystem<ViewDestroyEffectSystem>();
+
+            RegisterSystem<CollidersClearSystem>();
+            RegisterSystem<EntityDisposeSystem>();
+            RegisterSystem<UpdateTagsClearSystem>();
+            RegisterSystem<TransformsClearSystem>();
+            
             void RegisterSystem<T>() where T : class, ISystem => builder.Register<T>(Lifetime.Transient);
+            void RegisterInitializer<T>() where T : class, IInitializer => builder.Register<T>(Lifetime.Transient);
         }    
 
         public static void SceneScopeInstall(IContainerBuilder builder)
@@ -32,6 +48,7 @@ namespace ZE.MechBattle
             builder.Register<ExplosionRequestsBuilder>(Lifetime.Scoped);
             builder.Register<DamageRequestsBuilder>(Lifetime.Scoped);
             builder.Register<VfxRequestsBuilder>(Lifetime.Scoped);
+            builder.Register<EntityFactory>(Lifetime.Scoped);
         }
         private static World CreateWorld()
         {
@@ -47,13 +64,28 @@ namespace ZE.MechBattle
             var world = resolver.Resolve<World>();
             //UnityEngine.Debug.Log($"resolved: {world.GetHashCode()}");
 
+            void AddSystem<T>(SystemsGroup group) where T : class, ISystem
+            {
+                var system = resolver.Resolve<T>();
+                group.AddSystem(system);
+            }
+
+            void AddInitializer<T>(SystemsGroup group) where T: class, IInitializer
+            {
+                var initializer = resolver.Resolve<T>();
+                group.AddInitializer(initializer);
+            }
+
             var initGroup = world.CreateSystemsGroup();
-            initGroup.AddInitializer(new Initializer());
+            AddInitializer<SceneInitializer>(initGroup);
             world.AddSystemsGroup((int)SystemGroupOrder.Initialization, initGroup);
 
             var defaultGroup = world.CreateSystemsGroup();
+            AddInitializer<DamageablesInitializer>(defaultGroup);
             AddSystem<ViewRequestsHandleSystem>(defaultGroup);
-            AddSystem<ProjectileCreateSystem>(defaultGroup);            
+            AddSystem<ProjectileCreateSystem>(defaultGroup);     
+            AddSystem<DamageCalculationSystem>(defaultGroup);
+            AddSystem<DamageApplySystem>(defaultGroup);
             AddSystem<VfxCreateSystem>(defaultGroup);
             AddSystem<RestorationSystem>(defaultGroup);            
             world.AddSystemsGroup((int)SystemGroupOrder.Default, defaultGroup);
@@ -61,16 +93,23 @@ namespace ZE.MechBattle
             var fixedUpdateGroup = world.CreateSystemsGroup();
             AddSystem<ProjectileMoveSystem>(fixedUpdateGroup);
             AddSystem<ProjectilesExplodeSystem>(fixedUpdateGroup);
-
             world.AddSystemsGroup((int)SystemGroupOrder.FixedUpdateGroup, fixedUpdateGroup);
 
-            world.Commit();
+            var lateUpdateGroup = world.CreateSystemsGroup();            
+            AddSystem<TransformsSyncSystem>(lateUpdateGroup);
+            AddSystem<ViewDestroyEffectSystem>(lateUpdateGroup);
+            world.AddSystemsGroup((int)SystemGroupOrder.LateUpdateGroup, lateUpdateGroup);
 
-            void AddSystem<T>(SystemsGroup group) where T: class,ISystem 
-            {
-                var system = resolver.Resolve<T>();
-                group.AddSystem(system);
-            }
+            var clearGroup = world.CreateSystemsGroup();
+            AddSystem<TransformsClearSystem>(clearGroup);
+            AddSystem<CollidersClearSystem>(clearGroup);
+            AddSystem<EntityDisposeSystem>(clearGroup);
+            AddSystem<UpdateTagsClearSystem>(clearGroup);
+            world.AddSystemsGroup((int)SystemGroupOrder.ClearSystems, clearGroup);
+
+
+
+            world.Commit();
         }
     }
 }

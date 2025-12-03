@@ -7,19 +7,20 @@ namespace ZE.MechBattle.Ecs
     public class VfxRequestsBuilder
     {
         private readonly World _world;
-        private readonly Stash<VirtualPositionComponent> _positions;
-        private readonly Stash<VirtualRotationComponent> _rotations;
+        private readonly Stash<PositionComponent> _positions;
+        private readonly Stash<RotationComponent> _rotations;
         private readonly Stash<VfxRequestComponent> _requests;
 
         [Inject]
         public VfxRequestsBuilder(World world)
         {
             _world = world;
-            _positions = _world.GetStash<VirtualPositionComponent>();
-            _rotations = _world.GetStash<VirtualRotationComponent>();
+            _positions = _world.GetStash<PositionComponent>();
+            _rotations = _world.GetStash<RotationComponent>();
             _requests = _world.GetStash<VfxRequestComponent>();
         }
 
+        public void Build(VfxKey key, in RigidTransform transform) => Build(key, transform.pos, transform.rot);
 
         public void Build(VfxKey key, float3 pos, quaternion rot)
         {
