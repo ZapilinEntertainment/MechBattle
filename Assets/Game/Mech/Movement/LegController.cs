@@ -39,7 +39,7 @@ namespace ZE.MechBattle.Movement
             var x = cosA * HipLength;
             var y = math.sqrt(math.abs(HipLength * HipLength - x * x));
 
-            var right = point.GetRightVector();
+            var right = MathExtensions.GetRightVector(point);
             var upVector = math.cross(dir, right);
             var middlePoint = hipPosition + x * math.normalize(dir) + y * math.normalize(upVector);
 
@@ -50,12 +50,12 @@ namespace ZE.MechBattle.Movement
                 return;
 
             upVector = math.normalize(math.cross(hipDir, right));
-            _view.Hip.rotation = Quaternion.LookRotation(hipDir, upVector);
+            _view.Hip.rotation = quaternion.LookRotation(hipDir, upVector);
 
             var ankleDir = math.normalize(pos - middlePoint);
             _view.Ankle.position = middlePoint;
             upVector = math.cross(ankleDir, right);
-            _view.Ankle.rotation = Quaternion.LookRotation(ankleDir, upVector);
+            _view.Ankle.rotation = quaternion.LookRotation(ankleDir, upVector);
 
             _view.Foot.rotation = point.rot;
             _view.Foot.position = pos;

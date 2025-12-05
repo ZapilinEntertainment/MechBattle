@@ -17,7 +17,7 @@ namespace ZE.MechBattle.Ecs {
 
         public World World { get; set;}
         private Filter _filter;
-        private Stash<SpeedComponent> _speed;
+        private Stash<MoveSpeedComponent> _speed;
         private Stash<ExplosionTimerComponent> _explosionTimer;
         private Stash<ExplodeTag> _explodeTags;
         private Stash<CollisionComponent> _collisionResults;
@@ -44,11 +44,11 @@ namespace ZE.MechBattle.Ecs {
         {
             _filter = World.Filter
                 .With<ProjectileComponent>()
-                .With<SpeedComponent>()
+                .With<MoveSpeedComponent>()
                 .Without<ExplodeTag>()
                 .Build();
 
-            _speed = World.GetStash<SpeedComponent>();
+            _speed = World.GetStash<MoveSpeedComponent>();
             _explosionTimer = World.GetStash<ExplosionTimerComponent>();
             _explodeTags = World.GetStash<ExplodeTag>();
             _collisionResults = World.GetStash<CollisionComponent>();

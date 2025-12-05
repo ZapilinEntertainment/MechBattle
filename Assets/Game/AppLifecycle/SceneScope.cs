@@ -16,6 +16,7 @@ namespace ZE.MechBattle
             
             builder.Register<MechBuilder>(Lifetime.Scoped);
             builder.Register<PlayerFactory>(Lifetime.Scoped);
+            builder.Register<UnitsFactory>(Lifetime.Scoped);
             builder.Register<SceneFlagsManager>(Lifetime.Scoped);
 
             builder.Register<LoadingProcessesTable>(Lifetime.Scoped);

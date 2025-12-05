@@ -1,5 +1,7 @@
+using Unity.Burst;
 using UnityEngine;
 using Unity.Mathematics;
+using System.Runtime.CompilerServices;
 
 public static class MathExtensions
 {
@@ -9,6 +11,23 @@ public static class MathExtensions
         return vector - dot * planeNormal;
     }
 
-    public static RigidTransform ToRigidTransform(this Transform transform) => new(transform.rotation, transform.position);    
-    public static float3 GetRightVector(this RigidTransform transform) => math.mul(transform.rot, math.right());    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static RigidTransform ToRigidTransform(this Transform transform) => new(transform.rotation, transform.position);
+
+    [BurstCompile]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static float3 GetRightVector(in RigidTransform transform) => math.mul(transform.rot, math.right());
+
+    [BurstCompile]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static quaternion RotateTowards(in quaternion from, in quaternion to, float angleInDegrees)
+    {
+        var maxAngle = math.angle(from, to) * math.TODEGREES;
+        if (maxAngle == 0f)
+        {
+            return to;
+        }
+
+        return math.slerp(from, to, math.min(1f, angleInDegrees / maxAngle));
+    }
 }

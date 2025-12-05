@@ -1,6 +1,7 @@
 using VContainer;
 using Scellecs.Morpeh;
 using ZE.MechBattle.Ecs;
+using ZE.MechBattle.Ecs.States;
 
 namespace ZE.MechBattle
 {
@@ -12,6 +13,7 @@ namespace ZE.MechBattle
         {
             RegisterInitializer<SceneInitializer>();
             RegisterInitializer<DamageablesInitializer>();
+            RegisterInitializer<SceneUnitsInitializer>();
 
             RegisterSystem<ViewRequestsHandleSystem>();            
             RegisterSystem<VfxCreateSystem>();
@@ -24,6 +26,7 @@ namespace ZE.MechBattle
             RegisterSystem<DamageCalculationSystem>();
             RegisterSystem<DamageApplySystem>();
 
+            RegisterSystem<StateUpdateSystem>();
             RegisterSystem<TransformsSyncSystem>();
 
             RegisterSystem<ViewDestroyEffectSystem>();
@@ -32,7 +35,9 @@ namespace ZE.MechBattle
             RegisterSystem<EntityDisposeSystem>();
             RegisterSystem<UpdateTagsClearSystem>();
             RegisterSystem<TransformsClearSystem>();
-            
+
+            StatesInstaller.RegisterStates(builder);
+
             void RegisterSystem<T>() where T : class, ISystem => builder.Register<T>(Lifetime.Transient);
             void RegisterInitializer<T>() where T : class, IInitializer => builder.Register<T>(Lifetime.Transient);
         }    
@@ -48,7 +53,7 @@ namespace ZE.MechBattle
             builder.Register<ExplosionRequestsBuilder>(Lifetime.Scoped);
             builder.Register<DamageRequestsBuilder>(Lifetime.Scoped);
             builder.Register<VfxRequestsBuilder>(Lifetime.Scoped);
-            builder.Register<EntityFactory>(Lifetime.Scoped);
+            builder.Register<EntityFactory>(Lifetime.Scoped);            
         }
         private static World CreateWorld()
         {
@@ -82,7 +87,9 @@ namespace ZE.MechBattle
 
             var defaultGroup = world.CreateSystemsGroup();
             AddInitializer<DamageablesInitializer>(defaultGroup);
+            AddInitializer<SceneUnitsInitializer>(defaultGroup);
             AddSystem<ViewRequestsHandleSystem>(defaultGroup);
+            AddSystem<StateUpdateSystem>(defaultGroup);
             AddSystem<ProjectileCreateSystem>(defaultGroup);     
             AddSystem<DamageCalculationSystem>(defaultGroup);
             AddSystem<DamageApplySystem>(defaultGroup);
@@ -106,8 +113,6 @@ namespace ZE.MechBattle
             AddSystem<EntityDisposeSystem>(clearGroup);
             AddSystem<UpdateTagsClearSystem>(clearGroup);
             world.AddSystemsGroup((int)SystemGroupOrder.ClearSystems, clearGroup);
-
-
 
             world.Commit();
         }

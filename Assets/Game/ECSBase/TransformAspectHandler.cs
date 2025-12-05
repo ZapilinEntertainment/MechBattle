@@ -36,6 +36,12 @@ namespace ZE.MechBattle.Ecs
             _updateTags.Set(entity);
         }
 
+        public void SetRotation(Entity entity, quaternion rotation)
+        {
+            _rotations.Set(entity, new() { Value = rotation });
+            _updateTags.Set(entity);
+        }
+
         public void MoveToPoint(Entity entity, in RigidTransform point)
         {
             SetPosition(entity, point.pos);

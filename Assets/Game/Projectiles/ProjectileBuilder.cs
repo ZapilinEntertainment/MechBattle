@@ -13,7 +13,7 @@ namespace ZE.MechBattle.Ecs
         private readonly ProjectilesData _projectileData;
         private readonly TransformAspectHandler _transformAspectHandler;
 
-        private readonly Stash<SpeedComponent> _speed;
+        private readonly Stash<MoveSpeedComponent> _speed;
         private readonly Stash<ProjectileComponent> _projectiles;
         private readonly Stash<DamageComponent> _damage;
         private readonly Stash<ExplosionTimerComponent> _explosionTimer;
@@ -38,7 +38,7 @@ namespace ZE.MechBattle.Ecs
             _explosionComponents = _world.GetStash<ExplosionParametersComponent>();
             _damage = _world.GetStash<DamageComponent>();
             _projectilesOwner = _world.GetStash<OwnerAffinityComponent>();
-            _speed = _world.GetStash<SpeedComponent>();
+            _speed = _world.GetStash<MoveSpeedComponent>();
         }
 
         public Entity Build(string id, RigidTransform point, Entity shooter) => Build(id, _stringDict.GetStringKey(id), point, shooter);
