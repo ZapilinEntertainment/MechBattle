@@ -14,6 +14,9 @@ namespace ZE.MechBattle
         [Space]
         [SerializeField] private float _speed = 5f;
         [SerializeField] private float _rotationSpeed = 30f;
+        [Space]
+        [SerializeField] private int _groupId = 1;
+        [SerializeField] private int _unitIndex = 0;
             
 
         public string ViewDestroyEffectKey => _destroyEffectKey;
@@ -23,5 +26,7 @@ namespace ZE.MechBattle
         public DamageableEntityParameters GetParameters() => _damageParameters;
         public float Speed => _speed;
         public float RotationSpeed => _rotationSpeed;
+        public int GroupId => _groupId;
+        public int UnitIndex => _unitIndex;
     }
 }

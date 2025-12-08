@@ -23,7 +23,7 @@ public static class MathExtensions
     public static quaternion RotateTowards(in quaternion from, in quaternion to, float angleInDegrees)
     {
         var maxAngle = math.angle(from, to) * math.TODEGREES;
-        if (maxAngle == 0f)
+        if (maxAngle <= math.EPSILON)
         {
             return to;
         }

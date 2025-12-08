@@ -6,10 +6,11 @@ namespace ZE.MechBattle.Ecs.States
 {
     public class DefaultMoveState : StateHandler
     {
+        protected readonly TransformAspectHandler TransformAspectHandler;
         private readonly Stash<MoveTargetComponent> _moveTargets;
         private readonly Stash<MoveSpeedComponent> _speed;
-        private readonly Stash<RotationSpeedComponent> _angSpeed;
-        private readonly TransformAspectHandler _transformAspectHandler;
+        private readonly Stash<RotationSpeedComponent> _angSpeed;        
+        private const float MIN_ANGLE_DOT = 1e-6f;
 
         [Inject]
         public DefaultMoveState(World world)
@@ -17,7 +18,7 @@ namespace ZE.MechBattle.Ecs.States
             _moveTargets = world.GetStash<MoveTargetComponent>();
             _speed = world.GetStash<MoveSpeedComponent>();
             _angSpeed = world.GetStash<RotationSpeedComponent>();
-            _transformAspectHandler = new(world);
+            TransformAspectHandler = new(world);
         }
 
         public override void Enter(Entity entity)
@@ -30,34 +31,45 @@ namespace ZE.MechBattle.Ecs.States
 
         public override StateKey Update(Entity entity, float dt)
         {
-            var point = _transformAspectHandler.GetPoint(entity);
             var targetPos = _moveTargets.Get(entity).Value;
+            if (TryReachPoint(entity, targetPos, dt))
+            {
+                _moveTargets.Remove(entity);
+                return StateKey.Idle;
+            }
+            return StateKey.Move;
+        }
+
+        protected bool TryReachPoint(Entity entity, float3 targetPos, float dt)
+        {
+            var point = TransformAspectHandler.GetPoint(entity);
 
             var fwd = math.mul(point.rot, math.forward());
             var dir = targetPos - point.pos;
             var dirLength = math.length(dir);
             var normalizedDir = dir / dirLength;
             var dot = math.dot(normalizedDir, fwd);
-            if (math.abs(dot - 1f) > math.EPSILON)
+            var dotDelta = math.abs(dot - 1f);
+            if (dotDelta > MIN_ANGLE_DOT)
             {
                 var targetRot = quaternion.LookRotation(normalizedDir, math.up());
                 var angSpeed = _angSpeed.Get(entity).Value;
-                _transformAspectHandler.SetRotation(entity, MathExtensions.RotateTowards(point.rot, targetRot, dt * angSpeed));
-                return StateKey.Move;
+                TransformAspectHandler.SetRotation(entity, MathExtensions.RotateTowards(point.rot, targetRot, dt * angSpeed));
+
+                return false;
             }
             else
-            {               
+            {
                 var step = _speed.Get(entity).Value * dt;
                 if (step >= dirLength)
                 {
-                    _transformAspectHandler.SetPosition(entity, targetPos);
-                    _moveTargets.Remove(entity);
-                    return StateKey.Idle;
+                    TransformAspectHandler.SetPosition(entity, targetPos);                    
+                    return true;
                 }
                 else
                 {
-                    _transformAspectHandler.SetPosition(entity, point.pos + step * normalizedDir );
-                    return StateKey.Move;
+                    TransformAspectHandler.SetPosition(entity, point.pos + step * normalizedDir);
+                    return false;
                 }
             }
         }

@@ -17,6 +17,7 @@ namespace ZE.MechBattle
         [Inject]
         public void Inject(World world)
         {
+            // orders for entire group
             _filter = world.Filter.With<StateComponent>().Build();
             _moveTargets = world.GetStash<MoveTargetComponent>();
         }

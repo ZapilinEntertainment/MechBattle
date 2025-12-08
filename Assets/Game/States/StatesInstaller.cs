@@ -9,6 +9,7 @@ namespace ZE.MechBattle.Ecs.States
         { 
             builder.Register<DefaultIdleState>(Lifetime.Transient);
             builder.Register<DefaultMoveState>(Lifetime.Transient);
+            builder.Register<PathfindingMoveState>(Lifetime.Transient);
         }
         
         public static Dictionary<StateUpdateSystem.StateHandlerKey, StateHandler> PrepareStatesList(IObjectResolver resolver)
@@ -26,10 +27,12 @@ namespace ZE.MechBattle.Ecs.States
                 AddStateInstance(behaviour, state, instance);
                 return instance;
             }
-            
 
-            AddState<DefaultIdleState>(BehaviourKey.Tank, StateKey.Idle);
-            AddState<DefaultMoveState>(BehaviourKey.Tank, StateKey.Move);
+            var defaultIdleState = AddState<DefaultIdleState>(BehaviourKey.Tank, StateKey.Idle);
+            AddState<PathfindingMoveState>(BehaviourKey.Tank, StateKey.Move);
+
+           // AddStateInstance<DefaultIdleState>(BehaviourKey.TankGroup, StateKey.Idle, defaultIdleState);
+           // AddState<GroupMoveState>(BehaviourKey.TankGroup, StateKey.Move);
 
             return dict;
         }

@@ -2,6 +2,7 @@ using VContainer;
 using Scellecs.Morpeh;
 using ZE.MechBattle.Ecs;
 using ZE.MechBattle.Ecs.States;
+using ZE.MechBattle.Ecs.Pathfinding;
 
 namespace ZE.MechBattle
 {
@@ -35,6 +36,13 @@ namespace ZE.MechBattle
             RegisterSystem<EntityDisposeSystem>();
             RegisterSystem<UpdateTagsClearSystem>();
             RegisterSystem<TransformsClearSystem>();
+
+            builder.Register<PathfinderFactory>(Lifetime.Scoped);
+            builder.Register<PathsManager>(Lifetime.Scoped);
+            RegisterSystem<PathRequestsHandleSystem>();
+            RegisterSystem<PathUpdateSystem>();
+            RegisterSystem<PathsClearSystem>();
+            RegisterSystem<PathActualizingSystem>();
 
             StatesInstaller.RegisterStates(builder);
 
@@ -94,7 +102,12 @@ namespace ZE.MechBattle
             AddSystem<DamageCalculationSystem>(defaultGroup);
             AddSystem<DamageApplySystem>(defaultGroup);
             AddSystem<VfxCreateSystem>(defaultGroup);
-            AddSystem<RestorationSystem>(defaultGroup);            
+            AddSystem<RestorationSystem>(defaultGroup);   
+
+            AddSystem<PathActualizingSystem>(defaultGroup);
+            AddSystem<PathRequestsHandleSystem>(defaultGroup);
+            AddSystem<PathUpdateSystem>(defaultGroup);
+
             world.AddSystemsGroup((int)SystemGroupOrder.Default, defaultGroup);
 
             var fixedUpdateGroup = world.CreateSystemsGroup();
@@ -108,6 +121,7 @@ namespace ZE.MechBattle
             world.AddSystemsGroup((int)SystemGroupOrder.LateUpdateGroup, lateUpdateGroup);
 
             var clearGroup = world.CreateSystemsGroup();
+            AddSystem<PathsClearSystem>(clearGroup);
             AddSystem<TransformsClearSystem>(clearGroup);
             AddSystem<CollidersClearSystem>(clearGroup);
             AddSystem<EntityDisposeSystem>(clearGroup);
