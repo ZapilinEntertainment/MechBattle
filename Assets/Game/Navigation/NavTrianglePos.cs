@@ -1,9 +1,11 @@
+using Unity.Mathematics;
+
 namespace ZE.MechBattle.Navigation
 {
     public struct NavTrianglePos
     {
-        public byte Column;
-        public byte Row;
-        public bool IsUpper;    
+        public float2 WorldPos;
+        public int2 LocalCoordinate;
+        public bool IsPeak;    
     }
 }

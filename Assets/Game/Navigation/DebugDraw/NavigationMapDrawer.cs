@@ -1,23 +1,240 @@
+using System.Collections.Generic;  
 using UnityEngine;
 using Unity.Mathematics;
+using Unity.Burst;
+using Unity.Collections;
 
 namespace ZE.MechBattle.Navigation
 {
     [ExecuteInEditMode]
     public class NavigationMapDrawer : MonoBehaviour
     {
+        private enum DebugColor : byte { White, Green, Red}
+
+        private readonly struct LineDrawData
+        {
+            public readonly Vector3 PointA;
+            public readonly Vector3 PointB;
+            public readonly DebugColor Color;
+
+            public LineDrawData(float3 pointA, float3 pointB, DebugColor color = DebugColor.White)
+            {
+                PointA = pointA;
+                PointB = pointB;
+                Color = color;
+            }
+        }
+
         [SerializeField] private float _hexEdgeSize = 10f;
         [SerializeField] private Vector2 _bottomLeftCorner;
         [SerializeField] private Vector2 _topRightCorner;
+        [SerializeField] private Transform _testPos;
 
         private NavigatonMap _map;
+        private List<LineDrawData> _drawData = new();
+        private float _triangleGridStep;
+        private List<LineDrawData> _selectedTriangleDrawData = new();
+
+        private readonly float3 dirY = math.forward();
+        private readonly float3 dirZ = math.mul(quaternion.AxisAngle(math.up(), math.radians(120f)), math.forward());
+        private readonly float3 dirX = math.mul(quaternion.AxisAngle(math.down(), math.radians(120f)), math.forward());
+
+        private readonly float3 lineY = math.forward();
+        private readonly float3 lineX = math.mul(quaternion.AxisAngle(math.up(), math.radians(150f)), math.forward());
+        private readonly float3 lineZ = math.mul(quaternion.AxisAngle(math.down(), math.radians(150f)), math.forward());
+
+        private readonly float SQT_HALVED = math.sqrt(3) * 0.5f;
+        private readonly float HEIGHT_2_OF_3 = math.sqrt(3) * 0.5f / 3f * 2f;
+        private readonly Vector3[] HexPointsPreset = new Vector3[6];
+        private readonly Dictionary<DebugColor, Color> _debugColors = new()
+        {
+            {DebugColor.White, Color.white },
+            {DebugColor.Red, Color.red },
+            {DebugColor.Green, Color.green }
+        };
 
         public void RedrawMap()
         {
+            _drawData.Clear();
             _map = NavigationMapBuilder.Build(_bottomLeftCorner, _topRightCorner, _hexEdgeSize, 0);
+            RecalculateDrawData();
+
+
+        }
+
+        private void RecalculateDrawData()
+        {
+            var edge = _map.HexEdgeSize;
+            _triangleGridStep = edge * SQT_HALVED / 3f * 2f;
+
+            var dir = new Vector3(0, 0, edge);
+            for (var i = 0; i < 6; i++)
+            {
+                HexPointsPreset[i] = Quaternion.AngleAxis(30f + i * 60f, Vector3.up) * dir;
+            }
+
+            using (var hexCenters = new NativeArray<float2>(6, Allocator.Temp))
+            {
+                foreach (var hex in _map.Hexes.Values)
+                {
+                    AddHexDrawData(hex.Center, _drawData);
+
+                    SubdivisionHelper.SubdivideHexIntoTrianglesAndGetCenters(hex.Center, edge, 0, hexCenters);
+                    foreach (var center in hexCenters)
+                    {
+                        var pos = new float3(center.x, 0f, center.y);
+                        //var triangled = CartesianToTriangle(pos);
+                        //Debug.Log($"{pos} -> {triangled}");
+                       // AddTriangleDrawData(triangled, _drawData);
+                    }
+                }                
+            }
+
+            // var testTrianglePos = math.ceil(CartesianToTriangle(_testPos));
+            // Debug.Log(testTrianglePos);
+            //  AddTriangleDrawData(testTrianglePos, _drawData);
+
+            AddTriangleDrawData(new float3(0, 1, 0), _drawData);
+            AddTriangleDrawData(new float3(1, 0, 0), _drawData);
+            AddTriangleDrawData(new float3(0, 0, 1), _drawData);
+            AddTriangleDrawData(new float3(0, -1, 0), _drawData);
+            AddTriangleDrawData(new float3(-1, 0, 0), _drawData);
+            AddTriangleDrawData(new float3(0, 0, -1), _drawData);
+
+            AddTriangleDrawData(new float3(1, 0, 1), _drawData);
+            AddTriangleDrawData(new float3(0, 1, 1), _drawData);
+            AddTriangleDrawData(new float3(1, 1, 0), _drawData);
+
+            AddTriangleDrawData(new float3(0, 2, 0), _drawData);
+            AddTriangleDrawData(new float3(0, 0, 2), _drawData);
+            AddTriangleDrawData(new float3(2, 0, 0), _drawData);
+            AddTriangleDrawData(new float3(2, 0, 2), _drawData);
+            AddTriangleDrawData(new float3(0, 2, 2), _drawData);
+            AddTriangleDrawData(new float3(2, 2, 0), _drawData);
+
+            AddTriangleDrawData(new float3(0, 4, 0), _drawData);
+            AddTriangleDrawData(new float3(0, 0, 4), _drawData);
+            AddTriangleDrawData(new float3(4, 0, 0), _drawData);
+            AddTriangleDrawData(new float3(4, 0, 4), _drawData);
+            AddTriangleDrawData(new float3(0, 4, 4), _drawData);
+            AddTriangleDrawData(new float3(4, 4, 0), _drawData);
         }
 
         private void OnDrawGizmos()
+        {
+            DrawMapBorders();
+
+            if (_map == null)
+                return;
+
+            foreach (var drawData in _drawData)
+            {
+                Gizmos.color = _debugColors[drawData.Color];
+                Gizmos.DrawLine(drawData.PointA, drawData.PointB);
+            }
+
+            if (_testPos != null) 
+            { 
+                _selectedTriangleDrawData.Clear();
+                var triangle = math.ceil(CartesianToTriangular(_testPos.position));
+                AddTriangleDrawData(triangle, _selectedTriangleDrawData);
+                foreach (var drawData in _selectedTriangleDrawData)
+                {
+                    Gizmos.color = Color.blue;
+                    Gizmos.DrawLine(drawData.PointA, drawData.PointB);
+                }
+            }
+        }
+
+
+        [BurstCompile]
+        public static float3 StandartizeTriangleCoordinates(float3 trianglePos)
+        {
+           var neg = math.min(trianglePos, 0f);
+
+            var absNeg = math.abs(neg);
+            var sum = absNeg.x + absNeg.y + absNeg.z;
+
+            trianglePos += sum - absNeg;
+            trianglePos = math.max(trianglePos, 0f);
+
+            return trianglePos;
+        }
+
+        private Vector3 TriangularToCartesian(float3 trianglePos)
+        {
+            return _map.Center + _triangleGridStep * (trianglePos.y * dirY + trianglePos.x * dirX + trianglePos.z * dirZ);
+        }
+
+        public float3 CartesianToTriangular(float3 pos)
+        {
+            if (_map == null)
+                return default;
+            var dir = pos - _map.Center;
+            return new(
+                math.ceil((-1 * dir.x - math.sqrt(3) / 3f * dir.z) / _hexEdgeSize),
+                math.floor((math.sqrt(3) * 2 / 3f * dir.z) / _hexEdgeSize) + 1,
+                math.ceil((1 * dir.x - math.sqrt(3) / 3f * dir.z) / _hexEdgeSize)
+                );
+
+            //var dir = pos - _map.Center;
+            //dir /= SQT_HALVED * _hexEdgeSize;
+            // var a = math.dot(dir, dirX);
+            // var b = math.dot(dir, dirY);
+            // var c = math.dot(dir, dirZ);
+            // return new(math.max(a,0), math.max(b,0), math.max(c,0));
+        }
+
+        private void AddHexDrawData(float2 centerPos, List<LineDrawData> data)
+        {
+            var center = new Vector3(centerPos.x, 0f, centerPos.y);
+            for (var i = 0; i < 5; i++)
+            {
+                data.Add(new(center + HexPointsPreset[i], center + HexPointsPreset[i + 1]));
+            }
+            data.Add(new(center + HexPointsPreset[5], center + HexPointsPreset[0]));
+        }
+
+        private void AddTriangleDrawData(float3 pos, List<LineDrawData> data)
+        {
+            float3 pointA;
+            float3 pointB;
+            float3 pointC;
+
+            var a = pos.x;
+            var b = pos.y;
+            var c = pos.z;
+            DebugColor color;
+            const float OFFSET = 0.05f;
+            
+            // each coordinate represents orth line shift
+            // three numbers describes a triangle, that contained inside intersection of three lines
+            // so x is shift by dirX, y is shift by dirY and z is shift by dirZ from center
+            // make a drawing for proper understanding
+
+            if ((a + b + c) % 3 == 1)
+            {
+                // valley (C -> A -> B, B is bottom)
+                color = DebugColor.Green;
+                pointA = new float3(a-1 + OFFSET, b - OFFSET, c - OFFSET);
+                pointB = new float3(a - OFFSET, b-1 + OFFSET, c - OFFSET);
+                pointC = new float3(a - OFFSET, b - OFFSET, c-1 + OFFSET);
+            }
+            else
+            {
+                // peak (A -> B -> C, B is peak)
+                color = DebugColor.Red;
+                pointA = new float3(a+1 - OFFSET, b + OFFSET, c + OFFSET);
+                pointB = new float3(a + OFFSET, b+1 - OFFSET, c + OFFSET);
+                pointC = new float3(a + OFFSET, b + OFFSET, c+1 - OFFSET);
+            }
+
+            data.Add(new(TriangularToCartesian(pointA), TriangularToCartesian(pointB), color));
+            data.Add(new(TriangularToCartesian(pointB), TriangularToCartesian(pointC), color));
+            data.Add(new(TriangularToCartesian(pointC), TriangularToCartesian(pointA), color));
+        }
+
+        private void DrawMapBorders()
         {
             Gizmos.color = Color.yellow;
             var point10 = new Vector3(_topRightCorner.x, 0f, _bottomLeftCorner.y);
@@ -28,34 +245,6 @@ namespace ZE.MechBattle.Navigation
             Gizmos.DrawLine(point00, point10);
             Gizmos.DrawLine(point01, point11);
             Gizmos.DrawLine(point10, point11);
-
-            if (_map == null)
-                return;
-
-            Gizmos.color = Color.white;
-            var edge = _map.HexEdgeSize;
-            var dir = new Vector3(0,0, edge);
-            var hexPointsPreset = new Vector3[6];
-            for (var i = 0; i < 6; i++)
-            {
-                hexPointsPreset[i] = Quaternion.AngleAxis(30f + i * 60f, Vector3.up) * dir;
-            }
-
-            foreach (var hex in _map.Hexes.Values)
-            {
-                DrawHex(hex.Center);
-            }
-
-            void DrawHex(float2 centerPos)
-            {
-                var center = new Vector3(centerPos.x, 0f, centerPos.y);
-                for (var i = 0; i < 5; i++)
-                {
-                    Gizmos.DrawLine(center + hexPointsPreset[i], center + hexPointsPreset[i+1]);
-                }
-                Gizmos.DrawLine(center + hexPointsPreset[5], center + hexPointsPreset[0]);
-            }
-
         }
     }
 }

@@ -10,6 +10,7 @@ namespace ZE.MechBattle.Navigation
         SerializedProperty _hexEdgeSizeProperty;
         SerializedProperty _bottomLeftCornerProperty;
         SerializedProperty _topRightCornerProperty;
+        SerializedProperty _testPosProperty;
 
         void OnEnable()
         {
@@ -17,6 +18,7 @@ namespace ZE.MechBattle.Navigation
             _hexEdgeSizeProperty = serializedObject.FindProperty("_hexEdgeSize");
             _bottomLeftCornerProperty = serializedObject.FindProperty("_bottomLeftCorner");
             _topRightCornerProperty = serializedObject.FindProperty("_topRightCorner");
+            _testPosProperty = serializedObject.FindProperty("_testPos");
         }
 
         public override void OnInspectorGUI()
@@ -27,9 +29,12 @@ namespace ZE.MechBattle.Navigation
             EditorGUILayout.PropertyField(_hexEdgeSizeProperty, new GUIContent("Hex edge size"));
             EditorGUILayout.PropertyField(_bottomLeftCornerProperty, new GUIContent("Bottom left corner"));
             EditorGUILayout.PropertyField(_topRightCornerProperty, new GUIContent("Top right corner"));
+            EditorGUILayout.PropertyField(_testPosProperty, new GUIContent("Test pos"));
+
+            var script = target as NavigationMapDrawer;
 
             if (GUILayout.Button("Redraw map"))
-                (target as NavigationMapDrawer).RedrawMap();
+                script.RedrawMap();
 
             // Apply changes to the serializedProperty - always do this in the end of OnInspectorGUI.
             serializedObject.ApplyModifiedProperties();
