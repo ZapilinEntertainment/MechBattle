@@ -3,6 +3,9 @@ using UnityEngine;
 using Unity.Mathematics;
 using Unity.Burst;
 using Unity.Collections;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace ZE.MechBattle.Navigation
 {
@@ -28,12 +31,16 @@ namespace ZE.MechBattle.Navigation
         [SerializeField] private float _hexEdgeSize = 10f;
         [SerializeField] private Vector2 _bottomLeftCorner;
         [SerializeField] private Vector2 _topRightCorner;
+        [Space]
         [SerializeField] private Transform _testPos;
+        [SerializeField] private float _testRadius = 5f;
 
         private NavigatonMap _map;
         private List<LineDrawData> _drawData = new();
         private float _triangleGridStep;
         private List<LineDrawData> _selectedTriangleDrawData = new();
+        private List<IntTriangularPos> _selectedTrianglesList = new();
+        private IntTriangularPos _currentSelectedTriangle;
 
         private readonly float3 dirY = math.forward();
         private readonly float3 dirZ = math.mul(quaternion.AxisAngle(math.up(), math.radians(120f)), math.forward());
@@ -94,32 +101,33 @@ namespace ZE.MechBattle.Navigation
             // Debug.Log(testTrianglePos);
             //  AddTriangleDrawData(testTrianglePos, _drawData);
 
-            AddTriangleDrawData(new float3(0, 1, 0), _drawData);
-            AddTriangleDrawData(new float3(1, 0, 0), _drawData);
-            AddTriangleDrawData(new float3(0, 0, 1), _drawData);
-            AddTriangleDrawData(new float3(0, -1, 0), _drawData);
-            AddTriangleDrawData(new float3(-1, 0, 0), _drawData);
-            AddTriangleDrawData(new float3(0, 0, -1), _drawData);
+            AddTriangleDrawData(new IntTriangularPos(0, 1, 0), _drawData);
+            AddTriangleDrawData(new IntTriangularPos(1, 0, 0), _drawData);
+            AddTriangleDrawData(new IntTriangularPos(0, 0, 1), _drawData);
+            AddTriangleDrawData(new IntTriangularPos(0, -1, 0), _drawData);
+            AddTriangleDrawData(new IntTriangularPos(-1, 0, 0), _drawData);
+            AddTriangleDrawData(new IntTriangularPos(0, 0, -1), _drawData);
 
-            AddTriangleDrawData(new float3(1, 0, 1), _drawData);
-            AddTriangleDrawData(new float3(0, 1, 1), _drawData);
-            AddTriangleDrawData(new float3(1, 1, 0), _drawData);
+            AddTriangleDrawData(new IntTriangularPos(1, 0, 1), _drawData);
+            AddTriangleDrawData(new IntTriangularPos(0, 1, 1), _drawData);
+            AddTriangleDrawData(new IntTriangularPos(1, 1, 0), _drawData);
 
-            AddTriangleDrawData(new float3(0, 2, 0), _drawData);
-            AddTriangleDrawData(new float3(0, 0, 2), _drawData);
-            AddTriangleDrawData(new float3(2, 0, 0), _drawData);
-            AddTriangleDrawData(new float3(2, 0, 2), _drawData);
-            AddTriangleDrawData(new float3(0, 2, 2), _drawData);
-            AddTriangleDrawData(new float3(2, 2, 0), _drawData);
+            AddTriangleDrawData(new IntTriangularPos(0, 2, 0), _drawData);
+            AddTriangleDrawData(new IntTriangularPos(0, 0, 2), _drawData);
+            AddTriangleDrawData(new IntTriangularPos(2, 0, 0), _drawData);
+            AddTriangleDrawData(new IntTriangularPos(2, 0, 2), _drawData);
+            AddTriangleDrawData(new IntTriangularPos(0, 2, 2), _drawData);
+            AddTriangleDrawData(new IntTriangularPos(2, 2, 0), _drawData);
 
-            AddTriangleDrawData(new float3(0, 4, 0), _drawData);
-            AddTriangleDrawData(new float3(0, 0, 4), _drawData);
-            AddTriangleDrawData(new float3(4, 0, 0), _drawData);
-            AddTriangleDrawData(new float3(4, 0, 4), _drawData);
-            AddTriangleDrawData(new float3(0, 4, 4), _drawData);
-            AddTriangleDrawData(new float3(4, 4, 0), _drawData);
+            AddTriangleDrawData(new IntTriangularPos(0, 4, 0), _drawData);
+            AddTriangleDrawData(new IntTriangularPos(0, 0, 4), _drawData);
+            AddTriangleDrawData(new IntTriangularPos(4, 0, 0), _drawData);
+            AddTriangleDrawData(new IntTriangularPos(4, 0, 4), _drawData);
+            AddTriangleDrawData(new IntTriangularPos(0, 4, 4), _drawData);
+            AddTriangleDrawData(new IntTriangularPos(4, 4, 0), _drawData);
         }
 
+        #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
             DrawMapBorders();
@@ -135,16 +143,26 @@ namespace ZE.MechBattle.Navigation
 
             if (_testPos != null) 
             { 
-                _selectedTriangleDrawData.Clear();
-                var triangle = math.ceil(CartesianToTriangular(_testPos.position));
-                AddTriangleDrawData(triangle, _selectedTriangleDrawData);
+                _selectedTriangleDrawData.Clear();                
+                UpdateSelectedTriangles(_testPos.position, _testRadius, _selectedTrianglesList);
+
+                foreach (var trianglePos in _selectedTrianglesList)
+                {
+                    var pos = TriangularToCartesian(trianglePos.ToInt3());
+                    Handles.Label(pos, trianglePos.ToString());
+                    AddTriangleDrawData(trianglePos, _selectedTriangleDrawData);
+                }
+
                 foreach (var drawData in _selectedTriangleDrawData)
                 {
                     Gizmos.color = Color.blue;
                     Gizmos.DrawLine(drawData.PointA, drawData.PointB);
                 }
+
+                //Gizmos.DrawWireSphere(_testPos.position, _testRadius);
             }
         }
+        #endif
 
 
         [BurstCompile]
@@ -159,6 +177,32 @@ namespace ZE.MechBattle.Navigation
             trianglePos = math.max(trianglePos, 0f);
 
             return trianglePos;
+        }
+
+        private void UpdateSelectedTriangles(float3 cartesianCenter, float radius, List<IntTriangularPos> positions)
+        {
+            var scaledPos = (cartesianCenter - _map.Center) / _hexEdgeSize;
+            var center = new IntTriangularPos(scaledPos.x, scaledPos.z);
+
+            if (center == _currentSelectedTriangle)
+                return;
+            _currentSelectedTriangle = center;
+            _selectedTrianglesList.Clear();
+
+            var radiusInTriangles = radius / (_hexEdgeSize* SQT_HALVED);
+
+            positions.Add(center);
+            if (radiusInTriangles <= 1)
+                return;
+
+            positions.Add(center.GetNeighbour(TriangularDirection.Up));
+            positions.Add(center.GetNeighbour(TriangularDirection.DownRight));
+            positions.Add(center.GetNeighbour(TriangularDirection.DownLeft));
+
+            positions.Add(center.GetNeighbour(TriangularDirection.UpRight));
+            positions.Add(center.GetNeighbour(TriangularDirection.UpLeft));
+            positions.Add(center.GetNeighbour(TriangularDirection.Down));
+
         }
 
         private Vector3 TriangularToCartesian(float3 trianglePos)
@@ -195,15 +239,15 @@ namespace ZE.MechBattle.Navigation
             data.Add(new(center + HexPointsPreset[5], center + HexPointsPreset[0]));
         }
 
-        private void AddTriangleDrawData(float3 pos, List<LineDrawData> data)
+        private void AddTriangleDrawData(IntTriangularPos pos, List<LineDrawData> data)
         {
             float3 pointA;
             float3 pointB;
             float3 pointC;
 
-            var a = pos.x;
-            var b = pos.y;
-            var c = pos.z;
+            var a = pos.DownLeft;
+            var b = pos.Up;
+            var c = pos.DownRight;
             DebugColor color;
             const float OFFSET = 0.05f;
             
@@ -212,7 +256,7 @@ namespace ZE.MechBattle.Navigation
             // so x is shift by dirX, y is shift by dirY and z is shift by dirZ from center
             // make a drawing for proper understanding
 
-            if ((a + b + c) % 3 == 1)
+            if (!pos.IsPeak)
             {
                 // valley (C -> A -> B, B is bottom)
                 color = DebugColor.Green;

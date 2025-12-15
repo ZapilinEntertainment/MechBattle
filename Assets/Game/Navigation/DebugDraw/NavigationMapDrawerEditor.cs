@@ -11,6 +11,7 @@ namespace ZE.MechBattle.Navigation
         SerializedProperty _bottomLeftCornerProperty;
         SerializedProperty _topRightCornerProperty;
         SerializedProperty _testPosProperty;
+        SerializedProperty _testRadiusProperty;
 
         void OnEnable()
         {
@@ -19,6 +20,7 @@ namespace ZE.MechBattle.Navigation
             _bottomLeftCornerProperty = serializedObject.FindProperty("_bottomLeftCorner");
             _topRightCornerProperty = serializedObject.FindProperty("_topRightCorner");
             _testPosProperty = serializedObject.FindProperty("_testPos");
+            _testRadiusProperty = serializedObject.FindProperty("_testRadius");
         }
 
         public override void OnInspectorGUI()
@@ -30,6 +32,7 @@ namespace ZE.MechBattle.Navigation
             EditorGUILayout.PropertyField(_bottomLeftCornerProperty, new GUIContent("Bottom left corner"));
             EditorGUILayout.PropertyField(_topRightCornerProperty, new GUIContent("Top right corner"));
             EditorGUILayout.PropertyField(_testPosProperty, new GUIContent("Test pos"));
+            EditorGUILayout.PropertyField(_testRadiusProperty, new GUIContent("Test radius"));
 
             var script = target as NavigationMapDrawer;
 
