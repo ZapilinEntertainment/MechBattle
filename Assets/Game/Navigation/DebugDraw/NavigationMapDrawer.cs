@@ -3,6 +3,7 @@ using UnityEngine;
 using Unity.Mathematics;
 using Unity.Burst;
 using Unity.Collections;
+using System;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -38,6 +39,7 @@ namespace ZE.MechBattle.Navigation
         private NavigatonMap _map;
         private List<LineDrawData> _drawData = new();
         private float _triangleGridStep;
+        private int _drawHash = -1;
         private List<LineDrawData> _selectedTriangleDrawData = new();
         private List<IntTriangularPos> _selectedTrianglesList = new();
         private IntTriangularPos _currentSelectedTriangle;
@@ -143,9 +145,14 @@ namespace ZE.MechBattle.Navigation
             }
 
             if (_testPos != null) 
-            { 
-                _selectedTriangleDrawData.Clear();                
-                UpdateSelectedTriangles(_testPos.position, _testRadius, _selectedTrianglesList);
+            {                               
+                var hash = HashCode.Combine(_testPos.position, _testRadius);
+                if (hash != _drawHash) 
+                { 
+                    _drawHash = hash;
+                    _selectedTriangleDrawData.Clear();
+                    UpdateSelectedTriangles(_testPos.position, _testRadius, _selectedTrianglesList);                    
+                }
 
                 foreach (var trianglePos in _selectedTrianglesList)
                 {

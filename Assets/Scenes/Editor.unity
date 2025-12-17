@@ -1515,11 +1515,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 39f14ef90393d174d802c875405ee030, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ZE.MechBattle.Navigation.NavigationMapDrawer
-  _hexEdgeSize: 300
+  _hexEdgeSize: 100
   _bottomLeftCorner: {x: -500, y: -100}
   _topRightCorner: {x: 500, y: 1000}
   _testPos: {fileID: 879025846}
-  _testRadius: 500
+  _testRadius: 250
 --- !u!4 &592847736
 Transform:
   m_ObjectHideFlags: 0
@@ -2123,7 +2123,7 @@ Transform:
   m_GameObject: {fileID: 879025845}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2232, y: 0, z: 2107}
+  m_LocalPosition: {x: -330, y: 0, z: 382}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
