@@ -50,8 +50,9 @@ namespace ZE.MechBattle.Navigation
         private readonly float3 lineX = math.mul(quaternion.AxisAngle(math.up(), math.radians(150f)), math.forward());
         private readonly float3 lineZ = math.mul(quaternion.AxisAngle(math.down(), math.radians(150f)), math.forward());
 
-        private readonly float SQT_HALVED = math.sqrt(3) * 0.5f;
-        private readonly float HEIGHT_2_OF_3 = math.sqrt(3) * 0.5f / 3f * 2f;
+        private static readonly float SQT_HALVED = math.sqrt(3) * 0.5f;
+        private static readonly float HEIGHT_2_OF_3 = math.sqrt(3) * 0.5f / 3f * 2f;
+        private static readonly float HEIGHT_1_OF_3 = math.sqrt(3) * 0.5f / 3f;
         private readonly Vector3[] HexPointsPreset = new Vector3[6];
         private readonly Dictionary<DebugColor, Color> _debugColors = new()
         {
@@ -149,7 +150,7 @@ namespace ZE.MechBattle.Navigation
                 foreach (var trianglePos in _selectedTrianglesList)
                 {
                     var pos = TriangularToCartesian(trianglePos.ToInt3());
-                    Handles.Label(pos, trianglePos.ToString());
+                    Handles.Label(pos, trianglePos.Standartize().ToString());
                     AddTriangleDrawData(trianglePos, _selectedTriangleDrawData);
                 }
 
@@ -159,7 +160,7 @@ namespace ZE.MechBattle.Navigation
                     Gizmos.DrawLine(drawData.PointA, drawData.PointB);
                 }
 
-                //Gizmos.DrawWireSphere(_testPos.position, _testRadius);
+                Gizmos.DrawWireSphere(_testPos.position, _testRadius);
             }
         }
         #endif
@@ -179,7 +180,7 @@ namespace ZE.MechBattle.Navigation
             return trianglePos;
         }
 
-        private void UpdateSelectedTriangles(float3 cartesianCenter, float radius, List<IntTriangularPos> positions)
+        private void UpdateSelectedTriangles(float3 cartesianCenter, float radiusInCartesian, List<IntTriangularPos> positions)
         {
             var scaledPos = (cartesianCenter - _map.Center) / _hexEdgeSize;
             var center = new IntTriangularPos(scaledPos.x, scaledPos.z);
@@ -189,20 +190,13 @@ namespace ZE.MechBattle.Navigation
             _currentSelectedTriangle = center;
             _selectedTrianglesList.Clear();
 
-            var radiusInTriangles = radius / (_hexEdgeSize* SQT_HALVED);
+            // note: the can be special check if point inside triangle, however, in this realization we know only the triangle
 
-            positions.Add(center);
-            if (radiusInTriangles <= 1)
-                return;
-
-            positions.Add(center.GetNeighbour(TriangularDirection.Up));
-            positions.Add(center.GetNeighbour(TriangularDirection.DownRight));
-            positions.Add(center.GetNeighbour(TriangularDirection.DownLeft));
-
-            positions.Add(center.GetNeighbour(TriangularDirection.UpRight));
-            positions.Add(center.GetNeighbour(TriangularDirection.UpLeft));
-            positions.Add(center.GetNeighbour(TriangularDirection.Down));
-
+            var triangles = GetTrianglesInRadiusCommand.Execute(center, radiusInCartesian, _hexEdgeSize);
+            foreach (var triangle in triangles)
+            {
+                positions.Add(triangle);
+            }
         }
 
         private Vector3 TriangularToCartesian(float3 trianglePos)
@@ -289,6 +283,12 @@ namespace ZE.MechBattle.Navigation
             Gizmos.DrawLine(point00, point10);
             Gizmos.DrawLine(point01, point11);
             Gizmos.DrawLine(point10, point11);
+        }
+
+        private static bool IsValidTriangle(int3 t)
+        {
+            int sum = t.x + t.y + t.z;
+            return (sum == 1 || sum == 2) && t.x >= 0 && t.y >= 0 && t.z >= 0;
         }
     }
 }

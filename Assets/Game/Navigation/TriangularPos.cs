@@ -23,8 +23,6 @@ namespace ZE.MechBattle.Navigation
             new(a.DownLeft + delta.x, a.Up +delta.y, a.DownRight + delta.z);
 
         public static implicit operator int3(IntTriangularPos sourceObject) => sourceObject.ToInt3();
-        private static readonly IReadOnlyDictionary<TriangularDirection, int3> _peakVectors = TriangularDirectionExtension.PeakVectors;
-        private static readonly IReadOnlyDictionary<TriangularDirection, int3> _valleyVectors = TriangularDirectionExtension.ValleyVectors;
 
         public override string ToString() => $"({DownLeft},{Up},{DownRight}) {(IsPeak ? "peak" : "valley")}";
 
@@ -62,12 +60,6 @@ namespace ZE.MechBattle.Navigation
             (int)math.floor(SQRT_THREE_D3 * 2 * cartesianZ) + 1,
             (int)math.ceil((1 * cartesianX - SQRT_THREE_D3 * cartesianZ)))
         { }
-
-        public IntTriangularPos GetNeighbour(TriangularDirection direction) 
-        {
-            var dir =IsPeak ? _peakVectors[direction] : _valleyVectors[direction]; 
-            return new(DownLeft + dir.x, Up + dir.y, DownRight + dir.z);
-        }
 
         public IntTriangularPos Standartize()
         {
