@@ -75,7 +75,7 @@ namespace ZE.MechBattle.Navigation
             else
             {
                 var leftNeighbour = TriangularMath.GetValleyNeighbour(innerRingTopTriangle, ValleyNeighbour.EdgeDownLeft);
-                var leftCornerUpTriangle = new IntTriangularPos(leftNeighbour.DownLeft + 1, leftNeighbour.Up, leftNeighbour.DownRight - 1);
+                var leftCornerUpTriangle = new IntTriangularPos(leftNeighbour.DownLeft + radius - 1, leftNeighbour.Up, leftNeighbour.DownRight - radius + 1);
                 var leftCornerDownTriangle = TriangularMath.GetPeakNeighbour(leftCornerUpTriangle, PeakNeighbour.EdgeDown);
                 var writeIndex = 0;
 

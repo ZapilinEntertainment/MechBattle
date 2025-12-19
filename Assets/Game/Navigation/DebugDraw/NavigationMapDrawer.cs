@@ -48,9 +48,9 @@ namespace ZE.MechBattle.Navigation
         private List<IntTriangularPos> _selectedTrianglesList = new();
         private IntTriangularPos _currentSelectedTriangle;
 
-        private static readonly float SQT_HALVED = math.sqrt(3) * 0.5f;
-        private static readonly float HEIGHT_2_OF_3 = math.sqrt(3) * 0.5f / 3f * 2f;
-        private static readonly float HEIGHT_1_OF_3 = math.sqrt(3) * 0.5f / 3f;
+        private static readonly float SQT_HALVED = Constants.SQRT_OF_THREE * 0.5f;
+        private static readonly float HEIGHT_2_OF_3 = (float)(Constants.SQRT_OF_THREE_DBL * 0.5f / 3f * 2f);
+        private static readonly float HEIGHT_1_OF_3 = (float)(Constants.SQRT_OF_THREE_DBL * 0.5f / 3f);
         private readonly Vector3[] HexPointsPreset = new Vector3[6];
         private readonly Dictionary<DebugColor, Color> _debugColors = new()
         {
@@ -64,14 +64,12 @@ namespace ZE.MechBattle.Navigation
             _drawData.Clear();
             _map = NavigationMapBuilder.Build(_bottomLeftCorner, _topRightCorner, _hexEdgeSize, 0);
             RecalculateDrawData();
-
-            Debug.Log(TriangularMath.DirX);
-            Debug.Log(TriangularMath.DirY);
-            Debug.Log(TriangularMath.DirZ);
         }
 
         private void RecalculateDrawData()
         {
+            //Debug.Log($"{TriangularMath.DirX} : {TriangularMath.DirY} : {TriangularMath.DirZ}");
+
             var edge = _map.HexEdgeSize;
             _triangleGridStep = edge * SQT_HALVED / 3f * 2f  / _hexTriangleRadius;
             _triangleEdgeSize = edge / _hexTriangleRadius;
@@ -103,10 +101,13 @@ namespace ZE.MechBattle.Navigation
                     AddTriangleDrawData(triangle, _selectedTriangleDrawData);
                 }
 
+
+
                 var start = new IntTriangularPos(0,1,0);
                 var next = TriangularMath.GetValleyNeighbour(start, ValleyNeighbour.EdgeDownLeft);
                 //AddTriangleDrawData(next, _selectedTriangleDrawData);
                 //AddTriangleDrawData(new(next.DownLeft +1, 0, next.DownRight - 1), _selectedTriangleDrawData);
+                //AddTriangleDrawData(new(0, 1, 0), _selectedTriangleDrawData);
                 //AddTriangleDrawData(new(1, 0, -2), _selectedTriangleDrawData);
                 //AddTriangleDrawData(new(2, 0, -3), _selectedTriangleDrawData);
 

@@ -1520,7 +1520,7 @@ MonoBehaviour:
   _topRightCorner: {x: 500, y: 1000}
   _testPos: {fileID: 0}
   _testRadius: 10
-  _hexTriangleRadius: 4
+  _hexTriangleRadius: 5
 --- !u!4 &592847736
 Transform:
   m_ObjectHideFlags: 0
@@ -3046,7 +3046,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1247844288
 Transform:
   m_ObjectHideFlags: 0

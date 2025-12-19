@@ -7,8 +7,8 @@ namespace ZE.MechBattle.Navigation
     public static class TriangularMath
     {
         public static readonly float3 DirY = new float3(0,0f,1f);
-        public static readonly float3 DirZ = math.normalize( math.mul(quaternion.AxisAngle(math.up(), 120f), math.forward()));
-        public static readonly float3 DirX = math.normalize( math.mul(quaternion.AxisAngle(math.down(), 120f), math.forward()));
+        public static readonly float3 DirZ = math.normalize( math.mul(quaternion.AxisAngle(math.up(), math.radians(120f)), math.forward()));
+        public static readonly float3 DirX = math.normalize( math.mul(quaternion.AxisAngle(math.down(), math.radians(120f)), math.forward()));
 
         private static float3 _cachedU;
         private static float3 _cachedV;
@@ -87,12 +87,12 @@ namespace ZE.MechBattle.Navigation
 
         [BurstCompile]
         public static float3 TriangularToCartesian(in IntTriangularPos trianglePos, in float triangleEdgeLength) =>
-           triangleEdgeLength * (trianglePos.Up * DirY + trianglePos.DownLeft * DirX + trianglePos.DownRight * DirZ);
+           triangleEdgeLength * (trianglePos.DownLeft * DirX  + trianglePos.Up * DirY + trianglePos.DownRight * DirZ);
 
         [BurstCompile]
         public static IntTriangularPos CartesianToTrianglePos(in float3 dir, in float triangleEdgeLength) =>
             new(
-                (int)math.ceil((-1 * dir.x - Constants.SQRT_OF_THREE_DBL / 3 * dir.z) / triangleEdgeLength),
+                (int)math.ceil((-1 * dir.x - Constants.SQRT_OF_THREE_DBL / 3f * dir.z) / triangleEdgeLength),
                 (int)math.floor((Constants.SQRT_OF_THREE_DBL * 2 / 3f * dir.z) / triangleEdgeLength) + 1,
                 (int)math.ceil((1 * dir.x - Constants.SQRT_OF_THREE_DBL / 3f * dir.z) / triangleEdgeLength)
                 );
