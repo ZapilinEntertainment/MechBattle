@@ -12,6 +12,7 @@ namespace ZE.MechBattle.Navigation
         SerializedProperty _topRightCornerProperty;
         SerializedProperty _testPosProperty;
         SerializedProperty _testRadiusProperty;
+        SerializedProperty _hexRadiusProperty;
 
         void OnEnable()
         {
@@ -21,6 +22,7 @@ namespace ZE.MechBattle.Navigation
             _topRightCornerProperty = serializedObject.FindProperty("_topRightCorner");
             _testPosProperty = serializedObject.FindProperty("_testPos");
             _testRadiusProperty = serializedObject.FindProperty("_testRadius");
+            _hexRadiusProperty = serializedObject.FindProperty("_hexTriangleRadius");
         }
 
         public override void OnInspectorGUI()
@@ -33,6 +35,7 @@ namespace ZE.MechBattle.Navigation
             EditorGUILayout.PropertyField(_topRightCornerProperty, new GUIContent("Top right corner"));
             EditorGUILayout.PropertyField(_testPosProperty, new GUIContent("Test pos"));
             EditorGUILayout.PropertyField(_testRadiusProperty, new GUIContent("Test radius"));
+            EditorGUILayout.PropertyField(_hexRadiusProperty, new GUIContent("Hex triangle radius"));
 
             var script = target as NavigationMapDrawer;
 

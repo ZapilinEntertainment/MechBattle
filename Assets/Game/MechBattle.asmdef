@@ -1,0 +1,27 @@
+{
+    "name": "MechBattle",
+    "rootNamespace": "",
+    "references": [
+        "GUID:b0214a6008ed146ff8f122a6a9c2f6cc",
+        "GUID:3377deebfb0acde45876d12c6e3d27cc",
+        "GUID:d8b63aba1907145bea998dd612889d6b",
+        "GUID:e0cd26848372d4e5c891c569017e11f1",
+        "GUID:2665a8d13d1b3f18800f46e256720795",
+        "GUID:9e24947de15b9834991c9d8411ea37cf",
+        "GUID:25b785ef18b316a4c804f3dcc5cc1957",
+        "GUID:0ed1a52a75cda954daae0e999c755f0b",
+        "GUID:152d13c1306a1d44c96154a5ce937ba2",
+        "GUID:4307f53044263cf4b835bd812fc161a4",
+        "GUID:d525ad6bd40672747bde77962f1c401e",
+        "GUID:84651a3751eca9349aac36a66bba901b"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -44,6 +44,7 @@ namespace ZE.MechBattle.Navigation
         public override int GetHashCode() => HashCode.Combine(DownRight, Up, DownLeft);
 
         public int3 ToInt3() => new(DownLeft, Up, DownRight);
+        public float3 ToFloat3() => new(DownLeft, Up, DownRight);
 
         public IntTriangularPos(int downLeft, int up, int downRight)
         {
@@ -60,17 +61,5 @@ namespace ZE.MechBattle.Navigation
             (int)math.floor(SQRT_THREE_D3 * 2 * cartesianZ) + 1,
             (int)math.ceil((1 * cartesianX - SQRT_THREE_D3 * cartesianZ)))
         { }
-
-        public IntTriangularPos Standartize()
-        {
-            var pos = ToInt3();
-            var neg = math.min(pos, 0);
-
-            var absNeg = math.abs(neg);
-            var sum = absNeg.x + absNeg.y + absNeg.z;
-
-            pos += sum - absNeg;
-            return new(math.max(pos, 0));
-        }
     }
 }

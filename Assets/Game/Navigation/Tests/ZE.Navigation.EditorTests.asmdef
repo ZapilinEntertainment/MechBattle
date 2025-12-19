@@ -1,0 +1,19 @@
+{
+    "name": "ZE.Navigation.EditorTests",
+    "rootNamespace": "",
+    "references": [
+        "GUID:b98de3ec81ae3dd4caeeba0786cb6143",
+        "GUID:d8b63aba1907145bea998dd612889d6b"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

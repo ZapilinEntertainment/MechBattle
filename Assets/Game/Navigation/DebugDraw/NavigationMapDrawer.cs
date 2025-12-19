@@ -35,22 +35,18 @@ namespace ZE.MechBattle.Navigation
         [Space]
         [SerializeField] private Transform _testPos;
         [SerializeField] private float _testRadius = 5f;
+        [Space]
+        [SerializeField] private int _hexTriangleRadius = 2;
 
         private NavigatonMap _map;
         private List<LineDrawData> _drawData = new();
         private float _triangleGridStep;
+        private float _triangleEdgeSize;
         private int _drawHash = -1;
+        private Vector3 _highlightHexCenter;
         private List<LineDrawData> _selectedTriangleDrawData = new();
         private List<IntTriangularPos> _selectedTrianglesList = new();
         private IntTriangularPos _currentSelectedTriangle;
-
-        private readonly float3 dirY = math.forward();
-        private readonly float3 dirZ = math.mul(quaternion.AxisAngle(math.up(), math.radians(120f)), math.forward());
-        private readonly float3 dirX = math.mul(quaternion.AxisAngle(math.down(), math.radians(120f)), math.forward());
-
-        private readonly float3 lineY = math.forward();
-        private readonly float3 lineX = math.mul(quaternion.AxisAngle(math.up(), math.radians(150f)), math.forward());
-        private readonly float3 lineZ = math.mul(quaternion.AxisAngle(math.down(), math.radians(150f)), math.forward());
 
         private static readonly float SQT_HALVED = math.sqrt(3) * 0.5f;
         private static readonly float HEIGHT_2_OF_3 = math.sqrt(3) * 0.5f / 3f * 2f;
@@ -69,13 +65,16 @@ namespace ZE.MechBattle.Navigation
             _map = NavigationMapBuilder.Build(_bottomLeftCorner, _topRightCorner, _hexEdgeSize, 0);
             RecalculateDrawData();
 
-
+            Debug.Log(TriangularMath.DirX);
+            Debug.Log(TriangularMath.DirY);
+            Debug.Log(TriangularMath.DirZ);
         }
 
         private void RecalculateDrawData()
         {
             var edge = _map.HexEdgeSize;
-            _triangleGridStep = edge * SQT_HALVED / 3f * 2f;
+            _triangleGridStep = edge * SQT_HALVED / 3f * 2f  / _hexTriangleRadius;
+            _triangleEdgeSize = edge / _hexTriangleRadius;
 
             var dir = new Vector3(0, 0, edge);
             for (var i = 0; i < 6; i++)
@@ -83,51 +82,36 @@ namespace ZE.MechBattle.Navigation
                 HexPointsPreset[i] = Quaternion.AngleAxis(30f + i * 60f, Vector3.up) * dir;
             }
 
-            using (var hexCenters = new NativeArray<float2>(6, Allocator.Temp))
+            NavigationHex lastHex = default;
+            foreach (var hex in _map.Hexes.Values)
             {
-                foreach (var hex in _map.Hexes.Values)
-                {
-                    AddHexDrawData(hex.Center, _drawData);
-
-                    SubdivisionHelper.SubdivideHexIntoTrianglesAndGetCenters(hex.Center, edge, 0, hexCenters);
-                    foreach (var center in hexCenters)
-                    {
-                        var pos = new float3(center.x, 0f, center.y);
-                        //var triangled = CartesianToTriangle(pos);
-                        //Debug.Log($"{pos} -> {triangled}");
-                       // AddTriangleDrawData(triangled, _drawData);
-                    }
-                }                
+                AddHexDrawData(hex.Center, _drawData);
+                lastHex = hex;
             }
+            if (lastHex != null)
+            {
+                _selectedTriangleDrawData.Clear();
+                var trianglesInHexCount = TriangularMath.GetTrianglesCountInHex(_hexTriangleRadius);
+                Debug.Log($"{trianglesInHexCount} tris in hex radius of {_hexTriangleRadius}");
+                using var trianglesList = new NativeArray<IntTriangularPos>(trianglesInHexCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+                var center = new Vector3(0f,0f, 0f);
+                var innerCircleTrianglePos = TriangularMath.CartesianToTrianglePos(center, _triangleEdgeSize);
+                Debug.Log(innerCircleTrianglePos);
+                NavigationMapHelper.GetTrianglesInHex(innerCircleTrianglePos, _hexTriangleRadius, trianglesList);
+                foreach (var triangle in trianglesList)
+                {
+                    AddTriangleDrawData(triangle, _selectedTriangleDrawData);
+                }
 
-            // var testTrianglePos = math.ceil(CartesianToTriangle(_testPos));
-            // Debug.Log(testTrianglePos);
-            //  AddTriangleDrawData(testTrianglePos, _drawData);
+                var start = new IntTriangularPos(0,1,0);
+                var next = TriangularMath.GetValleyNeighbour(start, ValleyNeighbour.EdgeDownLeft);
+                //AddTriangleDrawData(next, _selectedTriangleDrawData);
+                //AddTriangleDrawData(new(next.DownLeft +1, 0, next.DownRight - 1), _selectedTriangleDrawData);
+                //AddTriangleDrawData(new(1, 0, -2), _selectedTriangleDrawData);
+                //AddTriangleDrawData(new(2, 0, -3), _selectedTriangleDrawData);
 
-            AddTriangleDrawData(new IntTriangularPos(0, 1, 0), _drawData);
-            AddTriangleDrawData(new IntTriangularPos(1, 0, 0), _drawData);
-            AddTriangleDrawData(new IntTriangularPos(0, 0, 1), _drawData);
-            AddTriangleDrawData(new IntTriangularPos(0, -1, 0), _drawData);
-            AddTriangleDrawData(new IntTriangularPos(-1, 0, 0), _drawData);
-            AddTriangleDrawData(new IntTriangularPos(0, 0, -1), _drawData);
-
-            AddTriangleDrawData(new IntTriangularPos(1, 0, 1), _drawData);
-            AddTriangleDrawData(new IntTriangularPos(0, 1, 1), _drawData);
-            AddTriangleDrawData(new IntTriangularPos(1, 1, 0), _drawData);
-
-            AddTriangleDrawData(new IntTriangularPos(0, 2, 0), _drawData);
-            AddTriangleDrawData(new IntTriangularPos(0, 0, 2), _drawData);
-            AddTriangleDrawData(new IntTriangularPos(2, 0, 0), _drawData);
-            AddTriangleDrawData(new IntTriangularPos(2, 0, 2), _drawData);
-            AddTriangleDrawData(new IntTriangularPos(0, 2, 2), _drawData);
-            AddTriangleDrawData(new IntTriangularPos(2, 2, 0), _drawData);
-
-            AddTriangleDrawData(new IntTriangularPos(0, 4, 0), _drawData);
-            AddTriangleDrawData(new IntTriangularPos(0, 0, 4), _drawData);
-            AddTriangleDrawData(new IntTriangularPos(4, 0, 0), _drawData);
-            AddTriangleDrawData(new IntTriangularPos(4, 0, 4), _drawData);
-            AddTriangleDrawData(new IntTriangularPos(0, 4, 4), _drawData);
-            AddTriangleDrawData(new IntTriangularPos(4, 4, 0), _drawData);
+                _highlightHexCenter = new(lastHex.Center.x, 0f, lastHex.Center.y);
+            }
         }
 
         #if UNITY_EDITOR
@@ -156,19 +140,21 @@ namespace ZE.MechBattle.Navigation
 
                 foreach (var trianglePos in _selectedTrianglesList)
                 {
-                    var pos = TriangularToCartesian(trianglePos.ToInt3());
-                    Handles.Label(pos, trianglePos.Standartize().ToString());
+                    var pos = TriangularMath.TriangularToCartesian(trianglePos, _triangleEdgeSize);
+                    Handles.Label(pos, TriangularMath.Standartize(trianglePos).ToString());
                     AddTriangleDrawData(trianglePos, _selectedTriangleDrawData);
-                }
-
-                foreach (var drawData in _selectedTriangleDrawData)
-                {
-                    Gizmos.color = Color.blue;
-                    Gizmos.DrawLine(drawData.PointA, drawData.PointB);
-                }
+                }                
 
                 Gizmos.DrawWireSphere(_testPos.position, _testRadius);
             }
+
+            foreach (var drawData in _selectedTriangleDrawData)
+            {
+                Gizmos.color = Color.blue;
+                Gizmos.DrawLine(drawData.PointA, drawData.PointB);
+            }
+
+            Gizmos.DrawSphere(_highlightHexCenter, 5f);
         }
         #endif
 
@@ -199,35 +185,11 @@ namespace ZE.MechBattle.Navigation
 
             // note: the can be special check if point inside triangle, however, in this realization we know only the triangle
 
-            var triangles = GetTrianglesInRadiusCommand.Execute(center, radiusInCartesian, _hexEdgeSize);
+            var triangles = GetTrianglesInRadiusCommand.Execute(center, radiusInCartesian, _hexEdgeSize / 6f);
             foreach (var triangle in triangles)
             {
                 positions.Add(triangle);
             }
-        }
-
-        private Vector3 TriangularToCartesian(float3 trianglePos)
-        {
-            return _map.Center + _triangleGridStep * (trianglePos.y * dirY + trianglePos.x * dirX + trianglePos.z * dirZ);
-        }
-
-        public float3 CartesianToTriangular(float3 pos)
-        {
-            if (_map == null)
-                return default;
-            var dir = pos - _map.Center;
-            return new(
-                math.ceil((-1 * dir.x - math.sqrt(3) / 3f * dir.z) / _hexEdgeSize),
-                math.floor((math.sqrt(3) * 2 / 3f * dir.z) / _hexEdgeSize) + 1,
-                math.ceil((1 * dir.x - math.sqrt(3) / 3f * dir.z) / _hexEdgeSize)
-                );
-
-            //var dir = pos - _map.Center;
-            //dir /= SQT_HALVED * _hexEdgeSize;
-            // var a = math.dot(dir, dirX);
-            // var b = math.dot(dir, dirY);
-            // var c = math.dot(dir, dirZ);
-            // return new(math.max(a,0), math.max(b,0), math.max(c,0));
         }
 
         private void AddHexDrawData(float2 centerPos, List<LineDrawData> data)
@@ -274,9 +236,9 @@ namespace ZE.MechBattle.Navigation
                 pointC = new float3(a + OFFSET, b + OFFSET, c+1 - OFFSET);
             }
 
-            data.Add(new(TriangularToCartesian(pointA), TriangularToCartesian(pointB), color));
-            data.Add(new(TriangularToCartesian(pointB), TriangularToCartesian(pointC), color));
-            data.Add(new(TriangularToCartesian(pointC), TriangularToCartesian(pointA), color));
+            data.Add(new(TriangularMath.TriangularToCartesian(pointA, _triangleEdgeSize), TriangularMath.TriangularToCartesian(pointB, _triangleEdgeSize), color));
+            data.Add(new(TriangularMath.TriangularToCartesian(pointB, _triangleEdgeSize), TriangularMath.TriangularToCartesian(pointC, _triangleEdgeSize), color));
+            data.Add(new(TriangularMath.TriangularToCartesian(pointC, _triangleEdgeSize), TriangularMath.TriangularToCartesian(pointA, _triangleEdgeSize), color));
         }
 
         private void DrawMapBorders()
@@ -290,12 +252,6 @@ namespace ZE.MechBattle.Navigation
             Gizmos.DrawLine(point00, point10);
             Gizmos.DrawLine(point01, point11);
             Gizmos.DrawLine(point10, point11);
-        }
-
-        private static bool IsValidTriangle(int3 t)
-        {
-            int sum = t.x + t.y + t.z;
-            return (sum == 1 || sum == 2) && t.x >= 0 && t.y >= 0 && t.z >= 0;
         }
     }
 }
