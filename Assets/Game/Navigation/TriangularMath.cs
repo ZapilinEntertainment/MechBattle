@@ -81,29 +81,30 @@ namespace ZE.MechBattle.Navigation
         public static int GetTrianglesCountInHex(int hexRadius) => hexRadius * hexRadius * 6; // (2r) ^ 2 / 4 * 3
 
         [BurstCompile]
-        public static float3 TriangularToCartesian(in float3 trianglePos, in float triangleEdgeLength) =>
-             triangleEdgeLength * (trianglePos.y * DirY + trianglePos.x * DirX + trianglePos.z * DirZ);
+        public static float3 TriangularToCartesian(in float3 trianglePos, in float triangleEdge) =>
+             triangleEdge * Constants.EDGE_TO_PARTIAL_HEIGHT_CF * (trianglePos.y * DirY + trianglePos.x * DirX + trianglePos.z * DirZ);
 
 
         [BurstCompile]
-        public static float3 TriangularToCartesian(in IntTriangularPos trianglePos, in float triangleEdgeLength) =>
-           triangleEdgeLength * (trianglePos.DownLeft * DirX  + trianglePos.Up * DirY + trianglePos.DownRight * DirZ);
+        public static float3 TriangularToCartesian(in IntTriangularPos trianglePos, in float triangleEdge) =>
+           triangleEdge * Constants.EDGE_TO_PARTIAL_HEIGHT_CF * (trianglePos.DownLeft * DirX  + trianglePos.Up * DirY + trianglePos.DownRight * DirZ);
 
         [BurstCompile]
-        public static IntTriangularPos CartesianToTrianglePos(in float3 dir, in float triangleEdgeLength) =>
+        public static IntTriangularPos CartesianToTrianglePos(in float3 dir, in float triangleEdge) =>
             new(
-                (int)math.ceil((-1 * dir.x - Constants.SQRT_OF_THREE_DBL / 3f * dir.z) / triangleEdgeLength),
-                (int)math.floor((Constants.SQRT_OF_THREE_DBL * 2 / 3f * dir.z) / triangleEdgeLength) + 1,
-                (int)math.ceil((1 * dir.x - Constants.SQRT_OF_THREE_DBL / 3f * dir.z) / triangleEdgeLength)
+                (int)math.ceil((-1 * dir.x - Constants.SQRT_OF_THREE_DBL / 3f * dir.z) / triangleEdge),
+                (int)math.floor((Constants.SQRT_OF_THREE_DBL * 2 / 3f * dir.z) / triangleEdge) + 1,
+                (int)math.ceil((1 * dir.x - Constants.SQRT_OF_THREE_DBL / 3f * dir.z) / triangleEdge)
                 );
 
 
         // deepseek generated
         [BurstCompile]
-        public static float3 CartesianToTriangular(in float3 dir, in float triangleEdgeLength)
+        public static float3 CartesianToTriangular(in float3 dir, in float triangleEdge)
         {
+            var triangleGridStep = triangleEdge * Constants.EDGE_TO_PARTIAL_HEIGHT_CF;
             // Normalize input by triangle edge length
-            var invEdge = 1f / triangleEdgeLength;
+            var invEdge = 1f / triangleGridStep;
             var P = dir * invEdge;
 
             // Compute displacement vector from Z basis vector
