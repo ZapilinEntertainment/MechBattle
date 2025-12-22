@@ -24,7 +24,6 @@ namespace ZE.MechBattle.Navigation
         public void Dispose()
         {
             _passableTriangles.Clear();
-        }
-    
+        }    
     }
 }

@@ -4,13 +4,6 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
-    public struct TriangularPos
-    {
-        public float DownLeft;
-        public float Up;
-        public float DownRight;       
-    }
-
     public readonly struct IntTriangularPos
     {
         public readonly int DownLeft;
@@ -38,10 +31,19 @@ namespace ZE.MechBattle.Navigation
             }
 
             var other = (IntTriangularPos)obj;
-            // why equalize Peak - we can invalidate struct simple by setting peak to wrong
-            return DownRight == other.DownRight && Up == other.Up && DownLeft == other.DownLeft && IsPeak == other.IsPeak;
+            return DownLeft == other.DownLeft && Up == other.Up && DownRight == other.DownRight;
         }
-        public override int GetHashCode() => HashCode.Combine(DownRight, Up, DownLeft);
+
+       
+        public override int GetHashCode() => 
+            HashCode.Combine(DownLeft * 11, Up * 17, DownRight * 23);
+
+        // deepseek generated
+        public IntTriangularPos ToStandartized()
+        {
+            var min = math.min(DownLeft, math.min(Up, DownRight));
+            return new IntTriangularPos(DownLeft - min, Up - min, DownRight - min);
+        }
 
         public int3 ToInt3() => new(DownLeft, Up, DownRight);
         public float3 ToFloat3() => new(DownLeft, Up, DownRight);
@@ -55,11 +57,5 @@ namespace ZE.MechBattle.Navigation
         }
 
         public IntTriangularPos(int3 pos) : this(pos.x, pos.y, pos.z) { }
-
-        public IntTriangularPos (float cartesianX, float cartesianZ) : this(
-            (int)math.ceil((-1 * cartesianX - SQRT_THREE_D3 * cartesianZ)),
-            (int)math.floor(SQRT_THREE_D3 * 2 * cartesianZ) + 1,
-            (int)math.ceil((1 * cartesianX - SQRT_THREE_D3 * cartesianZ)))
-        { }
     }
 }

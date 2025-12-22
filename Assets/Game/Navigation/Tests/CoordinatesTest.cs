@@ -30,9 +30,9 @@ namespace ZE.MechBattle.Navigation.Tests
         [TestCase(-4, 3, 2)]
         public void TriangularCartesianTriangular(int x, int y, int z)
         {
-            var triangle = TriangularMath.Standartize(new IntTriangularPos(x,y,z));
+            var triangle = new IntTriangularPos(x, y, z);
             var cartesian = TriangularMath.TriangularToCartesian(triangle, TRIANGLE_EDGE_SIZE);
-            var triangleBack = TriangularMath.Standartize(TriangularMath.CartesianToTrianglePos(cartesian, TRIANGLE_EDGE_SIZE));
+            var triangleBack = TriangularMath.CartesianToTrianglePos(cartesian, TRIANGLE_EDGE_SIZE);
 
             Debug.Log($"{triangle} -> {cartesian} -> {triangleBack}");
 
@@ -56,6 +56,13 @@ namespace ZE.MechBattle.Navigation.Tests
             Assert.AreEqual(expected: cartesian.z, actual: cartesianBack.z, TOLERANCE);
         }
 
+        [TestCase(1,0,-2,  2,1,-1)]
+        [TestCase(-2, 0, 1, -1, 1, 2)]
+        [TestCase(-3, 0, 2, -2, 1, 3)]
         
+        public void EqualitiesTest(int x1,int y1, int z1,  int x2, int y2, int z2) => Assert.IsTrue(new IntTriangularPos(x1,y1,z1).ToStandartized() == new IntTriangularPos(x2,y2,z2).ToStandartized());
+
+        [TestCase(-3, 1, 3, -2, 2, 2)]
+        public void InequalitiesTest(int x1, int y1, int z1, int x2, int y2, int z2) => Assert.IsFalse(new IntTriangularPos(x1, y1, z1) == new IntTriangularPos(x2, y2, z2));
     }
 }

@@ -7,22 +7,18 @@ namespace ZE.MechBattle.Navigation
     [CustomEditor(typeof(NavigationMapDrawer))]
     public class NavigationMapDrawerEditor : Editor
     {
-        SerializedProperty _hexEdgeSizeProperty;
-        SerializedProperty _bottomLeftCornerProperty;
-        SerializedProperty _topRightCornerProperty;
+        SerializedProperty _mapSettingsProperty;
         SerializedProperty _testPosProperty;
         SerializedProperty _testRadiusProperty;
-        SerializedProperty _hexRadiusProperty;
+        SerializedProperty _highlightTriangleProperty;
 
         void OnEnable()
         {
             // Setup the SerializedProperties.
-            _hexEdgeSizeProperty = serializedObject.FindProperty("_hexEdgeSize");
-            _bottomLeftCornerProperty = serializedObject.FindProperty("_bottomLeftCorner");
-            _topRightCornerProperty = serializedObject.FindProperty("_topRightCorner");
+            _mapSettingsProperty = serializedObject.FindProperty("_mapSettings");
             _testPosProperty = serializedObject.FindProperty("_testPos");
             _testRadiusProperty = serializedObject.FindProperty("_testRadius");
-            _hexRadiusProperty = serializedObject.FindProperty("_hexTriangleRadius");
+            _highlightTriangleProperty = serializedObject.FindProperty("_highlightTriangle");            
         }
 
         public override void OnInspectorGUI()
@@ -30,17 +26,18 @@ namespace ZE.MechBattle.Navigation
             // Update the serializedProperty - always do this in the beginning of OnInspectorGUI.
             serializedObject.Update();
 
-            EditorGUILayout.PropertyField(_hexEdgeSizeProperty, new GUIContent("Hex edge size"));
-            EditorGUILayout.PropertyField(_bottomLeftCornerProperty, new GUIContent("Bottom left corner"));
-            EditorGUILayout.PropertyField(_topRightCornerProperty, new GUIContent("Top right corner"));
+            EditorGUILayout.PropertyField(_mapSettingsProperty, new GUIContent("Map settings"));
             EditorGUILayout.PropertyField(_testPosProperty, new GUIContent("Test pos"));
             EditorGUILayout.PropertyField(_testRadiusProperty, new GUIContent("Test radius"));
-            EditorGUILayout.PropertyField(_hexRadiusProperty, new GUIContent("Hex triangle radius"));
+            EditorGUILayout.PropertyField(_highlightTriangleProperty, new GUIContent("Highlight triangle"));
 
             var script = target as NavigationMapDrawer;
 
             if (GUILayout.Button("Redraw map"))
                 script.RedrawMap();
+
+            if (GUILayout.Button("Highlight triangle"))
+                script.HighlightSelectedTriangle();
 
             // Apply changes to the serializedProperty - always do this in the end of OnInspectorGUI.
             serializedObject.ApplyModifiedProperties();

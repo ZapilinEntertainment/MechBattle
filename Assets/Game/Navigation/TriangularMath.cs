@@ -126,30 +126,5 @@ namespace ZE.MechBattle.Navigation
 
             return new float3((float)a, (float)b, (float)c);
         }
-
-        [BurstCompile]
-        public static IntTriangularPos Standartize(in IntTriangularPos triangle)
-        {
-            var pos = triangle.ToInt3();
-            var neg = math.min(pos, 0);
-
-            var absNeg = math.abs(neg);
-            var sum = absNeg.x + absNeg.y + absNeg.z;
-
-            pos += sum - absNeg;
-            return new(math.max(pos, 0));
-        }
-
-        [BurstCompile]
-        public static float3 Standartize(float3 pos)
-        {
-            var neg = math.min(pos, 0);
-
-            var absNeg = math.abs(neg);
-            var sum = absNeg.x + absNeg.y + absNeg.z;
-
-            pos += sum - absNeg;
-            return new(math.max(pos, 0));
-        }
     }
 }

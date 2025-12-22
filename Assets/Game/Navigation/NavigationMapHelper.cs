@@ -16,27 +16,35 @@ namespace ZE.MechBattle.Navigation
         private static readonly float2 HEX_OFFSET_4 = math.mul(quaternion.AxisAngle(math.down(), 120f), math.forward()).xz;
         private static readonly float2 HEX_OFFSET_5 = math.mul(quaternion.AxisAngle(math.down(), 60f), math.forward()).xz;
 
+        public struct TriangleSubdivisionProtocol
+        {
+            public float TriangleEdgeLength;
+            public int RaycastTrianglesPerEdge;
+            public NativeArray<float2> Centers;
+        }
+
         [BurstCompile]
-        public static void SubdivideTriangleIntoSmallerAndGetCenters(float2 center, bool isPeakTriangle, float sideSize, int subdivisions, NativeArray<float2> centers)
+        public static void SubdivideTriangleIntoSmallerAndGetCenters(float2 center, bool isPeakTriangle, in TriangleSubdivisionProtocol protocol )
         {
             // divide triangle into n^2 smaller congruent triangles
+            var subdivisionsCount = protocol.RaycastTrianglesPerEdge;
+            var centers = protocol.Centers;
 
-            if (subdivisions == 0)
+            if (subdivisionsCount == 0 || subdivisionsCount == 1)
             {
                 centers[0] = center;
                 return;
             }
 
-            var basisCount = subdivisions+1;
-
-            var smallTriangleSize = sideSize / basisCount;
+            var smallTriangleSize = protocol.TriangleEdgeLength / subdivisionsCount;
             // 2/3 of main triangle height - 2/3 of highest (single) triangle = center of the top small triangle (or lowest, if not a peak triangle)
-            var zeroPos = center + (sideSize - smallTriangleSize) * HEIGHT_PART_CF* (isPeakTriangle ? 1f : -1f);
+            var zeroPos = center;
+            zeroPos.y += (protocol.TriangleEdgeLength - smallTriangleSize) * HEIGHT_PART_CF * (isPeakTriangle ? 1f : -1f);
             centers[0] = zeroPos;
 
-            // find each small triangle center (dont forget about if triangle is peak (one up, two at bottom) or cup (two up, one at bottom)
+            // find each small triangle center (dont forget about if triangle is peak (one up, two at bottom) or valley (two up, one at bottom)
             var nextCenterDir = math.mul(
-                quaternion.AxisAngle(math.down(), isPeakTriangle ? 150f : 60f),
+                quaternion.AxisAngle(math.down(), math.radians(isPeakTriangle ? 150f : 30f)),
                 new float3(0,0,smallTriangleSize))
                 .xz;
 
@@ -45,11 +53,12 @@ namespace ZE.MechBattle.Navigation
             // draw 4 equal triangles in single one, then connect their orthocenters to create new one
             // its orthocenter will be the same as cup triangle's center
             // mark proportions on the drawing an you see that y offset is 2/3 of triangle height
-            var cupTriangleCenterOffset = smallTriangleSize * HEIGHT_PART_CF; 
-            for (var row = 2; row <= basisCount; row++)
+            var cupTriangleCenterOffset = (isPeakTriangle ? 1 : -1) *  smallTriangleSize * HEIGHT_PART_CF * 0.5f; 
+            for (var row = 2; row <= subdivisionsCount; row++)
             {
                 var startPos = zeroPos + nextCenterDir * (row - 1);
                 var trianglesInRow = 2 * row - 1;
+
                 for (var i = 0; i < trianglesInRow; i++)
                 {
                     centers[index++] = new(startPos.x + i * smallTriangleSize * 0.5f, startPos.y + (i % 2) * cupTriangleCenterOffset);
@@ -131,6 +140,13 @@ namespace ZE.MechBattle.Navigation
             // starts and ends with valley triangle (odd count) VA...AV
             list[writeIndex++] = startPos;
             return writeIndex;
+        }
+
+        [BurstCompile]
+        public static IntTriangularPos GetInnerCircleTopTriangle(float2 hexCenter, float triangleEdgeSize)
+        {
+            var halfHeight = triangleEdgeSize * Constants.SQRT_OF_THREE * 0.125f;
+            return TriangularMath.CartesianToTrianglePos(new(hexCenter.x, 0f, hexCenter.y + halfHeight), triangleEdgeSize);
         }
     }
 }
