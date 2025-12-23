@@ -4,7 +4,6 @@ using UnityEditor;
 
 namespace ZE.MechBattle.Navigation
 {
-    [CustomEditor(typeof(NavigationMapDrawer))]
     public class NavigationMapDrawerEditor : Editor
     {
         SerializedProperty _mapSettingsProperty;

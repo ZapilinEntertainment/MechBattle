@@ -4,10 +4,29 @@ using Unity.Mathematics;
 using Unity.Burst;
 using Unity.Collections;
 using System;
+using TriInspector;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 
 namespace ZE.MechBattle.Navigation
 {
+    internal enum DebugColor : byte { White, Green, Red, Yellow, Purple }
+
+    internal readonly struct SphereDrawData
+    {
+        public readonly Vector3 Pos;
+        public readonly DebugColor Color;
+        public readonly float Radius;
+
+        public SphereDrawData(Vector3 pos, DebugColor color, float radius = 1f)
+        {
+            Pos = pos;
+            Color = color;
+            Radius = radius;
+        }
+    }
+
     [ExecuteInEditMode]
     public class NavigationMapDrawer : MonoBehaviour
     {
@@ -17,11 +36,11 @@ namespace ZE.MechBattle.Navigation
             public float HexEdgeSize;
             public int TrianglesPerHexEdge;
             public int RaycastSubdivisionsPerEdge;
+            [Range(0, 1)] public float IntersectionPercentForLock;
             public Vector2 BottomLeftCorner;
             public Vector2 TopRightCorner;
-        }
-
-        private enum DebugColor : byte { White, Green, Red, Yellow, Purple}
+        }        
+        private enum TrianglesDrawMode : byte { Disabled, All, OnlyLocked, OnlyPassable}
 
         private readonly struct LineDrawData
         {
@@ -35,32 +54,10 @@ namespace ZE.MechBattle.Navigation
                 PointB = pointB;
                 Color = color;
             }
-        }
-        private readonly struct SphereDrawData
-        {
-            public readonly Vector3 Pos;
-            public readonly DebugColor Color;
-            public readonly float Radius;
-
-            public SphereDrawData(Vector3 pos, DebugColor color, float radius = 1f)
-            {
-                Pos = pos;
-                Color = color;
-                Radius = radius;
-            }
-        }
-
-        private struct HexRaycastDrawProtocol
-        {
-            public int TrianglesInHexCount;
-            public int TrianglesPerHexEdge;
-            public int RaycastSubdivisionsPerEdge;
-            public QueryParameters CastQueryParameters;
-            public float TriangleEdgeSize;
-            public List<SphereDrawData> DrawData;
-        }
+        }        
 
         [SerializeField] private MapSettings _mapSettings;
+        [SerializeField] private TrianglesDrawMode _trianglesDrawMode;
         [Space]
         [SerializeField] private Transform _testPos;
         [SerializeField] private float _testRadius = 5f;
@@ -77,12 +74,7 @@ namespace ZE.MechBattle.Navigation
         private List<LineDrawData> _selectedTriangleDrawData = new();
         private IntTriangularPos _currentSelectedTriangle;
         private NativeArray<IntTriangularPos> _trianglesCountArray;
-
         private QueryParameters _castQueryParameters;
-
-        private static readonly float SQT_HALVED = Constants.SQRT_OF_THREE * 0.5f;
-        private static readonly float HEIGHT_2_OF_3 = (float)(Constants.SQRT_OF_THREE_DBL * 0.5f / 3f * 2f);
-        private static readonly float HEIGHT_1_OF_3 = (float)(Constants.SQRT_OF_THREE_DBL * 0.5f / 3f);
         private readonly Vector3[] HexPointsPreset = new Vector3[6];
         private readonly Dictionary<DebugColor, Color> _debugColors = new()
         {
@@ -93,6 +85,7 @@ namespace ZE.MechBattle.Navigation
              {DebugColor.Purple, Color.purple },
         };
 
+        [Button("Redraw Map")]
         public void RedrawMap()
         {
             _selectedTriangleDrawData.Clear();
@@ -107,6 +100,7 @@ namespace ZE.MechBattle.Navigation
             //DrawTriangleSubdivision(float2.zero);
         }
 
+        [Button("Highlight Triangle")]
         public void HighlightSelectedTriangle() 
         {
             _selectedTriangleDrawData.Clear();
@@ -125,7 +119,7 @@ namespace ZE.MechBattle.Navigation
             _trianglesCountArray = new NativeArray<IntTriangularPos>(_trianglesInHexCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
 
             var trianglesList = new NativeArray<IntTriangularPos>(_trianglesInHexCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
-            Debug.Log($"{_trianglesInHexCount} tris in hex radius of {trianglesPerEdge}");
+            //Debug.Log($"{_trianglesInHexCount} tris in hex radius of {trianglesPerEdge}");
 
             var vector = math.mul(quaternion.AxisAngle(math.up(), math.radians(30f)), TriangularMath.DirY);
             var rotation = quaternion.AxisAngle(math.up(), math.radians(60f));
@@ -135,20 +129,20 @@ namespace ZE.MechBattle.Navigation
                 vector = math.mul(rotation, vector);
                 HexPointsPreset[i] = edge * vector;
             }
-            AddHexDrawData(float2.zero, _drawData, true);
+            AddHexDrawData(float2.zero, _drawData, _trianglesDrawMode);
 
             var hexEdgeSize = _mapSettings.HexEdgeSize;
             var dir = hexEdgeSize * math.normalize(HexPointsPreset[0]) + new float3(hexEdgeSize, 0f,0f);
-            //AddHexDrawData(dir.xz, _drawData, true);
+            AddHexDrawData(dir.xz, _drawData, _trianglesDrawMode);
 
             dir = hexEdgeSize * math.normalize(HexPointsPreset[2]) + new float3(hexEdgeSize, 0f, 0f);
-           // AddHexDrawData(dir.xz, _drawData, true);
+            AddHexDrawData(dir.xz, _drawData, _trianglesDrawMode);
 
             dir = hexEdgeSize * math.normalize(HexPointsPreset[3]) + new float3(-hexEdgeSize, 0f, 0f);
-           // AddHexDrawData(dir.xz, _drawData, true);
+            AddHexDrawData(dir.xz, _drawData, _trianglesDrawMode);
 
             dir = hexEdgeSize * math.normalize(HexPointsPreset[5]) + new float3(-hexEdgeSize, 0f, 0f);
-            //AddHexDrawData(dir.xz, _drawData, true);
+            AddHexDrawData(dir.xz, _drawData, _trianglesDrawMode);
 
             _trianglesCountArray.Dispose();
             _trianglesCountArray = default;
@@ -156,6 +150,7 @@ namespace ZE.MechBattle.Navigation
             //DrawTriangleSubdivision(float2.zero);
         }
 
+#if UNITY_EDITOR
         private void OnDrawGizmos()
         {
             DrawMapBorders();
@@ -197,8 +192,21 @@ namespace ZE.MechBattle.Navigation
             }
         }
 
+        private void DrawMapBorders()
+        {
+            Gizmos.color = Color.yellow;
+            var point10 = new Vector3(_mapSettings.TopRightCorner.x, 0f, _mapSettings.BottomLeftCorner.y);
+            var point01 = new Vector3(_mapSettings.BottomLeftCorner.x, 0f, _mapSettings.TopRightCorner.y);
+            var point00 = new Vector3(_mapSettings.BottomLeftCorner.x, 0f, _mapSettings.BottomLeftCorner.y);
+            var point11 = new Vector3(_mapSettings.TopRightCorner.x, 0f, _mapSettings.TopRightCorner.y);
+            Gizmos.DrawLine(point00, point01);
+            Gizmos.DrawLine(point00, point10);
+            Gizmos.DrawLine(point01, point11);
+            Gizmos.DrawLine(point10, point11);
+        }
+#endif
 
-        private void AddHexDrawData(float2 centerPos, List<LineDrawData> data, bool withTriangles = false)
+        private void AddHexDrawData(float2 centerPos, List<LineDrawData> data, TrianglesDrawMode trianglesDrawMode)
         {
             // drawing hex borders
             var center = new Vector3(centerPos.x, 0f, centerPos.y);
@@ -208,22 +216,20 @@ namespace ZE.MechBattle.Navigation
             }
             data.Add(new(center + HexPointsPreset[5], center + HexPointsPreset[0]));
 
-            if (!withTriangles)
+            if (trianglesDrawMode == TrianglesDrawMode.Disabled)
                 return;
 
-            var lockedTrianglesRaw = AddHexCastData(centerPos, new()
+            var lockedTriangles = PrepareHexCastDataCommand.Execute(centerPos, new()
             {
-                DrawData = _sphereDrawData,
+                //DrawData = _sphereDrawData,
                 CastQueryParameters = _castQueryParameters,
                 TriangleEdgeSize = _triangleEdgeSize,
                 TrianglesInHexCount = _trianglesInHexCount,
                 TrianglesPerHexEdge = _mapSettings.TrianglesPerHexEdge,
-                RaycastSubdivisionsPerEdge = _mapSettings.RaycastSubdivisionsPerEdge                
+                RaycastSubdivisionsPerEdge = _mapSettings.RaycastSubdivisionsPerEdge,
+                IntersectionPercentForLock = _mapSettings.IntersectionPercentForLock
             });
-            var lockedTriangles = new HashSet<IntTriangularPos>();
-            foreach (var pos in lockedTrianglesRaw)
-                lockedTriangles.Add(pos.ToStandartized());
-            //foreach (var locked in lockedTriangles)  Debug.Log(locked);
+            //foreach (var locked in lockedTriangles) Debug.Log(locked);
 
             // draw hex triangles
 
@@ -233,81 +239,18 @@ namespace ZE.MechBattle.Navigation
             //Debug.Log(TriangularMath.TriangularToCartesian(innerCircleTrianglePos, _triangleEdgeSize));
 
             NavigationMapHelper.GetTrianglesInHex(innerCircleTrianglePos, _mapSettings.TrianglesPerHexEdge, _trianglesCountArray);
+
+            var drawLocked = trianglesDrawMode == TrianglesDrawMode.OnlyLocked || trianglesDrawMode == TrianglesDrawMode.All;
+            var drawUnlocked = trianglesDrawMode == TrianglesDrawMode.OnlyPassable || trianglesDrawMode == TrianglesDrawMode.All;
+
             foreach (var triangle in _trianglesCountArray)
             {
-                var isLocked = lockedTriangles.Contains(triangle.ToStandartized());      
-                if (isLocked)
-                {
-                    foreach (var tri in lockedTriangles)
-                    {
-                        if (tri == triangle)
-                        {
-                            Debug.Log($"{triangle} == {tri}");
-                            break;
-                        }
-                    }
-                }
-                AddTriangleDrawData(triangle, _drawData, isLocked? DebugColor.Red : DebugColor.White);
-            }            
-        }
-
-
-        private static HashSet<IntTriangularPos> AddHexCastData(float2 hexCenter, in HexRaycastDrawProtocol protocol)
-        {
-            // do obstacles cast
-            var raycastResolution = protocol.RaycastSubdivisionsPerEdge;
-            var raycastsCount = protocol.TrianglesInHexCount * raycastResolution * raycastResolution;
-            var trianglePositions = new NativeArray<IntTriangularPos>(protocol.TrianglesInHexCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-            var raycastCommands = new NativeList<RaycastCommand>(raycastsCount, Allocator.TempJob);
-            var raycastPositions = new NativeArray<float2>(raycastResolution * raycastResolution, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-            NavigationCaster.PrepareRaycastCommands(hexCenter, new()
-            {
-                CastingHeight = 100f,
-                CastingRayLength = 200f,
-                RaycastCommands = raycastCommands,
-                TempPositionsArray = trianglePositions,
-                QueryParameters = protocol.CastQueryParameters,
-                TriangleEdgeSize = protocol.TriangleEdgeSize,
-                HexTrianglesPerEdge = protocol.TrianglesPerHexEdge,
-                RaycastTrianglesPerEdge = raycastResolution,
-                TempRaycastPointsArray = raycastPositions                
-            });
-            trianglePositions.Dispose();
-            raycastPositions.Dispose();
-
-            var raycastResults = new NativeArray<RaycastHit>(raycastsCount, Allocator.TempJob);
-            var castJobHandle = RaycastCommand.ScheduleBatch(raycastCommands.AsArray(), raycastResults, 16);
-
-            // draw obstacles
-            castJobHandle.Complete();
-            raycastCommands.Dispose();
-            var lockedTriangles = new HashSet<IntTriangularPos>();            
-
-            var drawData = protocol.DrawData;
-            var writeGizmosData = drawData != null;
-
-            for (var i=0; i < raycastsCount; i++)
-            {
-                var result = raycastResults[i];               
-                if (result.collider == null)
+                var isLocked = lockedTriangles.Contains(triangle.ToStandartized());
+                var draw = isLocked ? drawLocked : drawUnlocked;
+                if (!draw)
                     continue;
-                if (!result.collider.gameObject.isStatic)
-                {
-                    var trianglePos = TriangularMath.CartesianToTrianglePos(result.point, protocol.TriangleEdgeSize);
-                    lockedTriangles.Add(trianglePos);
-
-                    if (writeGizmosData)
-                        protocol.DrawData.Add(new(result.point, DebugColor.Red, 0.5f));
-                }    
-                else
-                {
-                    if (writeGizmosData)
-                        protocol.DrawData.Add(new(result.point, DebugColor.Green, 0.5f));
-                }
+                AddTriangleDrawData(triangle, _drawData, isLocked ? DebugColor.Red : DebugColor.White);
             }
-            
-            raycastResults.Dispose();
-            return lockedTriangles;
         }
 
         private void AddTriangleDrawData(IntTriangularPos pos, List<LineDrawData> data, DebugColor color)
@@ -369,19 +312,6 @@ namespace ZE.MechBattle.Navigation
             data.Add(new(pointA, pointB, color));
             data.Add(new(pointB, pointC, color));
             data.Add(new(pointC, pointA, color));
-        }
-
-        private void DrawMapBorders()
-        {
-            Gizmos.color = Color.yellow;
-            var point10 = new Vector3(_mapSettings.TopRightCorner.x, 0f, _mapSettings.BottomLeftCorner.y);
-            var point01 = new Vector3(_mapSettings.BottomLeftCorner.x, 0f, _mapSettings.TopRightCorner.y);
-            var point00 = new Vector3(_mapSettings.BottomLeftCorner.x, 0f, _mapSettings.BottomLeftCorner.y);
-            var point11 = new Vector3(_mapSettings.TopRightCorner.x, 0f, _mapSettings.TopRightCorner.y);
-            Gizmos.DrawLine(point00, point01);
-            Gizmos.DrawLine(point00, point10);
-            Gizmos.DrawLine(point01, point11);
-            Gizmos.DrawLine(point10, point11);
         }
 
         private void DrawTriangleSubdivision(float2 zeroHexCenter)
