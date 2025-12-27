@@ -14,9 +14,9 @@ namespace ZE.MechBattle.Navigation.Tests
         public void CartesianTriangularCartesian(float x, float y, float z)
         {
             var cartesianPos = new float3(x,y,z);
-            var triangular = TriangularMath.CartesianToTriangular(cartesianPos, TRIANGLE_EDGE_SIZE);
+            var triangular = TriangularMath.WorldToTriangular(cartesianPos, TRIANGLE_EDGE_SIZE);
             Debug.Log(triangular);
-            var cartesianBack = TriangularMath.TriangularToCartesian(triangular, TRIANGLE_EDGE_SIZE);
+            var cartesianBack = TriangularMath.TriangularToWorld(triangular, TRIANGLE_EDGE_SIZE);
             Assert.AreEqual(expected: cartesianPos.x, actual: cartesianBack.x, TOLERANCE);
             Assert.AreEqual(expected: cartesianPos.z, actual: cartesianBack.z, TOLERANCE);
         }
@@ -31,8 +31,8 @@ namespace ZE.MechBattle.Navigation.Tests
         public void TriangularCartesianTriangular(int x, int y, int z)
         {
             var triangle = new IntTriangularPos(x, y, z);
-            var cartesian = TriangularMath.TriangularToCartesian(triangle, TRIANGLE_EDGE_SIZE);
-            var triangleBack = TriangularMath.CartesianToTrianglePos(cartesian, TRIANGLE_EDGE_SIZE);
+            var cartesian = TriangularMath.TriangularToWorld(triangle, TRIANGLE_EDGE_SIZE);
+            var triangleBack = TriangularMath.WorldToTrianglePos(cartesian, TRIANGLE_EDGE_SIZE);
 
             Debug.Log($"{triangle} -> {cartesian} -> {triangleBack}");
 
@@ -50,8 +50,8 @@ namespace ZE.MechBattle.Navigation.Tests
 
             var random = RADIUS * UnityEngine.Random.insideUnitCircle;
             var cartesian = new float3(random.x, 0f, random.y);
-            var triangular = TriangularMath.CartesianToTriangular(cartesian, TRIANGLE_EDGE_SIZE);
-            var cartesianBack = TriangularMath.TriangularToCartesian(triangular, TRIANGLE_EDGE_SIZE);
+            var triangular = TriangularMath.WorldToTriangular(cartesian, TRIANGLE_EDGE_SIZE);
+            var cartesianBack = TriangularMath.TriangularToWorld(triangular, TRIANGLE_EDGE_SIZE);
             Assert.AreEqual(expected: cartesian.x, actual: cartesianBack.x, TOLERANCE);
             Assert.AreEqual(expected: cartesian.z, actual: cartesianBack.z, TOLERANCE);
         }
@@ -64,5 +64,14 @@ namespace ZE.MechBattle.Navigation.Tests
 
         [TestCase(-3, 1, 3, -2, 2, 2)]
         public void InequalitiesTest(int x1, int y1, int z1, int x2, int y2, int z2) => Assert.IsFalse(new IntTriangularPos(x1, y1, z1) == new IntTriangularPos(x2, y2, z2));
+
+        [TestCase(92, 1.6f, 100, 0,0)]
+        public void HexCoordsTest(float x, float z, float edge, int a, int b)
+        {
+            var pos = new float2(x,z);
+            var hex = TriangularMath.WorldToHex(pos, edge);
+            Assert.Equals(hex.x, a);
+            Assert.Equals(hex.y, b);
+        }
     }
 }

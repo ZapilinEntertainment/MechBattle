@@ -9,12 +9,8 @@ namespace ZE.MechBattle.Navigation
     public static class NavigationMapHelper
     {
         private const float SQT_HALVED = Constants.SQRT_OF_THREE * 0.5f;
-        private const float HEIGHT_PART_CF = SQT_HALVED * 2f / 3f; // 2/3 of height is orthocenter
+        private const float HEIGHT_PART_CF = SQT_HALVED * 2f / 3f; // 2/3 of height is orthocenter       
 
-        private static readonly float2 HEX_OFFSET_1 = math.mul(quaternion.AxisAngle(math.up(), 60f), math.forward()).xz;
-        private static readonly float2 HEX_OFFSET_2 = math.mul(quaternion.AxisAngle(math.up(), 120f), math.forward()).xz;
-        private static readonly float2 HEX_OFFSET_4 = math.mul(quaternion.AxisAngle(math.down(), 120f), math.forward()).xz;
-        private static readonly float2 HEX_OFFSET_5 = math.mul(quaternion.AxisAngle(math.down(), 60f), math.forward()).xz;
 
         public struct TriangleSubdivisionProtocol
         {
@@ -146,7 +142,45 @@ namespace ZE.MechBattle.Navigation
         public static IntTriangularPos GetInnerCircleTopTriangle(float2 hexCenter, float triangleEdgeSize)
         {
             var halfHeight = triangleEdgeSize * Constants.SQRT_OF_THREE * 0.125f;
-            return TriangularMath.CartesianToTrianglePos(new(hexCenter.x, 0f, hexCenter.y + halfHeight), triangleEdgeSize);
+            return TriangularMath.WorldToTrianglePos(new(hexCenter.x, 0f, hexCenter.y + halfHeight), triangleEdgeSize);
+        }
+
+        [BurstCompile]
+        public static TriangleVertices GetTriangleVertices(in IntTriangularPos pos, in float triangleEdgeSize)
+        {
+            float3 pointA;
+            float3 pointB;
+            float3 pointC;
+
+            var a = pos.DownLeft;
+            var b = pos.Up;
+            var c = pos.DownRight;
+            const float OFFSET = 0.05f;
+
+            // each coordinate represents orth line shift
+            // three numbers describes a triangle, that contained inside intersection of three lines
+            // so x is shift by dirX, y is shift by dirY and z is shift by dirZ from center
+            // make a drawing for proper understanding
+
+            if (!pos.IsPeak)
+            {
+                // valley (C -> A -> B, B is bottom)
+                pointA = new float3(a - 1 + OFFSET, b - OFFSET, c - OFFSET);
+                pointB = new float3(a - OFFSET, b - 1 + OFFSET, c - OFFSET);
+                pointC = new float3(a - OFFSET, b - OFFSET, c - 1 + OFFSET);
+            }
+            else
+            {
+                pointA = new float3(a + 1 - OFFSET, b + OFFSET, c + OFFSET);
+                pointB = new float3(a + OFFSET, b + 1 - OFFSET, c + OFFSET);
+                pointC = new float3(a + OFFSET, b + OFFSET, c + 1 - OFFSET);
+            }
+
+            return new(
+                new(TriangularMath.TriangularToWorld(pointA, triangleEdgeSize)),
+                new(TriangularMath.TriangularToWorld(pointB, triangleEdgeSize)),
+                new(TriangularMath.TriangularToWorld(pointC, triangleEdgeSize))
+                );
         }
     }
 }

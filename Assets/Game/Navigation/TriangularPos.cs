@@ -4,6 +4,20 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
+    public readonly struct TriangleVertices
+    {
+        public readonly float3 A;
+        public readonly float3 B;
+        public readonly float3 C;
+
+        public TriangleVertices(float3 a, float3 b, float3 c)
+        {
+            A = a;
+            B = b;
+            C = c;
+        }
+    }
+
     public readonly struct IntTriangularPos
     {
         public readonly int DownLeft;

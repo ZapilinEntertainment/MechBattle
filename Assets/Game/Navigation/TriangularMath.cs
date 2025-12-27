@@ -18,6 +18,9 @@ namespace ZE.MechBattle.Navigation
         private static float _cachedDet;
         private static double _cachedInvDet;
 
+        private const double SQRT_THREE_D_3_DBL = Constants.SQRT_OF_THREE_DBL / 3;
+        private const float SQRT_THREE_D_3 = Constants.SQRT_OF_THREE / 3f;
+
         [BurstCompile]
         public static IntTriangularPos GetPeakNeighbour(in IntTriangularPos pos, PeakNeighbour peakNeighbour) => peakNeighbour switch
         {
@@ -60,7 +63,7 @@ namespace ZE.MechBattle.Navigation
 
         // deepseek generated
         [BurstCompile]
-        public static void InitializeTransformationMatrix()
+        private static void InitializeTransformationMatrix()
         {
             // Compute basis vectors for the triangular plane
             // U = X - Z, V = Y - Z form the basis
@@ -81,26 +84,26 @@ namespace ZE.MechBattle.Navigation
         public static int GetTrianglesCountInHex(int hexRadius) => hexRadius * hexRadius * 6; // (2r) ^ 2 / 4 * 3
 
         [BurstCompile]
-        public static float3 TriangularToCartesian(in float3 trianglePos, in float triangleEdge) =>
+        public static float3 TriangularToWorld(in float3 trianglePos, in float triangleEdge) =>
              triangleEdge * Constants.EDGE_TO_PARTIAL_HEIGHT_CF * (trianglePos.y * DirY + trianglePos.x * DirX + trianglePos.z * DirZ);
 
 
         [BurstCompile]
-        public static float3 TriangularToCartesian(in IntTriangularPos trianglePos, in float triangleEdge) =>
+        public static float3 TriangularToWorld(in IntTriangularPos trianglePos, in float triangleEdge) =>
            triangleEdge * Constants.EDGE_TO_PARTIAL_HEIGHT_CF * (trianglePos.DownLeft * DirX  + trianglePos.Up * DirY + trianglePos.DownRight * DirZ);
 
         [BurstCompile]
-        public static IntTriangularPos CartesianToTrianglePos(in float3 dir, in float triangleEdge) =>
+        public static IntTriangularPos WorldToTrianglePos(in float3 dir, in float triangleEdge) =>
             new(
-                (int)math.ceil((-1 * dir.x - Constants.SQRT_OF_THREE_DBL / 3f * dir.z) / triangleEdge),
-                (int)math.floor((Constants.SQRT_OF_THREE_DBL * 2 / 3f * dir.z) / triangleEdge) + 1,
-                (int)math.ceil((1 * dir.x - Constants.SQRT_OF_THREE_DBL / 3f * dir.z) / triangleEdge)
+                (int)math.ceil((-1 * dir.x - SQRT_THREE_D_3_DBL * dir.z) / triangleEdge),
+                (int)math.floor((SQRT_THREE_D_3_DBL * 2 * dir.z) / triangleEdge) + 1,
+                (int)math.ceil((1 * dir.x - SQRT_THREE_D_3_DBL * dir.z) / triangleEdge)
                 );
 
 
         // deepseek generated
         [BurstCompile]
-        public static float3 CartesianToTriangular(in float3 dir, in float triangleEdge)
+        public static float3 WorldToTriangular(in float3 dir, in float triangleEdge)
         {
             var triangleGridStep = triangleEdge * Constants.EDGE_TO_PARTIAL_HEIGHT_CF;
             // Normalize input by triangle edge length
@@ -125,6 +128,51 @@ namespace ZE.MechBattle.Navigation
             var c = 1.0 - a - b;
 
             return new float3((float)a, (float)b, (float)c);
+        }
+
+        //chatgpt generated
+        [BurstCompile]
+        public static int2 WorldToHex(float2 worldPos, float edge)
+        {
+            var q = (2f / 3f * worldPos.x) / edge;
+            var r = (-1f / 3f * worldPos.x + SQRT_THREE_D_3 * worldPos.y) / edge;
+
+            return AxialRound(q, r);
+        }
+
+        //chatgpt generated
+        [BurstCompile]
+        public static float2 HexToWorld(int2 pos, float edge)
+        {
+            var x = edge * (3f / 2f * pos.x);
+            var y = edge * (Constants.SQRT_OF_THREE * (pos.y + pos.x / 2f));
+            return new float2(x, y);
+        }
+
+        //chatgpt generated
+        [BurstCompile]
+        private static int2 AxialRound(float q, float r)
+        {
+            var x = q;
+            var z = r;
+            var y = -x - z;
+
+            var rx = (int)math.round(x);
+            var ry = (int)math.round(y);
+            var rz = (int)math.round(z);
+
+            var dx = math.abs(rx - x);
+            var dy = math.abs(ry - y);
+            var dz = math.abs(rz - z);
+
+            if (dx > dy && dx > dz)
+                rx = -ry - rz;
+            else if (dy > dz)
+                ry = -rx - rz;
+            else
+                rz = -rx - ry;
+
+            return new int2(rx, rz);
         }
     }
 }

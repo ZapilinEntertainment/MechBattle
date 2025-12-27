@@ -1,44 +1,42 @@
 using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
+using UnityEngine;
 
 namespace ZE.MechBattle.Navigation
 {
+    [Serializable]
+    public struct MapSettings
+    {
+        public float HexEdgeSize;
+        public int TrianglesPerHexEdge;
+        public int RaycastSubdivisionsPerEdge;
+        [Range(0, 1)] public float IntersectionPercentForLock;
+        public float2 BottomLeftCorner;
+        public float2 TopRightCorner;
+    }
+
     public class NavigatonMap : IDisposable
     {
         public readonly float3 Center;
-        public readonly int HexWidth;
-        public readonly int HexLength;
         public readonly float HexEdgeSize;
-        public readonly float HexInnerRadius;
-        public readonly float3 OrthX = math.normalize(math.mul(quaternion.AxisAngle(math.up(), math.radians(120f)), math.forward()));
-        public readonly float3 OrthY = math.forward();
+        public readonly float TriangleEdgeSize;
+        public readonly int TrianglesPerEdge;
         public IReadOnlyDictionary<int2, NavigationHex> Hexes => _hexes;
 
         private readonly Dictionary<int2, NavigationHex> _hexes = new();
     
-        public NavigatonMap(float3 center, int hexWidth, int hexLength, float hexEdgeSize)
+        public NavigatonMap(float3 center, in MapSettings settings)
         {
             Center = center;
-            HexWidth = hexWidth;
-            HexLength = hexLength;
-
-            HexEdgeSize = hexEdgeSize;
-            HexInnerRadius = hexEdgeSize * math.sqrt(3f) * 0.5f;
+            HexEdgeSize = settings.HexEdgeSize;
+            TrianglesPerEdge = settings.TrianglesPerHexEdge;
+            TriangleEdgeSize = HexEdgeSize / TrianglesPerEdge;
         }
-
-        public void AddHex(int2 pos)
-        {
-            var center = HexPosToWorld(pos);
-            _hexes[pos] = new(center.xz);
-        }
-        public void RemoveHex(int2 pos) => _hexes.Remove(pos);
 
         public void Dispose()
         {
             _hexes.Clear();
         }
-
-        public float3 HexPosToWorld(int2 hexPos) => Center + hexPos.x * 2f * HexInnerRadius * OrthX  + hexPos.y * 2f * HexInnerRadius * OrthY;
     }
 }

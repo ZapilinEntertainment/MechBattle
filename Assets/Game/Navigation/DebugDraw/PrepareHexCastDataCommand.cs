@@ -62,7 +62,7 @@ namespace ZE.MechBattle.Navigation
                     continue;
                 if (!result.collider.gameObject.isStatic)
                 {
-                    var trianglePos = TriangularMath.CartesianToTrianglePos(result.point, protocol.TriangleEdgeSize);
+                    var trianglePos = TriangularMath.WorldToTrianglePos(result.point, protocol.TriangleEdgeSize);
                     intersectionsCount.TryGetValue(trianglePos, out var value);
                     intersectionsCount[trianglePos] = value + 1;
 

@@ -29,17 +29,7 @@ namespace ZE.MechBattle.Navigation
 
     [ExecuteInEditMode]
     public class NavigationMapDrawer : MonoBehaviour
-    {
-        [Serializable]
-        public struct MapSettings
-        {
-            public float HexEdgeSize;
-            public int TrianglesPerHexEdge;
-            public int RaycastSubdivisionsPerEdge;
-            [Range(0, 1)] public float IntersectionPercentForLock;
-            public Vector2 BottomLeftCorner;
-            public Vector2 TopRightCorner;
-        }        
+    {    
         private enum TrianglesDrawMode : byte { Disabled, All, OnlyLocked, OnlyPassable}
 
         private readonly struct LineDrawData
@@ -59,23 +49,22 @@ namespace ZE.MechBattle.Navigation
         [SerializeField] private MapSettings _mapSettings;
         [SerializeField] private TrianglesDrawMode _trianglesDrawMode;
         [Space]
-        [SerializeField] private Transform _testPos;
-        [SerializeField] private float _testRadius = 5f;
-        [Space]
         [SerializeField] private int3 _highlightTriangle;
+        [Space]
+        [SerializeField] private int2 _highlightHexIndex;
+        [Space]
+        [SerializeField] private float2 _planePos;
 
-        private NavigatonMap _map;
+        public NavigatonMap Map { get;private set;}
         private List<LineDrawData> _drawData = new();
         private List<SphereDrawData> _sphereDrawData = new();
 
         private float _triangleEdgeSize;
         private int _trianglesInHexCount;
+        private HexPointsPreset _hexPointsPreset;
         private Vector3 _highlightHexCenter;
-        private List<LineDrawData> _selectedTriangleDrawData = new();
-        private IntTriangularPos _currentSelectedTriangle;
-        private NativeArray<IntTriangularPos> _trianglesCountArray;
-        private QueryParameters _castQueryParameters;
-        private readonly Vector3[] HexPointsPreset = new Vector3[6];
+        private List<LineDrawData> _highlightedTriangleData = new();
+        private QueryParameters _castQueryParameters;        
         private readonly Dictionary<DebugColor, Color> _debugColors = new()
         {
             {DebugColor.White, Color.white },
@@ -88,13 +77,15 @@ namespace ZE.MechBattle.Navigation
         [Button("Redraw Map")]
         public void RedrawMap()
         {
-            _selectedTriangleDrawData.Clear();
+            _highlightedTriangleData.Clear();
             _drawData.Clear();     
             _sphereDrawData.Clear();
 
-            _map = NavigationMapBuilder.Build(_mapSettings.BottomLeftCorner, _mapSettings.TopRightCorner, _mapSettings.HexEdgeSize, 0);
+            Map = NavigationMapBuilder.Build(_mapSettings.BottomLeftCorner, _mapSettings.TopRightCorner, _mapSettings);
             var layerMask = LayerMask.GetMask("Default", "Ground");
             _castQueryParameters = new(layerMask, false, QueryTriggerInteraction.Ignore, false);
+            _hexPointsPreset = new(_mapSettings.HexEdgeSize);            
+
             RecalculateDrawData();
 
             //DrawTriangleSubdivision(float2.zero);
@@ -103,51 +94,38 @@ namespace ZE.MechBattle.Navigation
         [Button("Highlight Triangle")]
         public void HighlightSelectedTriangle() 
         {
-            _selectedTriangleDrawData.Clear();
-            AddTriangleDrawData(new(_highlightTriangle), _selectedTriangleDrawData, DebugColor.Purple);
+            _highlightedTriangleData.Clear();
+            AddTriangleDrawData(new(_highlightTriangle), _highlightedTriangleData, DebugColor.Purple);
         }
+
+        [Button("Highlight Hex")]
+        public void HighlightHex()
+        {
+            var pos = TriangularMath.HexToWorld(_highlightHexIndex, _mapSettings.HexEdgeSize);
+            _highlightHexCenter = new Vector3(pos.x, 0f, pos.y);
+        }
+
+
 
         private void RecalculateDrawData()
         {
             //Debug.Log($"{TriangularMath.DirX} : {TriangularMath.DirY} : {TriangularMath.DirZ}");
 
-            var edge = _map.HexEdgeSize;
+            var edge = Map.HexEdgeSize;
             var trianglesPerEdge = _mapSettings.TrianglesPerHexEdge;
             _triangleEdgeSize = edge / trianglesPerEdge;
             _trianglesInHexCount = TriangularMath.GetTrianglesCountInHex(trianglesPerEdge);
 
-            _trianglesCountArray = new NativeArray<IntTriangularPos>(_trianglesInHexCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
-
-            var trianglesList = new NativeArray<IntTriangularPos>(_trianglesInHexCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
-            //Debug.Log($"{_trianglesInHexCount} tris in hex radius of {trianglesPerEdge}");
-
-            var vector = math.mul(quaternion.AxisAngle(math.up(), math.radians(30f)), TriangularMath.DirY);
-            var rotation = quaternion.AxisAngle(math.up(), math.radians(60f));
-            HexPointsPreset[0] = edge * vector;
-            for (var i = 1; i < 6; i++)
-            {
-                vector = math.mul(rotation, vector);
-                HexPointsPreset[i] = edge * vector;
-            }
-            AddHexDrawData(float2.zero, _drawData, _trianglesDrawMode);
-
             var hexEdgeSize = _mapSettings.HexEdgeSize;
-            var dir = hexEdgeSize * math.normalize(HexPointsPreset[0]) + new float3(hexEdgeSize, 0f,0f);
-            AddHexDrawData(dir.xz, _drawData, _trianglesDrawMode);
+            var hexList = GetHexesInRectangleCommand.Execute(_mapSettings.BottomLeftCorner, _mapSettings.TopRightCorner, hexEdgeSize);
 
-            dir = hexEdgeSize * math.normalize(HexPointsPreset[2]) + new float3(hexEdgeSize, 0f, 0f);
-            AddHexDrawData(dir.xz, _drawData, _trianglesDrawMode);
-
-            dir = hexEdgeSize * math.normalize(HexPointsPreset[3]) + new float3(-hexEdgeSize, 0f, 0f);
-            AddHexDrawData(dir.xz, _drawData, _trianglesDrawMode);
-
-            dir = hexEdgeSize * math.normalize(HexPointsPreset[5]) + new float3(-hexEdgeSize, 0f, 0f);
-            AddHexDrawData(dir.xz, _drawData, _trianglesDrawMode);
-
-            _trianglesCountArray.Dispose();
-            _trianglesCountArray = default;
-
-            //DrawTriangleSubdivision(float2.zero);
+            using var trianglesCountArray = new NativeArray<IntTriangularPos>(_trianglesInHexCount, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+            foreach (var hex in hexList) 
+            {
+                Debug.Log(hex);
+                var center = TriangularMath.HexToWorld(hex, hexEdgeSize);
+                AddHexDrawData(center, _drawData, _trianglesDrawMode, trianglesCountArray);
+            }
         }
 
 #if UNITY_EDITOR
@@ -155,7 +133,7 @@ namespace ZE.MechBattle.Navigation
         {
             DrawMapBorders();
 
-            if (_map == null)
+            if (Map == null)
                 return;
 
             foreach (var drawData in _drawData)
@@ -164,7 +142,7 @@ namespace ZE.MechBattle.Navigation
                 Gizmos.DrawLine(drawData.PointA, drawData.PointB);
             }
 
-            foreach (var drawData in _selectedTriangleDrawData)
+            foreach (var drawData in _highlightedTriangleData)
             {
                 Gizmos.color = _debugColors[drawData.Color];
                 Gizmos.DrawLine(drawData.PointA, drawData.PointB);
@@ -172,15 +150,6 @@ namespace ZE.MechBattle.Navigation
 
             // Gizmos.DrawSphere(TriangularMath.TriangularToCartesian(new IntTriangularPos(-3,1,3), _triangleEdgeSize), 5f);
             // Gizmos.DrawCube(_highlightHexCenter, 5f * Vector3.one);
-
-            if (_testPos != null)
-            {
-                _currentSelectedTriangle = TriangularMath.CartesianToTrianglePos(_testPos.position, _triangleEdgeSize);
-                var pos = TriangularMath.TriangularToCartesian(_currentSelectedTriangle, _triangleEdgeSize);
-                Gizmos.color = Color.pink;
-                Handles.Label(pos, _currentSelectedTriangle.ToString());                
-                Gizmos.DrawSphere(TriangularMath.TriangularToCartesian(_currentSelectedTriangle, _triangleEdgeSize), 0.1f);
-            }
 
             if (_sphereDrawData.Count != 0)
             {
@@ -190,6 +159,8 @@ namespace ZE.MechBattle.Navigation
                     Gizmos.DrawSphere(data.Pos, data.Radius);
                 }
             }
+
+            Gizmos.DrawSphere(_highlightHexCenter, 8f);
         }
 
         private void DrawMapBorders()
@@ -206,15 +177,10 @@ namespace ZE.MechBattle.Navigation
         }
 #endif
 
-        private void AddHexDrawData(float2 centerPos, List<LineDrawData> data, TrianglesDrawMode trianglesDrawMode)
+        private void AddHexDrawData(float2 centerPos, List<LineDrawData> data, TrianglesDrawMode trianglesDrawMode, NativeArray<IntTriangularPos> trianglesArray)
         {
             // drawing hex borders
-            var center = new Vector3(centerPos.x, 0f, centerPos.y);
-            for (var i = 0; i < 5; i++)
-            {
-                data.Add(new(center + HexPointsPreset[i], center + HexPointsPreset[i + 1]));
-            }
-            data.Add(new(center + HexPointsPreset[5], center + HexPointsPreset[0]));
+            AddHexBorderPoints(centerPos, data);
 
             if (trianglesDrawMode == TrianglesDrawMode.Disabled)
                 return;
@@ -234,16 +200,15 @@ namespace ZE.MechBattle.Navigation
             // draw hex triangles
 
             var halfHeight = _triangleEdgeSize * Constants.SQRT_OF_THREE * 0.125f;
-            var innerCircleTrianglePos = TriangularMath.CartesianToTrianglePos(new(center.x, 0f, center.z + halfHeight), _triangleEdgeSize);
-            _highlightHexCenter = center;
+            var innerCircleTrianglePos = TriangularMath.WorldToTrianglePos(new(centerPos.x, 0f, centerPos.y + halfHeight), _triangleEdgeSize);
             //Debug.Log(TriangularMath.TriangularToCartesian(innerCircleTrianglePos, _triangleEdgeSize));
 
-            NavigationMapHelper.GetTrianglesInHex(innerCircleTrianglePos, _mapSettings.TrianglesPerHexEdge, _trianglesCountArray);
+            NavigationMapHelper.GetTrianglesInHex(innerCircleTrianglePos, _mapSettings.TrianglesPerHexEdge, trianglesArray);
 
             var drawLocked = trianglesDrawMode == TrianglesDrawMode.OnlyLocked || trianglesDrawMode == TrianglesDrawMode.All;
             var drawUnlocked = trianglesDrawMode == TrianglesDrawMode.OnlyPassable || trianglesDrawMode == TrianglesDrawMode.All;
 
-            foreach (var triangle in _trianglesCountArray)
+            foreach (var triangle in trianglesArray)
             {
                 var isLocked = lockedTriangles.Contains(triangle.ToStandartized());
                 var draw = isLocked ? drawLocked : drawUnlocked;
@@ -255,37 +220,11 @@ namespace ZE.MechBattle.Navigation
 
         private void AddTriangleDrawData(IntTriangularPos pos, List<LineDrawData> data, DebugColor color)
         {
-            float3 pointA;
-            float3 pointB;
-            float3 pointC;
+            var vertices = NavigationMapHelper.GetTriangleVertices(pos, _triangleEdgeSize);
 
-            var a = pos.DownLeft;
-            var b = pos.Up;
-            var c = pos.DownRight;
-            const float OFFSET = 0.05f;
-            
-            // each coordinate represents orth line shift
-            // three numbers describes a triangle, that contained inside intersection of three lines
-            // so x is shift by dirX, y is shift by dirY and z is shift by dirZ from center
-            // make a drawing for proper understanding
-
-            if (!pos.IsPeak)
-            {
-                // valley (C -> A -> B, B is bottom)
-                pointA = new float3(a-1 + OFFSET, b - OFFSET, c - OFFSET);
-                pointB = new float3(a - OFFSET, b-1 + OFFSET, c - OFFSET);
-                pointC = new float3(a - OFFSET, b - OFFSET, c-1 + OFFSET);
-            }
-            else
-            {
-                pointA = new float3(a+1 - OFFSET, b + OFFSET, c + OFFSET);
-                pointB = new float3(a + OFFSET, b+1 - OFFSET, c + OFFSET);
-                pointC = new float3(a + OFFSET, b + OFFSET, c+1 - OFFSET);
-            }
-
-            data.Add(new(TriangularMath.TriangularToCartesian(pointA, _triangleEdgeSize), TriangularMath.TriangularToCartesian(pointB, _triangleEdgeSize), color));
-            data.Add(new(TriangularMath.TriangularToCartesian(pointB, _triangleEdgeSize), TriangularMath.TriangularToCartesian(pointC, _triangleEdgeSize), color));
-            data.Add(new(TriangularMath.TriangularToCartesian(pointC, _triangleEdgeSize), TriangularMath.TriangularToCartesian(pointA, _triangleEdgeSize), color));
+            data.Add(new(vertices.A, vertices.B, color));
+            data.Add(new(vertices.B, vertices.C, color));
+            data.Add(new(vertices.C, vertices.A, color));
         }
 
         private static void AddTriangleDrawData(float3 cartesianCenter, bool isPeak, float edgeSize, List<LineDrawData> data, DebugColor color, float sizeCf = 1f)
@@ -321,7 +260,7 @@ namespace ZE.MechBattle.Navigation
             // get neighboured one:
             //innerCircleTopTriangle = TriangularMath.GetValleyNeighbour(innerCircleTopTriangle, ValleyNeighbour.EdgeDownRight);
 
-            var trianglePos = TriangularMath.TriangularToCartesian(innerCircleTopTriangle, _triangleEdgeSize);
+            var trianglePos = TriangularMath.TriangularToWorld(innerCircleTopTriangle, _triangleEdgeSize);
 
             var raycastResolution = _mapSettings.RaycastSubdivisionsPerEdge;
             using var centers = new NativeArray<float2>(raycastResolution * raycastResolution, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
@@ -357,6 +296,22 @@ namespace ZE.MechBattle.Navigation
 
                 //if (counter == 2) break;
             }
+        }
+
+        private void AddHexBorderPoints(float2 centerPos, List<LineDrawData> data)
+        {
+            void AddPoints(in float2 pointA, in float2 pointB) => _drawData.Add(
+                new(               
+                    new(centerPos.x + pointA.x, 0f, centerPos.y + pointA.y),
+                    new(centerPos.x + pointB.x, 0f, centerPos.y + pointB.y)
+                ) );
+            
+            AddPoints(_hexPointsPreset.TopRight, _hexPointsPreset.Right);
+            AddPoints(_hexPointsPreset.Right, _hexPointsPreset.BottomRight);
+            AddPoints(_hexPointsPreset.BottomRight, _hexPointsPreset.BottomLeft);
+            AddPoints(_hexPointsPreset.BottomLeft, _hexPointsPreset.Left);
+            AddPoints(_hexPointsPreset.Left, _hexPointsPreset.TopLeft);
+            AddPoints(_hexPointsPreset.TopRight, _hexPointsPreset.TopLeft);
         }
 
     }

@@ -46,7 +46,7 @@ namespace ZE.MechBattle.Navigation
 
             foreach (var position in positions)
             {
-                var cartesian = TriangularMath.TriangularToCartesian(position, protocol.TriangleEdgeSize);
+                var cartesian = TriangularMath.TriangularToWorld(position, protocol.TriangleEdgeSize);
                 var raycastPoints = protocol.TempRaycastPointsArray;
                 NavigationMapHelper.SubdivideTriangleIntoSmallerAndGetCenters(cartesian.xz, position.IsPeak, subdivisionProtocol);
                 foreach (var raycastPos in subdivisionProtocol.Centers)
