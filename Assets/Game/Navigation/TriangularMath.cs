@@ -56,6 +56,17 @@ namespace ZE.MechBattle.Navigation
             _ => new(pos.DownLeft - 1, pos.Up, pos.DownRight - 1)
         };
 
+        [BurstCompile]
+        public static byte GetHexEdgeExitVector(HexEdge edge, bool isPeak) => edge switch
+        {
+            HexEdge.UpRight => isPeak ? (byte)PeakNeighbour.EdgeUpRight : (byte)ValleyNeighbour.VertexUpRightPeak,
+            HexEdge.DownRight => isPeak ? (byte)PeakNeighbour.VertexDownRightValley : (byte)ValleyNeighbour.EdgeDownRight,
+            HexEdge.DownLeft => isPeak ? (byte)PeakNeighbour.VertexDownLeftValley : (byte)ValleyNeighbour.EdgeDownLeft,
+            HexEdge.UpLeft => isPeak ? (byte)PeakNeighbour.EdgeUpLeft : (byte)ValleyNeighbour.VertexUpRightPeak,
+            HexEdge.Down => isPeak ? (byte)PeakNeighbour.EdgeDown : (byte)ValleyNeighbour.VertexDown,
+            _ => isPeak ? (byte)PeakNeighbour.VertexUp : (byte)ValleyNeighbour.EdgeUp,
+        };
+
         static TriangularMath()
         {
             InitializeTransformationMatrix();

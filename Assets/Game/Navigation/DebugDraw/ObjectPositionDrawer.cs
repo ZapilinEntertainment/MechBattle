@@ -7,7 +7,7 @@ using TriInspector;
 using UnityEditor;
 #endif
 
-namespace ZE.MechBattle.Navigation
+namespace ZE.MechBattle.Navigation.DebugDraw
 {
     [ExecuteInEditMode]
     public class ObjectPositionDrawer : MonoBehaviour

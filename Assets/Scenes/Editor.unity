@@ -683,6 +683,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Target (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 1517500575807704851, guid: d9cf39c8c74a2f941ab19acb2ca46ecf, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1627,6 +1631,7 @@ GameObject:
   - component: {fileID: 592847736}
   - component: {fileID: 592847737}
   - component: {fileID: 592847738}
+  - component: {fileID: 592847739}
   m_Layer: 0
   m_Name: NAVIGATION TEST
   m_TagString: Untagged
@@ -1676,8 +1681,8 @@ MonoBehaviour:
   _trianglesDrawMode: 2
   _highlightTriangle:
     x: 0
-    y: 0
-    z: 0
+    y: -15
+    z: 16
   _highlightHexIndex:
     x: -2
     y: -2
@@ -1698,6 +1703,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: ZE.Navigation::ZE.MechBattle.Navigation.ObjectPositionDrawer
   _mainDrawer: {fileID: 592847737}
   _trackingObject: {fileID: 879025846}
+--- !u!114 &592847739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 592847734}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3112e9f3cded158499130560f6737662, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZE.Navigation::ZE.MechBattle.Navigation.DebugDraw.FlowMapDrawer
+  _hexCoordinate:
+    x: 1
+    y: -1
+  _exitEdge: 3
+  _mapDrawer: {fileID: 592847737}
 --- !u!1 &624623555
 GameObject:
   m_ObjectHideFlags: 0
@@ -2159,6 +2181,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Target (9)
       objectReference: {fileID: 0}
+    - target: {fileID: 1517500575807704851, guid: d9cf39c8c74a2f941ab19acb2ca46ecf, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2350,7 +2376,7 @@ Transform:
   m_GameObject: {fileID: 879025845}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 241, y: 0, z: -207}
+  m_LocalPosition: {x: 218.6, y: 0, z: -121.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5034,6 +5060,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Target (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 1517500575807704851, guid: d9cf39c8c74a2f941ab19acb2ca46ecf, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -6427,6 +6457,10 @@ PrefabInstance:
     - target: {fileID: 1517500575807704851, guid: d9cf39c8c74a2f941ab19acb2ca46ecf, type: 3}
       propertyPath: m_Name
       value: Target
+      objectReference: {fileID: 0}
+    - target: {fileID: 1517500575807704851, guid: d9cf39c8c74a2f941ab19acb2ca46ecf, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

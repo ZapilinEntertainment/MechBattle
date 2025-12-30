@@ -3,7 +3,7 @@ using UnityEngine;
 using Unity.Mathematics;
 using Unity.Collections;
 
-namespace ZE.MechBattle.Navigation
+namespace ZE.MechBattle.Navigation.DebugDraw
 {
     // showing cast points and returns locked triangles (standartized coords)
     internal static class PrepareHexCastDataCommand

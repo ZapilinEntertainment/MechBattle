@@ -18,13 +18,12 @@ namespace ZE.MechBattle.Navigation
         }
     }
 
-    public readonly struct IntTriangularPos
+    public readonly struct IntTriangularPos : IEquatable<IntTriangularPos>
     {
         public readonly int DownLeft;
         public readonly int Up;
         public readonly int DownRight;
-        public readonly bool IsPeak;
-        private const float SQRT_THREE_D3 = 0.5773502f; // sqrt(3) / 3f
+        public bool IsPeak => (DownLeft + Up + DownRight) % 3 != 1;
 
         public static IntTriangularPos operator + (IntTriangularPos a, int3 delta) =>
             new(a.DownLeft + delta.x, a.Up +delta.y, a.DownRight + delta.z);
@@ -45,10 +44,12 @@ namespace ZE.MechBattle.Navigation
             }
 
             var other = (IntTriangularPos)obj;
-            return DownLeft == other.DownLeft && Up == other.Up && DownRight == other.DownRight;
+            return Equals(other);
         }
 
-       
+        public bool Equals(IntTriangularPos other) => DownLeft == other.DownLeft && Up == other.Up && DownRight == other.DownRight;
+
+
         public override int GetHashCode() => 
             HashCode.Combine(DownLeft * 11, Up * 17, DownRight * 23);
 
@@ -62,12 +63,13 @@ namespace ZE.MechBattle.Navigation
         public int3 ToInt3() => new(DownLeft, Up, DownRight);
         public float3 ToFloat3() => new(DownLeft, Up, DownRight);
 
+      
+
         public IntTriangularPos(int downLeft, int up, int downRight)
         {
             DownLeft = downLeft;
             DownRight = downRight;
             Up = up;
-            IsPeak = (DownLeft + Up + DownRight) % 3 != 1;
         }
 
         public IntTriangularPos(int3 pos) : this(pos.x, pos.y, pos.z) { }

@@ -6,15 +6,16 @@ namespace ZE.MechBattle.Navigation
 {
     public static class GetHexesInRectangleCommand
     {
-        public static List<int2> Execute(
+        public static List<NavigationHex> Execute(
             float2 worldMin,
             float2 worldMax,
-            float edge)
+            float hexEdge,
+            float triangleEdge)
         {
-            var result = new List<int2>();
+            var result = new List<NavigationHex>();
 
-            var bottomCorner = TriangularMath.WorldToHex(worldMin, edge);
-            var topCorner = TriangularMath.WorldToHex(worldMax, edge);
+            var bottomCorner = TriangularMath.WorldToHex(worldMin, hexEdge);
+            var topCorner = TriangularMath.WorldToHex(worldMax, hexEdge);
             var yOffset = (int)math.ceil(topCorner.x - bottomCorner.x / 2);
 
             var width = topCorner.x - bottomCorner.x + 1;
@@ -23,7 +24,7 @@ namespace ZE.MechBattle.Navigation
                 int offset = x / 2;
                 for (var y = bottomCorner.y - offset; y < topCorner.y + (yOffset - offset); y++)
                 {
-                    result.Add(new(x + bottomCorner.x, y));
+                    result.Add(new(x + bottomCorner.x, y, hexEdge, triangleEdge));
                 }
             }
             

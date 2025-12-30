@@ -11,7 +11,7 @@ namespace ZE.MechBattle.Navigation
         EdgeUpRight,
         VertexRight,
         VertexDownRightValley,
-        VertexDownRightPeak,        
+        VertexDownRightPeak,
         EdgeDown,
         VertexDownLeftPeak,
         VertexDownLeftValley,

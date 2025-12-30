@@ -9,7 +9,7 @@ using TriInspector;
 using UnityEditor;
 #endif
 
-namespace ZE.MechBattle.Navigation
+namespace ZE.MechBattle.Navigation.DebugDraw
 {
     internal enum DebugColor : byte { White, Green, Red, Yellow, Purple }
 
@@ -81,6 +81,7 @@ namespace ZE.MechBattle.Navigation
             _drawData.Clear();     
             _sphereDrawData.Clear();
 
+            Map?.Dispose();
             Map = NavigationMapBuilder.Build(_mapSettings.BottomLeftCorner, _mapSettings.TopRightCorner, _mapSettings);
             var layerMask = LayerMask.GetMask("Default", "Ground");
             _castQueryParameters = new(layerMask, false, QueryTriggerInteraction.Ignore, false);
@@ -110,21 +111,19 @@ namespace ZE.MechBattle.Navigation
         private void RecalculateDrawData()
         {
             //Debug.Log($"{TriangularMath.DirX} : {TriangularMath.DirY} : {TriangularMath.DirZ}");
-
             var edge = Map.HexEdgeSize;
             var trianglesPerEdge = _mapSettings.TrianglesPerHexEdge;
             _triangleEdgeSize = edge / trianglesPerEdge;
             _trianglesInHexCount = TriangularMath.GetTrianglesCountInHex(trianglesPerEdge);
 
             var hexEdgeSize = _mapSettings.HexEdgeSize;
-            var hexList = GetHexesInRectangleCommand.Execute(_mapSettings.BottomLeftCorner, _mapSettings.TopRightCorner, hexEdgeSize);
+            var hexList = GetHexesInRectangleCommand.Execute(_mapSettings.BottomLeftCorner, _mapSettings.TopRightCorner, hexEdgeSize, _triangleEdgeSize);
 
             using var trianglesCountArray = new NativeArray<IntTriangularPos>(_trianglesInHexCount, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
             foreach (var hex in hexList) 
             {
-                Debug.Log(hex);
-                var center = TriangularMath.HexToWorld(hex, hexEdgeSize);
-                AddHexDrawData(center, _drawData, _trianglesDrawMode, trianglesCountArray);
+                Map.AddHex(hex);
+                AddHexDrawData(hex.CenterPos, _drawData, _trianglesDrawMode, trianglesCountArray);
             }
         }
 
@@ -195,7 +194,11 @@ namespace ZE.MechBattle.Navigation
                 RaycastSubdivisionsPerEdge = _mapSettings.RaycastSubdivisionsPerEdge,
                 IntersectionPercentForLock = _mapSettings.IntersectionPercentForLock
             });
-            //foreach (var locked in lockedTriangles) Debug.Log(locked);
+            foreach (var locked in lockedTriangles) 
+            {
+                Map.LockTriangle(locked);
+                //Debug.Log(locked);
+            }
 
             // draw hex triangles
 
@@ -314,5 +317,22 @@ namespace ZE.MechBattle.Navigation
             AddPoints(_hexPointsPreset.TopRight, _hexPointsPreset.TopLeft);
         }
 
+        private void OnDestroy()
+        {
+            if (Map != null)
+            {
+                Map.Dispose();
+                Map = null;
+            }                
+        }
+
+        private void OnDisable()
+        {
+            if (Map != null)
+            {
+                Map.Dispose();
+                Map = null;
+            }
+        }
     }
 }

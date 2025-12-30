@@ -9,5 +9,8 @@ namespace ZE.MechBattle.Navigation
 
         // triangle height * 2/3 (grid step)
         public const float EDGE_TO_PARTIAL_HEIGHT_CF = 0.5773502f;
+
+        public const float EDGE_PASS_COST = 1f;
+        public const float VERTEX_PASS_COST = 2f;
     }
 }
