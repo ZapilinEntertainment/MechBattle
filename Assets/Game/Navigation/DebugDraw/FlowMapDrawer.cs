@@ -144,8 +144,16 @@ namespace ZE.MechBattle.Navigation.DebugDraw
             foreach (var kvp in triangleDictionary)
             {
                 var worldPos = TriangularMath.TriangularToWorld(kvp.Key, map.TriangleEdgeSize);
-                var vector = flowMap.GetFlowDirection(kvp.Key);
-                _gizmosData.Add(new(vector, worldPos));
+                if (flowMap.TryGetFlowDirection(kvp.Key, out var direction))
+                {
+                    var vector = TriangularMath.TriangularDirectionToWorld(direction, kvp.Key.IsPeak);
+                    _gizmosData.Add(new(vector, worldPos));
+                }
+                else
+                {
+                    Debug.LogWarning($"unexpected behaviour: flow map not contain direction for triangle {kvp.Key}");
+                }
+               
             }
         }
     }

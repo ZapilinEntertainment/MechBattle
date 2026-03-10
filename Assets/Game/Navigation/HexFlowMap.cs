@@ -32,21 +32,15 @@ namespace ZE.MechBattle.Navigation
                 _data.Dispose();
         }
 
-        /// <summary>
-        /// Converts encoded flow map direction into normalized vector. For mass operations better use vectors caching!
-        /// </summary>
-        public float3 GetFlowDirection(in IntTriangularPos pos) 
+        public bool TryGetFlowDirection(in IntTriangularPos pos, out byte direction) 
         {
-            if (!_data.TryGetValue(pos, out var direction))
-                return int3.zero;
+            if (!_data.TryGetValue(pos, out direction))
+            {
+                direction = default;
+                return false;
+            }
 
-            IntTriangularPos nextPos;
-            if (pos.IsPeak)
-                nextPos = TriangularMath.GetPeakNeighbour(default, (PeakNeighbour)direction);
-            else
-                nextPos = TriangularMath.GetValleyNeighbour(default, (ValleyNeighbour)direction);
-
-            return math.normalize(nextPos.DownLeft * TriangularMath.DirX + nextPos.Up * TriangularMath.DirY + nextPos.DownRight * TriangularMath.DirZ);
+           return true;
         }
     }
 }

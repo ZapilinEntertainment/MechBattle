@@ -82,7 +82,7 @@ namespace ZE.MechBattle.Navigation.DebugDraw
             _sphereDrawData.Clear();
 
             Map?.Dispose();
-            Map = NavigationMapBuilder.Build(_mapSettings.BottomLeftCorner, _mapSettings.TopRightCorner, _mapSettings);
+            Map = new(_mapSettings);
             var layerMask = LayerMask.GetMask("Default", "Ground");
             _castQueryParameters = new(layerMask, false, QueryTriggerInteraction.Ignore, false);
             _hexPointsPreset = new(_mapSettings.HexEdgeSize);            
@@ -117,8 +117,7 @@ namespace ZE.MechBattle.Navigation.DebugDraw
             _trianglesInHexCount = TriangularMath.GetTrianglesCountInHex(trianglesPerEdge);
 
             var hexEdgeSize = _mapSettings.HexEdgeSize;
-            var hexList = GetHexesInRectangleCommand.Execute(_mapSettings.BottomLeftCorner, _mapSettings.TopRightCorner, hexEdgeSize, _triangleEdgeSize);
-
+            using var hexList = GetHexesInRectangleCommand.Execute(_mapSettings.BottomLeftCorner, _mapSettings.TopRightCorner, hexEdgeSize, _triangleEdgeSize, Allocator.Persistent);
             using var trianglesCountArray = new NativeArray<IntTriangularPos>(_trianglesInHexCount, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
             foreach (var hex in hexList) 
             {

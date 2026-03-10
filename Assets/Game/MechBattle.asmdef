@@ -1,6 +1,6 @@
 {
     "name": "MechBattle",
-    "rootNamespace": "",
+    "rootNamespace": "ZE.MechBattle",
     "references": [
         "GUID:b0214a6008ed146ff8f122a6a9c2f6cc",
         "GUID:3377deebfb0acde45876d12c6e3d27cc",

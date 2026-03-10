@@ -24,7 +24,7 @@ namespace ZE.MechBattle
 
         public void Initialize()
         {
-            MorpehInstaller.OnDependenciesResolved(_objectResolver);
+            MorpehInstaller.OnSceneDependenciesResolved(_objectResolver);
         }
 
         public void Start()

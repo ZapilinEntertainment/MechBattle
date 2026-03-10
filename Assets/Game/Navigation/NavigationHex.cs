@@ -12,6 +12,7 @@ namespace ZE.MechBattle.Navigation
         public readonly int2 HexCoordinate;
         public readonly float2 CenterPos;
         public readonly IntTriangularPos InnerRingTopTriangle;
+        public float3 CenterPos3D => new float3(CenterPos.x, 0f, CenterPos.y);
 
         public NavigationHex(int hexCoordX, int hexCoordY, float hexEdge, float triangleEdge)
         {

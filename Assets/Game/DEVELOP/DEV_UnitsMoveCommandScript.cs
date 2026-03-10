@@ -13,6 +13,7 @@ namespace ZE.MechBattle
         [SerializeField] private float _radius = 100f;
         private Filter _filter;
         private Stash<MoveTargetComponent> _moveTargets;
+        private Vector3? _targetPos;
 
         [Inject]
         public void Inject(World world)
@@ -28,6 +29,7 @@ namespace ZE.MechBattle
             {
                 var random = Random.insideUnitCircle;
                 var pos = new Vector3(random.x * _radius, 0f, random.y * _radius) + _center;
+                _targetPos = pos;
 
                 foreach (var entity in _filter)
                 {
@@ -36,5 +38,16 @@ namespace ZE.MechBattle
             }
         
         }
+
+#if UNITY_EDITOR
+        private void OnDrawGizmos()
+        {
+            if (_targetPos == null)
+                return;
+
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawSphere(_targetPos.Value, 5f);
+        }
+#endif
     }
 }

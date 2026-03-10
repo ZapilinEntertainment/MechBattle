@@ -233,7 +233,8 @@ namespace ZE.MechBattle.Navigation
                 var cell = cellKvp.Key;
 
                 // ignore exit cells
-                if (FlowDirections.ContainsKey(cell) || !IsCellPassable(cell, out _))
+                // however, fill blocked cells - for cases, when unit moved off-grid
+                if (FlowDirections.ContainsKey(cell))
                     continue;
 
                 var vectors = cell.IsPeak ? PeakNeighbourVectors : ValleyNeighbourVectors;

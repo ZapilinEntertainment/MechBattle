@@ -1,18 +1,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
+using Unity.Collections;
 
 namespace ZE.MechBattle.Navigation
 {
     public static class GetHexesInRectangleCommand
     {
-        public static List<NavigationHex> Execute(
+        public static NativeList<NavigationHex> Execute(
             float2 worldMin,
             float2 worldMax,
             float hexEdge,
-            float triangleEdge)
+            float triangleEdge,
+            Allocator allocator)
         {
-            var result = new List<NavigationHex>();
+            var result = new NativeList<NavigationHex>(allocator);
 
             var bottomCorner = TriangularMath.WorldToHex(worldMin, hexEdge);
             var topCorner = TriangularMath.WorldToHex(worldMax, hexEdge);

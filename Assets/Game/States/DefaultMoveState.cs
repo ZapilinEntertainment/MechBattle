@@ -6,18 +6,18 @@ namespace ZE.MechBattle.Ecs.States
 {
     public class DefaultMoveState : StateHandler
     {
-        private readonly Stash<MoveTargetComponent> _moveTargets;
-        private readonly Stash<MoveSpeedComponent> _speed;
-        private readonly Stash<RotationSpeedComponent> _angSpeed;
-        private readonly TransformAspectHandler _transformAspectHandler;
+        protected readonly Stash<MoveTargetComponent> MoveTargets;
+        protected readonly Stash<MoveSpeedComponent> Speed;
+        protected readonly Stash<RotationSpeedComponent> AngSpeed;
+        protected readonly TransformAspectHandler TransformAspectHandler;
 
         [Inject]
         public DefaultMoveState(World world)
         {
-            _moveTargets = world.GetStash<MoveTargetComponent>();
-            _speed = world.GetStash<MoveSpeedComponent>();
-            _angSpeed = world.GetStash<RotationSpeedComponent>();
-            _transformAspectHandler = new(world);
+            MoveTargets = world.GetStash<MoveTargetComponent>();
+            Speed = world.GetStash<MoveSpeedComponent>();
+            AngSpeed = world.GetStash<RotationSpeedComponent>();
+            TransformAspectHandler = new(world);
         }
 
         public override void Enter(Entity entity)
@@ -30,8 +30,8 @@ namespace ZE.MechBattle.Ecs.States
 
         public override StateKey Update(Entity entity, float dt)
         {
-            var point = _transformAspectHandler.GetPoint(entity);
-            var targetPos = _moveTargets.Get(entity).Value;
+            var point = TransformAspectHandler.GetPoint(entity);
+            var targetPos = MoveTargets.Get(entity).Value;
 
             var fwd = math.mul(point.rot, math.forward());
             var dir = targetPos - point.pos;
@@ -41,22 +41,22 @@ namespace ZE.MechBattle.Ecs.States
             if (math.abs(dot - 1f) > math.EPSILON)
             {
                 var targetRot = quaternion.LookRotation(normalizedDir, math.up());
-                var angSpeed = _angSpeed.Get(entity).Value;
-                _transformAspectHandler.SetRotation(entity, MathExtensions.RotateTowards(point.rot, targetRot, dt * angSpeed));
+                var angSpeed = AngSpeed.Get(entity).Value;
+                TransformAspectHandler.SetRotation(entity, MathExtensions.RotateTowards(point.rot, targetRot, dt * angSpeed));
                 return StateKey.Move;
             }
             else
             {               
-                var step = _speed.Get(entity).Value * dt;
+                var step = Speed.Get(entity).Value * dt;
                 if (step >= dirLength)
                 {
-                    _transformAspectHandler.SetPosition(entity, targetPos);
-                    _moveTargets.Remove(entity);
+                    TransformAspectHandler.SetPosition(entity, targetPos);
+                    MoveTargets.Remove(entity);
                     return StateKey.Idle;
                 }
                 else
                 {
-                    _transformAspectHandler.SetPosition(entity, point.pos + step * normalizedDir );
+                    TransformAspectHandler.SetPosition(entity, point.pos + step * normalizedDir );
                     return StateKey.Move;
                 }
             }

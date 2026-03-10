@@ -67,6 +67,21 @@ namespace ZE.MechBattle.Navigation
             _ => isPeak ? (byte)PeakNeighbour.VertexUp : (byte)ValleyNeighbour.EdgeUp,
         };
 
+        /// <summary>
+        /// Converts encoded flow map direction into normalized vector. For mass operations better use vectors caching!
+        /// </summary>
+        [BurstCompile]
+        public static float3 TriangularDirectionToWorld(byte direction, bool usePeakNeighbours)
+        {
+            IntTriangularPos nextPos;
+            if (usePeakNeighbours)
+                nextPos = TriangularMath.GetPeakNeighbour(default, (PeakNeighbour)direction);
+            else
+                nextPos = TriangularMath.GetValleyNeighbour(default, (ValleyNeighbour)direction);
+
+            return math.normalize(nextPos.DownLeft * TriangularMath.DirX + nextPos.Up * TriangularMath.DirY + nextPos.DownRight * TriangularMath.DirZ);
+        }
+
         static TriangularMath()
         {
             InitializeTransformationMatrix();
@@ -143,20 +158,20 @@ namespace ZE.MechBattle.Navigation
 
         //chatgpt generated
         [BurstCompile]
-        public static int2 WorldToHex(float2 worldPos, float edge)
+        public static int2 WorldToHex(float2 worldPos, float hexEdge)
         {
-            var q = (2f / 3f * worldPos.x) / edge;
-            var r = (-1f / 3f * worldPos.x + SQRT_THREE_D_3 * worldPos.y) / edge;
+            var q = (2f / 3f * worldPos.x) / hexEdge;
+            var r = (-1f / 3f * worldPos.x + SQRT_THREE_D_3 * worldPos.y) / hexEdge;
 
             return AxialRound(q, r);
         }
 
         //chatgpt generated
         [BurstCompile]
-        public static float2 HexToWorld(int2 pos, float edge)
+        public static float2 HexToWorld(int2 pos, float hexEdge)
         {
-            var x = edge * (3f / 2f * pos.x);
-            var y = edge * (Constants.SQRT_OF_THREE * (pos.y + pos.x / 2f));
+            var x = hexEdge * (3f / 2f * pos.x);
+            var y = hexEdge * (Constants.SQRT_OF_THREE * (pos.y + pos.x / 2f));
             return new float2(x, y);
         }
 

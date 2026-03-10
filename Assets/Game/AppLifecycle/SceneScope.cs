@@ -2,11 +2,15 @@ using VContainer.Unity;
 using VContainer;
 using Scellecs.Morpeh;
 using ZE.MechBattle.Views;
+using ZE.MechBattle.Navigation;
+using UnityEngine;
 
 namespace ZE.MechBattle
 {
     public class SceneScope : LifetimeScope
     {
+        [SerializeField] private MapSettings _mapSettings;
+
         protected override void Configure(IContainerBuilder builder)
         {
             MorpehInstaller.SceneScopeInstall(builder);
@@ -22,7 +26,10 @@ namespace ZE.MechBattle
             builder.Register<LoadingProcessesTable>(Lifetime.Scoped);
             builder.Register<RestorablesList>(Lifetime.Scoped);
             builder.Register<ViewReceiversList>(Lifetime.Scoped);
-            builder.Register<CollidersTable>(Lifetime.Scoped);            
+            builder.Register<CollidersTable>(Lifetime.Scoped);           
+            
+            //builder.RegisterInstance(_mapSettings);
+            builder.Register<NavigationMapController>(_ => new NavigationMapController(_mapSettings), Lifetime.Scoped);
 
             builder.RegisterEntryPoint<SceneBootstrap>();
         }
