@@ -5,8 +5,6 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
-    public enum HexEdge : byte { Up, UpRight, DownRight,Down, DownLeft, UpLeft }
-
     public readonly struct NavigationHex
     {
         public readonly int2 HexCoordinate;

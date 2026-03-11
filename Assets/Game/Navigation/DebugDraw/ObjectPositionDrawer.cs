@@ -41,7 +41,7 @@ namespace ZE.MechBattle.Navigation.DebugDraw
             var pos = TriangularMath.TriangularToWorld(_selectedTrianglePos, triangleEdgeSize);
             Gizmos.color = Color.hotPink;
 
-            var radius = _mainDrawer.Map.TrianglesPerEdge;
+            var radius = _mainDrawer.Map.TrianglesPerHexEdge;
             var x = currentTriangle.DownLeft / (2f * radius) ;
             var y = currentTriangle.Up / (2f * radius);
             var z = currentTriangle.DownRight / (2f * radius);

@@ -16,21 +16,23 @@ namespace ZE.MechBattle.Navigation
         public float2 TopRightCorner;
     }
 
-    public class NavigatonMap : IDisposable
-    {
-        public readonly float HexEdgeSize;
+    public class NavigationMap : IDisposable
+    {        
         public readonly float TriangleEdgeSize;
-        public readonly int TrianglesPerEdge;
+        public readonly MapSettings Settings;
+        public float HexEdgeSize => Settings.HexEdgeSize;
+        public int TrianglesPerHexEdge => Settings.TrianglesPerHexEdge;
+        public IReadOnlyCollection<NavigationHex> Hexes => _hexes.Values;
+        public IReadOnlyCollection<int2> HexCoords => _hexes.Keys;
 
         private readonly Dictionary<int2, NavigationHex> _hexes = new();
         private readonly HashSet<IntTriangularPos> _lockedTriangles = new();
         private readonly Dictionary<FlowMapId, HexFlowMap> _flowMaps = new();
     
-        public NavigatonMap(in MapSettings settings)
+        public NavigationMap(in MapSettings settings)
         {
-            HexEdgeSize = settings.HexEdgeSize;
-            TrianglesPerEdge = settings.TrianglesPerHexEdge;
-            TriangleEdgeSize = HexEdgeSize / TrianglesPerEdge;
+            Settings = settings;
+            TriangleEdgeSize = HexEdgeSize / TrianglesPerHexEdge;
         }
 
         public void Dispose()
@@ -69,6 +71,7 @@ namespace ZE.MechBattle.Navigation
             return Constants.EDGE_PASS_COST;
         }
 
+        // todo: move to own command
         public NavigationHex GetNearestHex(float2 pointPos)
         {
             NavigationHex closestHex = default;

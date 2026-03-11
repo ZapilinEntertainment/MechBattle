@@ -70,8 +70,8 @@ namespace ZE.MechBattle.Navigation.Tests
         {
             var pos = new float2(x,z);
             var hex = TriangularMath.WorldToHex(pos, edge);
-            Assert.Equals(hex.x, a);
-            Assert.Equals(hex.y, b);
+            Assert.AreEqual(hex.x, a);
+            Assert.AreEqual(hex.y, b);
         }
     }
 }

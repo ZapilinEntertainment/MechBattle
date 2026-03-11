@@ -8,24 +8,34 @@ namespace ZE.MechBattle
 {
     public static class MorpehInstaller
     {
-        // ATTENTION: Systems registers as transient, because a new world creates in every scene scope
-        // and then new systems created for it
-        // for scene-scoped dependencies use lambda-registration: Register<T>(_ => new T(), Lifetime.Scoped);
 
-        public static void AppScopeInstall(IContainerBuilder builder)
+        public static void SceneScopeInstall(IContainerBuilder builder)
         {
+            builder.Register<World>(_ => CreateWorld(), Lifetime.Scoped);
+
+            builder.Register<ProjectileRequestsFactory>(Lifetime.Scoped);
+            builder.Register<ProjectileBuilder>(Lifetime.Scoped);
+            builder.Register<ProjectileViewBuilder>(Lifetime.Scoped);
+            builder.Register<ExplosionRequestsBuilder>(Lifetime.Scoped);
+            builder.Register<DamageRequestsBuilder>(Lifetime.Scoped);
+            builder.Register<VfxRequestsBuilder>(Lifetime.Scoped);
+            builder.Register<EntityFactory>(Lifetime.Scoped);
+
+            void RegisterSystem<T>() where T : class, ISystem => builder.Register<T>(Lifetime.Transient);
+            void RegisterInitializer<T>() where T : class, IInitializer => builder.Register<T>(Lifetime.Transient);
+
             RegisterInitializer<SceneInitializer>();
             RegisterInitializer<DamageablesInitializer>();
             RegisterInitializer<SceneUnitsInitializer>();
 
-            RegisterSystem<ViewRequestsHandleSystem>();            
+            RegisterSystem<ViewRequestsHandleSystem>();
             RegisterSystem<VfxCreateSystem>();
             RegisterSystem<RestorationSystem>();
 
             RegisterSystem<ProjectileCreateSystem>();
             RegisterSystem<ProjectileMoveSystem>();
             RegisterSystem<ProjectilesExplodeSystem>();
-            
+
             RegisterSystem<DamageCalculationSystem>();
             RegisterSystem<DamageApplySystem>();
 
@@ -41,23 +51,6 @@ namespace ZE.MechBattle
 
             StatesInstaller.RegisterStates(builder);
             MovementSystemsInstaller.RegisterSystems(builder);
-
-            void RegisterSystem<T>() where T : class, ISystem => builder.Register<T>(Lifetime.Transient);
-            void RegisterInitializer<T>() where T : class, IInitializer => builder.Register<T>(Lifetime.Transient);
-        }    
-
-        public static void SceneScopeInstall(IContainerBuilder builder)
-        {
-            builder.Register<World>(_ => CreateWorld(), Lifetime.Scoped);
-
-            // world injection required:
-            builder.Register<ProjectileRequestsFactory>(Lifetime.Scoped);
-            builder.Register<ProjectileBuilder>(Lifetime.Scoped);
-            builder.Register<ProjectileViewBuilder>(Lifetime.Scoped);
-            builder.Register<ExplosionRequestsBuilder>(Lifetime.Scoped);
-            builder.Register<DamageRequestsBuilder>(Lifetime.Scoped);
-            builder.Register<VfxRequestsBuilder>(Lifetime.Scoped);
-            builder.Register<EntityFactory>(Lifetime.Scoped);            
         }
         private static World CreateWorld()
         {

@@ -14,28 +14,20 @@ namespace ZE.MechBattle.Ecs
     {
         public World World { get; set;}
         private readonly NavigationPathsList _pathsList;
-        private readonly NativeArray<int2> _offsets = new NativeArray<int2>(
-            new int2[]
-            {
-                new int2(0, -1),
-                new int2(1, -1),
-                new int2(1, 0),
-                new int2(0, 1),
-                new int2(-1, 1),
-                new int2(-1, 0) 
-            },
-            Allocator.Persistent);
+        private readonly NavigationMap _map;  
         private const int MAX_CALCULATIONS_PER_FRAME = 8;
 
         [Inject]
-        public HexPathCalculationSystem(NavigationPathsList list)
+        public HexPathCalculationSystem(NavigationPathsList list, NavigationMap map)
         {
             _pathsList = list;
+            _map = map;
         }
 
         public void OnAwake() 
         {
             
+           
         }
 
         public void OnUpdate(float deltaTime) 
@@ -43,23 +35,18 @@ namespace ZE.MechBattle.Ecs
             if (!_pathsList.TryGetRequestedPaths(MAX_CALCULATIONS_PER_FRAME, out var paths))
                 return;
 
-            // todo: need to calculate hexes in navigation map
-            // and add them
-
-            return;
             foreach (var path in paths)
             {
                 var job = new ConstructHexPathJob()
                 {
-                   // NeighborOffsets = _offsets,
-                   // Width = 
+
                 };
             }
         }
 
         public void Dispose()
         {
-            _offsets.Dispose();
+
         }
     }
 }

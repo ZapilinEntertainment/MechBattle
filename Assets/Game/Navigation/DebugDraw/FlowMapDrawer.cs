@@ -67,7 +67,7 @@ namespace ZE.MechBattle.Navigation.DebugDraw
 
             var map = _mapDrawer.Map;
             var hex = new NavigationHex(_hexCoordinate.x, _hexCoordinate.y, map.HexEdgeSize, map.TriangleEdgeSize);
-            var trianglesCount = TriangularMath.GetTrianglesCountInHex(map.TrianglesPerEdge);
+            var trianglesCount = TriangularMath.GetTrianglesCountInHex(map.TrianglesPerHexEdge);
 
             // setup triangles dictionary
 
@@ -75,7 +75,7 @@ namespace ZE.MechBattle.Navigation.DebugDraw
             var innerCircleTopTriangle = NavigationMapHelper.GetInnerCircleTopTriangle(hex.CenterPos, map.TriangleEdgeSize);
             using (var positionsList = new NativeArray<IntTriangularPos>(trianglesCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory))
             {
-                NavigationMapHelper.GetTrianglesInHex(innerCircleTopTriangle, map.TrianglesPerEdge, positionsList);
+                NavigationMapHelper.GetTrianglesInHex(innerCircleTopTriangle, map.TrianglesPerHexEdge, positionsList);
                 var index = 0;
                 foreach (var triangle in positionsList)
                 {
@@ -111,7 +111,7 @@ namespace ZE.MechBattle.Navigation.DebugDraw
             // launch job
 
             using NativeQueue<IntTriangularPos> calculationQueue = new NativeQueue<IntTriangularPos>(Allocator.TempJob);
-            using NativeHashSet<IntTriangularPos> queuedPositions = new NativeHashSet<IntTriangularPos>(2 * map.TrianglesPerEdge, Allocator.TempJob);
+            using NativeHashSet<IntTriangularPos> queuedPositions = new NativeHashSet<IntTriangularPos>(2 * map.TrianglesPerHexEdge, Allocator.TempJob);
 
             var job = new GenerateFlowFieldJob()
             {
@@ -124,7 +124,7 @@ namespace ZE.MechBattle.Navigation.DebugDraw
                 ValleyNeighbourVectors = valleyNeighbourVectors,
                 ExitEdge = _exitEdge,
                 Hex = hex,
-                TrianglesPerEdge = map.TrianglesPerEdge,
+                TrianglesPerEdge = map.TrianglesPerHexEdge,
 
                 QueuedPositions = queuedPositions,
             };

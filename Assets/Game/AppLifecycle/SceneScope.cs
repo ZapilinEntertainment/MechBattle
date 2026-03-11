@@ -28,8 +28,9 @@ namespace ZE.MechBattle
             builder.Register<ViewReceiversList>(Lifetime.Scoped);
             builder.Register<CollidersTable>(Lifetime.Scoped);           
             
-            //builder.RegisterInstance(_mapSettings);
-            builder.Register<NavigationMapController>(_ => new NavigationMapController(_mapSettings), Lifetime.Scoped);
+            builder.RegisterInstance(_mapSettings);
+            builder.Register<NavigationMapController>(Lifetime.Scoped);
+            builder.Register<NavigationMap>(Lifetime.Scoped);
 
             builder.RegisterEntryPoint<SceneBootstrap>();
         }

@@ -55,7 +55,7 @@ namespace ZE.MechBattle.Navigation.DebugDraw
         [Space]
         [SerializeField] private float2 _planePos;
 
-        public NavigatonMap Map { get;private set;}
+        public NavigationMap Map { get;private set;}
         private List<LineDrawData> _drawData = new();
         private List<SphereDrawData> _sphereDrawData = new();
 
@@ -110,18 +110,13 @@ namespace ZE.MechBattle.Navigation.DebugDraw
 
         private void RecalculateDrawData()
         {
-            //Debug.Log($"{TriangularMath.DirX} : {TriangularMath.DirY} : {TriangularMath.DirZ}");
-            var edge = Map.HexEdgeSize;
-            var trianglesPerEdge = _mapSettings.TrianglesPerHexEdge;
-            _triangleEdgeSize = edge / trianglesPerEdge;
-            _trianglesInHexCount = TriangularMath.GetTrianglesCountInHex(trianglesPerEdge);
+            _triangleEdgeSize = Map.TriangleEdgeSize;
+            _trianglesInHexCount = TriangularMath.GetTrianglesCountInHex(Map.TrianglesPerHexEdge);
 
-            var hexEdgeSize = _mapSettings.HexEdgeSize;
-            using var hexList = GetHexesInRectangleCommand.Execute(_mapSettings.BottomLeftCorner, _mapSettings.TopRightCorner, hexEdgeSize, _triangleEdgeSize, Allocator.Persistent);
+            InitializeMapHexesCommand.Execute(Map);
             using var trianglesCountArray = new NativeArray<IntTriangularPos>(_trianglesInHexCount, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
-            foreach (var hex in hexList) 
+            foreach (var hex in Map.Hexes)
             {
-                Map.AddHex(hex);
                 AddHexDrawData(hex.CenterPos, _drawData, _trianglesDrawMode, trianglesCountArray);
             }
         }

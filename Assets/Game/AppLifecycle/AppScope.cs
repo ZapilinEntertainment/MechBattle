@@ -25,7 +25,6 @@ namespace ZE.MechBattle.Ecs
             builder.Register<WindowsManager>(Lifetime.Singleton);
 
             WorkersInstaller.Install(builder);
-            MorpehInstaller.AppScopeInstall(builder);
              
             RegisterScriptables(builder);
             builder.Register<StringDataDictionary>(Lifetime.Singleton);

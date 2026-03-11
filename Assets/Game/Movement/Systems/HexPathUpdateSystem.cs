@@ -15,7 +15,7 @@ namespace ZE.MechBattle.Ecs
         public World World { get; set; }
 
         private readonly NavigationPathsList _pathsList;
-        private NavigatonMap _navigationMap;
+        private NavigationMap _navigationMap;
 
         private Filter _invalidPathsFilter;
         private Filter _noPathEntitiesFilter;

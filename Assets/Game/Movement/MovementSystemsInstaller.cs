@@ -14,6 +14,8 @@ namespace ZE.MechBattle.Ecs
             builder.Register<HexPathCalculationSystem>(Lifetime.Transient);
 
             builder.Register<NavigationPathsList>(_ => new(), Lifetime.Transient);
+
+            builder.Register<NavigationMapInitializer>(Lifetime.Transient);
         }
 
         public static void Install(SystemsResolver resolver)
@@ -25,6 +27,8 @@ namespace ZE.MechBattle.Ecs
             // 4 calculte paths (move to different group!)
             resolver.AddSystem<HexPathCalculationSystem>(SystemGroupOrder.RegularUpdate);
             // 5 remove nav components on objects with no move target (use clear group!)
+
+            resolver.AddInitializer<NavigationMapInitializer>(SystemGroupOrder.Initialization);
         }
 
     }
