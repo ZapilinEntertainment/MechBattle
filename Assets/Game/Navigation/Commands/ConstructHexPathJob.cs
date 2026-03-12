@@ -52,7 +52,7 @@ namespace ZE.MechBattle.Navigation
                         currentHexPos = hexPos;
                     }
                 }
-                Debug.Log(currentHexPos);
+                //Debug.Log($"goto {currentHexPos}");
 
                 // check if completed
 
@@ -64,7 +64,6 @@ namespace ZE.MechBattle.Navigation
                         Parent = prevHexPos,
                         StepsCount = CalculatedData[prevHexPos].StepsCount + 1
                     };
-                    Debug.Log("stop");
                     break;
                 }
 
@@ -79,14 +78,14 @@ namespace ZE.MechBattle.Navigation
                     var edge = (HexEdge)i;
                     if (!currentHexNode.IsEdgePassable(edge))
                         continue;
-
                     var neighbourPos = currentHexPos + edge.ToOffsetVector();
+                    //Debug.Log($"{neighbourPos} : {edge} : {InitialData.TryGetValue(neighbourPos, out var testNode)} : {!ClosedHexes.Contains(neighbourPos)} : {testNode.IsEdgePassable(edge.ToOpposite())}");
+
                     if (!InitialData.TryGetValue(neighbourPos, out var neighbourNode)
                         || ClosedHexes.Contains(neighbourPos)
                         || !neighbourNode.IsEdgePassable(edge.ToOpposite()))
                         continue;
 
-                    Debug.Log(neighbourPos);
                     var newNeighbourCost = minDist + DEFAULT_STEP_COST;
                     OpenedHexes.Add(neighbourPos);
 
@@ -110,14 +109,13 @@ namespace ZE.MechBattle.Navigation
         void BuildPath(int2 finalPos)
         {
             var stepsCount = CalculatedData[finalPos].StepsCount;
-            ResultingData.Resize(stepsCount, NativeArrayOptions.UninitializedMemory);
+            ResultingData.Resize(stepsCount+1, NativeArrayOptions.UninitializedMemory);
 
             var currentPos = finalPos;
             var i = stepsCount;
             while (i != 0)
             {
                 ResultingData[i--] = currentPos;
-                i--;
 
                 var data = CalculatedData[currentPos];
                 currentPos = data.Parent;

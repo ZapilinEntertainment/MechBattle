@@ -16,10 +16,10 @@ namespace ZE.MechBattle.Navigation
         {
             switch (edge)
             {
-                case HexEdge.UpRight: return new(1, 1);
+                case HexEdge.UpRight: return new(1, 0);
                 case HexEdge.DownRight: return new(1, -1);
                 case HexEdge.Down: return new(0, -1);
-                case HexEdge.DownLeft: return new(-1, -1);
+                case HexEdge.DownLeft: return new(-1, 0);
                 case HexEdge.UpLeft: return new(-1, 1);
                 default: return new(0, 1);
             }
