@@ -11,104 +11,56 @@ namespace ZE.MechBattle.Navigation
     [BurstCompile]
     public struct ConstructHexPathJob : IJob
     {
-        [ReadOnly] public NativeHashMap<int2, NavigationNodeData> InitialData;
         [WriteOnly] public NativeList<int2> ResultingData;
 
         public int2 StartPos;
         public int2 TargetPos;
-        public NativeHashMap<int2, CalculatedNavigationData> CalculatedData;
-        public NativeHashSet<int2> OpenedHexes;
-        public NativeHashSet<int2> ClosedHexes;
+        public NativeHashMap<int2, NavigationNodeData> NodesData;
+        public NativeHashSet<int2> OpenedList;
+
         private const int DEFAULT_STEP_COST = 1;
 
         public void Execute()
         {
-            OpenedHexes.Clear();
-            ClosedHexes.Clear();
-            CalculatedData.Clear();
             ResultingData.Clear();
+            OpenedList.Clear();
 
-            OpenedHexes.Add(StartPos);
-            CalculatedData[StartPos] = new()
+            var start = NodesData[StartPos];
+            start.Status = NavigationNodeStatus.Closed;
+            start.PathCost = start.HeuristicCost;
+            start.StepsCount = 0;
+            NodesData[StartPos] = start;
+
+            HandleNeighbours(StartPos);
+
+            var closestDistance = int.MaxValue;
+            var closestHex = StartPos;
+            do
             {
-                Cost = InitialData[StartPos].HeuristicCost,
-                Parent = int2.zero,
-                StepsCount = 0
-            };
-
-            var currentHexPos = StartPos;
-            var prevHexPos = currentHexPos;
-
-            while (OpenedHexes.Count != 0)
-            {
-                var minDist = int.MaxValue;
-
-                foreach (var hexPos in OpenedHexes)
+                var nextNode = FindNextNode();
+                if (math.all(nextNode == TargetPos))
                 {
-                    var fsum = CalculatedData[hexPos].Cost + InitialData[hexPos].HeuristicCost;
-                    if (fsum < minDist)
-                    {
-                        minDist = fsum;
-                        currentHexPos = hexPos;
-                    }
-                }
-                //Debug.Log($"goto {currentHexPos}");
-
-                // check if completed
-
-                if (math.all(currentHexPos == TargetPos))
-                {
-                    CalculatedData[currentHexPos] = new()
-                    {
-                        Cost = minDist,
-                        Parent = prevHexPos,
-                        StepsCount = CalculatedData[prevHexPos].StepsCount + 1
-                    };
+                    closestHex = TargetPos;
                     break;
                 }
 
-                OpenedHexes.Remove(currentHexPos);
-                ClosedHexes.Add(currentHexPos);
-                prevHexPos = currentHexPos;
-
-                //checking neighbours:
-                var currentHexNode = InitialData[currentHexPos];
-                for (var i = 0; i < 6; i++)
+                var distance = HexMath.CalculateDistance(nextNode, TargetPos);
+                if (distance < closestDistance)
                 {
-                    var edge = (HexEdge)i;
-                    if (!currentHexNode.IsEdgePassable(edge))
-                        continue;
-                    var neighbourPos = currentHexPos + edge.ToOffsetVector();
-                    //Debug.Log($"{neighbourPos} : {edge} : {InitialData.TryGetValue(neighbourPos, out var testNode)} : {!ClosedHexes.Contains(neighbourPos)} : {testNode.IsEdgePassable(edge.ToOpposite())}");
-
-                    if (!InitialData.TryGetValue(neighbourPos, out var neighbourNode)
-                        || ClosedHexes.Contains(neighbourPos)
-                        || !neighbourNode.IsEdgePassable(edge.ToOpposite()))
-                        continue;
-
-                    var newNeighbourCost = minDist + DEFAULT_STEP_COST;
-                    OpenedHexes.Add(neighbourPos);
-
-                    var stepsCount = CalculatedData[currentHexPos].StepsCount + 1;
-                    if (!CalculatedData.TryGetValue(neighbourPos, out var neighbourData)
-                        || neighbourData.Cost > newNeighbourCost)
-                    {
-                        CalculatedData[neighbourPos] = new()
-                        {
-                            Cost = newNeighbourCost,
-                            Parent = currentHexPos,
-                            StepsCount = stepsCount
-                        };
-                    }
+                    closestDistance = distance;
+                    closestHex = nextNode;
                 }
-            }
 
-            BuildPath(currentHexPos);
+                HandleNeighbours(nextNode);
+            }
+            while (OpenedList.Count != 0);
+
+            BuildPath(closestHex);
         }
 
-        void BuildPath(int2 finalPos)
+        private void BuildPath(int2 finalPos)
         {
-            var stepsCount = CalculatedData[finalPos].StepsCount;
+            var stepsCount = NodesData[finalPos].StepsCount;
             ResultingData.Resize(stepsCount+1, NativeArrayOptions.UninitializedMemory);
 
             var currentPos = finalPos;
@@ -117,10 +69,76 @@ namespace ZE.MechBattle.Navigation
             {
                 ResultingData[i--] = currentPos;
 
-                var data = CalculatedData[currentPos];
+                var data = NodesData[currentPos];
                 currentPos = data.Parent;
             }
             ResultingData[0] = StartPos;
+        }
+
+        private void HandleNeighbours(int2 currentHexPos)
+        {
+            var currentHexData = NodesData[currentHexPos];
+
+            for (var i = 0; i < 6; i++)
+            {
+                var edge = (HexEdge)i;
+                if (!currentHexData.IsEdgePassable(edge))
+                    continue;
+
+                var neighbourPos = currentHexPos + edge.ToOffsetVector();
+                //Debug.Log($"{neighbourPos} : {edge} : {InitialData.TryGetValue(neighbourPos, out var testNode)} : {!ClosedHexes.Contains(neighbourPos)} : {testNode.IsEdgePassable(edge.ToOpposite())}");
+
+                if (!NodesData.TryGetValue(neighbourPos, out var neighbourData)
+                    || neighbourData.Status == NavigationNodeStatus.Closed
+                    || !neighbourData.IsEdgePassable(edge.ToOpposite()))
+                    continue;
+
+                var newNeighbourPathCost = currentHexData.PathCost + DEFAULT_STEP_COST;
+                var updateData = true;
+                if (neighbourData.Status == NavigationNodeStatus.Open)
+                {
+                    updateData = neighbourData.PathCost > newNeighbourPathCost;
+                }
+                else
+                {
+                    OpenedList.Add(neighbourPos);
+                }
+
+                if (updateData)
+                {
+                    neighbourData.PathCost = newNeighbourPathCost;
+                    neighbourData.Parent = currentHexPos;
+                    neighbourData.StepsCount = currentHexData.StepsCount + 1;
+                    NodesData[neighbourPos] = neighbourData;
+                }
+            }
+        }
+
+        private int2 FindNextNode()
+        {
+            var minDist = int.MaxValue;
+            var currentHexPos = int2.zero;
+
+            // search for closest:
+            foreach (var hexPos in OpenedList)
+            {
+                var lookingHex = NodesData[hexPos];
+
+                var fsum = lookingHex.NodeCost;
+                if (fsum < minDist)
+                {
+                    minDist = fsum;
+                    currentHexPos = hexPos;
+                }
+            }
+            //Debug.Log($"goto {currentHexPos}");
+
+            var currentHexData = NodesData[currentHexPos];
+            currentHexData.Status = NavigationNodeStatus.Closed;
+            NodesData[currentHexPos] = currentHexData;
+
+            OpenedList.Remove(currentHexPos);
+            return currentHexPos;
         }
     }
 }

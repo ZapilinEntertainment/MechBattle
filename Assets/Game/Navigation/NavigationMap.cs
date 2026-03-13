@@ -22,12 +22,14 @@ namespace ZE.MechBattle.Navigation
         public readonly MapSettings Settings;
         public float HexEdgeSize => Settings.HexEdgeSize;
         public int TrianglesPerHexEdge => Settings.TrianglesPerHexEdge;
+        public int Version { get;private set; } = 1;
         public IReadOnlyCollection<NavigationHex> Hexes => _hexes.Values;
         public IReadOnlyCollection<int2> HexCoords => _hexes.Keys;
 
         private readonly Dictionary<int2, NavigationHex> _hexes = new();
         private readonly HashSet<IntTriangularPos> _lockedTriangles = new();
         private readonly Dictionary<FlowMapId, HexFlowMap> _flowMaps = new();
+        private readonly Dictionary<int2, int> _hexEdgeMasks = new();
     
         public NavigationMap(in MapSettings settings)
         {
@@ -47,7 +49,11 @@ namespace ZE.MechBattle.Navigation
             _flowMaps.Clear();
         }
 
-        public void AddHex(in NavigationHex hex) => _hexes.Add(hex.HexCoordinate, hex);
+        public void AddHex(in NavigationHex hex) 
+        {
+            _hexes.Add(hex.HexCoordinate, hex);
+            Version++;
+        }
         public void LockTriangle(in IntTriangularPos triangle) => _lockedTriangles.Add(triangle);
         public void UpdateFlowMap(int2 hexCoord, HexEdge exitEdge, HexFlowMap map) 
         {
@@ -91,5 +97,12 @@ namespace ZE.MechBattle.Navigation
         }
 
         public int2 WorldToHex(float3 worldPos) => TriangularMath.WorldToHex(worldPos.xz, HexEdgeSize);
+
+        public int GetHexEdgePassabilityMask(int2 pos) => _hexEdgeMasks.TryGetValue(pos, out var mask) ? mask : int.MaxValue;
+        public void UpdateHexEdgeMask(int2 pos, int value)
+        {
+            _hexEdgeMasks[pos] = value;
+            Version++;
+        }
     }
 }

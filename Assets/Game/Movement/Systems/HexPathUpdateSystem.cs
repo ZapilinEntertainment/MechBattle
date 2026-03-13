@@ -71,12 +71,21 @@ namespace ZE.MechBattle.Ecs
                 var targetPos = _moveTargets.Get(entity).Value;
                 var targetHexPos = _navigationMap.WorldToHex(targetPos);
 
+                if (math.all(entityHexPos == targetHexPos))
+                {
+                    //same hex, no calculation needed
+                    _hexPaths.Set(entity, new() { IsEmpty = true});
+                    continue;
+                }
+
                 if (_pathsList.TryGetPathId(entityHexPos, targetHexPos, out var pathId))
                 {
+                    // path already calculated
                     _hexPaths.Set(entity, new() { PathId = pathId, StepIndex = 0 });
                 }
                 else
                 {
+                    // no path found, wait until being calculated
                     _pathsList.RequestPathBuilding(entityHexPos, targetHexPos);
                     _calculatingComponents.Set(entity, new(entityHexPos, targetHexPos));
                 }

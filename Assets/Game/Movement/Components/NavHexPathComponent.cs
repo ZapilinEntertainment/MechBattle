@@ -11,5 +11,6 @@ namespace ZE.MechBattle.Ecs {
     {
         public int PathId;
         public int StepIndex;    
+        public bool IsEmpty;
     }
 }
