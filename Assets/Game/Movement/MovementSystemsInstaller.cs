@@ -10,10 +10,11 @@ namespace ZE.MechBattle.Ecs
     {
         public static void RegisterSystems(IContainerBuilder builder)
         {
-            builder.Register<HexPathUpdateSystem>(Lifetime.Transient);
-            builder.Register<HexPathCalculationSystem>(Lifetime.Transient);
+            builder.Register<HexPathUpdateSystem>(Lifetime.Scoped);
+            builder.Register<HexPathCalculationSystem>(Lifetime.Scoped);
+            builder.Register<NavComponentsClearSystem>(Lifetime.Scoped);
 
-            builder.Register<NavigationPathsList>(_ => new(), Lifetime.Transient);
+            builder.Register<NavigationPathsList>(_ => new(), Lifetime.Scoped);
 
             builder.Register<NavigationMapInitializer>(Lifetime.Transient);
         }

@@ -1,3 +1,5 @@
+using System;
+using System.Threading;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
@@ -26,10 +28,12 @@ namespace ZE.MechBattle.Navigation.DebugDraw
         }
 
         [SerializeField] private int2 _hexCoordinate;
-        [SerializeField] private HexEdge _exitEdge;
+        [SerializeField, OnValueChanged(nameof(DrawFlowField))] private HexEdge _exitEdge;
         [SerializeField] private NavigationMapDrawer _mapDrawer;
         private List<GizmosData> _gizmosData = new();
         private float ARROW_LENGTH = 0.5f;
+        private NavigationCaster _navigationCaster;
+        private readonly CancellationTokenSource _tokenSource = new();
 
 #if UNITY_EDITOR
 
@@ -61,100 +65,37 @@ namespace ZE.MechBattle.Navigation.DebugDraw
         }
 #endif
 
-        private void UpdateFlowMap(int2 hexCoord, HexEdge exitEdge)
+        private async void UpdateFlowMap(int2 hexCoord, HexEdge exitEdge)
         {
             _gizmosData.Clear();
 
             var map = _mapDrawer.Map;
-            var hex = new NavigationHex(_hexCoordinate.x, _hexCoordinate.y, map.HexEdgeSize, map.TriangleEdgeSize);
-            var trianglesCount = TriangularMath.GetTrianglesCountInHex(map.TrianglesPerHexEdge);
+            if (!map.TryGetFlowMap(hexCoord, out var flowMap))
+            {                
+                _navigationCaster ??= new NavigationCaster(map.Settings, Allocator.Persistent);
+                flowMap = await CalculateHexFlowMapCommand.ExecuteAsync(map.GetHexData(hexCoord), _navigationCaster, _tokenSource.Token);
+                
+                if (!map.TryGetHex(hexCoord, out var hex))
+                    map.AddHex(hexCoord);
 
-            // setup triangles dictionary
-
-            using NativeHashMap<IntTriangularPos, int> triangleDictionary = new(trianglesCount, Allocator.TempJob);
-            var innerCircleTopTriangle = NavigationMapHelper.GetInnerCircleTopTriangle(hex.CenterPos, map.TriangleEdgeSize);
-            using (var positionsList = new NativeArray<IntTriangularPos>(trianglesCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory))
-            {
-                NavigationMapHelper.GetTrianglesInHex(innerCircleTopTriangle, map.TrianglesPerHexEdge, positionsList);
-                var index = 0;
-                foreach (var triangle in positionsList)
-                {
-                    triangleDictionary.Add(triangle.ToStandartized(), index++);
-                }
+                map.UpdateHexFlowMap(hexCoord, flowMap);
             }
-
-            // prepare cached neighbours array
-
-            const int NEIGHBOURS_COUNT = 12;
-            NativeArray<int3> peakNeighbourVectors = new NativeArray<int3>(NEIGHBOURS_COUNT, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-            NativeArray<int3> valleyNeighbourVectors = new NativeArray<int3>(NEIGHBOURS_COUNT, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-            var zero = new IntTriangularPos(0, 0, 0);
-            for (var i = 0; i < NEIGHBOURS_COUNT; i++)
-            {
-                peakNeighbourVectors[i] = TriangularMath.GetPeakNeighbour(zero, (PeakNeighbour)i);
-                valleyNeighbourVectors[i] = TriangularMath.GetValleyNeighbour(zero, (ValleyNeighbour)i);
-            }
-
-            // fulfil cost map
-            var entranceCostField = new NativeArray<float>(trianglesCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-            var iterator = triangleDictionary.GetEnumerator();
-            while (iterator.MoveNext())
-            {
-                var kvp = iterator.Current;
-                var cost = map.GetTrianglePassCost(kvp.Key);
-                entranceCostField[kvp.Value] = cost;
-            }
-
-            using NativeArray<float> integrationField = new(trianglesCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-            var flowDirections = new NativeHashMap<IntTriangularPos, byte>(trianglesCount, Allocator.Persistent);
-
-            // launch job
-
-            using NativeQueue<IntTriangularPos> calculationQueue = new NativeQueue<IntTriangularPos>(Allocator.TempJob);
-            using NativeHashSet<IntTriangularPos> queuedPositions = new NativeHashSet<IntTriangularPos>(2 * map.TrianglesPerHexEdge, Allocator.TempJob);
-
-            var job = new GenerateFlowFieldJob()
-            {
-                CalculationQueue = calculationQueue,
-                EntranceCostField = entranceCostField,
-                IntegrationField = integrationField,
-                TriangleDictionary = triangleDictionary,
-                PeakNeighbourVectors = peakNeighbourVectors,
-                FlowDirections = flowDirections,
-                ValleyNeighbourVectors = valleyNeighbourVectors,
-                ExitEdge = _exitEdge,
-                Hex = hex,
-                TrianglesPerEdge = map.TrianglesPerHexEdge,
-
-                QueuedPositions = queuedPositions,
-            };
-
-            var handle = job.Schedule();
-            handle.Complete();
-
-            peakNeighbourVectors.Dispose();
-            valleyNeighbourVectors.Dispose();
-            entranceCostField.Dispose();
-
-            // update flow map
-            using var flowMap = new HexFlowMap(flowDirections);
-            // can add to map also (no using though)
 
             //draw:
-            foreach (var kvp in triangleDictionary)
+            foreach (var kvp in flowMap.Data)
             {
                 var worldPos = TriangularMath.TriangularToWorld(kvp.Key, map.TriangleEdgeSize);
-                if (flowMap.TryGetFlowDirection(kvp.Key, out var direction))
-                {
-                    var vector = TriangularMath.TriangularDirectionToWorld(direction, kvp.Key.IsPeak);
-                    _gizmosData.Add(new(vector, worldPos));
-                }
-                else
-                {
-                    Debug.LogWarning($"unexpected behaviour: flow map not contain direction for triangle {kvp.Key}");
-                }
-               
+                var direction = kvp.Value[_exitEdge];
+                var vector = TriangularMath.TriangularDirectionToWorld(direction, kvp.Key.IsPeak);
+                _gizmosData.Add(new(vector, worldPos));
             }
+        }
+
+        private void OnDestroy()
+        {
+            _navigationCaster.Dispose();
+            _tokenSource.Cancel();
+            _tokenSource.Dispose();
         }
     }
 }

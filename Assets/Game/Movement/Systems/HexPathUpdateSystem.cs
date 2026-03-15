@@ -15,7 +15,7 @@ namespace ZE.MechBattle.Ecs
         public World World { get; set; }
 
         private readonly NavigationPathsList _pathsList;
-        private NavigationMap _navigationMap;
+        private NavigationMap _map;
 
         private Filter _invalidPathsFilter;
         private Filter _noPathEntitiesFilter;
@@ -63,13 +63,16 @@ namespace ZE.MechBattle.Ecs
                 _invalidTags.Remove(entity);
             }
 
+            if (!_map.IsInitialized)
+                return;
+
             foreach (var entity in _noPathEntitiesFilter)
             {
                 var entityPos = _positions.Get(entity).Value;
-                var entityHexPos = _navigationMap.WorldToHex(entityPos);
+                var entityHexPos = _map.WorldToHex(entityPos);
 
                 var targetPos = _moveTargets.Get(entity).Value;
-                var targetHexPos = _navigationMap.WorldToHex(targetPos);
+                var targetHexPos = _map.WorldToHex(targetPos);
 
                 if (math.all(entityHexPos == targetHexPos))
                 {

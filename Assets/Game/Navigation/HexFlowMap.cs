@@ -5,23 +5,12 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
-    public readonly struct FlowMapId
-    {
-        public readonly int2 HexCoordinate;
-        public readonly HexEdge ExitEdge;
-
-        public FlowMapId(int2 hexCoordinate, HexEdge exitEdge)
-        {
-            HexCoordinate = hexCoordinate;
-            ExitEdge = exitEdge;
-        }
-    }
-
     public class HexFlowMap : IDisposable
     {
-        private readonly NativeHashMap<IntTriangularPos, byte> _data;
+        public NativeHashMap<IntTriangularPos, FlowMapCombinedCell>.ReadOnly Data => _data.AsReadOnly();
+        private readonly NativeHashMap<IntTriangularPos, FlowMapCombinedCell> _data;
 
-        public HexFlowMap(NativeHashMap<IntTriangularPos, byte> data)
+        public HexFlowMap(NativeHashMap<IntTriangularPos, FlowMapCombinedCell> data)
         {
             _data = data;
         }
@@ -32,15 +21,16 @@ namespace ZE.MechBattle.Navigation
                 _data.Dispose();
         }
 
-        public bool TryGetFlowDirection(in IntTriangularPos pos, out byte direction) 
+        public bool TryGetFlowDirection(in IntTriangularPos pos, HexEdge exitEdge, out byte flowDirection) 
         {
-            if (!_data.TryGetValue(pos, out direction))
+            if (!_data.TryGetValue(pos, out var flowMapCell))
             {
-                direction = default;
+                flowDirection = default;
                 return false;
             }
 
-           return true;
+            flowDirection = flowMapCell[exitEdge];
+            return true;
         }
     }
 }

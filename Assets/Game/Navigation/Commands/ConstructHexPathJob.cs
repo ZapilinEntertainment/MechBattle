@@ -7,138 +7,191 @@ using System.Runtime.CompilerServices;
 
 namespace ZE.MechBattle.Navigation
 {
-
     [BurstCompile]
     public struct ConstructHexPathJob : IJob
     {
-        [WriteOnly] public NativeList<int2> ResultingData;
+        [WriteOnly] public NativeList<HexPathNodeKey> ResultingData;
 
-        public int2 StartPos;
-        public int2 TargetPos;
-        public NativeHashMap<int2, NavigationNodeData> NodesData;
-        public NativeHashSet<int2> OpenedList;
+        public int AccessibleEdgesMask;        
+        public HexPathNodeKey TargetPos;
+        public HexPathNodeKey StartPos;
+        [NoAlias, ReadOnly] public NativeHashMap<int2, HexEdgeNodesData> HexData;
+        [NoAlias] public NativeHashSet<int> OpenedList;
+        [NoAlias] public NativeArray<NavigationHexNodeData> NavigationData;
 
         private const int DEFAULT_STEP_COST = 1;
+        private const int FULL_RESEARCHED_NODE_MASK = 63;
 
         public void Execute()
         {
             ResultingData.Clear();
             OpenedList.Clear();
 
-            var start = NodesData[StartPos];
-            start.Status = NavigationNodeStatus.Closed;
-            start.PathCost = start.HeuristicCost;
-            start.StepsCount = 0;
-            NodesData[StartPos] = start;
+            var startData = HexData[StartPos.HexCoord];
+            for (var i = 0; i < 6; i++)
+            {
+                var edgeDataIndex = startData.GetNodeIndex(i);
+                if (edgeDataIndex == HexEdgeNodesData.INVALID_INDEX)
+                    continue;
 
-            HandleNeighbours(StartPos);
+                var edgeData = NavigationData[edgeDataIndex];
+                edgeData.PathCost = edgeData.HeuristicCost;
+                edgeData.StepsCount = 0;
+                edgeData.Status = NavigationNodeStatus.Closed;
+                NavigationData[edgeDataIndex] = edgeData;
+            }
 
-            var closestDistance = int.MaxValue;
-            var closestHex = StartPos;
+            for (var i = 0; i < 6; i++)
+            {
+                var edgeDataIndex = startData.GetNodeIndex(i);
+                if (edgeDataIndex == HexEdgeNodesData.INVALID_INDEX)
+                    continue;
+
+                HandleNeighbours(new(StartPos.HexCoord, i));
+            }
+
+            var closestDistance = float.MaxValue;
+            var closestNode = StartPos;
+            var targetNodeIndex = GetNodeIndex(TargetPos);
+
             do
             {
                 var nextNode = FindNextNode();
-                if (math.all(nextNode == TargetPos))
+                if (nextNode == TargetPos)
                 {
-                    closestHex = TargetPos;
+                    closestNode = TargetPos;
                     break;
                 }
 
-                var distance = HexMath.CalculateDistance(nextNode, TargetPos);
-                if (distance < closestDistance)
+                var sqDistance = HexMath.CalculateDistanceSq(nextNode, TargetPos);
+                if (sqDistance < closestDistance)
                 {
-                    closestDistance = distance;
-                    closestHex = nextNode;
+                    closestDistance = sqDistance;
+                    closestNode = nextNode;
                 }
 
                 HandleNeighbours(nextNode);
             }
             while (OpenedList.Count != 0);
 
-            BuildPath(closestHex);
+            BuildPath(closestNode);
         }
 
-        private void BuildPath(int2 finalPos)
+        private void BuildPath(HexPathNodeKey pos)
         {
-            var stepsCount = NodesData[finalPos].StepsCount;
+            var index = GetNodeIndex(pos);
+            var stepsCount = NavigationData[index].StepsCount;
             ResultingData.Resize(stepsCount+1, NativeArrayOptions.UninitializedMemory);
 
-            var currentPos = finalPos;
+            var currentPos = pos;
             var i = stepsCount;
-            while (i != 0)
+            while (i >= 0)
             {
                 ResultingData[i--] = currentPos;
 
-                var data = NodesData[currentPos];
-                currentPos = data.Parent;
+                var data = GetNavData(currentPos);
+                currentPos = data.ParentNodeKey;
             }
-            ResultingData[0] = StartPos;
         }
 
-        private void HandleNeighbours(int2 currentHexPos)
+        private void HandleNeighbours(HexPathNodeKey activeNodePos)
         {
-            var currentHexData = NodesData[currentHexPos];
+            //own hex nodes:
+            var hexData = HexData[activeNodePos.HexCoord];
+            var activeNodeData = NavigationData[hexData.GetNodeIndex(activeNodePos.EdgeIndex)];
 
             for (var i = 0; i < 6; i++)
             {
-                var edge = (HexEdge)i;
-                if (!currentHexData.IsEdgePassable(edge))
+                var neighbourIndex = hexData.GetNodeIndex(i);
+                if (neighbourIndex == HexEdgeNodesData.INVALID_INDEX
+                    || !hexData.AccessMap.IsEdgeAccessible(activeNodePos.Edge, (HexEdge)(i)))
                     continue;
 
-                var neighbourPos = currentHexPos + edge.ToOffsetVector();
-                //Debug.Log($"{neighbourPos} : {edge} : {InitialData.TryGetValue(neighbourPos, out var testNode)} : {!ClosedHexes.Contains(neighbourPos)} : {testNode.IsEdgePassable(edge.ToOpposite())}");
-
-                if (!NodesData.TryGetValue(neighbourPos, out var neighbourData)
-                    || neighbourData.Status == NavigationNodeStatus.Closed
-                    || !neighbourData.IsEdgePassable(edge.ToOpposite()))
+                var neighbourData = NavigationData[neighbourIndex];
+                if (neighbourData.Status == NavigationNodeStatus.Closed)
                     continue;
 
-                var newNeighbourPathCost = currentHexData.PathCost + DEFAULT_STEP_COST;
-                var updateData = true;
-                if (neighbourData.Status == NavigationNodeStatus.Open)
-                {
-                    updateData = neighbourData.PathCost > newNeighbourPathCost;
-                }
-                else
-                {
-                    OpenedList.Add(neighbourPos);
-                }
+                HandleNeighbour(activeNodeData, activeNodePos, neighbourData, neighbourIndex);
+            }
 
-                if (updateData)
-                {
-                    neighbourData.PathCost = newNeighbourPathCost;
-                    neighbourData.Parent = currentHexPos;
-                    neighbourData.StepsCount = currentHexData.StepsCount + 1;
-                    NodesData[neighbourPos] = neighbourData;
-                }
+            // neighboured hex:
+            var neighbouredHexPos = activeNodePos.ToNeighbouredHexPos();
+            if (!hexData.IsEdgePassable(activeNodePos.Edge) 
+                || !HexData.TryGetValue(neighbouredHexPos, out var neighbouredHexData))
+                return;
+
+            var edgeInNeighbouredHex = activeNodePos.Edge.ToOpposite();
+            for (var i = 0; i < 6; i++)
+            {
+                var neighbourIndex = neighbouredHexData.GetNodeIndex(i);
+                if (neighbourIndex == HexEdgeNodesData.INVALID_INDEX
+                    ||!neighbouredHexData.AccessMap.IsEdgeAccessible(edgeInNeighbouredHex, (HexEdge)i))
+                    continue;
+
+                
+                var neighbourData = NavigationData[neighbourIndex];
+                if (neighbourData.Status == NavigationNodeStatus.Closed)
+                    continue;
+
+                HandleNeighbour(activeNodeData, activeNodePos, neighbourData, neighbourIndex);
+            }
+
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void HandleNeighbour(in NavigationHexNodeData activeNodeData, HexPathNodeKey activeNodePos, NavigationHexNodeData neighbourData, int neighbourIndex)
+        {
+            var newNeighbourPathCost = activeNodeData.PathCost + DEFAULT_STEP_COST;
+            var updateData = true;
+            if (neighbourData.Status == NavigationNodeStatus.Opened)
+            {
+                updateData = neighbourData.PathCost > newNeighbourPathCost;
+            }
+            else
+            {
+                OpenedList.Add(neighbourIndex);
+            }
+
+            if (updateData)
+            {
+                neighbourData.PathCost = newNeighbourPathCost;
+                neighbourData.ParentNodeKey = activeNodePos;
+                neighbourData.StepsCount = activeNodeData.StepsCount + 1;
+                NavigationData[neighbourIndex] = neighbourData;
             }
         }
 
-        private int2 FindNextNode()
+        private HexPathNodeKey FindNextNode()
         {
             var minDist = int.MaxValue;
-            var currentHexPos = int2.zero;
+            var currentIndex = 0;
 
             // search for closest:
-            foreach (var hexPos in OpenedList)
+            foreach (var index in OpenedList)
             {
-                var lookingHex = NodesData[hexPos];
-
-                var fsum = lookingHex.NodeCost;
+                var data = NavigationData[index];
+                var fsum = data.NodeCost;
                 if (fsum < minDist)
                 {
                     minDist = fsum;
-                    currentHexPos = hexPos;
+                    currentIndex = index;
                 }
             }
             //Debug.Log($"goto {currentHexPos}");
 
-            var currentHexData = NodesData[currentHexPos];
-            currentHexData.Status = NavigationNodeStatus.Closed;
-            NodesData[currentHexPos] = currentHexData;
+            var currentNodeData = NavigationData[currentIndex];
+            currentNodeData.Status = NavigationNodeStatus.Closed;
+            NavigationData[currentIndex] = currentNodeData;
 
-            OpenedList.Remove(currentHexPos);
-            return currentHexPos;
+            OpenedList.Remove(currentIndex);
+            return currentNodeData.NodeKey;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private NavigationHexNodeData GetNavData(HexPathNodeKey key) => NavigationData[GetNodeIndex(key)];
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int GetNodeIndex(HexPathNodeKey key) => HexData[key.HexCoord].GetNodeIndex(key.EdgeIndex);
     }
 }

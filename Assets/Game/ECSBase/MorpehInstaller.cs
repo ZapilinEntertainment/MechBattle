@@ -21,7 +21,7 @@ namespace ZE.MechBattle
             builder.Register<VfxRequestsBuilder>(Lifetime.Scoped);
             builder.Register<EntityFactory>(Lifetime.Scoped);
 
-            void RegisterSystem<T>() where T : class, ISystem => builder.Register<T>(Lifetime.Transient);
+            void RegisterSystem<T>() where T : class, ISystem => builder.Register<T>(Lifetime.Scoped);
             void RegisterInitializer<T>() where T : class, IInitializer => builder.Register<T>(Lifetime.Transient);
 
             RegisterInitializer<SceneInitializer>();

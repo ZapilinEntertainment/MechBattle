@@ -36,7 +36,7 @@ namespace ZE.MechBattle.Navigation.Tests
             // todo: also add heuristics check test!
 
             const int CAPACITY = 5;
-            var initialData = new NativeHashMap<int2, NavigationNodeData>(initialCapacity : CAPACITY, Allocator.TempJob);
+            var initialData = new NativeHashMap<int2, NavigationHexNodeData>(initialCapacity : CAPACITY, Allocator.TempJob);
             initialData.Add(int2.zero, new() { EdgesPassabilityMask = CreateLockedHexPassabilityMask(HexEdge.DownRight), HeuristicCost = 0});
             initialData.Add(new int2(1,0), new() { EdgesPassabilityMask = int.MaxValue, HeuristicCost = 1 });
             initialData.Add(new int2(1, -1), new() { EdgesPassabilityMask = int.MaxValue, HeuristicCost = 1 });
@@ -85,7 +85,7 @@ namespace ZE.MechBattle.Navigation.Tests
         public void LockedEdgesRevertedPathfindingTest()
         {
             const int CAPACITY = 5;
-            var initialData = new NativeHashMap<int2, NavigationNodeData>(initialCapacity: CAPACITY, Allocator.TempJob);
+            var initialData = new NativeHashMap<int2, NavigationHexNodeData>(initialCapacity: CAPACITY, Allocator.TempJob);
             initialData.Add(int2.zero, new() { EdgesPassabilityMask = CreateLockedHexPassabilityMask(HexEdge.DownRight), HeuristicCost = 0 });
             initialData.Add(new int2(1, 0), new() { EdgesPassabilityMask = int.MaxValue, HeuristicCost = 1 });
             initialData.Add(new int2(1, -1), new() { EdgesPassabilityMask = int.MaxValue, HeuristicCost = 1 });

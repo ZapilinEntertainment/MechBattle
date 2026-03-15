@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Burst;
 using Unity.Mathematics;
+using System.Runtime.CompilerServices;
 
 namespace ZE.MechBattle.Navigation
 {
@@ -26,6 +27,55 @@ namespace ZE.MechBattle.Navigation
                     math.abs(z1 - z2)
                 )
             );
+        }
+
+        [BurstCompile]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float CalculateDistanceSq(HexPathNodeKey nodeA, HexPathNodeKey nodeB) => math.lengthsq(nodeA.EdgeCenterHexCoord - nodeB.EdgeCenterHexCoord);
+
+        //chatgpt generated
+        [BurstCompile]
+        public static int2 WorldToHex(float2 worldPos, float hexEdge)
+        {
+            var q = (2f / 3f * worldPos.x) / hexEdge;
+            var r = (-1f / 3f * worldPos.x + NavigationConstants.SQRT_THREE_D_3 * worldPos.y) / hexEdge;
+
+            return AxialRound(q, r);
+        }
+
+        //chatgpt generated
+        [BurstCompile]
+        public static float2 HexToWorld(int2 pos, float hexEdge)
+        {
+            var x = hexEdge * (3f / 2f * pos.x);
+            var y = hexEdge * (NavigationConstants.SQRT_OF_THREE * (pos.y + pos.x / 2f));
+            return new float2(x, y);
+        }
+
+        //chatgpt generated
+        [BurstCompile]
+        private static int2 AxialRound(float q, float r)
+        {
+            var x = q;
+            var z = r;
+            var y = -x - z;
+
+            var rx = (int)math.round(x);
+            var ry = (int)math.round(y);
+            var rz = (int)math.round(z);
+
+            var dx = math.abs(rx - x);
+            var dy = math.abs(ry - y);
+            var dz = math.abs(rz - z);
+
+            if (dx > dy && dx > dz)
+                rx = -ry - rz;
+            else if (dy > dz)
+                ry = -rx - rz;
+            else
+                rz = -rx - ry;
+
+            return new int2(rx, rz);
         }
 
     }

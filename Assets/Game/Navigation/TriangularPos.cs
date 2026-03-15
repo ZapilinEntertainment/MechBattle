@@ -23,10 +23,19 @@ namespace ZE.MechBattle.Navigation
         public readonly int DownLeft;
         public readonly int Up;
         public readonly int DownRight;
+
+        public int X => DownLeft;
+        public int Y => Up;
+        public int Z => DownRight;
+
         public bool IsPeak => (DownLeft + Up + DownRight) % 3 != 1;
+        public static IntTriangularPos zero => new(0,0,0);
 
         public static IntTriangularPos operator + (IntTriangularPos a, int3 delta) =>
             new(a.DownLeft + delta.x, a.Up +delta.y, a.DownRight + delta.z);
+
+        public static IntTriangularPos operator -(IntTriangularPos a, IntTriangularPos delta) =>
+           new(a.DownLeft + delta.DownLeft, a.Up + delta.Up, a.DownRight + delta.DownRight);
 
         public static implicit operator int3(IntTriangularPos sourceObject) => sourceObject.ToInt3();
 

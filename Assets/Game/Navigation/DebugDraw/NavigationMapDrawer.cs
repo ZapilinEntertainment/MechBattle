@@ -11,7 +11,7 @@ using UnityEditor;
 
 namespace ZE.MechBattle.Navigation.DebugDraw
 {
-    internal enum DebugColor : byte { White, Green, Red, Yellow, Purple }
+    internal enum DebugColor : byte { White, Green, Red, Yellow, Purple, Black }
 
     internal readonly struct SphereDrawData
     {
@@ -72,6 +72,7 @@ namespace ZE.MechBattle.Navigation.DebugDraw
             {DebugColor.Green, Color.green },
             {DebugColor.Yellow, Color.yellow },
              {DebugColor.Purple, Color.purple },
+            {DebugColor.Black, Color.black }
         };
 
         [Button("Redraw Map")]
@@ -83,8 +84,7 @@ namespace ZE.MechBattle.Navigation.DebugDraw
 
             Map?.Dispose();
             Map = new(_mapSettings);
-            var layerMask = LayerMask.GetMask("Default", "Ground");
-            _castQueryParameters = new(layerMask, false, QueryTriggerInteraction.Ignore, false);
+            _castQueryParameters = NavigationConstants.GetGroundCastQueryParameters();
             _hexPointsPreset = new(_mapSettings.HexEdgeSize);            
 
             RecalculateDrawData();
@@ -113,11 +113,11 @@ namespace ZE.MechBattle.Navigation.DebugDraw
             _triangleEdgeSize = Map.TriangleEdgeSize;
             _trianglesInHexCount = TriangularMath.GetTrianglesCountInHex(Map.TrianglesPerHexEdge);
 
-            InitializeMapHexesCommand.Execute(Map);
+            PrepareHexListCommand.Execute(Map);
             using var trianglesCountArray = new NativeArray<IntTriangularPos>(_trianglesInHexCount, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
             foreach (var hex in Map.Hexes)
             {
-                AddHexDrawData(hex.CenterPos, _drawData, _trianglesDrawMode, trianglesCountArray);
+                AddHexDrawData(hex.CenterPosWorld, _drawData, _trianglesDrawMode, trianglesCountArray);
             }
         }
 
@@ -170,7 +170,7 @@ namespace ZE.MechBattle.Navigation.DebugDraw
         }
 #endif
 
-        private void AddHexDrawData(float2 centerPos, List<LineDrawData> data, TrianglesDrawMode trianglesDrawMode, NativeArray<IntTriangularPos> trianglesArray)
+        private void AddHexDrawData(float2 centerPos, List<LineDrawData> data, TrianglesDrawMode trianglesDrawMode, NativeArray<IntTriangularPos> trianglePositionsArray)
         {
             // drawing hex borders
             AddHexBorderPoints(centerPos, data);
@@ -178,36 +178,20 @@ namespace ZE.MechBattle.Navigation.DebugDraw
             if (trianglesDrawMode == TrianglesDrawMode.Disabled)
                 return;
 
-            var lockedTriangles = PrepareHexCastDataCommand.Execute(centerPos, new()
-            {
-                //DrawData = _sphereDrawData,
-                CastQueryParameters = _castQueryParameters,
-                TriangleEdgeSize = _triangleEdgeSize,
-                TrianglesInHexCount = _trianglesInHexCount,
-                TrianglesPerHexEdge = _mapSettings.TrianglesPerHexEdge,
-                RaycastSubdivisionsPerEdge = _mapSettings.RaycastSubdivisionsPerEdge,
-                IntersectionPercentForLock = _mapSettings.IntersectionPercentForLock
-            });
-            foreach (var locked in lockedTriangles) 
-            {
-                Map.LockTriangle(locked);
-                //Debug.Log(locked);
-            }
-
             // draw hex triangles
 
             var halfHeight = _triangleEdgeSize * Constants.SQRT_OF_THREE * 0.125f;
             var innerCircleTrianglePos = TriangularMath.WorldToTrianglePos(new(centerPos.x, 0f, centerPos.y + halfHeight), _triangleEdgeSize);
             //Debug.Log(TriangularMath.TriangularToCartesian(innerCircleTrianglePos, _triangleEdgeSize));
 
-            NavigationMapHelper.GetTrianglesInHex(innerCircleTrianglePos, _mapSettings.TrianglesPerHexEdge, trianglesArray);
+            NavigationMapHelper.GetTrianglesInHex(innerCircleTrianglePos, _mapSettings.TrianglesPerHexEdge, trianglePositionsArray);
 
             var drawLocked = trianglesDrawMode == TrianglesDrawMode.OnlyLocked || trianglesDrawMode == TrianglesDrawMode.All;
             var drawUnlocked = trianglesDrawMode == TrianglesDrawMode.OnlyPassable || trianglesDrawMode == TrianglesDrawMode.All;
 
-            foreach (var triangle in trianglesArray)
+            foreach (var triangle in trianglePositionsArray)
             {
-                var isLocked = lockedTriangles.Contains(triangle.ToStandartized());
+                var isLocked = Map.IsTrianglePassable(triangle.ToStandartized());
                 var draw = isLocked ? drawLocked : drawUnlocked;
                 if (!draw)
                     continue;

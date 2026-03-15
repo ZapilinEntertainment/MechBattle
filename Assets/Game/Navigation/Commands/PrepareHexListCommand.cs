@@ -3,7 +3,7 @@ using Unity.Collections;
 
 namespace ZE.MechBattle.Navigation
 {
-    public static class InitializeMapHexesCommand
+    public static class PrepareHexListCommand
     {
         public static int Execute(NavigationMap map)
         {
@@ -15,7 +15,6 @@ namespace ZE.MechBattle.Navigation
             var hexEdgeSize = map.HexEdgeSize;
             var settings = map.Settings;
             using var hexList = GetHexesInRectangleCommand.Execute(settings.BottomLeftCorner, settings.TopRightCorner, hexEdgeSize, triangleEdgeSize, Allocator.Temp);
-            using var trianglesCountArray = new NativeArray<IntTriangularPos>(trianglesInHexCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             foreach (var hex in hexList)
             {
                 map.AddHex(hex);

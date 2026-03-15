@@ -14,67 +14,70 @@ namespace ZE.MechBattle.Navigation
         [Range(0, 1)] public float IntersectionPercentForLock;
         public float2 BottomLeftCorner;
         public float2 TopRightCorner;
+        public bool UnscannedSurfacesArePassable;
+
+        public float TriangleEdgeSize => HexEdgeSize / TrianglesPerHexEdge;
     }
 
     public class NavigationMap : IDisposable
     {        
         public readonly float TriangleEdgeSize;
         public readonly MapSettings Settings;
+
+        public bool IsInitialized { get;private set;} = false;
         public float HexEdgeSize => Settings.HexEdgeSize;
         public int TrianglesPerHexEdge => Settings.TrianglesPerHexEdge;
         public int Version { get;private set; } = 1;
-        public IReadOnlyCollection<NavigationHex> Hexes => _hexes.Values;
+        public IReadOnlyCollection<INavigationHex> Hexes => _hexes.Values;
         public IReadOnlyCollection<int2> HexCoords => _hexes.Keys;
 
         private readonly Dictionary<int2, NavigationHex> _hexes = new();
-        private readonly HashSet<IntTriangularPos> _lockedTriangles = new();
-        private readonly Dictionary<FlowMapId, HexFlowMap> _flowMaps = new();
-        private readonly Dictionary<int2, int> _hexEdgeMasks = new();
     
         public NavigationMap(in MapSettings settings)
         {
             Settings = settings;
-            TriangleEdgeSize = HexEdgeSize / TrianglesPerHexEdge;
+            TriangleEdgeSize = settings.TriangleEdgeSize;
         }
 
-        public void Dispose()
-        {
-            _hexes.Clear();
-            _lockedTriangles.Clear();
+        public void OnInitialized() => IsInitialized = true;
 
-            foreach (var flowMap in _flowMaps.Values)
-            {
-                flowMap.Dispose();
-            }
-            _flowMaps.Clear();
-        }
-
-        public void AddHex(in NavigationHex hex) 
-        {
-            _hexes.Add(hex.HexCoordinate, hex);
+        public NavigationHex AddHex(int2 hexCoord) 
+        { 
+            var hex = new NavigationHex(GetHexData(hexCoord));
+            _hexes.Add(hexCoord, hex);
             Version++;
-        }
-        public void LockTriangle(in IntTriangularPos triangle) => _lockedTriangles.Add(triangle);
-        public void UpdateFlowMap(int2 hexCoord, HexEdge exitEdge, HexFlowMap map) 
-        {
-            var key = new FlowMapId(hexCoord, exitEdge);
-            if (_flowMaps.TryGetValue(key, out var oldMap))
-                oldMap.Dispose();
-
-            _flowMaps[key] = map;
+            return hex;
         }
 
-        public bool TryGetFlowMap(int2 hexCoord, HexEdge exit, out HexFlowMap map) => _flowMaps.TryGetValue(new FlowMapId(hexCoord, exit), out map);
-
-        public bool ContainsHex(int2 hexCoord) => _hexes.ContainsKey(hexCoord);
-
-        public float GetTrianglePassCost(in IntTriangularPos pos)
+        public bool TryGetFlowMap(int2 hexCoord, out HexFlowMap map) 
         {
-            if (_lockedTriangles.Contains(pos))
-                return -1f;
+            if (!_hexes.TryGetValue(hexCoord, out var hex))
+            {
+                map = null;
+                return false;
+            }
 
-            // note: there can be special pass cost map also
-            return Constants.EDGE_PASS_COST;
+            map = hex.FlowMap; 
+            return map != null;
+        }
+
+        public bool TryGetHex(int2 hexCoord, out INavigationHex protectedHex) 
+        {
+            if (_hexes.TryGetValue(hexCoord, out var hex))
+            {
+                protectedHex = hex;
+                return true;
+            }
+            
+            protectedHex = default;
+            return false;
+        }
+
+        public NavigationHexPosition GetHexData(int2 hexCoord) => new(hexCoord.x, hexCoord.y, HexEdgeSize, TriangleEdgeSize);
+        public void UpdateHexFlowMap(int2 hexCoord, HexFlowMap flowMap) 
+        {
+            GetOrCreateHex(hexCoord).UpdateFlowMap(flowMap);
+            Version++;
         }
 
         // todo: move to own command
@@ -85,7 +88,7 @@ namespace ZE.MechBattle.Navigation
 
             foreach (var hex in _hexes.Values)
             {
-                var distSq = math.lengthsq(hex.CenterPos - pointPos);
+                var distSq = math.lengthsq(hex.CenterPosWorld - pointPos);
                 if (distSq < smallestDistSq)
                 {
                     smallestDistSq = distSq;
@@ -98,11 +101,27 @@ namespace ZE.MechBattle.Navigation
 
         public int2 WorldToHex(float3 worldPos) => TriangularMath.WorldToHex(worldPos.xz, HexEdgeSize);
 
-        public int GetHexEdgePassabilityMask(int2 pos) => _hexEdgeMasks.TryGetValue(pos, out var mask) ? mask : int.MaxValue;
-        public void UpdateHexEdgeMask(int2 pos, int value)
+        public float GetTriangleEntranceCost(IntTriangularPos pos) => IsTrianglePassable(pos) ? 1f : -1f;
+        public bool IsTrianglePassable(IntTriangularPos pos)
         {
-            _hexEdgeMasks[pos] = value;
-            Version++;
+            var hexCoord = TriangularMath.TriangularToHex(pos, TriangleEdgeSize);
+            if (!_hexes.TryGetValue(hexCoord, out var hex) 
+                || !hex.TrianglesData.TryGet(pos, out var triangleData)
+                || triangleData.IsValid)
+                return Settings.UnscannedSurfacesArePassable;
+
+            return triangleData.IsPassable;
         }
+
+        public void Dispose()
+        {
+            foreach (var hex in _hexes.Values)
+            {
+                hex.Dispose();
+            }
+            _hexes.Clear();
+        }
+
+        private NavigationHex GetOrCreateHex(int2 pos) => _hexes.TryGetValue(pos, out var hex) ? hex : AddHex(pos);
     }
 }

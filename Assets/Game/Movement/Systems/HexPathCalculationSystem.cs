@@ -16,7 +16,7 @@ namespace ZE.MechBattle.Ecs
         public World World { get; set;}
         private readonly NavigationPathsList _pathsList;
         private readonly NavigationMap _map;  
-        private readonly NativeHashMap<int2, NavigationNodeData> _nodeData;
+        private readonly NativeHashMap<int2, NavigationHexNodeData> _nodeData;
         private readonly NativeHashSet<int2> _openedList;
         private readonly NativeList<int2> _resultingList;
 
@@ -36,12 +36,10 @@ namespace ZE.MechBattle.Ecs
             _resultingList = new(capacity / 2, Allocator.Persistent);
         }
 
-        // todo: update hexNodesData on start and on changes
-
         public void OnAwake() { }
 
         public void OnUpdate(float deltaTime) 
-        {
+        {            
             if (_isTrackingActiveHandle)
             {
                 if (!_activeHandle.IsCompleted)
@@ -58,6 +56,7 @@ namespace ZE.MechBattle.Ecs
             if (!_pathsList.TryGetRequestedPath(out var startEnd))
                 return;
 
+            // node collections clearing done inside job
             UpdateHexNodesData(startEnd.xy);
             var job = new ConstructHexPathJob()
             {
@@ -66,6 +65,7 @@ namespace ZE.MechBattle.Ecs
                 NodesData = _nodeData,
                 ResultingData = _resultingList,
                 OpenedList = _openedList,
+
             };
             _activeHandle = job.ScheduleByRef();
             _calculatingPathStartEnd = startEnd;

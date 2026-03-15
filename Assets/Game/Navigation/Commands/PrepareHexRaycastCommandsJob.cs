@@ -1,0 +1,54 @@
+using UnityEngine;
+using Unity.Jobs;
+using Unity.Mathematics;
+using Unity.Collections;
+using Unity.Burst;
+
+namespace ZE.MechBattle.Navigation
+{
+    [BurstCompile]
+    public struct PrepareHexRaycastCommandsJob : IJob
+    {
+        public float2 HexCenter;
+        public float TriangleEdgeSize;
+        public int TrianglesPerHexEdge;
+        public int RaycastTrianglesPerEdge;
+        public float CastingHeight;
+        public float CastingRayLength;
+        public QueryParameters QueryParameters;
+
+
+        public NativeArray<IntTriangularPos> Positions;
+        [ReadOnly] public NativeArray<float2> RaycastPoints;
+        [WriteOnly] public NativeList<RaycastCommand> RaycastCommands;
+
+        public void Execute()
+        {
+            // note: all static functions inside are burstable
+
+            var innerCircleTopTriangle = NavigationMapHelper.GetInnerCircleTopTriangle(HexCenter, TriangleEdgeSize);
+            NavigationMapHelper.GetTrianglesInHex(innerCircleTopTriangle, TrianglesPerHexEdge, Positions);
+
+            // why Vector3: raycast command constructor use it
+            var direction = Vector3.down;
+
+            var subdivisionProtocol = new NavigationMapHelper.TriangleSubdivisionProtocol()
+            {
+                Centers = RaycastPoints,
+                TriangleEdgeLength = TriangleEdgeSize,
+                RaycastTrianglesPerEdge = RaycastTrianglesPerEdge
+            };
+
+            RaycastCommands.Clear();
+            foreach (var position in Positions)
+            {
+                var cartesian = TriangularMath.TriangularToWorld(position, TriangleEdgeSize);
+                NavigationMapHelper.SubdivideTriangleIntoSmallerAndGetCenters(cartesian.xz, position.IsPeak, subdivisionProtocol);
+                foreach (var raycastPos in subdivisionProtocol.Centers)
+                {
+                    RaycastCommands.Add(new(new Vector3(raycastPos.x, CastingHeight, raycastPos.y), direction, QueryParameters, CastingRayLength));
+                }
+            }
+        }
+    }
+}

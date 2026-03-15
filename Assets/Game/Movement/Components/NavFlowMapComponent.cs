@@ -1,5 +1,6 @@
 using Scellecs.Morpeh;
 using UnityEngine;
+using Unity.Mathematics;
 using Unity.IL2CPP.CompilerServices;
 using ZE.MechBattle.Navigation;
 
@@ -11,6 +12,7 @@ namespace ZE.MechBattle.Ecs
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public struct NavFlowMapComponent : IComponent 
     {
-        public FlowMapId Id;    
+        public int2 HexCoord;
+        public int HexVersion;
     }
 }
