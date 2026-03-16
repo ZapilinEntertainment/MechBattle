@@ -1,30 +1,86 @@
 using UnityEngine;
+using Unity.Burst;
 
 namespace ZE.MechBattle.Navigation
 {
-    public struct FlowMapCombinedCell
+    //completed by Google AI
+    public readonly struct FlowMapCellData
     {
-        public byte TopEdgeDirection;
-        public byte TopRightEdgeDirection;
-        public byte BottomRightEdgeDirection;
-        public byte BottomEdgeDirection;
-        public byte BottomLeftEdgeDirection;
-        public byte TopLeftEdgeDirection;
+        public bool IsPassable => ((Value >> PASSABLE_SHIFT) & BYTE_MASK) == 1;
+        public byte Direction => (byte)((Value >> DIRECTION_SHIFT) & BYTE_MASK);
+        public int ExitDistance => Value & DISTANCE_MASK;
+        public readonly int Value;
 
-        public byte this[HexEdge edge]
+        public const int PASSABLE_SHIFT = 24;
+        public const int INVALID_EXIT_DISTANCE = ushort.MaxValue;
+        public const int DISTANCE_MASK = 0xFFFF;
+
+        private const int DIRECTION_SHIFT = 16;        
+        private const int BYTE_MASK = 0xFF;
+
+        public FlowMapCellData(bool isPassable, byte direction, int exitDistance)
         {
-            get
+            var p = isPassable ? 1 : 0;
+            Value = (p << PASSABLE_SHIFT) |
+                     ((int)direction << DIRECTION_SHIFT) |
+                     (exitDistance & DISTANCE_MASK);
+        }
+
+        public FlowMapCellData(int value) => Value = value;
+    }
+
+    public unsafe struct FlowMapCombinedCell
+    {
+        private fixed int Values[6];
+        private const int PASSABLE_SHIFT = FlowMapCellData.PASSABLE_SHIFT;
+        private const int DISTANCE_MASK = FlowMapCellData.DISTANCE_MASK;
+
+        public FlowMapCellData this[HexEdge edge] => new(Values[(int)edge]);
+
+        public FlowMapCombinedCell(FlowMapCellData[] cells)
+        {
+            for (var i = 0; i < 6; i++)
             {
-                switch(edge)
-                {
-                    case HexEdge.UpRight: return TopRightEdgeDirection;
-                    case HexEdge.DownRight: return BottomRightEdgeDirection;
-                    case HexEdge.Down: return BottomEdgeDirection;
-                    case HexEdge.DownLeft: return BottomLeftEdgeDirection;
-                    case HexEdge.UpLeft: return TopLeftEdgeDirection;
-                    default: return TopEdgeDirection;
-                }
+                Values[i] = cells[i].Value;
             }
+        }
+
+        // encoded if cell is passable in every mask
+        public int GetCombinedPassabilityMask()
+        {
+            var mask = 0;
+            for (var i = 0; i < 6; i++)
+            {
+                mask |= ((Values[i] << PASSABLE_SHIFT) == 1) ? (1 << i) : 0;
+            }
+            return mask;
+        }
+
+
+        // encodes if edge can be reached from current cell (if distance to edge is not invalid)
+        public int GetCombinedEdgeAccessMask()
+        {
+            var mask = 0;
+            for (var i = 0; i < 6; i++)
+            {
+                mask |= ((Values[i] & DISTANCE_MASK) == FlowMapCellData.INVALID_EXIT_DISTANCE) ? 0 : (1 << i);
+            }
+            return mask;
+        }
+
+        [BurstCompile]
+        public static FlowMapCombinedCell CreateDefaultCell(IntTriangularPos pos, bool isPassable)
+        {
+            var cell = new FlowMapCombinedCell();
+            for (var i = 0; i < 6; i++)
+            {
+                var edge = (HexEdge)i;
+                cell.Values[i] = new FlowMapCellData(
+                    isPassable,
+                    (pos.IsPeak ? (byte)edge.ToNeighbourDirectionFromPeak() : (byte)edge.ToNeighbourDirectionFromValley()),
+                    0).Value;
+            }
+            return cell;
         }
     }
 }

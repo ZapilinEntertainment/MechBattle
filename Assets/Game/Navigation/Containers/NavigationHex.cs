@@ -10,12 +10,13 @@ namespace ZE.MechBattle.Navigation
     {
         float2 CenterPosWorld {get; }
         int2 HexCoordinate { get;}
+        IFlowMap FlowMap { get;}
     }
 
     public class NavigationHex : INavigationHex, IDisposable
     {
         public int Version { get; private set; } = 0;
-        public HexFlowMap FlowMap { get; private set; }
+        public IFlowMap FlowMap => _flowMap;
         public IntTriangularPos TriangularCenterPos => Data.TriangularCenterPos;
         public IntTriangularPos InnerRingTopTrianglePos => Data.InnerRingTopTriangle;
         public float3 CenterPos3DWorld => Data.CenterPos3D;
@@ -26,6 +27,7 @@ namespace ZE.MechBattle.Navigation
         public readonly NavigationHexPosition Data;      
 
         public SquaredHexTrianglesList<NavigationTriangleData> TrianglesData;
+        private IDisposableFlowMap _flowMap;
 
 
         public NavigationHex(in NavigationHexPosition data)
@@ -33,10 +35,10 @@ namespace ZE.MechBattle.Navigation
             Data = data;
         }
 
-        public void UpdateFlowMap(HexFlowMap flowMap)
+        public void UpdateFlowMap(IDisposableFlowMap flowMap)
         {
-            FlowMap?.Dispose();
-            FlowMap = flowMap;
+            _flowMap?.Dispose();
+            _flowMap = flowMap;
             Version++;
         }
 
@@ -48,7 +50,7 @@ namespace ZE.MechBattle.Navigation
 
         public void Dispose()
         {
-            FlowMap?.Dispose();
+            _flowMap?.Dispose();
         }
     }
 }

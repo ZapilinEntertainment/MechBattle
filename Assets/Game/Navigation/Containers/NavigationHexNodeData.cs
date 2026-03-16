@@ -7,13 +7,25 @@ namespace ZE.MechBattle.Navigation
 
     public struct NavigationHexNodeData
     {
-        public int HeuristicCost;
-        public int PathCost;        
-        public HexPathNodeKey ParentNodeKey;
-        public int StepsCount;
-        public NavigationNodeStatus Status;
-        public HexPathNodeKey NodeKey;
+        public readonly HexPathNodeKey NodeKey;
+        public readonly float HeuristicCost;
 
-        public int NodeCost => HeuristicCost + PathCost;
+        public HexPathNodeKey ParentNodeKey;       
+        public float PathCost;        
+        public int StepsCount;
+        public NavigationNodeStatus Status;      
+
+        public float NodeCost => HeuristicCost + PathCost;
+
+        public NavigationHexNodeData(HexPathNodeKey nodeKey, float heuristicCost)
+        {
+            NodeKey = nodeKey;
+            HeuristicCost = heuristicCost;
+
+            ParentNodeKey = default;
+            PathCost = 0;
+            StepsCount = 0;
+            Status = NavigationNodeStatus.Undefined;
+        }
     }
 }

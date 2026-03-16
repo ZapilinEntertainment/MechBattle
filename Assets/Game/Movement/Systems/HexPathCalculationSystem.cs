@@ -16,13 +16,12 @@ namespace ZE.MechBattle.Ecs
         public World World { get; set;}
         private readonly NavigationPathsList _pathsList;
         private readonly NavigationMap _map;  
-        private readonly NativeHashMap<int2, NavigationHexNodeData> _nodeData;
-        private readonly NativeHashSet<int2> _openedList;
-        private readonly NativeList<int2> _resultingList;
 
         private bool _isTrackingActiveHandle = false;
+        private int _currentMapVersion;
         private JobHandle _activeHandle;
-        private int4 _calculatingPathStartEnd;
+        private HexPathKey _calculatingPathKey;
+        private HexPathJobCollections _jobDataCollection;
 
         [Inject]
         public HexPathCalculationSystem(NavigationPathsList list, NavigationMap map)
@@ -31,15 +30,16 @@ namespace ZE.MechBattle.Ecs
             _map = map;
 
             var capacity = map.Hexes.Count;
-            _nodeData = new(capacity, Allocator.Persistent);
-            _openedList = new(capacity / 2, Allocator.Persistent);
-            _resultingList = new(capacity / 2, Allocator.Persistent);
         }
 
         public void OnAwake() { }
 
         public void OnUpdate(float deltaTime) 
         {            
+            if (!_map.IsInitialized)
+                return;
+
+            var jobDataResetRequired = false;
             if (_isTrackingActiveHandle)
             {
                 if (!_activeHandle.IsCompleted)
@@ -48,50 +48,46 @@ namespace ZE.MechBattle.Ecs
                 _activeHandle.Complete();
                 _isTrackingActiveHandle = false;
 
-                var points = _resultingList.AsArray().ToArray();
+                var points = _jobDataCollection.ResultingData.AsArray().ToArray();
                 var path = new HexPath(points);
                 _pathsList.AddCalculatedPath(path);
+
+                jobDataResetRequired = true;
             }
 
-            if (!_pathsList.TryGetRequestedPath(out var startEnd))
+            if (!_pathsList.TryGetRequestedPath(out var pathKey))
                 return;
 
-            // node collections clearing done inside job
-            UpdateHexNodesData(startEnd.xy);
+            if (_map.Version != _currentMapVersion)
+            {
+                _jobDataCollection?.Dispose();
+                _jobDataCollection = PrepareHexPathJobCollectionsCommand.Execute(Allocator.Persistent, _map);
+                _currentMapVersion = _map.Version;
+            }
+            else
+            {
+                if (jobDataResetRequired)
+                    _jobDataCollection.Reset();
+            }
+
             var job = new ConstructHexPathJob()
             {
-                StartPos = startEnd.xy,
-                TargetPos = startEnd.zw,
-                NodesData = _nodeData,
-                ResultingData = _resultingList,
-                OpenedList = _openedList,
+                HexData = _jobDataCollection.HexData,
+                NavigationData = _jobDataCollection.NavigationData,
+                ResultingData = _jobDataCollection.ResultingData,
+                OpenedList = _jobDataCollection.OpenedList,
 
+                Start = pathKey.Start,
+                End = pathKey.End,
             };
             _activeHandle = job.ScheduleByRef();
-            _calculatingPathStartEnd = startEnd;
+            _calculatingPathKey = pathKey;
             _isTrackingActiveHandle = true;
         }
 
         public void Dispose()
         {
-            _nodeData.Dispose();
-            _resultingList.Dispose();
-            _openedList.Dispose();
-        }
-
-        private void UpdateHexNodesData(int2 startPos)
-        {
-            _nodeData.Clear();
-            foreach (var hex in _map.Hexes)
-            {
-                var pos = hex.HexCoordinate;
-                _nodeData.Add(pos, new()
-                {
-                    EdgesPassabilityMask = _map.GetHexEdgePassabilityMask(pos),
-                    HeuristicCost = HexMath.CalculateDistance(startPos, pos),
-                    Status = NavigationNodeStatus.Undefined,
-                });
-            }
+            _jobDataCollection?.Dispose();
         }
     }
 }

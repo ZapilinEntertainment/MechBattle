@@ -102,7 +102,7 @@ namespace ZE.MechBattle.Navigation.DebugDraw
         [Button("Highlight Hex")]
         public void HighlightHex()
         {
-            var pos = TriangularMath.HexToWorld(_highlightHexIndex, _mapSettings.HexEdgeSize);
+            var pos = HexMath.HexToWorld(_highlightHexIndex, _mapSettings.HexEdgeSize);
             _highlightHexCenter = new Vector3(pos.x, 0f, pos.y);
         }
 
@@ -180,7 +180,7 @@ namespace ZE.MechBattle.Navigation.DebugDraw
 
             // draw hex triangles
 
-            var halfHeight = _triangleEdgeSize * Constants.SQRT_OF_THREE * 0.125f;
+            var halfHeight = _triangleEdgeSize * NavigationConstants.SQRT_OF_THREE * 0.125f;
             var innerCircleTrianglePos = TriangularMath.WorldToTrianglePos(new(centerPos.x, 0f, centerPos.y + halfHeight), _triangleEdgeSize);
             //Debug.Log(TriangularMath.TriangularToCartesian(innerCircleTrianglePos, _triangleEdgeSize));
 
@@ -215,7 +215,7 @@ namespace ZE.MechBattle.Navigation.DebugDraw
             float3 pointC;
 
             // 1/3 of height
-            var heightPart = edgeSize * Constants.EDGE_TO_PARTIAL_HEIGHT_CF;
+            var heightPart = edgeSize * NavigationConstants.EDGE_TO_PARTIAL_HEIGHT_CF;
             if (!isPeak)
             {
                 pointC = cartesianCenter - TriangularMath.DirX * heightPart * sizeCf;

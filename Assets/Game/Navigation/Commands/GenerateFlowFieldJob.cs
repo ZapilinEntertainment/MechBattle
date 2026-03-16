@@ -18,6 +18,8 @@ namespace ZE.MechBattle.Navigation
         
     }
 
+    // TODO: write path distance to resulting cells
+
     [BurstCompile]
     public struct GenerateFlowFieldJob : IJob
     {

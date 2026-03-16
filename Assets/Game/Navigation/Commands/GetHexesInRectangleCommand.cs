@@ -16,8 +16,8 @@ namespace ZE.MechBattle.Navigation
         {
             var result = new NativeList<int2>(allocator);
 
-            var bottomCorner = TriangularMath.WorldToHex(worldMin, hexEdge);
-            var topCorner = TriangularMath.WorldToHex(worldMax, hexEdge);
+            var bottomCorner = HexMath.DefineHex(worldMin, hexEdge);
+            var topCorner = HexMath.DefineHex(worldMax, hexEdge);
             var yOffset = (int)math.ceil(topCorner.x - bottomCorner.x / 2);
 
             var width = topCorner.x - bottomCorner.x + 1;

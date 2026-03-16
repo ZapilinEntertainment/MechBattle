@@ -7,14 +7,21 @@ using System.Runtime.CompilerServices;
 
 namespace ZE.MechBattle.Navigation
 {
+    // NOTE:
+    // this a-star algorithm build path based on hex edge centers
+    // every hex have 6 edge points, however each one is its neighbour counter-edge
+    // so HexData contains exact hex edge access masks and passabilities,
+    // when its edges are set as indices in NavigationData - so edge points will not be doubled
+
+
     [BurstCompile]
     public struct ConstructHexPathJob : IJob
     {
-        [WriteOnly] public NativeList<HexPathNodeKey> ResultingData;
+        [NoAlias,WriteOnly] public NativeList<HexPathNodeKey> ResultingData;
 
-        public int AccessibleEdgesMask;        
-        public HexPathNodeKey TargetPos;
-        public HexPathNodeKey StartPos;
+        public HexPathNodeKey Start;
+        public HexPathNodeKey End;
+       
         [NoAlias, ReadOnly] public NativeHashMap<int2, HexEdgeNodesData> HexData;
         [NoAlias] public NativeHashSet<int> OpenedList;
         [NoAlias] public NativeArray<NavigationHexNodeData> NavigationData;
@@ -24,50 +31,27 @@ namespace ZE.MechBattle.Navigation
 
         public void Execute()
         {
-            ResultingData.Clear();
-            OpenedList.Clear();
+            var startData = HexData[Start.HexCoord];
+            var closestDistance = HexMath.CalculateDistance(Start, End);
+            var closestNode = Start;
+           
 
-            var startData = HexData[StartPos.HexCoord];
-            for (var i = 0; i < 6; i++)
-            {
-                var edgeDataIndex = startData.GetNodeIndex(i);
-                if (edgeDataIndex == HexEdgeNodesData.INVALID_INDEX)
-                    continue;
-
-                var edgeData = NavigationData[edgeDataIndex];
-                edgeData.PathCost = edgeData.HeuristicCost;
-                edgeData.StepsCount = 0;
-                edgeData.Status = NavigationNodeStatus.Closed;
-                NavigationData[edgeDataIndex] = edgeData;
-            }
-
-            for (var i = 0; i < 6; i++)
-            {
-                var edgeDataIndex = startData.GetNodeIndex(i);
-                if (edgeDataIndex == HexEdgeNodesData.INVALID_INDEX)
-                    continue;
-
-                HandleNeighbours(new(StartPos.HexCoord, i));
-            }
-
-            var closestDistance = float.MaxValue;
-            var closestNode = StartPos;
-            var targetNodeIndex = GetNodeIndex(TargetPos);
+            // setup start cell:
+            var startDataIndex = startData.GetNodeIndex(Start.EdgeIndex);
+            var navData = NavigationData[startDataIndex];
+            navData.PathCost = navData.HeuristicCost;
+            navData.StepsCount = 0;
+            navData.Status = NavigationNodeStatus.Closed;
+            NavigationData[startDataIndex] = navData;
+            HandleNeighbours(Start);
 
             do
             {
                 var nextNode = FindNextNode();
-                if (nextNode == TargetPos)
+                if (nextNode == End)
                 {
-                    closestNode = TargetPos;
-                    break;
-                }
-
-                var sqDistance = HexMath.CalculateDistanceSq(nextNode, TargetPos);
-                if (sqDistance < closestDistance)
-                {
-                    closestDistance = sqDistance;
-                    closestNode = nextNode;
+                    closestNode = End;
+                    break;          
                 }
 
                 HandleNeighbours(nextNode);
@@ -102,8 +86,7 @@ namespace ZE.MechBattle.Navigation
 
             for (var i = 0; i < 6; i++)
             {
-                var neighbourIndex = hexData.GetNodeIndex(i);
-                if (neighbourIndex == HexEdgeNodesData.INVALID_INDEX
+                if (!hexData.TryGetNodeIndex(i, out var neighbourIndex)
                     || !hexData.AccessMap.IsEdgeAccessible(activeNodePos.Edge, (HexEdge)(i)))
                     continue;
 
@@ -123,8 +106,7 @@ namespace ZE.MechBattle.Navigation
             var edgeInNeighbouredHex = activeNodePos.Edge.ToOpposite();
             for (var i = 0; i < 6; i++)
             {
-                var neighbourIndex = neighbouredHexData.GetNodeIndex(i);
-                if (neighbourIndex == HexEdgeNodesData.INVALID_INDEX
+                if (!neighbouredHexData.TryGetNodeIndex(i, out var neighbourIndex)
                     ||!neighbouredHexData.AccessMap.IsEdgeAccessible(edgeInNeighbouredHex, (HexEdge)i))
                     continue;
 
@@ -163,7 +145,7 @@ namespace ZE.MechBattle.Navigation
 
         private HexPathNodeKey FindNextNode()
         {
-            var minDist = int.MaxValue;
+            var minDist = float.MaxValue;
             var currentIndex = 0;
 
             // search for closest:

@@ -34,7 +34,7 @@ namespace ZE.MechBattle.Navigation.DebugDraw
             if (currentTriangle != _selectedTrianglePos) 
                 UpdateTriangleData(currentTriangle);
 
-            var currentHex = TriangularMath.WorldToHex(new(worldPos.x, worldPos.z), _mainDrawer.Map.HexEdgeSize);
+            var currentHex = HexMath.DefineHex(new(worldPos.x, worldPos.z), _mainDrawer.Map.HexEdgeSize);
             if (currentHex.x != _selectedHex.x || currentHex.y != _selectedHex.y)
                 UpdateHexData(currentHex);
 
@@ -82,7 +82,7 @@ namespace ZE.MechBattle.Navigation.DebugDraw
         {
             var hexEdge = _mainDrawer.Map.HexEdgeSize;
             _hexPointsPreset = new(hexEdge);
-            var center = TriangularMath.HexToWorld(hexPos, hexEdge);
+            var center = HexMath.DefineHex(hexPos, hexEdge);
 
             float3 ToVector3(float2 pos) => new (pos.x, 0f, pos.y);
 

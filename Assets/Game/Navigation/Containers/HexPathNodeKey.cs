@@ -34,6 +34,9 @@ namespace ZE.MechBattle.Navigation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int2 ToNeighbouredHexPos() => _value.xy + Edge.ToHexOffsetVector();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public HexPathNodeKey ToOpposite() => new(HexCoord + Edge.ToHexOffsetVector(), Edge.ToOpposite());
+
 
         public static bool operator ==(HexPathNodeKey left, HexPathNodeKey right) => left.Equals(right);
         public static bool operator !=(HexPathNodeKey left, HexPathNodeKey right) => !left.Equals(right);

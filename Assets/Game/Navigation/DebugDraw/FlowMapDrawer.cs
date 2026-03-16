@@ -70,23 +70,29 @@ namespace ZE.MechBattle.Navigation.DebugDraw
             _gizmosData.Clear();
 
             var map = _mapDrawer.Map;
-            if (!map.TryGetFlowMap(hexCoord, out var flowMap))
-            {                
+            var flowMap = map.GetFlowMap(hexCoord);
+            HexFlowMap castedFlowMap;
+            if (flowMap.IsStub)
+            {
                 _navigationCaster ??= new NavigationCaster(map.Settings, Allocator.Persistent);
-                flowMap = await CalculateHexFlowMapCommand.ExecuteAsync(map.GetHexData(hexCoord), _navigationCaster, _tokenSource.Token);
+                castedFlowMap = await CalculateHexFlowMapCommand.ExecuteAsync(map.GetHexData(hexCoord), _navigationCaster, _tokenSource.Token);
                 
                 if (!map.TryGetHex(hexCoord, out var hex))
                     map.AddHex(hexCoord);
 
-                map.UpdateHexFlowMap(hexCoord, flowMap);
+                map.UpdateHexFlowMap(hexCoord, castedFlowMap);
+            }
+            else
+            {
+                castedFlowMap = flowMap as HexFlowMap;
             }
 
             //draw:
-            foreach (var kvp in flowMap.Data)
+            foreach (var kvp in castedFlowMap.Data)
             {
                 var worldPos = TriangularMath.TriangularToWorld(kvp.Key, map.TriangleEdgeSize);
-                var direction = kvp.Value[_exitEdge];
-                var vector = TriangularMath.TriangularDirectionToWorld(direction, kvp.Key.IsPeak);
+                var flowMapCell = kvp.Value[_exitEdge];
+                var vector = TriangularMath.TriangularDirectionToWorld(flowMapCell.Direction, kvp.Key.IsPeak);
                 _gizmosData.Add(new(vector, worldPos));
             }
         }

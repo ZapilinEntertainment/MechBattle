@@ -41,25 +41,27 @@ namespace ZE.MechBattle.Navigation
 
         public void OnInitialized() => IsInitialized = true;
 
+        public IFlowMap GetFlowMap(int2 hexCoord)
+        {
+            if (TryGetHex(hexCoord, out var hex) && hex.FlowMap != null)
+                return hex.FlowMap;
+
+            return Settings.UnscannedSurfacesArePassable ? IFlowMap.FullAccess : IFlowMap.NoWay;
+        }
+
+        public void UpdateHexFlowMap(int2 hexCoord, IDisposableFlowMap flowMap)
+        {
+            GetOrCreateHex(hexCoord).UpdateFlowMap(flowMap);
+            Version++;
+        }
+
         public NavigationHex AddHex(int2 hexCoord) 
         { 
             var hex = new NavigationHex(GetHexData(hexCoord));
             _hexes.Add(hexCoord, hex);
             Version++;
             return hex;
-        }
-
-        public bool TryGetFlowMap(int2 hexCoord, out HexFlowMap map) 
-        {
-            if (!_hexes.TryGetValue(hexCoord, out var hex))
-            {
-                map = null;
-                return false;
-            }
-
-            map = hex.FlowMap; 
-            return map != null;
-        }
+        }        
 
         public bool TryGetHex(int2 hexCoord, out INavigationHex protectedHex) 
         {
@@ -74,11 +76,7 @@ namespace ZE.MechBattle.Navigation
         }
 
         public NavigationHexPosition GetHexData(int2 hexCoord) => new(hexCoord.x, hexCoord.y, HexEdgeSize, TriangleEdgeSize);
-        public void UpdateHexFlowMap(int2 hexCoord, HexFlowMap flowMap) 
-        {
-            GetOrCreateHex(hexCoord).UpdateFlowMap(flowMap);
-            Version++;
-        }
+       
 
         // todo: move to own command
         public NavigationHex GetNearestHex(float2 pointPos)
@@ -99,7 +97,7 @@ namespace ZE.MechBattle.Navigation
             return closestHex;
         }
 
-        public int2 WorldToHex(float3 worldPos) => TriangularMath.WorldToHex(worldPos.xz, HexEdgeSize);
+        public int2 WorldToHex(float3 worldPos) => HexMath.DefineHex(worldPos.xz, HexEdgeSize);
 
         public float GetTriangleEntranceCost(IntTriangularPos pos) => IsTrianglePassable(pos) ? 1f : -1f;
         public bool IsTrianglePassable(IntTriangularPos pos)

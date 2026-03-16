@@ -33,5 +33,33 @@ namespace ZE.MechBattle.Navigation
             var offsetVector = (float2)edge.ToHexOffsetVector();
             return 0.5f * offsetVector;
         }
+
+        [BurstCompile]
+        public static PeakNeighbour ToNeighbourDirectionFromPeak(this HexEdge edge)
+        {
+            switch (edge)
+            {
+                case HexEdge.UpRight: return PeakNeighbour.EdgeUpRight;
+                case HexEdge.DownRight: return PeakNeighbour.VertexDownRightValley;
+                case HexEdge.Down: return PeakNeighbour.EdgeDown;
+                case HexEdge.DownLeft: return PeakNeighbour.VertexDownLeftValley;
+                case HexEdge.UpLeft: return PeakNeighbour.EdgeUpLeft;
+                default: return PeakNeighbour.VertexUp;
+            }
+        }
+
+        [BurstCompile]
+        public static ValleyNeighbour ToNeighbourDirectionFromValley(this HexEdge edge)
+        {
+            switch (edge)
+            {
+                case HexEdge.UpRight: return ValleyNeighbour.VertexUpRightPeak;
+                case HexEdge.DownRight: return ValleyNeighbour.EdgeDownRight;
+                case HexEdge.Down: return ValleyNeighbour.VertexDown;
+                case HexEdge.DownLeft: return ValleyNeighbour.EdgeDownLeft;
+                case HexEdge.UpLeft: return ValleyNeighbour.VertexUpLeftPeak;
+                default: return ValleyNeighbour.EdgeUp;
+            }
+        }
     }
 }

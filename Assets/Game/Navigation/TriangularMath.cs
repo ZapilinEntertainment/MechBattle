@@ -158,7 +158,7 @@ namespace ZE.MechBattle.Navigation
         {
             // there is no correct method to convert directly yet
             var world = TriangularToWorld(pos, triangleEdge);
-            return HexMath.WorldToHex(world.xz, triangleEdge);
+            return HexMath.DefineHex(world.xz, triangleEdge);
         }
     }
 }

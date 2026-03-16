@@ -16,7 +16,7 @@ namespace ZE.MechBattle.Navigation
         public NavigationHexPosition(int hexCoordX, int hexCoordY, float hexEdge, float triangleEdge)
         {
             HexCoordinate = new(hexCoordX, hexCoordY);
-            CenterPos = TriangularMath.HexToWorld(HexCoordinate, hexEdge);
+            CenterPos = HexMath.DefineHex(HexCoordinate, hexEdge);
             InnerRingTopTriangle = NavigationMapHelper.GetInnerCircleTopTriangle(CenterPos, triangleEdge);
         }
     }

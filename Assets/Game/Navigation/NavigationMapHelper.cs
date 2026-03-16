@@ -8,7 +8,7 @@ namespace ZE.MechBattle.Navigation
 {
     public static class NavigationMapHelper
     {
-        private const float SQT_HALVED = Constants.SQRT_OF_THREE * 0.5f;
+        private const float SQT_HALVED = NavigationConstants.SQRT_OF_THREE * 0.5f;
         private const float HEIGHT_PART_CF = SQT_HALVED * 2f / 3f; // 2/3 of height is orthocenter       
 
 
@@ -141,7 +141,7 @@ namespace ZE.MechBattle.Navigation
         [BurstCompile]
         public static IntTriangularPos GetInnerCircleTopTriangle(float2 hexCenter, float triangleEdgeSize)
         {
-            var halfHeight = triangleEdgeSize * Constants.SQRT_OF_THREE * 0.125f;
+            var halfHeight = triangleEdgeSize * NavigationConstants.SQRT_OF_THREE * 0.125f;
             return TriangularMath.WorldToTrianglePos(new(hexCenter.x, 0f, hexCenter.y + halfHeight), triangleEdgeSize);
         }
 

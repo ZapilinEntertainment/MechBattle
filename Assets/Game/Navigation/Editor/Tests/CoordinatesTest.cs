@@ -69,7 +69,7 @@ namespace ZE.MechBattle.Navigation.Tests
         public void HexCoordsTest(float x, float z, float edge, int a, int b)
         {
             var pos = new float2(x,z);
-            var hex = TriangularMath.WorldToHex(pos, edge);
+            var hex = HexMath.DefineHex(pos, edge);
             Assert.AreEqual(hex.x, a);
             Assert.AreEqual(hex.y, b);
         }
