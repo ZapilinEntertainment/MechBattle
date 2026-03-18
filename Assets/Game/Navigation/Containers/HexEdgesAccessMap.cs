@@ -13,15 +13,22 @@ namespace ZE.MechBattle.Navigation
     {
         public static HexEdgesAccessMap FullAccessMap => new(new BitField64(ulong.MaxValue));
         public static HexEdgesAccessMap NoWayMap => default;
+
         private readonly BitField64 _data;
+        // IMPORTANT NOTE: _data is readonly, so don't use constructions like:
+        // var map = new(_oldData);
+        // map._data.Change();
+        // return map;
+        // It won't change!
+
         private const int EDGE_ACCESS_END = 36;
         
-        public bool IsEdgeAccessible(HexEdge startEdge, HexEdge endEdge) => _data.IsSet(DecodeConnectionIndex(startEdge, endEdge));
+        public bool IsEdgeAccessible(HexEdge startEdge, HexEdge endEdge) => startEdge != endEdge && _data.IsSet(DecodeConnectionIndex(startEdge, endEdge));
         public HexEdgesAccessMap SetAccess(HexEdge startEdge, HexEdge endEdge, bool isAccessible) 
         {
-            var newMap = new HexEdgesAccessMap(_data);
-            newMap._data.SetBits(DecodeConnectionIndex(startEdge, endEdge), isAccessible);
-            return newMap;
+            var dataCopy = _data;
+            dataCopy.SetBits(DecodeConnectionIndex(startEdge, endEdge), isAccessible);
+            return new(dataCopy);
         }
 
         public HexEdgesAccessMap(BitField64 data) => _data = data;
@@ -36,9 +43,9 @@ namespace ZE.MechBattle.Navigation
         public bool IsEdgePassable(int edgeIndex) => _data.IsSet(edgeIndex + EDGE_ACCESS_END);
         public HexEdgesAccessMap SetEdgePassable(HexEdge edge, bool isPassable) 
         {
-            var newMap = new HexEdgesAccessMap(_data);
-            newMap._data.SetBits(DecodePassabilityIndex(edge), isPassable);
-            return newMap;
+            var dataCopy = _data;
+            dataCopy.SetBits(DecodePassabilityIndex(edge), isPassable);
+            return new(dataCopy);
         }
 
         

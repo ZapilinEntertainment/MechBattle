@@ -2,14 +2,19 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
-    public readonly struct HexPath
+    public class HexPath
     {
         public readonly HexPathNodeKey[] Points;
+        public readonly float Cost;
         public HexPathNodeKey Start => Points[0];
         public HexPathNodeKey End => Points[Points.Length - 1];
         public HexPathKey GetKey() => new(Start,End);
 
-        public HexPath(HexPathNodeKey[] pts) => Points = pts;
+        public HexPath(HexPathNodeKey[] pts, float cost) 
+        {
+            Points = pts;
+            Cost = cost;
+        }
     }
 
     public readonly struct HexPathKey

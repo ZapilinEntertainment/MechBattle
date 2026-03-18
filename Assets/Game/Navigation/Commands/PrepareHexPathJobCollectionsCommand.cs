@@ -1,3 +1,4 @@
+using UnityEngine;
 using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Mathematics;
@@ -10,7 +11,6 @@ namespace ZE.MechBattle.Navigation
         public static HexPathJobCollections Execute(Allocator allocator, NavigationMap map)
         {
             var data = new HexPathJobCollections(Allocator.TempJob, map.Hexes.Count);
-
             var indicesDictionary = new Dictionary<HexPathNodeKey, int>();
             var indicesSendArray = new int[6];
             var nextIndex = 0;
@@ -38,9 +38,11 @@ namespace ZE.MechBattle.Navigation
 
                     var index = nextIndex++;
                     indicesDictionary.Add(key, edgeIndex);
+                    indicesSendArray[edgeIndex] = index;
+                    data.NavigationData[index] = new(new(hexPos, edgeIndex));
                 }
 
-                data.HexData.Add(hexPos, new(indicesSendArray, accessMap));
+                data.HexData.Add(hexPos, new(indicesSendArray, accessMap));                
             }
 
             return data;

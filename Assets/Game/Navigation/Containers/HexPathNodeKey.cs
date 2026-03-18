@@ -41,5 +41,6 @@ namespace ZE.MechBattle.Navigation
         public static bool operator ==(HexPathNodeKey left, HexPathNodeKey right) => left.Equals(right);
         public static bool operator !=(HexPathNodeKey left, HexPathNodeKey right) => !left.Equals(right);
         public override bool Equals(object obj) => obj is HexPathNodeKey other && Equals(other);
+        public override string ToString() => $"{HexCoord}:{Edge}";
     }
 }

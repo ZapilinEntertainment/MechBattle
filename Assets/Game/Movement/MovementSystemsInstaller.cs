@@ -14,7 +14,7 @@ namespace ZE.MechBattle.Ecs
             builder.Register<HexPathCalculationSystem>(Lifetime.Scoped);
             builder.Register<NavComponentsClearSystem>(Lifetime.Scoped);
 
-            builder.Register<NavigationPathsList>(_ => new(), Lifetime.Scoped);
+            builder.Register<NavigationHexPathsList>(_ => new(), Lifetime.Scoped);
 
             builder.Register<NavigationMapInitializer>(Lifetime.Transient);
         }

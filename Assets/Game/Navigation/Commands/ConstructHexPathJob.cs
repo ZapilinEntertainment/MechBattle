@@ -21,6 +21,7 @@ namespace ZE.MechBattle.Navigation
 
         public HexPathNodeKey Start;
         public HexPathNodeKey End;
+        public NativeReference<float> PathCost;
        
         [NoAlias, ReadOnly] public NativeHashMap<int2, HexEdgeNodesData> HexData;
         [NoAlias] public NativeHashSet<int> OpenedList;
@@ -31,10 +32,16 @@ namespace ZE.MechBattle.Navigation
 
         public void Execute()
         {
+            //Debug.Log($"navigation data length: {NavigationData.Length}");
             var startData = HexData[Start.HexCoord];
             var closestDistance = HexMath.CalculateDistance(Start, End);
-            var closestNode = Start;
-           
+            var closestNode = Start;           
+
+            for (var i = 0; i < NavigationData.Length; i++)
+            {
+                var data = NavigationData[i];
+                data.HeuristicCost = HexMath.CalculateDistance(data.NodeKey.HexCoord,Start.HexCoord);
+            }
 
             // setup start cell:
             var startDataIndex = startData.GetNodeIndex(Start.EdgeIndex);
@@ -61,13 +68,15 @@ namespace ZE.MechBattle.Navigation
             BuildPath(closestNode);
         }
 
-        private void BuildPath(HexPathNodeKey pos)
+        private void BuildPath(HexPathNodeKey finalPos)
         {
-            var index = GetNodeIndex(pos);
-            var stepsCount = NavigationData[index].StepsCount;
+            var index = GetNodeIndex(finalPos);
+            var finalNodeData = NavigationData[index];
+            var stepsCount = finalNodeData.StepsCount;
+            PathCost.Value = finalNodeData.PathCost;
             ResultingData.Resize(stepsCount+1, NativeArrayOptions.UninitializedMemory);
 
-            var currentPos = pos;
+            var currentPos = finalPos;
             var i = stepsCount;
             while (i >= 0)
             {
@@ -83,6 +92,8 @@ namespace ZE.MechBattle.Navigation
             //own hex nodes:
             var hexData = HexData[activeNodePos.HexCoord];
             var activeNodeData = NavigationData[hexData.GetNodeIndex(activeNodePos.EdgeIndex)];
+
+            //Debug.Log($"updating {activeNodePos} neighbours:");
 
             for (var i = 0; i < 6; i++)
             {
@@ -100,7 +111,8 @@ namespace ZE.MechBattle.Navigation
             // neighboured hex:
             var neighbouredHexPos = activeNodePos.ToNeighbouredHexPos();
             if (!hexData.IsEdgePassable(activeNodePos.Edge) 
-                || !HexData.TryGetValue(neighbouredHexPos, out var neighbouredHexData))
+                || !HexData.TryGetValue(neighbouredHexPos, out var neighbouredHexData)
+                || !neighbouredHexData.IsEdgePassable(activeNodePos.Edge.ToOpposite()))
                 return;
 
             var edgeInNeighbouredHex = activeNodePos.Edge.ToOpposite();
@@ -121,7 +133,11 @@ namespace ZE.MechBattle.Navigation
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void HandleNeighbour(in NavigationHexNodeData activeNodeData, HexPathNodeKey activeNodePos, NavigationHexNodeData neighbourData, int neighbourIndex)
+        private void HandleNeighbour(
+            in NavigationHexNodeData activeNodeData, 
+            HexPathNodeKey activeNodePos, 
+            NavigationHexNodeData neighbourData, 
+            int neighbourIndex)
         {
             var newNeighbourPathCost = activeNodeData.PathCost + DEFAULT_STEP_COST;
             var updateData = true;
@@ -132,6 +148,7 @@ namespace ZE.MechBattle.Navigation
             else
             {
                 OpenedList.Add(neighbourIndex);
+                neighbourData.Status = NavigationNodeStatus.Opened;
             }
 
             if (updateData)
@@ -140,6 +157,8 @@ namespace ZE.MechBattle.Navigation
                 neighbourData.ParentNodeKey = activeNodePos;
                 neighbourData.StepsCount = activeNodeData.StepsCount + 1;
                 NavigationData[neighbourIndex] = neighbourData;
+
+                //Debug.Log($"updated {neighbourData.NodeKey}, new cost: {neighbourData.PathCost}, new parent {neighbourData.ParentNodeKey}");
             }
         }
 
@@ -158,12 +177,13 @@ namespace ZE.MechBattle.Navigation
                     minDist = fsum;
                     currentIndex = index;
                 }
-            }
-            //Debug.Log($"goto {currentHexPos}");
+            }            
 
             var currentNodeData = NavigationData[currentIndex];
             currentNodeData.Status = NavigationNodeStatus.Closed;
             NavigationData[currentIndex] = currentNodeData;
+
+            //Debug.Log($"goto {currentNodeData.NodeKey}");
 
             OpenedList.Remove(currentIndex);
             return currentNodeData.NodeKey;

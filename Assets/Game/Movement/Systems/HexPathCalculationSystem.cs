@@ -14,7 +14,7 @@ namespace ZE.MechBattle.Ecs
     public sealed class HexPathCalculationSystem : ISystem 
     {
         public World World { get; set;}
-        private readonly NavigationPathsList _pathsList;
+        private readonly NavigationHexPathsList _pathsList;
         private readonly NavigationMap _map;  
 
         private bool _isTrackingActiveHandle = false;
@@ -24,7 +24,7 @@ namespace ZE.MechBattle.Ecs
         private HexPathJobCollections _jobDataCollection;
 
         [Inject]
-        public HexPathCalculationSystem(NavigationPathsList list, NavigationMap map)
+        public HexPathCalculationSystem(NavigationHexPathsList list, NavigationMap map)
         {
             _pathsList = list;
             _map = map;
@@ -49,7 +49,7 @@ namespace ZE.MechBattle.Ecs
                 _isTrackingActiveHandle = false;
 
                 var points = _jobDataCollection.ResultingData.AsArray().ToArray();
-                var path = new HexPath(points);
+                var path = new HexPath(points, _jobDataCollection.PathCost.Value);
                 _pathsList.AddCalculatedPath(path);
 
                 jobDataResetRequired = true;
@@ -76,6 +76,7 @@ namespace ZE.MechBattle.Ecs
                 NavigationData = _jobDataCollection.NavigationData,
                 ResultingData = _jobDataCollection.ResultingData,
                 OpenedList = _jobDataCollection.OpenedList,
+                PathCost = _jobDataCollection.PathCost,
 
                 Start = pathKey.Start,
                 End = pathKey.End,

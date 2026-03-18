@@ -14,7 +14,7 @@ namespace ZE.MechBattle.Ecs
     {
         public World World { get; set; }
 
-        private readonly NavigationPathsList _pathsList;
+        private readonly NavigationHexPathsList _pathsList;
         private NavigationMap _map;
 
         private Filter _invalidPathsFilter;
@@ -27,7 +27,7 @@ namespace ZE.MechBattle.Ecs
         private Stash<InvalidHexPathTag> _invalidTags;
         private Stash<CalculatingHexPathComponent> _calculatingComponents;
 
-        public HexPathUpdateSystem(NavigationPathsList pathsList)
+        public HexPathUpdateSystem(NavigationHexPathsList pathsList)
         {
             _pathsList = pathsList;
         }
@@ -68,43 +68,78 @@ namespace ZE.MechBattle.Ecs
 
             foreach (var entity in _noPathEntitiesFilter)
             {
-                var entityPos = _positions.Get(entity).Value;
-                var entityHexPos = _map.WorldToHex(entityPos);
+                var checkResult = CheckForAvailablePaths(entity, out var searchResultData);
 
-                var targetPos = _moveTargets.Get(entity).Value;
-                var targetHexPos = _map.WorldToHex(targetPos);
-
-                if (math.all(entityHexPos == targetHexPos))
+                switch (checkResult)
                 {
-                    //same hex, no calculation needed
-                    _hexPaths.Set(entity, new() { IsEmpty = true});
-                    continue;
-                }
-
-                if (_pathsList.TryGetPathId(entityHexPos, targetHexPos, out var pathId))
-                {
-                    // path already calculated
-                    _hexPaths.Set(entity, new() { PathId = pathId, StepIndex = 0 });
-                }
-                else
-                {
-                    // no path found, wait until being calculated
-                    _pathsList.RequestPathBuilding(entityHexPos, targetHexPos);
-                    _calculatingComponents.Set(entity, new(entityHexPos, targetHexPos));
+                    case GetSuitablePathKeyCommand.HexPathSearchResult.PointsAreInSameHex:
+                        {
+                            _hexPaths.Set(entity, new() { IsEmpty = true});
+                            break;
+                        }
+                    case GetSuitablePathKeyCommand.HexPathSearchResult.NoPathFound:
+                        {
+                            // no path found, wait until being calculated (request done inside command)
+                            
+                            _calculatingComponents.Set(entity, new(searchResultData));
+                            break;
+                        }
+                     case GetSuitablePathKeyCommand.HexPathSearchResult.PathFound:
+                        {
+                            // path already calculated
+                            _hexPaths.Set(entity, new() { PathId = searchResultData.PathId, StepIndex = 0 });
+                            break;
+                        }
                 }
             }
 
             foreach (var entity in _calculatingPathsFilter)
             {
                 var pathData = _calculatingComponents.Get(entity);
-                if (_pathsList.TryGetPathId(pathData.CombinedValue, out var pathId))
+                if (pathData.UsedPathListVersion == _pathsList.Version)
+                    continue;
+
+                var startMayBeAccessible = pathData.StartEdgesMask.HasOverlapsWith(_pathsList.GetCalculatedEdgesMask(pathData.StartHex));
+                var endMayBeAccessible = pathData.EndEdgesMask.HasOverlapsWith(_pathsList.GetCalculatedEdgesMask(pathData.EndHex));
+
+                if (startMayBeAccessible & endMayBeAccessible == false)
+                    continue;
+
+                var checkResult = CheckForAvailablePaths(entity, out var searchResultData);
+                if (checkResult == GetSuitablePathKeyCommand.HexPathSearchResult.NoPathFound)
+                    continue;
+
+                if (checkResult == GetSuitablePathKeyCommand.HexPathSearchResult.PathFound)
                 {
-                    _hexPaths.Set(entity, new() { PathId = pathId, StepIndex = 0 });
+                    _hexPaths.Set(entity, new() { PathId = searchResultData.PathId, StepIndex = 0 });
                     _calculatingComponents.Remove(entity);
                 }
+                else
+                {
+#if UNITY_EDITOR
+                    Debug.LogWarning("this is not supposed to be!");
+#endif
+
+                    _hexPaths.Set(entity, new() { IsEmpty = true });
+                    _calculatingComponents.Remove(entity);
+                }
+
             }
         }
 
         public void Dispose() { }
+
+        private GetSuitablePathKeyCommand.HexPathSearchResult CheckForAvailablePaths(Entity entity, out GetSuitablePathKeyCommand.HexPathSearchResultData searchResultData)
+        {
+            var entityPos = _positions.Get(entity).Value;
+            var targetPos = _moveTargets.Get(entity).Value;
+
+            return GetSuitablePathKeyCommand.TryGetClosestPath(
+                entityPos,
+                targetPos,
+                _map,
+                _pathsList,
+                out searchResultData);
+        }
     }
 }
