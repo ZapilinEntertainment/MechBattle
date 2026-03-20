@@ -18,6 +18,8 @@ namespace ZE.MechBattle.Navigation
             HexCoordinate = new(hexCoordX, hexCoordY);
             CenterPos = HexMath.DefineHex(HexCoordinate, hexEdge);
             InnerRingTopTriangle = NavigationMapHelper.GetInnerCircleTopTriangle(CenterPos, triangleEdge);
+
+            // TODO: replace to Triangular center only!
         }
     }
 }

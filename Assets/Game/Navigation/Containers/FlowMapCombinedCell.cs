@@ -15,14 +15,17 @@ namespace ZE.MechBattle.Navigation
         public const int INVALID_EXIT_DISTANCE = ushort.MaxValue;
         public const int DISTANCE_MASK = 0xFFFF;
 
+        // ATTENTION: UPDATE IF STRUCTURE ENLARGES
+        public const int STRUCTURE_SIZE = sizeof(int);
+
         private const int DIRECTION_SHIFT = 16;        
         private const int BYTE_MASK = 0xFF;
 
-        public FlowMapCellData(bool isPassable, byte direction, int exitDistance)
+        public FlowMapCellData(bool isPassable, int direction, int exitDistance)
         {
             var p = isPassable ? 1 : 0;
             Value = (p << PASSABLE_SHIFT) |
-                     ((int)direction << DIRECTION_SHIFT) |
+                     (direction << DIRECTION_SHIFT) |
                      (exitDistance & DISTANCE_MASK);
         }
 

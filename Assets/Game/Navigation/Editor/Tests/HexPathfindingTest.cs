@@ -67,7 +67,7 @@ namespace ZE.MechBattle.Navigation.Tests
             }
 
             map = HexEdgesAccessMap.FullAccessMap;
-            map = map.SetEdgePassable(HexEdge.DownRight, false);
+            map = map.SetEdgePassable(HexEdge.BottomRight, false);
             for (var i = 0; i < 6; i++)
             {
                 var edge = (HexEdge)i;
@@ -90,12 +90,12 @@ namespace ZE.MechBattle.Navigation.Tests
 
             var path = new HexPathNodeKey[]
                 {
-                    new(int2.zero, HexEdge.Up),
-                    new(int2.zero, HexEdge.UpRight),
-                    new(new int2(1, 0), HexEdge.Down),
-                    new(new int2(1, -1), HexEdge.DownRight),
-                    new(new int2(2, -2), HexEdge.Up),
-                    new(new int2(2, -1), HexEdge.Up),
+                    new(int2.zero, HexEdge.Top),
+                    new(int2.zero, HexEdge.TopRight),
+                    new(new int2(1, 0), HexEdge.Bottom),
+                    new(new int2(1, -1), HexEdge.BottomRight),
+                    new(new int2(2, -2), HexEdge.Top),
+                    new(new int2(2, -1), HexEdge.Top),
                 };
 
 
@@ -107,7 +107,7 @@ namespace ZE.MechBattle.Navigation.Tests
             map.AddHex(new int2(2, -2));
             map.AddHex(new int2(2, -1));
 
-            var flowMap = new StubFlowMap(HexEdgesAccessMap.FullAccessMap.SetEdgePassable(HexEdge.DownRight, false));
+            var flowMap = new StubFlowMap(HexEdgesAccessMap.FullAccessMap.SetEdgePassable(HexEdge.BottomRight, false));
 
             map.UpdateHexFlowMap(int2.zero, flowMap);
             map.UpdateHexFlowMap(new int2(1, 0), new StubFlowMap(HexEdgesAccessMap.FullAccessMap));
@@ -116,8 +116,8 @@ namespace ZE.MechBattle.Navigation.Tests
 
             flowMap = new StubFlowMap(
                     HexEdgesAccessMap.FullAccessMap
-                    .SetEdgePassable(HexEdge.UpLeft, false)
-                    .SetEdgePassable(HexEdge.DownLeft, false));
+                    .SetEdgePassable(HexEdge.TopLeft, false)
+                    .SetEdgePassable(HexEdge.BottomLeft, false));
             map.UpdateHexFlowMap(new int2(2, -1), flowMap);
 
             var jobData = PrepareHexPathJobCollectionsCommand.Execute(Allocator.TempJob, map);

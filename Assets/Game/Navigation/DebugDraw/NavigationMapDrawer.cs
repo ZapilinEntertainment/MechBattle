@@ -27,24 +27,24 @@ namespace ZE.MechBattle.Navigation.DebugDraw
         }
     }
 
+    internal readonly struct LineDrawData
+    {
+        public readonly Vector3 PointA;
+        public readonly Vector3 PointB;
+        public readonly DebugColor Color;
+
+        public LineDrawData(float3 pointA, float3 pointB, DebugColor color = DebugColor.White)
+        {
+            PointA = pointA;
+            PointB = pointB;
+            Color = color;
+        }
+    }
+
     [ExecuteInEditMode]
     public class NavigationMapDrawer : MonoBehaviour
     {    
         private enum TrianglesDrawMode : byte { Disabled, All, OnlyLocked, OnlyPassable}
-
-        private readonly struct LineDrawData
-        {
-            public readonly Vector3 PointA;
-            public readonly Vector3 PointB;
-            public readonly DebugColor Color;
-
-            public LineDrawData(float3 pointA, float3 pointB, DebugColor color = DebugColor.White)
-            {
-                PointA = pointA;
-                PointB = pointB;
-                Color = color;
-            }
-        }        
 
         [SerializeField] private MapSettings _mapSettings;
         [SerializeField] private TrianglesDrawMode _trianglesDrawMode;

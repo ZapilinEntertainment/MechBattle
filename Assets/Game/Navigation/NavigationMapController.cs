@@ -67,14 +67,14 @@ namespace ZE.MechBattle.Navigation
             var isPositive = dir.y > 0f;
             if (dot > 0.5f)
             {
-                exitEdge = isPositive ? HexEdge.UpRight : HexEdge.DownRight;
+                exitEdge = isPositive ? HexEdge.TopRight : HexEdge.BottomRight;
             }
             else
             {
                 if (dot < -0.5f)
-                    exitEdge = isPositive ? HexEdge.UpLeft : HexEdge.DownLeft;
+                    exitEdge = isPositive ? HexEdge.TopLeft : HexEdge.BottomLeft;
                 else
-                    exitEdge = isPositive ? HexEdge.Up : HexEdge.Down;
+                    exitEdge = isPositive ? HexEdge.Top : HexEdge.Bottom;
             }
             return exitEdge;
         }

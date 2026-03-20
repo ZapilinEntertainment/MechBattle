@@ -1630,6 +1630,7 @@ GameObject:
   m_Component:
   - component: {fileID: 592847736}
   - component: {fileID: 592847737}
+  - component: {fileID: 592847740}
   - component: {fileID: 592847738}
   - component: {fileID: 592847739}
   m_Layer: 0
@@ -1678,11 +1679,12 @@ MonoBehaviour:
     TopRightCorner:
       x: 500
       y: 1000
+    UnscannedSurfacesArePassable: 0
   _trianglesDrawMode: 2
   _highlightTriangle:
-    x: 0
-    y: 95
-    z: 16
+    x: 8
+    y: 15
+    z: 0
   _highlightHexIndex:
     x: -2
     y: -2
@@ -1718,8 +1720,25 @@ MonoBehaviour:
   _hexCoordinate:
     x: 1
     y: -1
-  _exitEdge: 3
+  _exitEdge: 0
   _mapDrawer: {fileID: 592847737}
+--- !u!114 &592847740
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 592847734}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bee75e9374197b549b2d9cefd87742be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZE.Navigation::ZE.MechBattle.Navigation.DebugDraw.HexEdgeDrawer
+  _mapDrawer: {fileID: 592847737}
+  _edge: 5
+  _hexPos:
+    x: 0
+    y: 0
 --- !u!1 &624623555
 GameObject:
   m_ObjectHideFlags: 0
@@ -2376,7 +2395,7 @@ Transform:
   m_GameObject: {fileID: 879025845}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 260.2, y: 0, z: -135.1}
+  m_LocalPosition: {x: -61.2, y: 0, z: 78.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4671,6 +4690,7 @@ MonoBehaviour:
     TopRightCorner:
       x: 0
       y: 0
+    UnscannedSurfacesArePassable: 0
 --- !u!4 &1761267475
 Transform:
   m_ObjectHideFlags: 0

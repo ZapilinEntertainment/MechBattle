@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace ZE.MechBattle.Navigation
 {
-    public enum HexEdge : byte { Up, UpRight, DownRight, Down, DownLeft, UpLeft }
+    public enum HexEdge : byte { Top, TopRight, BottomRight, Bottom, BottomLeft, TopLeft }
 
     public static class HexEdgeExtension
     {
@@ -18,11 +18,11 @@ namespace ZE.MechBattle.Navigation
         {
             switch (edge)
             {
-                case HexEdge.UpRight: return new(1, 0);
-                case HexEdge.DownRight: return new(1, -1);
-                case HexEdge.Down: return new(0, -1);
-                case HexEdge.DownLeft: return new(-1, 0);
-                case HexEdge.UpLeft: return new(-1, 1);
+                case HexEdge.TopRight: return new(1, 0);
+                case HexEdge.BottomRight: return new(1, -1);
+                case HexEdge.Bottom: return new(0, -1);
+                case HexEdge.BottomLeft: return new(-1, 0);
+                case HexEdge.TopLeft: return new(-1, 1);
                 default: return new(0, 1);
             }
         }
@@ -39,11 +39,11 @@ namespace ZE.MechBattle.Navigation
         {
             switch (edge)
             {
-                case HexEdge.UpRight: return PeakNeighbour.EdgeUpRight;
-                case HexEdge.DownRight: return PeakNeighbour.VertexDownRightValley;
-                case HexEdge.Down: return PeakNeighbour.EdgeDown;
-                case HexEdge.DownLeft: return PeakNeighbour.VertexDownLeftValley;
-                case HexEdge.UpLeft: return PeakNeighbour.EdgeUpLeft;
+                case HexEdge.TopRight: return PeakNeighbour.EdgeUpRight;
+                case HexEdge.BottomRight: return PeakNeighbour.VertexDownRightValley;
+                case HexEdge.Bottom: return PeakNeighbour.EdgeDown;
+                case HexEdge.BottomLeft: return PeakNeighbour.VertexDownLeftValley;
+                case HexEdge.TopLeft: return PeakNeighbour.EdgeUpLeft;
                 default: return PeakNeighbour.VertexUp;
             }
         }
@@ -53,11 +53,11 @@ namespace ZE.MechBattle.Navigation
         {
             switch (edge)
             {
-                case HexEdge.UpRight: return ValleyNeighbour.VertexUpRightPeak;
-                case HexEdge.DownRight: return ValleyNeighbour.EdgeDownRight;
-                case HexEdge.Down: return ValleyNeighbour.VertexDown;
-                case HexEdge.DownLeft: return ValleyNeighbour.EdgeDownLeft;
-                case HexEdge.UpLeft: return ValleyNeighbour.VertexUpLeftPeak;
+                case HexEdge.TopRight: return ValleyNeighbour.VertexUpRightPeak;
+                case HexEdge.BottomRight: return ValleyNeighbour.EdgeDownRight;
+                case HexEdge.Bottom: return ValleyNeighbour.VertexDown;
+                case HexEdge.BottomLeft: return ValleyNeighbour.EdgeDownLeft;
+                case HexEdge.TopLeft: return ValleyNeighbour.VertexUpLeftPeak;
                 default: return ValleyNeighbour.EdgeUp;
             }
         }

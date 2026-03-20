@@ -38,7 +38,7 @@ namespace ZE.MechBattle.Navigation
         private readonly NativeArray<float2> _raycastPointsArray;
 
         // final commands list
-        private readonly NativeList<RaycastCommand> _raycastCommands;
+        private readonly NativeArray<RaycastCommand> _raycastCommands;
 
         public NavigationCaster(in MapSettings mapSettings, Allocator allocator) 
         { 
@@ -51,7 +51,7 @@ namespace ZE.MechBattle.Navigation
             _hexTrianglesCount = TriangularMath.GetTrianglesCountInHex(mapSettings.TrianglesPerHexEdge);
             var raycastCommandsCount = _hexTrianglesCount * _raycastTrianglesPerEdge * _raycastTrianglesPerEdge;
             _positionsArray = new NativeArray<IntTriangularPos>(_hexTrianglesCount, allocator, NativeArrayOptions.UninitializedMemory);
-            _raycastCommands = new NativeList<RaycastCommand>(raycastCommandsCount, allocator);
+            _raycastCommands = new NativeArray<RaycastCommand>(raycastCommandsCount, allocator);
 
             var raycastsCount = _raycastTrianglesPerEdge * _raycastTrianglesPerEdge;
             _raycastPointsArray = new NativeArray<float2>(raycastsCount, allocator, NativeArrayOptions.UninitializedMemory);
@@ -75,7 +75,7 @@ namespace ZE.MechBattle.Navigation
 
             var preparePositionsHandle = preparePositionsJob.ScheduleByRef();
             var raycastResults = new NativeArray<RaycastHit>(_raycastCommands.Length, Allocator.Persistent);
-            var castJobHandle = RaycastCommand.ScheduleBatch(_raycastCommands.AsArray(), raycastResults, 16, dependsOn: preparePositionsHandle);
+            var castJobHandle = RaycastCommand.ScheduleBatch(_raycastCommands, raycastResults, 16, dependsOn: preparePositionsHandle);
 
             while (!castJobHandle.IsCompleted && !token.IsCancellationRequested)
             {

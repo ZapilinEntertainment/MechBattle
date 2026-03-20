@@ -5,10 +5,8 @@ using UnityEngine;
 using Unity.Mathematics;
 using Unity.Jobs;
 using Unity.Collections;
-
-#if UNITY_EDITOR
+using UnityEditor;
 using TriInspector;
-#endif
 
 
 namespace ZE.MechBattle.Navigation.DebugDraw
@@ -76,7 +74,7 @@ namespace ZE.MechBattle.Navigation.DebugDraw
             {
                 _navigationCaster ??= new NavigationCaster(map.Settings, Allocator.Persistent);
                 castedFlowMap = await CalculateHexFlowMapCommand.ExecuteAsync(map.GetHexData(hexCoord), _navigationCaster, _tokenSource.Token);
-                
+
                 if (!map.TryGetHex(hexCoord, out var hex))
                     map.AddHex(hexCoord);
 
@@ -97,11 +95,23 @@ namespace ZE.MechBattle.Navigation.DebugDraw
             }
         }
 
-        private void OnDestroy()
+        private void OnEnable()
         {
-            _navigationCaster.Dispose();
+            AssemblyReloadEvents.beforeAssemblyReload += Cleanup;
+        }
+
+        private void OnDisable()
+        {
+            AssemblyReloadEvents.beforeAssemblyReload -= Cleanup;
+            Cleanup();
+        }
+
+        private void Cleanup()
+        {
+            Debug.Log("flow map drawer cleanup");
             _tokenSource.Cancel();
             _tokenSource.Dispose();
+            _navigationCaster.Dispose();
         }
     }
 }

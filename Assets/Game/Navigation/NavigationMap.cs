@@ -9,7 +9,7 @@ namespace ZE.MechBattle.Navigation
     public struct MapSettings
     {
         public float HexEdgeSize;
-        public int TrianglesPerHexEdge;
+        [Range(0,NavigationConstants.MAX_TRIANGLES_PER_EDGE)] public int TrianglesPerHexEdge; 
         public int RaycastSubdivisionsPerEdge;
         [Range(0, 1)] public float IntersectionPercentForLock;
         public float2 BottomLeftCorner;

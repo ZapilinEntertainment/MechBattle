@@ -19,8 +19,8 @@ namespace ZE.MechBattle.Navigation
 
 
         public NativeArray<IntTriangularPos> Positions;
-        [ReadOnly] public NativeArray<float2> RaycastPoints;
-        [WriteOnly] public NativeList<RaycastCommand> RaycastCommands;
+        public NativeArray<float2> RaycastPoints;
+        [WriteOnly] public NativeArray<RaycastCommand> RaycastCommands;
 
         public void Execute()
         {
@@ -39,14 +39,14 @@ namespace ZE.MechBattle.Navigation
                 RaycastTrianglesPerEdge = RaycastTrianglesPerEdge
             };
 
-            RaycastCommands.Clear();
             foreach (var position in Positions)
             {
                 var cartesian = TriangularMath.TriangularToWorld(position, TriangleEdgeSize);
                 NavigationMapHelper.SubdivideTriangleIntoSmallerAndGetCenters(cartesian.xz, position.IsPeak, subdivisionProtocol);
-                foreach (var raycastPos in subdivisionProtocol.Centers)
+                for (var i = 0; i < RaycastPoints.Length; i++)
                 {
-                    RaycastCommands.Add(new(new Vector3(raycastPos.x, CastingHeight, raycastPos.y), direction, QueryParameters, CastingRayLength));
+                    var raycastPos = RaycastPoints[i];
+                    RaycastCommands[i] = new(new Vector3(raycastPos.x, CastingHeight, raycastPos.y), direction, QueryParameters, CastingRayLength);
                 }
             }
         }

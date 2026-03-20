@@ -15,7 +15,7 @@ namespace ZE.MechBattle.Navigation
         }
 
         /// <summary>
-        /// NOTE: returns not-standartized coords
+        /// NOTE: returns non-standartized coords
         /// </summary>
         public static Dictionary<IntTriangularPos, NavigationTriangleData> Execute(NativeArray<RaycastHit>.ReadOnly raycastResults, float intersectionPercentForLock, INavigationCaster caster)
         {

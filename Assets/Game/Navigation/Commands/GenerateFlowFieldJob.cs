@@ -6,7 +6,7 @@ using Unity.Jobs;
 
 namespace ZE.MechBattle.Navigation
 {
-    public struct FlowFieldCellData
+    public struct FlowFieldCellCalculationData
     {
         public bool IsValid;
 
@@ -57,7 +57,7 @@ namespace ZE.MechBattle.Navigation
 
         [NoAlias] public NativeQueue<int> CalculationQueue;
         [NoAlias] public NativeHashSet<int> QueuedPositions;
-        [NoAlias] public SquaredHexTrianglesList<FlowFieldCellData> Data;
+        [NoAlias] public SquaredHexTrianglesList<FlowFieldCellCalculationData> Data;
 
         public NavigationHexPosition HexData;
         public int TrianglesPerEdge;
@@ -93,124 +93,20 @@ namespace ZE.MechBattle.Navigation
         {
             switch (ExitEdge)
             {
-                case HexEdge.UpLeft:
-                    {
-                        var pos = HexData.InnerRingTopTriangle + new int3(0, TrianglesPerEdge - 1, 1 - TrianglesPerEdge); // top row 
-                        pos = TriangularMath.GetValleyNeighbour(pos, ValleyNeighbour.EdgeDownLeft); // left corner
+                case HexEdge.TopRight: SetupExitCells<TopRightEdgeLogic>(new(TrianglesPerEdge, HexData)); break;
+                case HexEdge.BottomRight: SetupExitCells<BottomRightEdgeLogic>(new(TrianglesPerEdge, HexData)); break;
+                case HexEdge.Bottom: SetupExitCells<BottomEdgeLogic>(new(TrianglesPerEdge, HexData)); break;
+                case HexEdge.BottomLeft: SetupExitCells<BottomLeftEdgeLogic>(new(TrianglesPerEdge, HexData)); break;
+                case HexEdge.TopLeft: SetupExitCells<TopLeftEdgeLogic>(new(TrianglesPerEdge, HexData)); break;
+                default: SetupExitCells<TopEdgeLogic>(new(TrianglesPerEdge, HexData)); break;
+            }
+        }
 
-                        // moving from left corner to top-right corner
-                        for (var i = 0; i < TrianglesPerEdge; i++)
-                        {
-                            SetupExitCell(pos);
-
-                            pos = TriangularMath.GetPeakNeighbour(pos, PeakNeighbour.EdgeUpRight);
-                            SetupExitCell(pos);
-
-                            pos = TriangularMath.GetValleyNeighbour(pos, ValleyNeighbour.EdgeUp);
-                        }
-
-                        SetupExitCell(pos);
-                        break;
-                    }
-                case HexEdge.DownLeft:
-                    {
-                        var pos = HexData.InnerRingTopTriangle + new int3(TrianglesPerEdge, -TrianglesPerEdge, 0); 
-
-                        // moving from bottom-left corner to bottom-right corner
-                        for (var i = 0; i < TrianglesPerEdge; i++)
-                        {
-                            SetupExitCell(pos);
-
-                            pos = TriangularMath.GetValleyNeighbour(pos, ValleyNeighbour.EdgeDownRight);
-                            SetupExitCell(pos);
-
-                            pos = TriangularMath.GetPeakNeighbour(pos, PeakNeighbour.EdgeUpRight);
-                        }
-
-                        SetupExitCell(pos);
-
-                        break;
-                    }
-                case HexEdge.Down:
-                    {
-                        var pos = TriangularMath.GetValleyNeighbour(HexData.InnerRingTopTriangle, ValleyNeighbour.VertexDownLeft); // inner circle left bottom triangle
-                        pos += new int3(TrianglesPerEdge - 1, 1 - TrianglesPerEdge, 0);
-
-                        // moving from bottom-left corner to bottom-right corner
-                        for (var i = 0; i < TrianglesPerEdge; i++)
-                        {
-                            SetupExitCell(pos);
-
-                            pos = TriangularMath.GetValleyNeighbour(pos, ValleyNeighbour.EdgeDownRight);
-                            SetupExitCell(pos);
-
-                            pos = TriangularMath.GetPeakNeighbour(pos, PeakNeighbour.EdgeUpRight);
-                        }
-
-                        SetupExitCell(pos);
-                        break;
-                    }
-
-                case HexEdge.DownRight:
-                    {
-                        var pos = TriangularMath.GetValleyNeighbour(HexData.InnerRingTopTriangle, ValleyNeighbour.VertexRight); // near right corner
-                        pos += new int3(-TrianglesPerEdge +1, 0, TrianglesPerEdge - 1); // right corner (bottom)
-
-                        // moving from right corner to bottom-right corner
-                        for (var i = 0; i < TrianglesPerEdge; i++)
-                        {
-                            SetupExitCell(pos);
-
-                            pos = TriangularMath.GetValleyNeighbour(pos, ValleyNeighbour.EdgeDownLeft);
-                            SetupExitCell(pos);
-
-                            pos = TriangularMath.GetPeakNeighbour(pos, PeakNeighbour.EdgeDown);
-                        }
-
-                        SetupExitCell(pos);
-
-                        break;
-                    }
-
-                case HexEdge.UpRight:
-                    {
-                        var pos = TriangularMath.GetValleyNeighbour(HexData.InnerRingTopTriangle, ValleyNeighbour.EdgeDownRight); // top right peak neighbour in inner ring
-                        pos += new int3(-TrianglesPerEdge, 0, TrianglesPerEdge); // right corner (top)
-
-                        // moving from right corner to top-right corner
-                        for (var i = 0; i < TrianglesPerEdge; i++)
-                        {
-                            SetupExitCell(pos);
-
-                            pos = TriangularMath.GetPeakNeighbour(pos, PeakNeighbour.EdgeUpLeft);
-                            SetupExitCell(pos);
-
-                            pos = TriangularMath.GetValleyNeighbour(pos, ValleyNeighbour.EdgeUp);
-                        }
-
-                        SetupExitCell(pos);
-                        break;
-                    }
-
-                default:
-                    {
-                        var pos = HexData.InnerRingTopTriangle + new int3(0, TrianglesPerEdge - 1, 1 - TrianglesPerEdge); // top row 
-                        pos = TriangularMath.GetValleyNeighbour(pos, ValleyNeighbour.EdgeDownLeft); // top row left corner
-
-                        // moving from top-left corner to top-right corner
-                        for (var i = 0; i < TrianglesPerEdge; i++)
-                        {
-                            SetupExitCell(pos);
-
-                            pos = TriangularMath.GetPeakNeighbour(pos, PeakNeighbour.EdgeUpRight);
-                            SetupExitCell(pos);
-
-                            pos = TriangularMath.GetValleyNeighbour(pos, ValleyNeighbour.EdgeDownRight);
-                        }
-
-                        SetupExitCell(pos);
-                        break;
-                    }
+        void SetupExitCells<T>(EdgeEnumerator<T> enumerator) where T : struct, IEdgeDirectionLogic
+        {
+            foreach (var pos in enumerator)
+            {
+                SetupExitCell(pos);
             }
         }
 
@@ -245,7 +141,6 @@ namespace ZE.MechBattle.Navigation
         }
 
 
-        // TODO: set different entrance costs to different neighbours
         private void PrepareIntegrationField()
         {
             while (!CalculationQueue.IsEmpty())

@@ -56,11 +56,11 @@ namespace ZE.MechBattle.Navigation
         [BurstCompile]
         public static byte GetHexEdgeExitVector(HexEdge edge, bool isPeak) => edge switch
         {
-            HexEdge.UpRight => isPeak ? (byte)PeakNeighbour.EdgeUpRight : (byte)ValleyNeighbour.VertexUpRightPeak,
-            HexEdge.DownRight => isPeak ? (byte)PeakNeighbour.VertexDownRightValley : (byte)ValleyNeighbour.EdgeDownRight,
-            HexEdge.DownLeft => isPeak ? (byte)PeakNeighbour.VertexDownLeftValley : (byte)ValleyNeighbour.EdgeDownLeft,
-            HexEdge.UpLeft => isPeak ? (byte)PeakNeighbour.EdgeUpLeft : (byte)ValleyNeighbour.VertexUpRightPeak,
-            HexEdge.Down => isPeak ? (byte)PeakNeighbour.EdgeDown : (byte)ValleyNeighbour.VertexDown,
+            HexEdge.TopRight => isPeak ? (byte)PeakNeighbour.EdgeUpRight : (byte)ValleyNeighbour.VertexUpRightPeak,
+            HexEdge.BottomRight => isPeak ? (byte)PeakNeighbour.VertexDownRightValley : (byte)ValleyNeighbour.EdgeDownRight,
+            HexEdge.BottomLeft => isPeak ? (byte)PeakNeighbour.VertexDownLeftValley : (byte)ValleyNeighbour.EdgeDownLeft,
+            HexEdge.TopLeft => isPeak ? (byte)PeakNeighbour.EdgeUpLeft : (byte)ValleyNeighbour.VertexUpRightPeak,
+            HexEdge.Bottom => isPeak ? (byte)PeakNeighbour.EdgeDown : (byte)ValleyNeighbour.VertexDown,
             _ => isPeak ? (byte)PeakNeighbour.VertexUp : (byte)ValleyNeighbour.EdgeUp,
         };
 
@@ -104,7 +104,7 @@ namespace ZE.MechBattle.Navigation
         }
 
         [BurstCompile]
-        public static int GetTrianglesCountInHex(int hexRadius) => hexRadius * hexRadius * 6; // (2r) ^ 2 / 4 * 3
+        public static int GetTrianglesCountInHex(int hexRadius) => hexRadius * hexRadius * 6;
 
         [BurstCompile]
         public static float3 TriangularToWorld(float3 trianglePos, float triangleEdge) =>
