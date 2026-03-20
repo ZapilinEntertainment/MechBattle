@@ -27,7 +27,6 @@ namespace ZE.MechBattle.Navigation
             _logic = default; 
             _limit = trianglesPerEdge;
             _pos = _logic.GetStart(trianglesPerEdge, hex);
-            UnityEngine.Debug.Log(_pos.ToStandartized());
             _step = 0;
             _subStep = 0;
         }

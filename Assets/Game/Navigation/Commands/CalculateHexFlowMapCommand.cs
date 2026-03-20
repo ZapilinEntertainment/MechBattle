@@ -45,7 +45,7 @@ namespace ZE.MechBattle.Navigation
                 raycastData.Dispose();
                 return default;
             }
-            Debug.Log("hex casted");
+            Debug.Log($"hex casted : {raycastData.Length}");
 
             // TODO: move casting to own command
             var refinedData = RefineNavRaycastDataCommand.Execute(raycastData.AsReadOnly(), LOCK_PERCENT, caster);
@@ -60,20 +60,18 @@ namespace ZE.MechBattle.Navigation
                     IsValid = true
                 });
             }
+            Debug.Log($"data refined : {data.Length}");
 
-            var trianglesInHexCount = caster.HexTrianglesCount;
-           
-           
             if (FlowMapCellData.STRUCTURE_SIZE * 6 * data.Length > 1024 * 900)
-                throw new System.Exception("potential stackalloc overflow");
-            var resultingData = PrepareAndCombineFlowMaps(collections, hex, caster, Allocator.TempJob);            
+                throw new System.Exception("potential stack overflow");
 
-           // var flowMap = new HexFlowMap(resultingData);
-
+            var resultingData = PrepareAndCombineFlowMaps(collections, hex, caster, Allocator.Persistent);
             collections.Dispose();
-            resultingData.Dispose();
+            Debug.Log($"flow maps combined: {resultingData.Count}");
 
-            return null;
+            var accessMap = FormHexAccessMapCommand.Execute(resultingData.AsReadOnly(), hex, caster.TrianglesPerHexEdge);
+            Debug.Log("edges access map ready");
+            return new HexFlowMap(resultingData, accessMap);            
         }
 
         private static NativeHashMap<IntTriangularPos, FlowMapCombinedCell> PrepareAndCombineFlowMaps(
@@ -122,11 +120,6 @@ namespace ZE.MechBattle.Navigation
                 resultingData.Add(coordsConverter.IndexToTriangular(i), new(cellData));
             }
             return resultingData;
-        }
-    
-        private static HexEdgesAccessMap PrepareEdgesAccessMap(NativeHashMap<IntTriangularPos, FlowMapCombinedCell>.ReadOnly combinedCells)
-        {
-            return default;
         }
     }
 }

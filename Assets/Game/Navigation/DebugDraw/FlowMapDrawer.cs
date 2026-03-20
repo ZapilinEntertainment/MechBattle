@@ -5,8 +5,11 @@ using UnityEngine;
 using Unity.Mathematics;
 using Unity.Jobs;
 using Unity.Collections;
+
+#if UNITY_EDITOR
 using UnityEditor;
 using TriInspector;
+#endif
 
 
 namespace ZE.MechBattle.Navigation.DebugDraw
@@ -86,6 +89,7 @@ namespace ZE.MechBattle.Navigation.DebugDraw
             }
 
             //draw:
+            Debug.Log(castedFlowMap.Data.Count);
             foreach (var kvp in castedFlowMap.Data)
             {
                 var worldPos = TriangularMath.TriangularToWorld(kvp.Key, map.TriangleEdgeSize);

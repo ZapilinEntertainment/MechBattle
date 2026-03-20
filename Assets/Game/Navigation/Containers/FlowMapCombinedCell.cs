@@ -49,6 +49,7 @@ namespace ZE.MechBattle.Navigation
         }
 
         // encoded if cell is passable in every mask
+        // (all flow map should have same passability values for exact triangle)
         public int GetCombinedPassabilityMask()
         {
             var mask = 0;

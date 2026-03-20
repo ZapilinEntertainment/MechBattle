@@ -13,6 +13,7 @@ namespace ZE.MechBattle.Navigation
     {
         public static HexEdgesAccessMap FullAccessMap => new(new BitField64(ulong.MaxValue));
         public static HexEdgesAccessMap NoWayMap => default;
+        public BitField64 Data => _data;
 
         private readonly BitField64 _data;
         // IMPORTANT NOTE: _data is readonly, so don't use constructions like:
@@ -52,10 +53,10 @@ namespace ZE.MechBattle.Navigation
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [BurstCompile]
-        private static int DecodeConnectionIndex(HexEdge startEdge, HexEdge endEdge) => (int)startEdge * 6 + (int)endEdge;
+        public static int DecodeConnectionIndex(HexEdge startEdge, HexEdge endEdge) => (int)startEdge * 6 + (int)endEdge;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [BurstCompile]
-        private static int DecodePassabilityIndex(HexEdge edge) => (int)edge + EDGE_ACCESS_END;
+        public static int DecodePassabilityIndex(HexEdge edge) => (int)edge + EDGE_ACCESS_END;
     }
 }
