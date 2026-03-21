@@ -4,12 +4,9 @@ using Unity.Mathematics;
 using Unity.Burst;
 using Unity.Collections;
 using System;
-using TriInspector;
-#if UNITY_EDITOR
 using UnityEditor;
-#endif
 
-namespace ZE.MechBattle.Navigation.DebugDraw
+namespace ZE.MechBattle.Navigation.DebugOverlay
 {
     internal enum DebugColor : byte { White, Green, Red, Yellow, Purple, Black }
 
@@ -41,21 +38,11 @@ namespace ZE.MechBattle.Navigation.DebugDraw
         }
     }
 
-    [ExecuteInEditMode]
-    public class NavigationMapDrawer : MonoBehaviour
+    public class NavigationMapDrawer
     {    
-        private enum TrianglesDrawMode : byte { Disabled, All, OnlyLocked, OnlyPassable}
+        public enum TrianglesDrawMode : byte { Disabled, All, OnlyLocked, OnlyPassable}
+        public TrianglesDrawMode _trianglesDrawMode;
 
-        [SerializeField] private MapSettings _mapSettings;
-        [SerializeField] private TrianglesDrawMode _trianglesDrawMode;
-        [Space]
-        [SerializeField] private int3 _highlightTriangle;
-        [Space]
-        [SerializeField] private int2 _highlightHexIndex;
-        [Space]
-        [SerializeField] private float2 _planePos;
-
-        public NavigationMap Map { get;private set;}
         private List<LineDrawData> _drawData = new();
         private List<SphereDrawData> _sphereDrawData = new();
 
@@ -64,8 +51,11 @@ namespace ZE.MechBattle.Navigation.DebugDraw
         private HexPointsPreset _hexPointsPreset;
         private Vector3 _highlightHexCenter;
         private List<LineDrawData> _highlightedTriangleData = new();
-        private QueryParameters _castQueryParameters;        
-        private readonly Dictionary<DebugColor, Color> _debugColors = new()
+        private QueryParameters _castQueryParameters;
+
+        private readonly MapSettingsSO _mapSettings;
+
+        private static readonly Dictionary<DebugColor, Color> s_debugColors = new()
         {
             {DebugColor.White, Color.white },
             {DebugColor.Red, Color.red },
@@ -75,15 +65,17 @@ namespace ZE.MechBattle.Navigation.DebugDraw
             {DebugColor.Black, Color.black }
         };
 
-        [Button("Redraw Map")]
+        public NavigationMapDrawer(MapSettingsSO mapSettings)
+        {
+            _mapSettings = mapSettings;
+        }
+
         public void RedrawMap()
         {
             _highlightedTriangleData.Clear();
             _drawData.Clear();     
             _sphereDrawData.Clear();
 
-            Map?.Dispose();
-            Map = new(_mapSettings);
             _castQueryParameters = NavigationConstants.GetGroundCastQueryParameters();
             _hexPointsPreset = new(_mapSettings.HexEdgeSize);            
 
@@ -92,83 +84,59 @@ namespace ZE.MechBattle.Navigation.DebugDraw
             //DrawTriangleSubdivision(float2.zero);
         }
 
-        [Button("Highlight Triangle")]
-        public void HighlightSelectedTriangle() 
-        {
-            _highlightedTriangleData.Clear();
-            AddTriangleDrawData(new(_highlightTriangle), _highlightedTriangleData, DebugColor.Purple);
-        }
-
-        [Button("Highlight Hex")]
-        public void HighlightHex()
-        {
-            var pos = HexMath.HexToWorld(_highlightHexIndex, _mapSettings.HexEdgeSize);
-            _highlightHexCenter = new Vector3(pos.x, 0f, pos.y);
-        }
-
-
-
         private void RecalculateDrawData()
         {
-            _triangleEdgeSize = Map.TriangleEdgeSize;
-            _trianglesInHexCount = TriangularMath.GetTrianglesCountInHex(Map.TrianglesPerHexEdge);
+            _triangleEdgeSize = _mapSettings.TriangleEdgeSize;
+            _trianglesInHexCount = TriangularMath.GetTrianglesCountInHex(_mapSettings.TrianglesPerHexEdge);
 
-            PrepareHexListCommand.Execute(Map);
-            using var trianglesCountArray = new NativeArray<IntTriangularPos>(_trianglesInHexCount, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
-            foreach (var hex in Map.Hexes)
+            var hexList = GetHexesInRectangleCommand.Execute(_mapSettings, Allocator.TempJob);
+            var trisArray = new NativeArray<IntTriangularPos>(_trianglesInHexCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+            foreach (var hexPos in hexList)
             {
-                AddHexDrawData(hex.CenterPosWorld, _drawData, _trianglesDrawMode, trianglesCountArray);
+                AddHexDrawData(HexMath.HexToWorld(hexPos, _mapSettings.HexEdgeSize), _drawData, _trianglesDrawMode, trisArray);
             }
         }
 
-#if UNITY_EDITOR
-        private void OnDrawGizmos()
+        public void OnSceneGUI()
         {
             DrawMapBorders();
 
-            if (Map == null)
-                return;
-
             foreach (var drawData in _drawData)
             {
-                Gizmos.color = _debugColors[drawData.Color];
-                Gizmos.DrawLine(drawData.PointA, drawData.PointB);
+                Handles.color = s_debugColors[drawData.Color];
+                Handles.DrawLine(drawData.PointA, drawData.PointB);
             }
 
             foreach (var drawData in _highlightedTriangleData)
             {
-                Gizmos.color = _debugColors[drawData.Color];
-                Gizmos.DrawLine(drawData.PointA, drawData.PointB);
+                Handles.color = s_debugColors[drawData.Color];
+                Handles.DrawLine(drawData.PointA, drawData.PointB);
             }
-
-            // Gizmos.DrawSphere(TriangularMath.TriangularToCartesian(new IntTriangularPos(-3,1,3), _triangleEdgeSize), 5f);
-            // Gizmos.DrawCube(_highlightHexCenter, 5f * Vector3.one);
 
             if (_sphereDrawData.Count != 0)
             {
                 foreach (var data in _sphereDrawData)
                 {
-                    Gizmos.color = _debugColors[data.Color];
-                    Gizmos.DrawSphere(data.Pos, data.Radius);
+                    Handles.color = s_debugColors[data.Color];
+                    Handles.DrawSolidDisc(data.Pos, Vector3.up, data.Radius);
                 }
             }
 
-            Gizmos.DrawSphere(_highlightHexCenter, 8f);
+            Handles.DrawSolidDisc(_highlightHexCenter, Vector3.up, 1f);
         }
 
         private void DrawMapBorders()
         {
-            Gizmos.color = Color.yellow;
+            Handles.color = Color.yellow;
             var point10 = new Vector3(_mapSettings.TopRightCorner.x, 0f, _mapSettings.BottomLeftCorner.y);
             var point01 = new Vector3(_mapSettings.BottomLeftCorner.x, 0f, _mapSettings.TopRightCorner.y);
             var point00 = new Vector3(_mapSettings.BottomLeftCorner.x, 0f, _mapSettings.BottomLeftCorner.y);
             var point11 = new Vector3(_mapSettings.TopRightCorner.x, 0f, _mapSettings.TopRightCorner.y);
-            Gizmos.DrawLine(point00, point01);
-            Gizmos.DrawLine(point00, point10);
-            Gizmos.DrawLine(point01, point11);
-            Gizmos.DrawLine(point10, point11);
+            Handles.DrawLine(point00, point01);
+            Handles.DrawLine(point00, point10);
+            Handles.DrawLine(point01, point11);
+            Handles.DrawLine(point10, point11);
         }
-#endif
 
         private void AddHexDrawData(float2 centerPos, List<LineDrawData> data, TrianglesDrawMode trianglesDrawMode, NativeArray<IntTriangularPos> trianglePositionsArray)
         {
@@ -189,9 +157,12 @@ namespace ZE.MechBattle.Navigation.DebugDraw
             var drawLocked = trianglesDrawMode == TrianglesDrawMode.OnlyLocked || trianglesDrawMode == TrianglesDrawMode.All;
             var drawUnlocked = trianglesDrawMode == TrianglesDrawMode.OnlyPassable || trianglesDrawMode == TrianglesDrawMode.All;
 
+            var map = NavigationDebugDataContainer.Map;
+            var mapExists = map != null;
+
             foreach (var triangle in trianglePositionsArray)
             {
-                var isLocked = Map.IsTrianglePassable(triangle.ToStandartized());
+                var isLocked = mapExists? map.IsTrianglePassable(triangle.ToStandartized()) : false;
                 var draw = isLocked ? drawLocked : drawUnlocked;
                 if (!draw)
                     continue;
@@ -293,24 +264,6 @@ namespace ZE.MechBattle.Navigation.DebugDraw
             AddPoints(_hexPointsPreset.BottomLeft, _hexPointsPreset.Left);
             AddPoints(_hexPointsPreset.Left, _hexPointsPreset.TopLeft);
             AddPoints(_hexPointsPreset.TopRight, _hexPointsPreset.TopLeft);
-        }
-
-        private void OnDestroy()
-        {
-            if (Map != null)
-            {
-                Map.Dispose();
-                Map = null;
-            }                
-        }
-
-        private void OnDisable()
-        {
-            if (Map != null)
-            {
-                Map.Dispose();
-                Map = null;
-            }
         }
     }
 }

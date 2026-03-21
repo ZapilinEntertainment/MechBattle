@@ -5,13 +5,13 @@ namespace ZE.MechBattle.Navigation
 {
     public class NavigationMapController
     {
-        private readonly NavigationMap _map;
+        private readonly INavigationMap _map;
         private const float COS_60 = 0.5f;
         private readonly float2 RIGHT = new(1f,0f);
         private float3[] _peakDirections;
         private float3[] _valleyDirections;
 
-        public NavigationMapController(NavigationMap map)
+        public NavigationMapController(INavigationMap map)
         {
             _map = map;
 

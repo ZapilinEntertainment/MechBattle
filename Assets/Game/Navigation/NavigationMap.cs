@@ -5,38 +5,44 @@ using UnityEngine;
 
 namespace ZE.MechBattle.Navigation
 {
-    [Serializable]
-    public struct MapSettings
+    public interface INavigationMap 
     {
-        public float HexEdgeSize;
-        [Range(0,NavigationConstants.MAX_TRIANGLES_PER_EDGE)] public int TrianglesPerHexEdge; 
-        public int RaycastSubdivisionsPerEdge;
-        [Range(0, 1)] public float IntersectionPercentForLock;
-        public float2 BottomLeftCorner;
-        public float2 TopRightCorner;
-        public bool UnscannedSurfacesArePassable;
+        int TrianglesPerHexEdge { get; }
+        float TriangleEdgeSize { get; }
+        float HexEdgeSize { get; }
+        IReadOnlyCollection<int2> HexCoords { get; }
+        IReadOnlyCollection<INavigationHex> Hexes { get; }
 
-        public float TriangleEdgeSize => HexEdgeSize / TrianglesPerHexEdge;
+        void OnInitialized();
+        void UpdateHexFlowMap(int2 hexCoord, IDisposableFlowMap flowMap);
+        bool IsTrianglePassable(IntTriangularPos pos);
+        bool TryGetHex(int2 hexCoord, out INavigationHex protectedHex);
+        float GetTriangleEntranceCost(IntTriangularPos pos);
+        IFlowMap GetFlowMap(int2 hexCoord);
+        NavigationHexPosition GetHexData(int2 hexCoord);
+        NavigationHex AddHex(int2 hexCoord);
+       
     }
 
-    public class NavigationMap : IDisposable
+    public class NavigationMap : INavigationMap, IDisposable
     {        
-        public readonly float TriangleEdgeSize;
-        public readonly MapSettings Settings;
+        public readonly MapSettingsSO Settings;
 
         public bool IsInitialized { get;private set;} = false;
         public float HexEdgeSize => Settings.HexEdgeSize;
+        public float TriangleEdgeSize => _triangleEdgeSize;
         public int TrianglesPerHexEdge => Settings.TrianglesPerHexEdge;
         public int Version { get;private set; } = 1;
         public IReadOnlyCollection<INavigationHex> Hexes => _hexes.Values;
         public IReadOnlyCollection<int2> HexCoords => _hexes.Keys;
 
+        private readonly float _triangleEdgeSize;
         private readonly Dictionary<int2, NavigationHex> _hexes = new();
     
-        public NavigationMap(in MapSettings settings)
+        public NavigationMap(MapSettingsSO settings)
         {
             Settings = settings;
-            TriangleEdgeSize = settings.TriangleEdgeSize;
+            _triangleEdgeSize = settings.TriangleEdgeSize;
         }
 
         public void OnInitialized() => IsInitialized = true;
@@ -75,7 +81,7 @@ namespace ZE.MechBattle.Navigation
             return false;
         }
 
-        public NavigationHexPosition GetHexData(int2 hexCoord) => new(hexCoord.x, hexCoord.y, HexEdgeSize, TriangleEdgeSize);
+        public NavigationHexPosition GetHexData(int2 hexCoord) => new(hexCoord.x, hexCoord.y, HexEdgeSize, _triangleEdgeSize);
        
 
         // todo: move to own command
@@ -102,7 +108,7 @@ namespace ZE.MechBattle.Navigation
         public float GetTriangleEntranceCost(IntTriangularPos pos) => IsTrianglePassable(pos) ? 1f : -1f;
         public bool IsTrianglePassable(IntTriangularPos pos)
         {
-            var hexCoord = TriangularMath.TriangularToHex(pos, TriangleEdgeSize);
+            var hexCoord = TriangularMath.TriangularToHex(pos, _triangleEdgeSize);
             if (!_hexes.TryGetValue(hexCoord, out var hex) 
                 || !hex.TrianglesData.TryGet(pos, out var triangleData)
                 || triangleData.IsValid)

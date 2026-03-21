@@ -1,0 +1,21 @@
+{
+    "name": "ZE.MechBattle.Navigation.DebugOverlay",
+    "rootNamespace": "ZE.MechBattle.Navigation.DebugOverlay",
+    "references": [
+        "GUID:b98de3ec81ae3dd4caeeba0786cb6143",
+        "GUID:343deaaf83e0cee4ca978e7df0b80d21",
+        "GUID:d8b63aba1907145bea998dd612889d6b",
+        "GUID:e0cd26848372d4e5c891c569017e11f1"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

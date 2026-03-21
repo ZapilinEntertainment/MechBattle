@@ -13,18 +13,27 @@ namespace ZE.MechBattle.Ecs
     public class NavigationMapInitializer : IInitializer
     {
         public World World { get;set; }
-        private NavigationMap _map;
-        private CancellationTokenSource _tokenSource = new();
+        private readonly INavigationMap _map;
+        private readonly MapSettingsSO _mapSettings;
+        private readonly CancellationTokenSource _tokenSource = new();
 
         [Inject]
-        public NavigationMapInitializer(NavigationMap map) 
+        public NavigationMapInitializer(INavigationMap map, MapSettingsSO settings) 
         {
             _map = map;            
+            _mapSettings = settings;
         }
 
         public void OnAwake()
         {
-            PrepareHexListCommand.Execute(_map);
+            using (var hexList = GetHexesInRectangleCommand.Execute(_mapSettings, Allocator.Temp))
+            {
+                foreach (var hex in hexList)
+                {
+                    _map.AddHex(hex);
+                }
+            }
+
             CalculateMapNavigation(_tokenSource.Token);            
         }
 

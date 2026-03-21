@@ -7,6 +7,17 @@ namespace ZE.MechBattle.Navigation
 {
     public static class GetHexesInRectangleCommand
     {
+        public static NativeList<int2> Execute(MapSettingsSO mapSettings, Allocator allocator)
+        {
+            var edge = mapSettings.HexEdgeSize;
+            var trianglesPerEdge = mapSettings.TrianglesPerHexEdge;
+            var triangleEdgeSize = edge / trianglesPerEdge;
+            var trianglesInHexCount = TriangularMath.GetTrianglesCountInHex(trianglesPerEdge);
+
+            var hexEdgeSize = mapSettings.HexEdgeSize;
+            return Execute(mapSettings.BottomLeftCorner, mapSettings.TopRightCorner, hexEdgeSize, triangleEdgeSize, allocator);
+        }
+
         public static NativeList<int2> Execute(
             float2 worldMin,
             float2 worldMax,

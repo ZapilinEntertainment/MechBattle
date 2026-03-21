@@ -26,8 +26,8 @@ namespace ZE.MechBattle.Navigation
 
         public static HexPathSearchResult TryGetClosestPath(
             float3 startPos, 
-            float3 endPos, 
-            NavigationMap map, 
+            float3 endPos,
+            INavigationMap map, 
             NavigationHexPathsList pathsList, 
             out HexPathSearchResultData resultData,
             bool requestPathBuilding = true)
@@ -112,7 +112,7 @@ namespace ZE.MechBattle.Navigation
             return HexPathSearchResult.PathFound;
         }
     
-        private static HexEdgesMask DefineAccessibleEdges(float3 worldPos, NavigationMap map)
+        private static HexEdgesMask DefineAccessibleEdges(float3 worldPos, INavigationMap map)
         {
             var hexCoord = HexMath.DefineHex(worldPos.xz, map.HexEdgeSize);
             var flowMap = map.GetFlowMap(hexCoord);

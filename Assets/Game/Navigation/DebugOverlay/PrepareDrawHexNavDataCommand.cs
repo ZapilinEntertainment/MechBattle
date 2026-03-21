@@ -4,7 +4,7 @@ using UnityEngine;
 using Unity.Mathematics;
 using Unity.Collections;
 
-namespace ZE.MechBattle.Navigation.DebugDraw
+namespace ZE.MechBattle.Navigation.DebugOverlay
 {
     // showing cast points and returns locked triangles (standartized coords)
     internal static class PrepareDrawHexNavDataCommand

@@ -8,7 +8,7 @@ namespace ZE.MechBattle.Navigation
 
     public static class PrepareHexPathJobCollectionsCommand
     {
-        public static HexPathJobCollections Execute(Allocator allocator, NavigationMap map)
+        public static HexPathJobCollections Execute(Allocator allocator, INavigationMap map)
         {
             var data = new HexPathJobCollections(Allocator.TempJob, map.Hexes.Count);
             var indicesDictionary = new Dictionary<HexPathNodeKey, int>();

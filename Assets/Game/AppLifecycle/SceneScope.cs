@@ -9,7 +9,7 @@ namespace ZE.MechBattle
 {
     public class SceneScope : LifetimeScope
     {
-        [SerializeField] private MapSettings _mapSettings;
+        [SerializeField] private MapSettingsSO _mapSettings;
 
         protected override void Configure(IContainerBuilder builder)
         {
@@ -28,7 +28,8 @@ namespace ZE.MechBattle
             builder.Register<ViewReceiversList>(Lifetime.Scoped);
             builder.Register<CollidersTable>(Lifetime.Scoped);           
             
-            builder.RegisterInstance(_mapSettings);
+            var map = new NavigationMap(_mapSettings);
+            builder.RegisterInstance<INavigationMap>(map);
             builder.Register<NavigationMapController>(Lifetime.Scoped);
             builder.Register<NavigationMap>(Lifetime.Scoped);
 

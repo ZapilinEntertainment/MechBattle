@@ -6,7 +6,7 @@ namespace ZE.MechBattle.Navigation
 {
     public class FlattenHexTrianglesCommand
     {
-        public static SquaredHexTrianglesList<FlowFieldCellCalculationData> PrepareFlowMapBlankData(NavigationMap map, NavigationHex hex, Allocator allocator)
+        public static SquaredHexTrianglesList<FlowFieldCellCalculationData> PrepareFlowMapBlankData(INavigationMap map, NavigationHex hex, Allocator allocator)
         {
             var trianglesCount = TriangularMath.GetTrianglesCountInHex(map.TrianglesPerHexEdge);
             var flattenedTrianglesList = new SquaredHexTrianglesList<FlowFieldCellCalculationData>(hex.TriangularCenterPos, map.TrianglesPerHexEdge, allocator);

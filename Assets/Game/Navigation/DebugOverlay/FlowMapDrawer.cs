@@ -5,16 +5,12 @@ using UnityEngine;
 using Unity.Mathematics;
 using Unity.Jobs;
 using Unity.Collections;
-
-#if UNITY_EDITOR
 using UnityEditor;
-using TriInspector;
-#endif
 
 
-namespace ZE.MechBattle.Navigation.DebugDraw
+namespace ZE.MechBattle.Navigation.DebugOverlay
 {
-    public class FlowMapDrawer : MonoBehaviour
+    public class FlowMapDrawer : IDisposable
     {
         private readonly struct GizmosData
         {
@@ -28,27 +24,29 @@ namespace ZE.MechBattle.Navigation.DebugDraw
             }
         }
 
-        [SerializeField] private int2 _hexCoordinate;
-        [SerializeField, OnValueChanged(nameof(DrawFlowField))] private HexEdge _exitEdge;
-        [SerializeField] private NavigationMapDrawer _mapDrawer;
         private List<GizmosData> _gizmosData = new();
         private float ARROW_LENGTH = 0.5f;
-        private NavigationCaster _navigationCaster;
         private readonly CancellationTokenSource _tokenSource = new();
 
-#if UNITY_EDITOR
-
-        [Button("Draw flow map in hex")]
-        public void DrawFlowField()
+        public void DrawFlowField(int2 hexCoord, HexEdge exitEdge)
         {
-            var map = _mapDrawer?.Map;
+            var map = NavigationDebugDataContainer.Map;
             if (map == null)
+            {
+                Debug.LogError("draw map first");
                 return;
+            }
+            var caster = NavigationDebugDataContainer.Caster;
+            if (caster == null)
+            {
+                Debug.LogError("no nav caster found");
+                return;
+            }
 
-            UpdateFlowMap(_hexCoordinate, _exitEdge);
+            UpdateFlowMap(hexCoord, exitEdge, map, caster);
         }
 
-        private void OnDrawGizmos()
+        public void OnSceneGUI()
         {
             if (_gizmosData.Count != 0)
             {
@@ -58,25 +56,21 @@ namespace ZE.MechBattle.Navigation.DebugDraw
                 foreach (var data in _gizmosData)
                 {
                     var endPos = data.Direction + data.Position;
-                    Gizmos.DrawLine(data.Position, endPos);
-                    Gizmos.DrawLine(endPos, 0.3f * (rotationRight * -data.Direction) + endPos);
-                    Gizmos.DrawLine(endPos, 0.3f * (rotationLeft * -data.Direction) + endPos);
+                    Handles.DrawLine(data.Position, endPos);
+                    Handles.DrawLine(endPos, 0.3f * (rotationRight * -data.Direction) + endPos);
+                    Handles.DrawLine(endPos, 0.3f * (rotationLeft * -data.Direction) + endPos);
                 }
             }
         }
-#endif
 
-        private async void UpdateFlowMap(int2 hexCoord, HexEdge exitEdge)
+        private async void UpdateFlowMap(int2 hexCoord, HexEdge exitEdge, INavigationMap map, INavigationCaster caster)
         {
             _gizmosData.Clear();
-
-            var map = _mapDrawer.Map;
             var flowMap = map.GetFlowMap(hexCoord);
             HexFlowMap castedFlowMap;
             if (flowMap.IsStub)
             {
-                _navigationCaster ??= new NavigationCaster(map.Settings, Allocator.Persistent);
-                castedFlowMap = await CalculateHexFlowMapCommand.ExecuteAsync(map.GetHexData(hexCoord), _navigationCaster, _tokenSource.Token);
+                castedFlowMap = await CalculateHexFlowMapCommand.ExecuteAsync(map.GetHexData(hexCoord), caster, _tokenSource.Token);
 
                 if (!map.TryGetHex(hexCoord, out var hex))
                     map.AddHex(hexCoord);
@@ -93,29 +87,16 @@ namespace ZE.MechBattle.Navigation.DebugDraw
             foreach (var kvp in castedFlowMap.Data)
             {
                 var worldPos = TriangularMath.TriangularToWorld(kvp.Key, map.TriangleEdgeSize);
-                var flowMapCell = kvp.Value[_exitEdge];
+                var flowMapCell = kvp.Value[exitEdge];
                 var vector = TriangularMath.TriangularDirectionToWorld(flowMapCell.Direction, kvp.Key.IsPeak);
                 _gizmosData.Add(new(vector, worldPos));
             }
         }
 
-        private void OnEnable()
+        public void Dispose()
         {
-            AssemblyReloadEvents.beforeAssemblyReload += Cleanup;
-        }
-
-        private void OnDisable()
-        {
-            AssemblyReloadEvents.beforeAssemblyReload -= Cleanup;
-            Cleanup();
-        }
-
-        private void Cleanup()
-        {
-            Debug.Log("flow map drawer cleanup");
             _tokenSource.Cancel();
             _tokenSource.Dispose();
-            _navigationCaster.Dispose();
         }
     }
 }

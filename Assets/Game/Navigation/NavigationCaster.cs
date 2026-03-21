@@ -40,7 +40,7 @@ namespace ZE.MechBattle.Navigation
         // final commands list
         private readonly NativeArray<RaycastCommand> _raycastCommands;
 
-        public NavigationCaster(in MapSettings mapSettings, Allocator allocator) 
+        public NavigationCaster(MapSettingsSO mapSettings, Allocator allocator) 
         { 
             _trianglesPerHexEdge = mapSettings.TrianglesPerHexEdge;
             _raycastTrianglesPerEdge = mapSettings.RaycastSubdivisionsPerEdge;
