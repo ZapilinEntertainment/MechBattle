@@ -9,17 +9,38 @@ using UnityEditor;
 namespace ZE.MechBattle.Navigation.DebugOverlay
 {
     internal enum DebugColor : byte { White, Green, Red, Yellow, Purple, Black }
+    internal static class DebugColorExtension
+    {
+        private static readonly Dictionary<DebugColor, Color> s_debugColors = new()
+        {
+            {DebugColor.White, Color.white },
+            {DebugColor.Red, Color.red },
+            {DebugColor.Green, Color.green },
+            {DebugColor.Yellow, Color.yellow },
+             {DebugColor.Purple, Color.purple },
+            {DebugColor.Black, Color.black }
+        };
+
+        internal static Color ToColor(this DebugColor debugColor) => s_debugColors.TryGetValue(debugColor, out var color) ? color : Color.lightPink;
+    }
 
     internal readonly struct SphereDrawData
     {
         public readonly Vector3 Pos;
-        public readonly DebugColor Color;
+        public readonly DebugColor DebugColor;
         public readonly float Radius;
 
         public SphereDrawData(Vector3 pos, DebugColor color, float radius = 1f)
         {
             Pos = pos;
-            Color = color;
+            DebugColor = color;
+            Radius = radius;
+        }
+
+        public SphereDrawData(float2 pos, float radius = 1f)
+        {
+            Pos = new(pos.x, 0f, pos.y);
+            DebugColor = DebugColor.White;
             Radius = radius;
         }
     }
@@ -28,13 +49,13 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
     {
         public readonly Vector3 PointA;
         public readonly Vector3 PointB;
-        public readonly DebugColor Color;
+        public readonly DebugColor ColorEnum;
 
         public LineDrawData(float3 pointA, float3 pointB, DebugColor color = DebugColor.White)
         {
             PointA = pointA;
             PointB = pointB;
-            Color = color;
+            ColorEnum = color;
         }
     }
 
@@ -54,16 +75,6 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         private QueryParameters _castQueryParameters;
 
         private readonly MapSettingsSO _mapSettings;
-
-        private static readonly Dictionary<DebugColor, Color> s_debugColors = new()
-        {
-            {DebugColor.White, Color.white },
-            {DebugColor.Red, Color.red },
-            {DebugColor.Green, Color.green },
-            {DebugColor.Yellow, Color.yellow },
-             {DebugColor.Purple, Color.purple },
-            {DebugColor.Black, Color.black }
-        };
 
         public NavigationMapDrawer(MapSettingsSO mapSettings)
         {
@@ -89,8 +100,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             _triangleEdgeSize = _mapSettings.TriangleEdgeSize;
             _trianglesInHexCount = TriangularMath.GetTrianglesCountInHex(_mapSettings.TrianglesPerHexEdge);
 
-            var hexList = GetHexesInRectangleCommand.Execute(_mapSettings, Allocator.TempJob);
-            var trisArray = new NativeArray<IntTriangularPos>(_trianglesInHexCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+            using var hexList = GetHexesInRectangleCommand.Execute(_mapSettings, Allocator.TempJob);
+            using var trisArray = new NativeArray<IntTriangularPos>(_trianglesInHexCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
             foreach (var hexPos in hexList)
             {
                 AddHexDrawData(HexMath.HexToWorld(hexPos, _mapSettings.HexEdgeSize), _drawData, _trianglesDrawMode, trisArray);
@@ -103,13 +114,13 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
             foreach (var drawData in _drawData)
             {
-                Handles.color = s_debugColors[drawData.Color];
+                Handles.color = drawData.ColorEnum.ToColor();
                 Handles.DrawLine(drawData.PointA, drawData.PointB);
             }
 
             foreach (var drawData in _highlightedTriangleData)
             {
-                Handles.color = s_debugColors[drawData.Color];
+                Handles.color = drawData.ColorEnum.ToColor();
                 Handles.DrawLine(drawData.PointA, drawData.PointB);
             }
 
@@ -117,7 +128,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             {
                 foreach (var data in _sphereDrawData)
                 {
-                    Handles.color = s_debugColors[data.Color];
+                    Handles.color = data.DebugColor.ToColor();
                     Handles.DrawSolidDisc(data.Pos, Vector3.up, data.Radius);
                 }
             }

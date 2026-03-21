@@ -39,14 +39,16 @@ namespace ZE.MechBattle.Navigation
                 RaycastTrianglesPerEdge = RaycastTrianglesPerEdge
             };
 
+            var index = 0;
             foreach (var position in Positions)
             {
                 var cartesian = TriangularMath.TriangularToWorld(position, TriangleEdgeSize);
                 NavigationMapHelper.SubdivideTriangleIntoSmallerAndGetCenters(cartesian.xz, position.IsPeak, subdivisionProtocol);
+                var centers = subdivisionProtocol.Centers;
                 for (var i = 0; i < RaycastPoints.Length; i++)
                 {
                     var raycastPos = RaycastPoints[i];
-                    RaycastCommands[i] = new(new Vector3(raycastPos.x, CastingHeight, raycastPos.y), direction, QueryParameters, CastingRayLength);
+                    RaycastCommands[index++] = new(new Vector3(raycastPos.x, CastingHeight, raycastPos.y), direction, QueryParameters, CastingRayLength);
                 }
             }
         }

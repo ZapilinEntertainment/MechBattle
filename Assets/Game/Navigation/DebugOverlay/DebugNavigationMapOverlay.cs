@@ -4,6 +4,7 @@ using UnityEditor.Overlays;
 using UnityEditor.UI;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
+using Unity.Collections;
 
 namespace ZE.MechBattle.Navigation.DebugOverlay
 {
@@ -14,6 +15,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         private bool _drawerPrepared = false;
         private MapSettingsSO _settingsSO;
         private NavigationMap _map;
+        private NavigationCaster _caster;
         private NavigationMapDrawer _drawer;
 
         private const string SELECTED_SETTINGS_KEY = "DebugNavigationSettings";
@@ -26,10 +28,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
             var previousPath = EditorPrefs.GetString(SELECTED_SETTINGS_KEY, string.Empty);
             if (!string.IsNullOrEmpty(previousPath))
-            {
-                _settingsSO = AssetDatabase.LoadAssetAtPath<MapSettingsSO>(previousPath);
-                _settingsAssetFound = _settingsSO != null;
-            }
+                ChangeSettings(AssetDatabase.LoadAssetAtPath<MapSettingsSO>(previousPath));
 
             var soField = new ObjectField("Settings SO")
             {
@@ -50,30 +49,40 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         public override void OnWillBeDestroyed()
         {
-            if (_map != null) ClearMap();
+            ClearMap();
             SceneView.duringSceneGui -= OnSceneGUI;
         }
 
         private void OnSettingsSoChanged(ChangeEvent<UnityEngine.Object> evt)
         {
             _settingsSO = evt.newValue as MapSettingsSO;
+            ChangeSettings(_settingsSO);
+        }
+
+        private void ChangeSettings(MapSettingsSO settings)
+        {
+            _settingsSO = settings;
             _settingsAssetFound = _settingsSO != null;
+
             if (_settingsAssetFound)
             {
                 _drawer = new(_settingsSO);
                 EditorPrefs.SetString(SELECTED_SETTINGS_KEY, AssetDatabase.GetAssetPath(_settingsSO));
                 _drawer.RedrawMap();
-            }                
+            }
             else
             {
                 _drawer = null;
                 _drawerPrepared = false;
-                EditorPrefs.DeleteKey(SELECTED_SETTINGS_KEY);
             }
-                
 
-            if (_map != null)
-                ClearMap();
+            ClearMap();
+
+            if (_settingsAssetFound)
+            {
+                _caster = new(_settingsSO, Allocator.Persistent);
+                NavigationDebugDataContainer.SetCaster(_caster);
+            }
         }
 
         private void OnSceneGUI(SceneView sceneView)
@@ -108,8 +117,11 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         private void ClearMap()
         {
-            _map.Dispose();
-            NavigationDebugDataContainer.SetMap(null);           
+            _map?.Dispose();
+            NavigationDebugDataContainer.SetMap(null);  
+            
+            _caster?.Dispose();
+            NavigationDebugDataContainer.SetCaster(null);
         }
     }
 

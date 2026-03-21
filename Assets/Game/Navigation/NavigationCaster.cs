@@ -39,6 +39,7 @@ namespace ZE.MechBattle.Navigation
 
         // final commands list
         private readonly NativeArray<RaycastCommand> _raycastCommands;
+        private readonly CancellationTokenSource _casterLifetimeCts = new();
 
         public NavigationCaster(MapSettingsSO mapSettings, Allocator allocator) 
         { 
@@ -57,9 +58,9 @@ namespace ZE.MechBattle.Navigation
             _raycastPointsArray = new NativeArray<float2>(raycastsCount, allocator, NativeArrayOptions.UninitializedMemory);
         }
 
-        public async Awaitable<NativeArray<RaycastHit>> CastHexAsync(float2 hexWorldPos, QueryParameters queryParameters, CancellationToken token)
+        public PrepareHexRaycastCommandsJob ConstructPositionsJob(float2 hexWorldPos, in QueryParameters queryParameters)
         {
-            var preparePositionsJob = new PrepareHexRaycastCommandsJob()
+            return new PrepareHexRaycastCommandsJob()
             {
                 CastingHeight = _castingHeight,
                 CastingRayLength = _castingRayLength,
@@ -72,29 +73,40 @@ namespace ZE.MechBattle.Navigation
                 TriangleEdgeSize = _triangleEdgeSize,
                 TrianglesPerHexEdge = _trianglesPerHexEdge,
             };
+        }
 
-            var preparePositionsHandle = preparePositionsJob.ScheduleByRef();
+        public async Awaitable<NativeArray<RaycastHit>> CastHexAsync(float2 hexWorldPos, QueryParameters queryParameters, CancellationToken cancellationToken)
+        {
+            var positionsJob = ConstructPositionsJob(hexWorldPos, queryParameters);
+
+            var preparePositionsHandle = positionsJob.ScheduleByRef();
             var raycastResults = new NativeArray<RaycastHit>(_raycastCommands.Length, Allocator.Persistent);
-            var castJobHandle = RaycastCommand.ScheduleBatch(_raycastCommands, raycastResults, 16, dependsOn: preparePositionsHandle);
+            var castJobHandle = RaycastCommand.ScheduleBatch(_raycastCommands, raycastResults, 64, dependsOn: preparePositionsHandle);
 
-            while (!castJobHandle.IsCompleted && !token.IsCancellationRequested)
+            var ownToken = _casterLifetimeCts.Token;
+            while (!castJobHandle.IsCompleted)
             {
-                await Awaitable.NextFrameAsync(token);
+                await Awaitable.NextFrameAsync();
             }
-
-            if (token.IsCancellationRequested)
-            {
-                raycastResults.Dispose();
-                return default;
-            }
-
             castJobHandle.Complete();
-            return raycastResults;
+
+            if (cancellationToken.IsCancellationRequested || ownToken.IsCancellationRequested)
+            {
+                Debug.LogWarning("Casting was cancelled before raycast job complete");
+                return raycastResults;
+            }
+            else
+            {
+                return raycastResults;
+            }
         }
 
 
         public void Dispose()
         {
+            _casterLifetimeCts.Cancel();
+            _casterLifetimeCts.Dispose();
+
             _positionsArray.Dispose();
             _raycastCommands.Dispose();
             _raycastPointsArray.Dispose();

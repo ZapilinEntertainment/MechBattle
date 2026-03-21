@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 569728757780034177}
   - component: {fileID: 998570849018848474}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Target
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -62,7 +62,7 @@ GameObject:
   - component: {fileID: 8505200733134776749}
   - component: {fileID: 4961936567136544378}
   - component: {fileID: 59430519145434248}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: destructible
   m_TagString: Untagged
   m_Icon: {fileID: 0}
