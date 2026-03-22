@@ -17,9 +17,9 @@ namespace ZE.MechBattle.Navigation
 
             public NativeCollectionsData(Allocator allocator, IntTriangularPos triangularCenterPos, INavigationCaster caster)
             {
-                var data = new SquaredHexTrianglesList<FlowFieldCellCalculationData>(triangularCenterPos, caster.TrianglesPerHexEdge, Allocator.Persistent);
-                var calculationQueue = new NativeQueue<int>(Allocator.Persistent);
-                var queuedPositions = new NativeHashSet<int>(caster.HexTrianglesCount / 2, Allocator.Persistent);
+                SquaredHexData = new SquaredHexTrianglesList<FlowFieldCellCalculationData>(triangularCenterPos, caster.TrianglesPerHexEdge, allocator);
+                CalculationQueue = new NativeQueue<int>(allocator);
+                QueuedPositions = new NativeHashSet<int>(caster.HexTrianglesCount / 2, allocator);
             }
 
             public void Dispose()
@@ -39,17 +39,15 @@ namespace ZE.MechBattle.Navigation
             INavigationCaster caster, 
             CancellationToken cancellationToken)
         {
-            var raycastData = await caster.CastHexAsync(hex.CenterPos, s_flowMapQueryParameters, cancellationToken);
+            using var raycastData = await caster.CastHexAsync(hex.CenterPos, s_flowMapQueryParameters, cancellationToken);
             if (cancellationToken.IsCancellationRequested)
             {
-                raycastData.Dispose();
                 return default;
             }
-            Debug.Log($"hex casted : {raycastData.Length}");
 
             // TODO: move casting to own command
             var refinedData = RefineNavRaycastDataCommand.Execute(raycastData.AsReadOnly(), LOCK_PERCENT, caster);
-            var collections = new NativeCollectionsData(Allocator.Persistent, hex.TriangularCenterPos, caster);   
+            using var collections = new NativeCollectionsData(Allocator.Persistent, hex.TriangularCenterPos, caster);   
             var data = collections.SquaredHexData;
            
             foreach (var triangleKvp in refinedData)
@@ -60,17 +58,13 @@ namespace ZE.MechBattle.Navigation
                     IsValid = true
                 });
             }
-            Debug.Log($"data refined : {data.Length}");
 
             if (FlowMapCellData.STRUCTURE_SIZE * 6 * data.Length > 1024 * 900)
                 throw new System.Exception("potential stack overflow");
 
             var resultingData = PrepareAndCombineFlowMaps(collections, hex, caster, Allocator.Persistent);
-            collections.Dispose();
-            Debug.Log($"flow maps combined: {resultingData.Count}");
 
             var accessMap = FormHexAccessMapCommand.Execute(resultingData.AsReadOnly(), hex, caster.TrianglesPerHexEdge);
-            Debug.Log("edges access map ready");
             return new HexFlowMap(resultingData, accessMap);            
         }
 

@@ -23,10 +23,11 @@ namespace ZE.MechBattle.Navigation
 
         public static QueryParameters GetGroundCastQueryParameters()
         {
-            // TODO: bind to LayerConstants
             var layerMask = LayerMask.GetMask("Ground");
             return new(layerMask, false, QueryTriggerInteraction.Ignore, false);
         }
+
+        public const string OBSTACLE_TAG = "Obstacle";
     
     }
 }

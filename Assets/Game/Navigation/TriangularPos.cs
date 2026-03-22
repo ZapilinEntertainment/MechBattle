@@ -35,7 +35,7 @@ namespace ZE.MechBattle.Navigation
             new(a.DownLeft + delta.x, a.Up +delta.y, a.DownRight + delta.z);
 
         public static IntTriangularPos operator -(IntTriangularPos a, IntTriangularPos delta) =>
-           new(a.DownLeft + delta.DownLeft, a.Up + delta.Up, a.DownRight + delta.DownRight);
+           new(a.DownLeft - delta.DownLeft, a.Up - delta.Up, a.DownRight - delta.DownRight);
 
         public static implicit operator int3(IntTriangularPos sourceObject) => sourceObject.ToInt3();
 
@@ -63,6 +63,7 @@ namespace ZE.MechBattle.Navigation
             HashCode.Combine(DownLeft * 11, Up * 17, DownRight * 23);
 
         // deepseek generated
+        // todo: change to StandartizedVectorView, use for vectors only!
         public IntTriangularPos ToStandartized()
         {
             var min = math.min(DownLeft, math.min(Up, DownRight));

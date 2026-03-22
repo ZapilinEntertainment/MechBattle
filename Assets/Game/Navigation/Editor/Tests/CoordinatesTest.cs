@@ -73,5 +73,13 @@ namespace ZE.MechBattle.Navigation.Tests
             Assert.AreEqual(hex.x, a);
             Assert.AreEqual(hex.y, b);
         }
+
+        [TestCase(0,2,2, 0,2,2)]
+        public void SubstractionTest(int x1, int y1, int z1, int x2, int y2, int z2)
+        {
+            var posA = new IntTriangularPos(x1,y1,z1);
+            var posB = new IntTriangularPos(x2,y2,z2);
+            Assert.AreEqual((new int3(x1, y1, z1) - new int3(x2, y2, z2)), (posA - posB).ToInt3());
+        }
     }
 }

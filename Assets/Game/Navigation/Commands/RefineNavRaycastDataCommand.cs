@@ -5,11 +5,13 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
+    // refines raycast data into triangles navigation data
     public static class RefineNavRaycastDataCommand
     {
         private struct TriangleRaycastData
         {
             public int IntersectionsCount;
+            public int ObstaclesCount;
             //public float MaxHeight;
             public float AverageHeight;
         }
@@ -32,7 +34,10 @@ namespace ZE.MechBattle.Navigation
 
                 data.AverageHeight = (data.AverageHeight * data.IntersectionsCount + result.point.y) / (data.IntersectionsCount + 1);
                 data.IntersectionsCount++;
-                //data.MaxHeight = math.max(data.MaxHeight, result.point.y);                
+                //data.MaxHeight = math.max(data.MaxHeight, result.point.y);
+                
+                if (result.collider.CompareTag(NavigationConstants.OBSTACLE_TAG))
+                    data.ObstaclesCount++;
 
                 intersectionsCount[trianglePos] = data;
             }
@@ -42,7 +47,7 @@ namespace ZE.MechBattle.Navigation
             foreach (var triKvp in intersectionsCount)
             {
                 var data = triKvp.Value;
-                var isLocked = (data.IntersectionsCount / raycastsPerTriangle) >= intersectionPercentForLock;
+                var isLocked = (data.ObstaclesCount / raycastsPerTriangle) >= intersectionPercentForLock;
                 trianglesData.Add(triKvp.Key, new()
                 {
                     Height = data.AverageHeight,

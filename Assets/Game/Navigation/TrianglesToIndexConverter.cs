@@ -9,28 +9,36 @@ namespace ZE.MechBattle.Navigation
     {
         public readonly int ArrayWidth;
         public readonly int ArrayHeight;
-        private readonly IntTriangularPos BottomLeftCornerPosStandartized;
+        public readonly IntTriangularPos BottomLeftPeakTrianglePos;
+        public readonly IntTriangularPos BottomLeftValleyTrianglePos;
 
         public TrianglesToIndexConverter(IntTriangularPos hexCenterInTriangular, int trianglesPerEdge)
         {
             ArrayWidth = trianglesPerEdge * 2; // count only A triangles
             ArrayHeight = trianglesPerEdge * 4; // count both A and V triangles
 
-            BottomLeftCornerPosStandartized = (hexCenterInTriangular + trianglesPerEdge * new int3(2, -1, -1)).ToStandartized();
+            BottomLeftPeakTrianglePos = hexCenterInTriangular + new int3(2 * trianglesPerEdge - 1, - trianglesPerEdge,  -trianglesPerEdge);
+            BottomLeftValleyTrianglePos = TriangularMath.GetPeakNeighbour(BottomLeftPeakTrianglePos, PeakNeighbour.EdgeUpRight);
         }
 
         public int TriangularToIndex(IntTriangularPos pos)
         {
-            var delta = pos.ToStandartized() - BottomLeftCornerPosStandartized;
-            var pos2d = TriangularToVector2D(delta);
+            var delta = pos.IsPeak ? (pos - BottomLeftPeakTrianglePos) : (pos - BottomLeftValleyTrianglePos);
+            var y = delta.Y * 2 + (pos.IsPeak ? 0 : 1);
+            var x = delta.Z;
 
-            return pos2d.x * ArrayHeight + pos2d.y;
+            //Debug.Log($"{pos} -> ({x},{y})");
+            return x * ArrayHeight + y;
         }
 
         public IntTriangularPos IndexToTriangular(int index)
         {
             var pos2d = new int2(index / ArrayHeight, index % ArrayHeight);
-            return new(BottomLeftCornerPosStandartized.X, BottomLeftCornerPosStandartized.Y + pos2d.y, BottomLeftCornerPosStandartized.Z + pos2d.x);
+            var delta = new int3(-pos2d.y / 2, pos2d.y / 2, 0) + new int3(-pos2d.x, 0, pos2d.x);
+            var startPos = pos2d.y % 2 == 0 ? BottomLeftPeakTrianglePos : BottomLeftValleyTrianglePos;
+
+            //Debug.Log($"> {index} : {pos2d} : {startPos} + {delta}");
+            return new (delta + startPos);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

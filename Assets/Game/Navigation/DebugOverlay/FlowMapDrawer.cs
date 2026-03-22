@@ -28,7 +28,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         private float ARROW_LENGTH = 0.5f;
         private readonly CancellationTokenSource _tokenSource = new();
 
-        public void DrawFlowField(int2 hexCoord, HexEdge exitEdge)
+        public async Awaitable DrawFlowFieldAsync(int2 hexCoord, HexEdge exitEdge)
         {
             var map = NavigationDebugDataContainer.Map;
             if (map == null)
@@ -43,7 +43,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 return;
             }
 
-            UpdateFlowMap(hexCoord, exitEdge, map, caster);
+            await UpdateFlowMapAsync(hexCoord, exitEdge, map, caster);
         }
 
         public void OnSceneGUI()
@@ -63,14 +63,20 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             }
         }
 
-        private async void UpdateFlowMap(int2 hexCoord, HexEdge exitEdge, INavigationMap map, INavigationCaster caster)
+        private async Awaitable UpdateFlowMapAsync(int2 hexCoord, HexEdge exitEdge, INavigationMap map, INavigationCaster caster)
         {
             _gizmosData.Clear();
             var flowMap = map.GetFlowMap(hexCoord);
             HexFlowMap castedFlowMap;
             if (flowMap.IsStub)
             {
-                castedFlowMap = await CalculateHexFlowMapCommand.ExecuteAsync(map.GetHexData(hexCoord), caster, _tokenSource.Token);
+                var token = _tokenSource.Token;
+                castedFlowMap = await CalculateHexFlowMapCommand.ExecuteAsync(map.GetHexData(hexCoord), caster, token);
+                if (token.IsCancellationRequested || map == null)
+                {
+                    castedFlowMap.Dispose();
+                    return;
+                }
 
                 if (!map.TryGetHex(hexCoord, out var hex))
                     map.AddHex(hexCoord);
@@ -83,9 +89,9 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             }
 
             //draw:
-            Debug.Log(castedFlowMap.Data.Count);
             foreach (var kvp in castedFlowMap.Data)
             {
+                Debug.Log(kvp.Key);
                 var worldPos = TriangularMath.TriangularToWorld(kvp.Key, map.TriangleEdgeSize);
                 var flowMapCell = kvp.Value[exitEdge];
                 var vector = TriangularMath.TriangularDirectionToWorld(flowMapCell.Direction, kvp.Key.IsPeak);

@@ -45,14 +45,13 @@ namespace ZE.MechBattle.Navigation
                 result = _data[index];
                 return true;
             }
-
             result = default;
             return false;
         }
 
         public void Set(IntTriangularPos pos, T value) 
         {
-            var index = CoordsConverter.TriangularToIndex(pos.ToStandartized());
+            var index = CoordsConverter.TriangularToIndex(pos);
             if (IsIndexValid(index)) 
                 _data[index] = value;
         }        

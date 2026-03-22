@@ -9,8 +9,8 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation.DebugOverlay
 {
-    [Overlay(typeof(SceneView), nameof(DebugNavigationCastOverlay), true)]
-    public class DebugNavigationCastOverlay : Overlay
+    [Overlay(typeof(SceneView), nameof(NavigationCastOverlay), true)]
+    public class NavigationCastOverlay : Overlay
     {
         private CancellationTokenSource _tokenSource = new();
         private bool _castDrawerPresented = false;
@@ -24,9 +24,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         public override VisualElement CreatePanelContent()
         {
-            var root = new VisualElement { style = { width = 200, paddingBottom = 10 } };
-            root.Add(new Label(nameof(DebugNavigationCastOverlay)));
-
+            var root = new VisualElement { style = { width = 200 } };
             var foldout = new Foldout { text = "Hex coord", value = true };
 
             var xposField = new IntegerField("X");
@@ -124,7 +122,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             _clearButton.SetEnabled(false);
 
             var token = _tokenSource.Token;
-            await GetOrCreateCastDrawer().CastHex(_hexCoord, token);
+            await GetOrCreateCastDrawer().CastHexAsync(_hexCoord, token);
 
             _isCasting = false;
             if (_castButton != null) _castButton.SetEnabled(true);

@@ -49,7 +49,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             }            
         }
 
-        public async Awaitable CastHex(int2 hexCoord, CancellationToken cancellationToken)
+        public async Awaitable CastHexAsync(int2 hexCoord, CancellationToken cancellationToken)
         {
             var caster = NavigationDebugDataContainer.Caster;
             if (caster == null)

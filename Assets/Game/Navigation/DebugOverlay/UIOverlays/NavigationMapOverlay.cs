@@ -8,8 +8,8 @@ using Unity.Collections;
 
 namespace ZE.MechBattle.Navigation.DebugOverlay
 {
-    [Overlay(typeof(SceneView), nameof(DebugNavigationMapOverlay), true)]
-    public class DebugNavigationMapOverlay : Overlay
+    [Overlay(typeof(SceneView), nameof(NavigationMapOverlay), true)]
+    public class NavigationMapOverlay : Overlay
     {
         private bool _settingsAssetFound = false;
         private bool _drawerPrepared = false;
@@ -24,7 +24,6 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         public override VisualElement CreatePanelContent()
         {
             var root = new VisualElement { style = { width = 200, paddingBottom = 10 } };
-            root.Add(new Label(nameof(DebugNavigationMapOverlay)));
 
             var previousPath = EditorPrefs.GetString(SELECTED_SETTINGS_KEY, string.Empty);
             if (!string.IsNullOrEmpty(previousPath))
