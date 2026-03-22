@@ -54,7 +54,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             var z = currentTriangle.DownRight / (2f * radius);
 
 
-            Handles.Label(pos, $"{_selectedHex} : {_selectedTrianglePos.ToStandartized()}");
+            Handles.Label(pos, $"{_selectedHex} : {_selectedTrianglePos}");
 
             Handles.DrawLine(_trianglePositions[0], _trianglePositions[1]);
             Handles.DrawLine(_trianglePositions[1], _trianglePositions[2]);

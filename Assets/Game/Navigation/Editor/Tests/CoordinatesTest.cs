@@ -60,7 +60,7 @@ namespace ZE.MechBattle.Navigation.Tests
         [TestCase(-2, 0, 1, -1, 1, 2)]
         [TestCase(-3, 0, 2, -2, 1, 3)]
         
-        public void EqualitiesTest(int x1,int y1, int z1,  int x2, int y2, int z2) => Assert.IsTrue(new IntTriangularPos(x1,y1,z1).ToStandartized() == new IntTriangularPos(x2,y2,z2).ToStandartized());
+        public void EqualitiesTest(int x1,int y1, int z1,  int x2, int y2, int z2) => Assert.IsTrue(new IntTriangularPos(x1,y1,z1).ToStandartizedVector() == new IntTriangularPos(x2,y2,z2).ToStandartizedVector());
 
         [TestCase(-3, 1, 3, -2, 2, 2)]
         public void InequalitiesTest(int x1, int y1, int z1, int x2, int y2, int z2) => Assert.IsFalse(new IntTriangularPos(x1, y1, z1) == new IntTriangularPos(x2, y2, z2));

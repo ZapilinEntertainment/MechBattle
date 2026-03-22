@@ -13,7 +13,7 @@ namespace ZE.MechBattle.Navigation
 
             using (var positionsList = new NativeArray<IntTriangularPos>(trianglesCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory))
             {
-                NavigationMapHelper.GetTrianglesInHex(hex.InnerRingTopTrianglePos, map.TrianglesPerHexEdge, positionsList);
+                GetTrianglesInHexCommand.Execute(hex.InnerRingTopTrianglePos, map.TrianglesPerHexEdge, positionsList);
                 var converter = flattenedTrianglesList.CoordsConverter;
                 foreach (var trianglePos in positionsList)
                 {

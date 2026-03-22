@@ -61,41 +61,6 @@ namespace ZE.MechBattle.Navigation
                 }
             }
         }
-
-        [BurstCompile]
-        public static void GetTrianglesInHex(IntTriangularPos innerRingTopTriangle, int radius, NativeArray<IntTriangularPos> list)
-        {
-            if (radius == 1)
-            {
-                list[0] = innerRingTopTriangle;
-                list[1] = TriangularMath.GetValleyNeighbour(innerRingTopTriangle, ValleyNeighbour.EdgeDownRight);
-                list[5] = TriangularMath.GetValleyNeighbour(innerRingTopTriangle, ValleyNeighbour.EdgeDownLeft);
-
-                var innerRingBottomTriangle = TriangularMath.GetValleyNeighbour(innerRingTopTriangle, ValleyNeighbour.VertexDown);
-                list[3] = innerRingBottomTriangle;
-                list[2] = TriangularMath.GetPeakNeighbour(innerRingBottomTriangle, PeakNeighbour.EdgeUpRight);
-                list[4] = TriangularMath.GetPeakNeighbour(innerRingBottomTriangle, PeakNeighbour.EdgeUpLeft);
-                return;
-            }
-            else
-            {
-                var leftNeighbour = TriangularMath.GetValleyNeighbour(innerRingTopTriangle, ValleyNeighbour.EdgeDownLeft);
-                var leftCornerUpTriangle = new IntTriangularPos(leftNeighbour.DownLeft + radius - 1, leftNeighbour.Up, leftNeighbour.DownRight - radius + 1);
-                var leftCornerDownTriangle = TriangularMath.GetPeakNeighbour(leftCornerUpTriangle, PeakNeighbour.EdgeDown);
-                var writeIndex = 0;
-
-                for (var i = 0; i < radius; i++)
-                {
-                    writeIndex = AddPeakTrianglesRow(leftCornerUpTriangle, radius * 2 - i, list, writeIndex);
-                    writeIndex = AddValleyTrianglesRow(leftCornerDownTriangle, radius * 2 - i, list, writeIndex);
-
-                    leftCornerUpTriangle = TriangularMath.GetPeakNeighbour(leftCornerUpTriangle, PeakNeighbour.VertexUpRight);
-                    leftCornerDownTriangle = TriangularMath.GetValleyNeighbour(leftCornerDownTriangle, ValleyNeighbour.VertexDownRight);
-                }         
-                return;
-            }            
-        }
-
         /// <summary>
         /// add next triangles row started with peak triangle into list and returns next write index (AV...VA)
         /// </summary>
@@ -139,10 +104,10 @@ namespace ZE.MechBattle.Navigation
         }
 
         [BurstCompile]
-        public static IntTriangularPos GetInnerCircleTopTriangle(float2 hexCenter, float triangleEdgeSize)
+        public static IntTriangularPos GetInnerCircleTopTriangle(float2 hexCenterWorld, float triangleEdgeSize)
         {
             var halfHeight = triangleEdgeSize * NavigationConstants.SQRT_OF_THREE * 0.125f;
-            return TriangularMath.WorldToTrianglePos(new(hexCenter.x, 0f, hexCenter.y + halfHeight), triangleEdgeSize);
+            return TriangularMath.WorldToTrianglePos(new(hexCenterWorld.x, 0f, hexCenterWorld.y + halfHeight), triangleEdgeSize);
         }
 
         [BurstCompile]

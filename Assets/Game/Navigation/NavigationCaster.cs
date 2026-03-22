@@ -17,6 +17,7 @@ namespace ZE.MechBattle.Navigation
         int RaycastResolution { get; } 
         int HexTrianglesCount { get;}
         int TrianglesPerHexEdge { get; }
+        float HexEdgeSize { get; }
         Awaitable<NativeArray<RaycastHit>> CastHexAsync(float2 hexWorldPos, QueryParameters queryParameters, CancellationToken token);
     }
 
@@ -26,6 +27,7 @@ namespace ZE.MechBattle.Navigation
         public int RaycastResolution => _raycastTrianglesPerEdge;
         public int HexTrianglesCount => _hexTrianglesCount;
         public int TrianglesPerHexEdge => _trianglesPerHexEdge;
+        public float HexEdgeSize => _hexEdgeSize;
 
         private readonly int _trianglesPerHexEdge;
         private readonly int _raycastTrianglesPerEdge;
@@ -33,6 +35,7 @@ namespace ZE.MechBattle.Navigation
         private readonly float _triangleEdgeSize;
         private readonly float _castingHeight;
         private readonly float _castingRayLength;
+        private readonly float _hexEdgeSize;
 
         private readonly NativeArray<IntTriangularPos> _positionsArray;
         private readonly NativeArray<float2> _raycastPointsArray;
@@ -48,6 +51,7 @@ namespace ZE.MechBattle.Navigation
             _triangleEdgeSize = mapSettings.TriangleEdgeSize;
             _castingHeight = NavigationConstants.CASTING_HEIGHT;
             _castingRayLength = NavigationConstants.CASTING_RAY_LENGTH;
+            _hexEdgeSize = mapSettings.HexEdgeSize;
 
             _hexTrianglesCount = TriangularMath.GetTrianglesCountInHex(mapSettings.TrianglesPerHexEdge);
             var raycastCommandsCount = _hexTrianglesCount * _raycastTrianglesPerEdge * _raycastTrianglesPerEdge;
@@ -64,7 +68,7 @@ namespace ZE.MechBattle.Navigation
             {
                 CastingHeight = _castingHeight,
                 CastingRayLength = _castingRayLength,
-                HexCenter = hexWorldPos,
+                HexCenterWorld = hexWorldPos,
                 RaycastCommands = _raycastCommands,
                 Positions = _positionsArray,
                 QueryParameters = queryParameters,

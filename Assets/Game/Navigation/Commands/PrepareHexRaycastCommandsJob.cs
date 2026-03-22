@@ -9,7 +9,7 @@ namespace ZE.MechBattle.Navigation
     [BurstCompile]
     public struct PrepareHexRaycastCommandsJob : IJob
     {
-        public float2 HexCenter;
+        public float2 HexCenterWorld;
         public float TriangleEdgeSize;
         public int TrianglesPerHexEdge;
         public int RaycastTrianglesPerEdge;
@@ -25,9 +25,8 @@ namespace ZE.MechBattle.Navigation
         public void Execute()
         {
             // note: all static functions inside are burstable
-
-            var innerCircleTopTriangle = NavigationMapHelper.GetInnerCircleTopTriangle(HexCenter, TriangleEdgeSize);
-            NavigationMapHelper.GetTrianglesInHex(innerCircleTopTriangle, TrianglesPerHexEdge, Positions);
+            var innerCircleTopTriangle = NavigationMapHelper.GetInnerCircleTopTriangle(HexCenterWorld, TriangleEdgeSize);
+            GetTrianglesInHexCommand.Execute(innerCircleTopTriangle, TrianglesPerHexEdge, Positions);
 
             // why Vector3: raycast command constructor use it
             var direction = Vector3.down;

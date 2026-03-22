@@ -12,21 +12,11 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 {
     public class FlowMapDrawer : IDisposable
     {
-        private readonly struct GizmosData
-        {
-            public readonly Vector3 Direction;
-            public readonly Vector3 Position;
-
-            public GizmosData(Vector3 dir, Vector3 position)
-            {
-                Direction = dir;
-                Position = position;
-            }
-        }
-
-        private List<GizmosData> _gizmosData = new();
-        private float ARROW_LENGTH = 0.5f;
+        private List<(float3 start, float3 end)> _gizmosDrawData = new();
+        private float _arrowSize = 1f;
         private readonly CancellationTokenSource _tokenSource = new();
+        private readonly quaternion rotationRight = Quaternion.AngleAxis(30f,Vector3.up);
+        private readonly quaternion rotationLeft = Quaternion.AngleAxis(30f, Vector3.down);
 
         public async Awaitable DrawFlowFieldAsync(int2 hexCoord, HexEdge exitEdge)
         {
@@ -48,24 +38,18 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         public void OnSceneGUI()
         {
-            if (_gizmosData.Count != 0)
+            if (_gizmosDrawData.Count != 0)
             {
-                var rotationRight = Quaternion.AngleAxis(30f,Vector3.up);
-                var rotationLeft = Quaternion.AngleAxis(30f, Vector3.down);
-
-                foreach (var data in _gizmosData)
+                foreach (var data in _gizmosDrawData)
                 {
-                    var endPos = data.Direction + data.Position;
-                    Handles.DrawLine(data.Position, endPos);
-                    Handles.DrawLine(endPos, 0.3f * (rotationRight * -data.Direction) + endPos);
-                    Handles.DrawLine(endPos, 0.3f * (rotationLeft * -data.Direction) + endPos);
+                    Handles.DrawLine(data.start, data.end);
                 }
             }
         }
 
         private async Awaitable UpdateFlowMapAsync(int2 hexCoord, HexEdge exitEdge, INavigationMap map, INavigationCaster caster)
         {
-            _gizmosData.Clear();
+            _gizmosDrawData.Clear();
             var flowMap = map.GetFlowMap(hexCoord);
             HexFlowMap castedFlowMap;
             if (flowMap.IsStub)
@@ -89,13 +73,34 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             }
 
             //draw:
+            _arrowSize = 0.3f * caster.TriangleEdgeSize;
             foreach (var kvp in castedFlowMap.Data)
             {
-                Debug.Log(kvp.Key);
+                // direction arrow:
                 var worldPos = TriangularMath.TriangularToWorld(kvp.Key, map.TriangleEdgeSize);
                 var flowMapCell = kvp.Value[exitEdge];
                 var vector = TriangularMath.TriangularDirectionToWorld(flowMapCell.Direction, kvp.Key.IsPeak);
-                _gizmosData.Add(new(vector, worldPos));
+
+                var endPos = _arrowSize * vector + worldPos;
+                _gizmosDrawData.Add((worldPos, endPos));
+                _gizmosDrawData.Add((endPos, 0.3f * _arrowSize * math.mul(rotationRight, -vector) + endPos));
+                _gizmosDrawData.Add((endPos, 0.3f * _arrowSize * math.mul(rotationLeft, -vector) + endPos));
+
+                // triangle border:
+                var vertices = NavigationMapHelper.GetTriangleVertices(kvp.Key, caster.TriangleEdgeSize);
+                _gizmosDrawData.Add((vertices.A, vertices.B));
+                _gizmosDrawData.Add((vertices.B, vertices.C));
+                _gizmosDrawData.Add((vertices.A, vertices.C));
+            }
+
+
+            using var trianglesList = new NativeArray<IntTriangularPos>(caster.HexTrianglesCount, Allocator.TempJob);
+            var hexPos = new NavigationHexPosition(hexCoord.x, hexCoord.y, map.HexEdgeSize, map.TriangleEdgeSize);
+            GetTrianglesInHexCommand.Execute(hexPos.InnerRingTopTriangle, map.TrianglesPerHexEdge, trianglesList);
+            foreach (var triPos in trianglesList)
+            {
+                if (!castedFlowMap.Data.ContainsKey(triPos)) 
+                    Debug.Log($"triangle not found: {triPos}");
             }
         }
 

@@ -39,7 +39,7 @@ namespace ZE.MechBattle.Navigation
             INavigationCaster caster, 
             CancellationToken cancellationToken)
         {
-            using var raycastData = await caster.CastHexAsync(hex.CenterPos, s_flowMapQueryParameters, cancellationToken);
+            using var raycastData = await caster.CastHexAsync(hex.CenterPosWorld, s_flowMapQueryParameters, cancellationToken);
             if (cancellationToken.IsCancellationRequested)
             {
                 return default;

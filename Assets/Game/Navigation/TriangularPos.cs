@@ -63,8 +63,8 @@ namespace ZE.MechBattle.Navigation
             HashCode.Combine(DownLeft * 11, Up * 17, DownRight * 23);
 
         // deepseek generated
-        // todo: change to StandartizedVectorView, use for vectors only!
-        public IntTriangularPos ToStandartized()
+        // use for vectors only!
+        public IntTriangularPos ToStandartizedVector()
         {
             var min = math.min(DownLeft, math.min(Up, DownRight));
             return new IntTriangularPos(DownLeft - min, Up - min, DownRight - min);

@@ -112,7 +112,7 @@ namespace ZE.MechBattle.Navigation
 
         private void SetupExitCell(IntTriangularPos pos)
         {
-            var index = _coordsConverter.TriangularToIndex(pos.ToStandartized());
+            var index = _coordsConverter.TriangularToIndex(pos);
             if (!Data.IsIndexValid(index))
                 return;
 
@@ -196,7 +196,7 @@ namespace ZE.MechBattle.Navigation
 
                 for (var j = 0; j < NEIGHBOURS_COUNT; j++)
                 {
-                    var neighbourPos = (pos + vectors[j]).ToStandartized();
+                    var neighbourPos = (pos + vectors[j]);
                     if (!Data.TryGet(neighbourPos, out var neighbourData))
                         continue;
 

@@ -16,9 +16,6 @@ namespace ZE.MechBattle.Navigation
             public float AverageHeight;
         }
 
-        /// <summary>
-        /// NOTE: returns non-standartized coords
-        /// </summary>
         public static Dictionary<IntTriangularPos, NavigationTriangleData> Execute(NativeArray<RaycastHit>.ReadOnly raycastResults, float intersectionPercentForLock, INavigationCaster caster)
         {
             var intersectionsCount = new Dictionary<IntTriangularPos, TriangleRaycastData>();

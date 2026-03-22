@@ -163,7 +163,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             var innerCircleTrianglePos = TriangularMath.WorldToTrianglePos(new(centerPos.x, 0f, centerPos.y + halfHeight), _triangleEdgeSize);
             //Debug.Log(TriangularMath.TriangularToCartesian(innerCircleTrianglePos, _triangleEdgeSize));
 
-            NavigationMapHelper.GetTrianglesInHex(innerCircleTrianglePos, _mapSettings.TrianglesPerHexEdge, trianglePositionsArray);
+            GetTrianglesInHexCommand.Execute(innerCircleTrianglePos, _mapSettings.TrianglesPerHexEdge, trianglePositionsArray);
 
             var drawLocked = trianglesDrawMode == TrianglesDrawMode.OnlyLocked || trianglesDrawMode == TrianglesDrawMode.All;
             var drawUnlocked = trianglesDrawMode == TrianglesDrawMode.OnlyPassable || trianglesDrawMode == TrianglesDrawMode.All;
@@ -173,7 +173,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
             foreach (var triangle in trianglePositionsArray)
             {
-                var isLocked = mapExists? map.IsTrianglePassable(triangle.ToStandartized()) : false;
+                var isLocked = mapExists? map.IsTrianglePassable(triangle) : false;
                 var draw = isLocked ? drawLocked : drawUnlocked;
                 if (!draw)
                     continue;

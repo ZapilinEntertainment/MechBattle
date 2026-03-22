@@ -36,7 +36,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 return;
             }
 
-            var job = caster.ConstructPositionsJob(hexCoord, NavigationConstants.GetGroundCastQueryParameters());
+            var hexCenterWorld = HexMath.HexToWorld(hexCoord, caster.HexEdgeSize);
+            var job = caster.ConstructPositionsJob(hexCenterWorld, NavigationConstants.GetGroundCastQueryParameters());
             var handle = job.ScheduleByRef();
             handle.Complete();
 
@@ -58,7 +59,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 return;
             }
 
-            using var raycastData = await caster.CastHexAsync(hexCoord, NavigationConstants.GetGroundCastQueryParameters(), cancellationToken);
+            var hexCenterWorld = HexMath.HexToWorld(hexCoord, caster.HexEdgeSize);
+            using var raycastData = await caster.CastHexAsync(hexCenterWorld, NavigationConstants.GetGroundCastQueryParameters(), cancellationToken);
             if (cancellationToken.IsCancellationRequested)
             {
                 return;

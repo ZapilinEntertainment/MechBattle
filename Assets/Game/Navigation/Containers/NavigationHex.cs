@@ -19,8 +19,8 @@ namespace ZE.MechBattle.Navigation
         public IFlowMap FlowMap => _flowMap;
         public IntTriangularPos TriangularCenterPos => Data.TriangularCenterPos;
         public IntTriangularPos InnerRingTopTrianglePos => Data.InnerRingTopTriangle;
-        public float3 CenterPos3DWorld => Data.CenterPos3D;
-        public float2 CenterPosWorld => Data.CenterPos;
+        public float3 CenterPos3DWorld => Data.CenterPos3DWorld;
+        public float2 CenterPosWorld => Data.CenterPosWorld;
 
         public int2 HexCoordinate => Data.HexCoordinate;
 
