@@ -20,7 +20,10 @@ namespace ZE.MechBattle.Navigation
         }
 
         [BurstCompile]
-        public static void SubdivideTriangleIntoSmallerAndGetCenters(float2 center, bool isPeakTriangle, in TriangleSubdivisionProtocol protocol )
+        public static void SubdivideTriangleIntoSmallerAndGetCenters(
+            float2 center, 
+            bool isPeakTriangle, 
+            in TriangleSubdivisionProtocol protocol)
         {
             // divide triangle into n^2 smaller congruent triangles
             var subdivisionsCount = protocol.RaycastTrianglesPerEdge;
@@ -56,7 +59,7 @@ namespace ZE.MechBattle.Navigation
                 var trianglesInRow = 2 * row - 1;
 
                 for (var i = 0; i < trianglesInRow; i++)
-                {
+                {                    
                     centers[index++] = new(startPos.x + i * smallTriangleSize * 0.5f, startPos.y + (i % 2) * cupTriangleCenterOffset);
                 }
             }

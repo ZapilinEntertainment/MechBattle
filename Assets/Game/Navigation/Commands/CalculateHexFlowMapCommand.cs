@@ -3,28 +3,48 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
 using Unity.Collections;
+using Unity.Jobs;
 using System;
+using System.Buffers;
 
 namespace ZE.MechBattle.Navigation
 {
     public static class CalculateHexFlowMapCommand
     {
+        private class DisposableArray : IDisposable
+        {
+            public readonly int[] Values;
+
+            public DisposableArray(int length)
+            {
+                Values = ArrayPool<int>.Shared.Rent(length);
+            }
+
+            public void Dispose()
+            {
+                ArrayPool<int>.Shared.Return(Values);
+            }
+        }
+
         private class NativeCollectionsData : IDisposable
         {
-            public SquaredHexTrianglesList<FlowFieldCellCalculationData> SquaredHexData;
+            public SquaredHexTrianglesList<FlowFieldCellSetupData> SetupData;
+            public NativeArray<FlowFieldCellCalculationData> CalculationData;
             public NativeQueue<int> CalculationQueue;
             public NativeHashSet<int> QueuedPositions;
 
             public NativeCollectionsData(Allocator allocator, IntTriangularPos triangularCenterPos, INavigationCaster caster)
             {
-                SquaredHexData = new SquaredHexTrianglesList<FlowFieldCellCalculationData>(triangularCenterPos, caster.TrianglesPerHexEdge, allocator);
+                SetupData = new SquaredHexTrianglesList<FlowFieldCellSetupData>(triangularCenterPos, caster.TrianglesPerHexEdge, allocator);
                 CalculationQueue = new NativeQueue<int>(allocator);
                 QueuedPositions = new NativeHashSet<int>(caster.HexTrianglesCount / 2, allocator);
+                CalculationData = new NativeArray<FlowFieldCellCalculationData>(SetupData.Length, allocator, NativeArrayOptions.UninitializedMemory);
             }
 
             public void Dispose()
             {
-                SquaredHexData.Dispose();
+                SetupData.Dispose();
+                CalculationData.Dispose();
                 CalculationQueue.Dispose();
                 QueuedPositions.Dispose();
             }
@@ -48,7 +68,7 @@ namespace ZE.MechBattle.Navigation
             // TODO: move casting to own command
             var refinedData = RefineNavRaycastDataCommand.Execute(raycastData.AsReadOnly(), LOCK_PERCENT, caster);
             using var collections = new NativeCollectionsData(Allocator.Persistent, hex.TriangularCenterPos, caster);   
-            var data = collections.SquaredHexData;
+            var data = collections.SetupData;
            
             foreach (var triangleKvp in refinedData)
             {
@@ -62,58 +82,94 @@ namespace ZE.MechBattle.Navigation
             if (FlowMapCellData.STRUCTURE_SIZE * 6 * data.Length > 1024 * 900)
                 throw new System.Exception("potential stack overflow");
 
-            var resultingData = PrepareAndCombineFlowMaps(collections, hex, caster, Allocator.Persistent);
+
+            var resultingData = await PrepareAndCombineFlowMaps(collections, hex, caster, Allocator.Persistent, cancellationToken);
+            if (cancellationToken.IsCancellationRequested)
+                return default;
 
             var accessMap = FormHexAccessMapCommand.Execute(resultingData.AsReadOnly(), hex, caster.TrianglesPerHexEdge);
             return new HexFlowMap(resultingData, accessMap);            
         }
 
-        private static NativeHashMap<IntTriangularPos, FlowMapCombinedCell> PrepareAndCombineFlowMaps(
+        private static async Awaitable<NativeHashMap<IntTriangularPos, FlowMapCombinedCell>> PrepareAndCombineFlowMaps(
             NativeCollectionsData data, 
             NavigationHexPosition hex, 
             INavigationCaster caster,
-            Allocator allocator)
+            Allocator allocator,
+            CancellationToken cancellationToken)
         {
-            var hexData = data.SquaredHexData;
-            var length = hexData.Length;
-            Span<int> combinedData = stackalloc int[length * 6];
-
-            for (var i = 0; i < 6; i++)
-            {
-                var edge = (HexEdge)i;
-                var job = new GenerateFlowFieldJob()
-                {
-                    Data = hexData,
-                    HexData = hex,
-                    CalculationQueue = data.CalculationQueue,
-                    QueuedPositions = data.QueuedPositions,
-                    ExitEdge = edge,
-                    TrianglesPerEdge = caster.TrianglesPerHexEdge
-                };
-
-                for (var j = 0; j < length; j++)
-                {
-                    var resultData = hexData[j];
-                    if (resultData.IsValid)
-                        continue;
-                    combinedData[j * i] = new FlowMapCellData(resultData.IsPassable, resultData.FlowDirection, (int)resultData.IntegrationValue).Value;
-                }
-            }
+            var setupData = data.SetupData;
+            var calculationData = data.CalculationData;
+            var length = setupData.Length;
 
             var resultingData = new NativeHashMap<IntTriangularPos, FlowMapCombinedCell>(caster.HexTrianglesCount, allocator);
-            var coordsConverter = hexData.CoordsConverter;
+            var coordsConverter = setupData.CoordsConverter;
             var cellData = new FlowMapCellData[6];
             for (var i = 0; i < length; i++)
             {
-                if (!hexData[i].IsValid)
+                if (!setupData[i].IsValid)
                     continue;
-                for (var j =0; j < 6; j++)
-                {
-                    cellData[j] = new(combinedData[i * 6]);
+                for (var j = 0; j < 6; j++)
+                {                    
+                    cellData[j] = new(true, (int)((HexEdge)j).ToNeighbourDirectionFromPeak(), 0);
                 }
                 resultingData.Add(coordsConverter.IndexToTriangular(i), new(cellData));
             }
+
             return resultingData;
+
+            //using var disposableArray = new DisposableArray(length * 6);
+            //var combinedData = disposableArray.Values;;
+
+            //for (var i = 0; i < 6; i++)
+            //{
+            //    var edge = (HexEdge)i;
+            //    var job = new GenerateFlowFieldJob()
+            //    {
+            //        SetupData = setupData,
+            //        CalculationData = calculationData,
+            //        HexData = hex,
+            //        CalculationQueue = data.CalculationQueue,
+            //        QueuedPositions = data.QueuedPositions,
+            //        ExitEdge = edge,
+            //        TrianglesPerEdge = caster.TrianglesPerHexEdge
+            //    };
+            //    var handle = job.ScheduleByRef();
+            //    while (!handle.IsCompleted)
+            //    {
+            //        await Awaitable.NextFrameAsync();
+            //    }
+            //    handle.Complete();
+
+            //    if (cancellationToken.IsCancellationRequested)
+            //        return default;
+
+            //    for (var j = 0; j < length; j++)
+            //    {
+            //        var defaultData = setupData[j];
+            //        if (defaultData.IsValid)
+            //            continue;
+
+            //        var calculatedData = calculationData[j];
+            //        combinedData[j * i] = new FlowMapCellData(defaultData.IsPassable, calculatedData.FlowDirection, (int)calculatedData.IntegrationValue).Value;
+            //    }
+            //}
+
+            //var resultingData = new NativeHashMap<IntTriangularPos, FlowMapCombinedCell>(caster.HexTrianglesCount, allocator);
+            //var coordsConverter = setupData.CoordsConverter;
+            //var cellData = new FlowMapCellData[6];
+            //for (var i = 0; i < length; i++)
+            //{
+            //    if (!setupData[i].IsValid)
+            //        continue;
+            //    for (var j = 0; j < 6; j++)
+            //    {
+            //        cellData[j] = new(combinedData[i * 6]);
+            //    }
+            //    resultingData.Add(coordsConverter.IndexToTriangular(i), new(cellData));
+            //}
+
+            //return resultingData;
         }
     }
 }

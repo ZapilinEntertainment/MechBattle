@@ -42,7 +42,11 @@ namespace ZE.MechBattle.Navigation
             foreach (var position in Positions)
             {
                 var cartesian = TriangularMath.TriangularToWorld(position, TriangleEdgeSize);
-                NavigationMapHelper.SubdivideTriangleIntoSmallerAndGetCenters(cartesian.xz, position.IsPeak, subdivisionProtocol);
+                NavigationMapHelper.SubdivideTriangleIntoSmallerAndGetCenters(
+                    cartesian.xz, 
+                    position.IsPeak, 
+                    subdivisionProtocol);
+
                 var centers = subdivisionProtocol.Centers;
                 for (var i = 0; i < RaycastPoints.Length; i++)
                 {

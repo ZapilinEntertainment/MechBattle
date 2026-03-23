@@ -6,10 +6,10 @@ namespace ZE.MechBattle.Navigation
 {
     public class FlattenHexTrianglesCommand
     {
-        public static SquaredHexTrianglesList<FlowFieldCellCalculationData> PrepareFlowMapBlankData(INavigationMap map, NavigationHex hex, Allocator allocator)
+        public static SquaredHexTrianglesList<FlowFieldCellSetupData> PrepareFlowMapSetupData(INavigationMap map, NavigationHex hex, Allocator allocator)
         {
             var trianglesCount = TriangularMath.GetTrianglesCountInHex(map.TrianglesPerHexEdge);
-            var flattenedTrianglesList = new SquaredHexTrianglesList<FlowFieldCellCalculationData>(hex.TriangularCenterPos, map.TrianglesPerHexEdge, allocator);
+            var flattenedTrianglesList = new SquaredHexTrianglesList<FlowFieldCellSetupData>(hex.TriangularCenterPos, map.TrianglesPerHexEdge, allocator);
 
             using (var positionsList = new NativeArray<IntTriangularPos>(trianglesCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory))
             {

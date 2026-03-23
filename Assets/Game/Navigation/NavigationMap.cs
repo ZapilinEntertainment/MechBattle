@@ -108,7 +108,7 @@ namespace ZE.MechBattle.Navigation
         public float GetTriangleEntranceCost(IntTriangularPos pos) => IsTrianglePassable(pos) ? 1f : -1f;
         public bool IsTrianglePassable(IntTriangularPos pos)
         {
-            var hexCoord = TriangularMath.TriangularToHex(pos, _triangleEdgeSize);
+            var hexCoord = TriangularMath.TriangularToHex(pos, _triangleEdgeSize, HexEdgeSize);
             if (!_hexes.TryGetValue(hexCoord, out var hex) 
                 || !hex.TrianglesData.TryGet(pos, out var triangleData)
                 || triangleData.IsValid)

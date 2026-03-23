@@ -154,11 +154,11 @@ namespace ZE.MechBattle.Navigation
         }
 
         [BurstCompile]
-        public static int2 TriangularToHex(IntTriangularPos pos, float triangleEdge)
+        public static int2 TriangularToHex(IntTriangularPos pos, float triangleEdge, float hexEdge)
         {
             // there is no correct method to convert directly yet
             var world = TriangularToWorld(pos, triangleEdge);
-            return HexMath.DefineHex(world.xz, triangleEdge);
+            return HexMath.DefineHex(world.xz, hexEdge);
         }
     }
 }

@@ -39,14 +39,21 @@ namespace ZE.MechBattle.Navigation
 
         public bool TryGet(IntTriangularPos pos, out T result)
         {
-            var index = CoordsConverter.TriangularToIndex(pos);
-            if (IsIndexValid(index))
+            if (!TryGetIndex(pos, out var index))
             {
-                result = _data[index];
-                return true;
+                result = default;
+                return false;
             }
-            result = default;
-            return false;
+
+            result = _data[index];
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryGetIndex(IntTriangularPos pos, out int index)
+        {
+            index = CoordsConverter.TriangularToIndex(pos);
+            return IsIndexValid(index);
         }
 
         public void Set(IntTriangularPos pos, T value) 

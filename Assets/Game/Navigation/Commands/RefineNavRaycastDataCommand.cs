@@ -19,7 +19,6 @@ namespace ZE.MechBattle.Navigation
         public static Dictionary<IntTriangularPos, NavigationTriangleData> Execute(NativeArray<RaycastHit>.ReadOnly raycastResults, float intersectionPercentForLock, INavigationCaster caster)
         {
             var intersectionsCount = new Dictionary<IntTriangularPos, TriangleRaycastData>();
-
             for (var i = 0; i < raycastResults.Length; i++)
             {
                 var result = raycastResults[i];

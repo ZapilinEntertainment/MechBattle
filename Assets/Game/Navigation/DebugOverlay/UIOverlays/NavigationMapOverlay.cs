@@ -68,6 +68,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 _drawer = new(_settingsSO);
                 EditorPrefs.SetString(SELECTED_SETTINGS_KEY, AssetDatabase.GetAssetPath(_settingsSO));
                 _drawer.RedrawMap();
+
+                NavigationDebugDataContainer.SetMapSettings(_settingsSO);
             }
             else
             {

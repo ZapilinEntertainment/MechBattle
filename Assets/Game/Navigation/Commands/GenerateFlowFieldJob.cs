@@ -6,14 +6,17 @@ using Unity.Jobs;
 
 namespace ZE.MechBattle.Navigation
 {
-    public struct FlowFieldCellCalculationData
+    public struct FlowFieldCellSetupData
     {
         public bool IsValid;
-
-        public float IntegrationValue;
-        public int FlowDirection;
         public float EntranceCost;
         public bool IsPassable => EntranceCost >= 0f;
+    }
+
+    public struct FlowFieldCellCalculationData
+    {
+        public float IntegrationValue;
+        public int FlowDirection;        
         public bool IsCalculated;
         
     }
@@ -55,9 +58,10 @@ namespace ZE.MechBattle.Navigation
             TriangularMath.GetValleyNeighbour(IntTriangularPos.zero, ValleyNeighbour.VertexUpLeftValley),
         };
 
+        [NoAlias, ReadOnly] public SquaredHexTrianglesList<FlowFieldCellSetupData> SetupData;
         [NoAlias] public NativeQueue<int> CalculationQueue;
-        [NoAlias] public NativeHashSet<int> QueuedPositions;
-        [NoAlias] public SquaredHexTrianglesList<FlowFieldCellCalculationData> Data;
+        [NoAlias] public NativeHashSet<int> QueuedPositions;        
+        [NoAlias] public NativeArray<FlowFieldCellCalculationData> CalculationData;
 
         public NavigationHexPosition HexData;
         public int TrianglesPerEdge;
@@ -72,13 +76,13 @@ namespace ZE.MechBattle.Navigation
 
         public void Execute()
         {
-            _coordsConverter = Data.CoordsConverter;
+            _coordsConverter = SetupData.CoordsConverter;
 
-            for (var i = 0; i < Data.Length; i++)
+            for (var i = 0; i < CalculationData.Length; i++)
             {
-                var cellData = Data[i];
+                var cellData = CalculationData[i];
                 cellData.IntegrationValue = float.MaxValue;
-                Data[i] = cellData;
+                CalculationData[i] = cellData;
             }
 
             _exitFlowDirectionPeak = TriangularMath.GetHexEdgeExitVector(ExitEdge, true);
@@ -113,16 +117,17 @@ namespace ZE.MechBattle.Navigation
         private void SetupExitCell(IntTriangularPos pos)
         {
             var index = _coordsConverter.TriangularToIndex(pos);
-            if (!Data.IsIndexValid(index))
+            if (!SetupData.IsIndexValid(index))
                 return;
 
-            var data = Data[index];
-            if (!data.IsPassable | !data.IsValid)
+            var setupData = SetupData[index];
+            if (!setupData.IsPassable | !setupData.IsValid)
                 return;
 
-            data.IntegrationValue = 0;
-            data.FlowDirection = math.select(_exitFlowDirectionPeak, _exitFlowDirectionValley, pos.IsPeak);
-            Data[index] = data;
+            var calculationData = CalculationData[index];
+            calculationData.IntegrationValue = 0;
+            calculationData.FlowDirection = math.select(_exitFlowDirectionPeak, _exitFlowDirectionValley, pos.IsPeak);
+            CalculationData[index] = calculationData;
 
             Enqueue(index);            
         }
@@ -147,31 +152,32 @@ namespace ZE.MechBattle.Navigation
             {
                 var index = Dequeue();
                 var pos = _coordsConverter.IndexToTriangular(index);
-                var data = Data[index];
+                var calculationData = CalculationData[index];
 
                 var vectorsArray = pos.IsPeak ? PeakNeighbours : ValleyNeighbours;
-                var integrationValue = data.IntegrationValue;
+                var integrationValue = calculationData.IntegrationValue;
 
                 for (var i = 0; i < NEIGHBOURS_COUNT; i++)
                 {
                     var neighbourPos = pos + vectorsArray[i];
                     var neighbourIndex = _coordsConverter.TriangularToIndex(neighbourPos);
 
-                    if (!Data.IsIndexValid(neighbourIndex))
+                    if (!SetupData.IsIndexValid(neighbourIndex))
                         continue;
                    
-                    var neighbourData = Data[neighbourIndex];
-                    if (!neighbourData.IsValid | !neighbourData.IsPassable)
+                    var neighbourSetupData = SetupData[neighbourIndex];
+                    if (!neighbourSetupData.IsValid | !neighbourSetupData.IsPassable)
                         continue;
 
                     var checkMask = math.select(VALLEY_EDGES_MASK, PEAK_EDGES_MASK, neighbourPos.IsPeak);
                     var isEdge = ((checkMask & (1 << i)) != 0);
                     var stepCf =  math.select(NavigationConstants.VERTEX_PASS_COST, NavigationConstants.EDGE_PASS_COST, isEdge);
 
-                    var newIntegrationValue = integrationValue + neighbourData.EntranceCost * stepCf;
-                    if (newIntegrationValue < neighbourData.IntegrationValue)
+                    var neighbourCalculationData = CalculationData[neighbourIndex];
+                    var newIntegrationValue = integrationValue + neighbourSetupData.EntranceCost * stepCf;
+                    if (newIntegrationValue < neighbourCalculationData.IntegrationValue)
                     {
-                        neighbourData.IntegrationValue = newIntegrationValue;
+                        neighbourCalculationData.IntegrationValue = newIntegrationValue;
                         Enqueue(neighbourIndex);
                     }
                 }
@@ -180,10 +186,11 @@ namespace ZE.MechBattle.Navigation
 
         private void BuildFlowField()
         {
-            for (var i = 0; i< Data.Length; i++)
+            for (var i = 0; i< SetupData.Length; i++)
             {
-                var data = Data[i];
-                if (!data.IsValid | data.IsCalculated)
+                var setupData = SetupData[i];
+                var calculationData = CalculationData[i];
+                if (!setupData.IsValid | calculationData.IsCalculated)
                     continue;
 
                 // ignore exit cells
@@ -197,20 +204,21 @@ namespace ZE.MechBattle.Navigation
                 for (var j = 0; j < NEIGHBOURS_COUNT; j++)
                 {
                     var neighbourPos = (pos + vectors[j]);
-                    if (!Data.TryGet(neighbourPos, out var neighbourData))
+                    if (!SetupData.TryGetIndex(neighbourPos, out var neighbourDataIndex))
                         continue;
 
+                    var neighbourData = CalculationData[neighbourDataIndex];
                     var neighbourIntegration = neighbourData.IntegrationValue;
                     var isNewMinIntegration = neighbourIntegration < minIntegration;
                     minIntegration = math.select(minIntegration, neighbourIntegration, isNewMinIntegration);
                     direction = math.select(direction, j, isNewMinIntegration);
                 }
 
-                var isLesserValueFound = minIntegration < data.IntegrationValue;
-                data.FlowDirection = math.select(data.FlowDirection, direction, isLesserValueFound);
-                data.IsCalculated = true;
+                var isLesserValueFound = minIntegration < calculationData.IntegrationValue;
+                calculationData.FlowDirection = math.select(calculationData.FlowDirection, direction, isLesserValueFound);
+                calculationData.IsCalculated = true;
 
-                Data[i] = data;
+                CalculationData[i] = calculationData;
             }
         }
     }
