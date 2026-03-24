@@ -3,89 +3,97 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
 using UnityEditor;
+using R3;
 
 namespace ZE.MechBattle.Navigation.DebugOverlay
 {
     public class ObjectPositionDrawer : IDisposable
     {
-        private bool _trackingObjectSet;
-        private bool _settingsObjectPresented;
-        private bool _draw = false;
-        private int2 _currentHex;
-        private Transform _trackingObject;
-        private MapSettingsSO _settings;
-        private IntTriangularPos _selectedTrianglePos;
-        private Vector3[] _drawPoints = new Vector3[3];
+        public Observable<bool> SettingsPresentedProperty => _settingsPresentedProperty;
+        public Observable<int2> CurrentHexProperty => _currentHexProperty;
+        public Observable<IntTriangularPos> CurrentTrianglePosProperty => _currentTrianglePosProperty;
+        public Observable<string> PositionLabelObservable { get;private set; }
 
-        public ObjectPositionDrawer()
+        private ReactiveProperty<bool> _settingsPresentedProperty = new(false);
+        private ReactiveProperty<int2> _currentHexProperty = new();
+        private ReactiveProperty<IntTriangularPos> _currentTrianglePosProperty = new();
+        private MapSettingsSO _settings;
+        private Vector3 _worldPos;
+        private Vector3[] _drawPoints = new Vector3[3];
+        private CompositeDisposable _compositeDisposable = new();
+        private string _labelString;
+
+        private bool IsSettingsPresented => _settingsPresentedProperty.Value;
+        private IntTriangularPos CurrentTriangle => _currentTrianglePosProperty.Value;
+        private int2 CurrentHex => _currentHexProperty.Value;
+
+        public ObjectPositionDrawer(Observable<Vector3> positionProperty)
         {
             OnSettingsChanged(NavigationDebugDataContainer.MapSettings);
             NavigationDebugDataContainer.MapSettingsChangedEvent += OnSettingsChanged;
+
+            positionProperty.Subscribe(OnPositionChanged).AddTo(_compositeDisposable);
+
+            _currentTrianglePosProperty
+                .Where(_ => IsSettingsPresented)
+                .Subscribe(pos => 
+                {
+                    _currentHexProperty.Value = TriangularMath.TriangularToHex(pos, _settings.TriangleEdgeSize, _settings.HexEdgeSize);
+                    UpdateVertexData(pos);
+                })
+                .AddTo(_compositeDisposable);
+
+            PositionLabelObservable = Observable.CombineLatest(_currentHexProperty, _currentTrianglePosProperty,
+            (hex, triangle) => $"{hex}:{triangle}");
+            //.ThrottleFirstFrame(0);
+
+            PositionLabelObservable
+                .Subscribe(combinedString => _labelString = combinedString)
+                .AddTo(_compositeDisposable); 
         }
 
         public void Dispose()
         {
+            _compositeDisposable.Dispose();
+            _currentHexProperty.Dispose();
+            _currentTrianglePosProperty.Dispose();
             NavigationDebugDataContainer.MapSettingsChangedEvent -= OnSettingsChanged;
+        }
+
+        private void OnPositionChanged(Vector3 pos)
+        {
+            if (!IsSettingsPresented)
+                return;
+
+            _worldPos = pos;
+            _currentTrianglePosProperty.Value = TriangularMath.WorldToTrianglePos(pos, _settings.TriangleEdgeSize);
         }
 
         private void OnSettingsChanged(MapSettingsSO settings)
         {
             _settings = settings;
-            _settingsObjectPresented = _settings != null;
-        }
-
-        public void AssignTrackingObject(Transform trackingObject)
-        {
-            _trackingObject = trackingObject;
-            _trackingObjectSet = _trackingObject != null;
-
-            if (!_trackingObjectSet)
-                return;
-
-            if (!_settingsObjectPresented)
-            {
-                Debug.LogWarning("settings not presented");
-                return;
-            }
-
-            var currentTriangle = TriangularMath.WorldToTrianglePos(trackingObject.position, _settings.TriangleEdgeSize);
-            UpdateTriangleData(currentTriangle);
+            _settingsPresentedProperty.Value = _settings != null;
         }
 
         public void OnSceneGUI()
         {
-            if (!_trackingObjectSet || !_settingsObjectPresented)
+            if (!IsSettingsPresented)
                 return;
-
-            var triangleEdgeSize = _settings.TriangleEdgeSize;
-            var worldPos = _trackingObject.position;
-
-            var currentTriangle = TriangularMath.WorldToTrianglePos(worldPos, triangleEdgeSize);
-            if (currentTriangle != _selectedTrianglePos) 
-                UpdateTriangleData(currentTriangle);
 
             Handles.color = Color.hotPink;
             Handles.DrawLine(_drawPoints[0], _drawPoints[1]);
             Handles.DrawLine(_drawPoints[1], _drawPoints[2]);
             Handles.DrawLine(_drawPoints[2], _drawPoints[0]);
 
-            Handles.Label(worldPos, $"{_currentHex} : {currentTriangle}");
+            Handles.Label(_worldPos, _labelString);
         }
 
-        public void Clear()
+        private void UpdateVertexData(IntTriangularPos pos)
         {
-            _draw = false;
-        }
-
-        private void UpdateTriangleData(in IntTriangularPos pos)
-        {
-            var vertices = NavigationMapHelper.GetTriangleVertices(pos, _settings.TriangleEdgeSize);
+            var vertices = NavigationMapHelper.GetTriangleVertices(pos, _settings.TriangleEdgeSize, offset: 0f);
             _drawPoints[0] = vertices.A;
             _drawPoints[1] = vertices.B;
             _drawPoints[2] = vertices.C;
-
-            _selectedTrianglePos = pos;
-            _currentHex = TriangularMath.TriangularToHex(_selectedTrianglePos, _settings.TriangleEdgeSize, _settings.HexEdgeSize);
         }
     }
 }

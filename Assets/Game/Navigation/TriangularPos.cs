@@ -72,6 +72,7 @@ namespace ZE.MechBattle.Navigation
 
         public int3 ToInt3() => new(DownLeft, Up, DownRight);
         public float3 ToFloat3() => new(DownLeft, Up, DownRight);
+        public bool IsPointCoordinate() => DownLeft + Up + DownRight == 0;
 
       
 

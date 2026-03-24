@@ -114,7 +114,7 @@ namespace ZE.MechBattle.Navigation
         }
 
         [BurstCompile]
-        public static TriangleVertices GetTriangleVertices(in IntTriangularPos pos, in float triangleEdgeSize)
+        public static TriangleVertices GetTriangleVertices(in IntTriangularPos pos, in float triangleEdgeSize, float offset = 0.05f)
         {
             float3 pointA;
             float3 pointB;
@@ -123,7 +123,6 @@ namespace ZE.MechBattle.Navigation
             var a = pos.DownLeft;
             var b = pos.Up;
             var c = pos.DownRight;
-            const float OFFSET = 0.05f;
 
             // each coordinate represents orth line shift
             // three numbers describes a triangle, that contained inside intersection of three lines
@@ -133,15 +132,15 @@ namespace ZE.MechBattle.Navigation
             if (!pos.IsPeak)
             {
                 // valley (C -> A -> B, B is bottom)
-                pointA = new float3(a - 1 + OFFSET, b - OFFSET, c - OFFSET);
-                pointB = new float3(a - OFFSET, b - 1 + OFFSET, c - OFFSET);
-                pointC = new float3(a - OFFSET, b - OFFSET, c - 1 + OFFSET);
+                pointA = new float3(a - 1 + offset, b - offset, c - offset);
+                pointB = new float3(a - offset, b - 1 + offset, c - offset);
+                pointC = new float3(a - offset, b - offset, c - 1 + offset);
             }
             else
             {
-                pointA = new float3(a + 1 - OFFSET, b + OFFSET, c + OFFSET);
-                pointB = new float3(a + OFFSET, b + 1 - OFFSET, c + OFFSET);
-                pointC = new float3(a + OFFSET, b + OFFSET, c + 1 - OFFSET);
+                pointA = new float3(a + 1 - offset, b + offset, c + offset);
+                pointB = new float3(a + offset, b + 1 - offset, c + offset);
+                pointC = new float3(a + offset, b + offset, c + 1 - offset);
             }
 
             return new(

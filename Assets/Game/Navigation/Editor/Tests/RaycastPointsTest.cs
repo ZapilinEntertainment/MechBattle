@@ -64,19 +64,24 @@ namespace ZE.MechBattle.Navigation.Tests
 
             // CHECK IF ALL TRIANGLES HAVE CORRECT NUMBER OF RAYCASTS
 
+            var uniqueTris = new HashSet<IntTriangularPos>();
             foreach (var command in positionsJob.RaycastCommands)
             {
                 var trianglePos = TriangularMath.WorldToTrianglePos(command.from, trianglesEdgeSize);
-                TestContext.WriteLine(trianglePos);
+                uniqueTris.Add(trianglePos);
                 raycastCounts.TryGetValue(trianglePos, out var val);
                 raycastCounts[trianglePos] = val + 1;
+            }
+            foreach (var triPos in uniqueTris)
+            {
+                TestContext.WriteLine(triPos);
             }
 
             foreach (var tripos in positionsArray)
             {
                 raycastCounts.TryGetValue(tripos, out var count);
                 TestContext.WriteLine($"{tripos} : {count}");
-                //Assert.AreEqual(raycastsPerTriangle, count, $"{tripos} raycast count not match");
+                Assert.AreEqual(raycastsPerTriangle, count, $"{tripos} raycast count not match");
             }
 
         }

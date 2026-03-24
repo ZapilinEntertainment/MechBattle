@@ -15,26 +15,26 @@ namespace ZE.MechBattle.Navigation.Tests
         {
             var cartesianPos = new float3(x,y,z);
             var triangular = TriangularMath.WorldToTriangular(cartesianPos, TRIANGLE_EDGE_SIZE);
-            Debug.Log(triangular);
             var cartesianBack = TriangularMath.TriangularToWorld(triangular, TRIANGLE_EDGE_SIZE);
             Assert.AreEqual(expected: cartesianPos.x, actual: cartesianBack.x, TOLERANCE);
             Assert.AreEqual(expected: cartesianPos.z, actual: cartesianBack.z, TOLERANCE);
         }
 
+        // real tris coords only
         [TestCase(0,1,0)]
-        [TestCase(0, 2, 0)]
+        [TestCase(-1,1,-1)]
         [TestCase(1, 0, 0)]
         [TestCase(0, 0, 1)]
-        [TestCase(-5,1,5)]
+        [TestCase(-2,1,2)]
         [TestCase(-3,1,3)]
-        [TestCase(-4, 3, 2)]
+        [TestCase(-4, 3, 0)]
         public void TriangularCartesianTriangular(int x, int y, int z)
         {
             var triangle = new IntTriangularPos(x, y, z);
             var cartesian = TriangularMath.TriangularToWorld(triangle, TRIANGLE_EDGE_SIZE);
             var triangleBack = TriangularMath.WorldToTrianglePos(cartesian, TRIANGLE_EDGE_SIZE);
 
-            Debug.Log($"{triangle} -> {cartesian} -> {triangleBack}");
+            TestContext.WriteLine($"{triangle} -> {cartesian} -> {triangleBack}");
 
             Assert.AreEqual(expected: triangle.DownLeft, actual: triangleBack.DownLeft);
             Assert.AreEqual(expected: triangle.Up, actual: triangleBack.Up);
@@ -80,6 +80,12 @@ namespace ZE.MechBattle.Navigation.Tests
             var posA = new IntTriangularPos(x1,y1,z1);
             var posB = new IntTriangularPos(x2,y2,z2);
             Assert.AreEqual((new int3(x1, y1, z1) - new int3(x2, y2, z2)), (posA - posB).ToInt3());
+        }
+
+        //[TestCase()]
+        public void TriangleDefinitionTest(float x, float y, float z, float edge, int left, int up, int right)
+        {
+            Assert.AreEqual(new IntTriangularPos(left,up, right), TriangularMath.WorldToTrianglePos(new float3(x,y,z), edge));
         }
     }
 }
