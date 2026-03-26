@@ -116,7 +116,7 @@ namespace ZE.MechBattle.Navigation
         {
             var hexCoord = HexMath.DefineHex(worldPos.xz, map.HexEdgeSize);
             var flowMap = map.GetFlowMap(hexCoord);
-            var triangularPos = TriangularMath.WorldToTrianglePos(worldPos, map.TriangleEdgeSize);
+            var triangularPos = TriangularMath.WorldToTrianglePos(worldPos, map.TriangleHeight);
             var cellData = flowMap.GetCombinedCellData(triangularPos);
             var edgesAccessMask = cellData.GetCombinedEdgeAccessMask();
             return new HexEdgesMask(edgesAccessMask);

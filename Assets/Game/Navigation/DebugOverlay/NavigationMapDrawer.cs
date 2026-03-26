@@ -66,12 +66,12 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         private List<LineDrawData> _drawData = new();
         private List<SphereDrawData> _sphereDrawData = new();
+        private List<Vector3> _bordersDrawData = new(4);
 
-        private float _triangleEdgeSize;
+        private float _triangleHeight;
         private int _trianglesInHexCount;
         private HexPointsPreset _hexPointsPreset;
         private Vector3 _highlightHexCenter;
-        private List<LineDrawData> _highlightedTriangleData = new();
         private QueryParameters _castQueryParameters;
 
         private readonly MapSettingsSO _mapSettings;
@@ -83,12 +83,16 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         public void RedrawMap()
         {
-            _highlightedTriangleData.Clear();
             _drawData.Clear();     
             _sphereDrawData.Clear();
+            _bordersDrawData.Clear();
+
+            if (_mapSettings == null)
+                return;
 
             _castQueryParameters = NavigationConstants.GetGroundCastQueryParameters();
-            _hexPointsPreset = new(_mapSettings.HexEdgeSize);            
+            _hexPointsPreset = new(_mapSettings.HexEdgeSize);  
+            DrawMapBorders();
 
             RecalculateDrawData();
 
@@ -97,7 +101,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         private void RecalculateDrawData()
         {
-            _triangleEdgeSize = _mapSettings.TriangleEdgeSize;
+            _triangleHeight = _mapSettings.TriangleHeight;
             _trianglesInHexCount = TriangularMath.GetTrianglesCountInHex(_mapSettings.TrianglesPerHexEdge);
 
             using var hexList = GetHexesInRectangleCommand.Execute(_mapSettings, Allocator.TempJob);
@@ -110,15 +114,16 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         public void OnSceneGUI()
         {
-            DrawMapBorders();
-
-            foreach (var drawData in _drawData)
+            if (_bordersDrawData.Count != 0)
             {
-                Handles.color = drawData.ColorEnum.ToColor();
-                Handles.DrawLine(drawData.PointA, drawData.PointB);
+                Handles.color = Color.yellow;
+                Handles.DrawLine(_bordersDrawData[0], _bordersDrawData[1]);
+                Handles.DrawLine(_bordersDrawData[0], _bordersDrawData[3]);
+                Handles.DrawLine(_bordersDrawData[1], _bordersDrawData[2]);
+                Handles.DrawLine(_bordersDrawData[2], _bordersDrawData[3]);
             }
 
-            foreach (var drawData in _highlightedTriangleData)
+            foreach (var drawData in _drawData)
             {
                 Handles.color = drawData.ColorEnum.ToColor();
                 Handles.DrawLine(drawData.PointA, drawData.PointB);
@@ -138,15 +143,10 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         private void DrawMapBorders()
         {
-            Handles.color = Color.yellow;
-            var point10 = new Vector3(_mapSettings.TopRightCorner.x, 0f, _mapSettings.BottomLeftCorner.y);
-            var point01 = new Vector3(_mapSettings.BottomLeftCorner.x, 0f, _mapSettings.TopRightCorner.y);
-            var point00 = new Vector3(_mapSettings.BottomLeftCorner.x, 0f, _mapSettings.BottomLeftCorner.y);
-            var point11 = new Vector3(_mapSettings.TopRightCorner.x, 0f, _mapSettings.TopRightCorner.y);
-            Handles.DrawLine(point00, point01);
-            Handles.DrawLine(point00, point10);
-            Handles.DrawLine(point01, point11);
-            Handles.DrawLine(point10, point11);
+           _bordersDrawData.Add(new Vector3(_mapSettings.BottomLeftCorner.x, 0f, _mapSettings.BottomLeftCorner.y));
+            _bordersDrawData.Add(new Vector3(_mapSettings.BottomLeftCorner.x, 0f, _mapSettings.TopRightCorner.y));
+            _bordersDrawData.Add(new Vector3(_mapSettings.TopRightCorner.x, 0f, _mapSettings.TopRightCorner.y));
+            _bordersDrawData.Add(new Vector3(_mapSettings.TopRightCorner.x, 0f, _mapSettings.BottomLeftCorner.y));
         }
 
         private void AddHexDrawData(float2 centerPos, List<LineDrawData> data, TrianglesDrawMode trianglesDrawMode, NativeArray<IntTriangularPos> trianglePositionsArray)
@@ -159,8 +159,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
             // draw hex triangles
 
-            var halfHeight = _triangleEdgeSize * NavigationConstants.SQRT_OF_THREE * 0.125f;
-            var innerCircleTrianglePos = TriangularMath.WorldToTrianglePos(new(centerPos.x, 0f, centerPos.y + halfHeight), _triangleEdgeSize);
+            var halfHeight = _triangleHeight * 0.5f;
+            var innerCircleTrianglePos = TriangularMath.WorldToTrianglePos(new(centerPos.x, 0f, centerPos.y + halfHeight), _triangleHeight);
             //Debug.Log(TriangularMath.TriangularToCartesian(innerCircleTrianglePos, _triangleEdgeSize));
 
             GetTrianglesInHexCommand.Execute(innerCircleTrianglePos, _mapSettings.TrianglesPerHexEdge, trianglePositionsArray);
@@ -183,21 +183,21 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         private void AddTriangleDrawData(IntTriangularPos pos, List<LineDrawData> data, DebugColor color)
         {
-            var vertices = NavigationMapHelper.GetTriangleVertices(pos, _triangleEdgeSize);
+            var vertices = GetTriangleVerticesCommand.Execute(pos, _triangleHeight);
 
             data.Add(new(vertices.A, vertices.B, color));
             data.Add(new(vertices.B, vertices.C, color));
             data.Add(new(vertices.C, vertices.A, color));
         }
 
-        private static void AddTriangleDrawData(float3 cartesianCenter, bool isPeak, float edgeSize, List<LineDrawData> data, DebugColor color, float sizeCf = 1f)
+        private static void AddTriangleDrawData(float3 cartesianCenter, bool isPeak, float triangleHeight, List<LineDrawData> data, DebugColor color, float sizeCf = 1f)
         {
             float3 pointA;
             float3 pointB;
             float3 pointC;
 
             // 1/3 of height
-            var heightPart = edgeSize * NavigationConstants.EDGE_TO_PARTIAL_HEIGHT_CF;
+            var heightPart = triangleHeight * NavigationConstants.DIV_THREE;
             if (!isPeak)
             {
                 pointC = cartesianCenter - TriangularMath.DirX * heightPart * sizeCf;
@@ -218,23 +218,23 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         private void DrawTriangleSubdivision(float2 zeroHexCenter)
         {
-            var innerCircleTopTriangle = NavigationMapHelper.GetInnerCircleTopTriangle(zeroHexCenter, _triangleEdgeSize);
+            var innerCircleTopTriangle = NavigationMapHelper.GetInnerCircleTopTriangle(zeroHexCenter, _triangleHeight);
 
             // get neighboured one:
             //innerCircleTopTriangle = TriangularMath.GetValleyNeighbour(innerCircleTopTriangle, ValleyNeighbour.EdgeDownRight);
 
-            var trianglePos = TriangularMath.TriangularToWorld(innerCircleTopTriangle, _triangleEdgeSize);
+            var trianglePos = TriangularMath.TriangularToWorld(innerCircleTopTriangle, _triangleHeight);
 
             var raycastResolution = _mapSettings.RaycastSubdivisionsPerEdge;
-            using var centers = new NativeArray<float2>(raycastResolution * raycastResolution, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
-            NavigationMapHelper.SubdivideTriangleIntoSmallerAndGetCenters(
+            using var centers = new NativeArray<SubdivideTriangleIntoSmallerOnesCommand.SmallTriangleData>(raycastResolution * raycastResolution, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            SubdivideTriangleIntoSmallerOnesCommand.Execute(
                 trianglePos.xz,
                 innerCircleTopTriangle.IsPeak,
                 new()
                 {
                     Centers = centers,
                     RaycastTrianglesPerEdge = raycastResolution,
-                    TriangleEdgeLength = _triangleEdgeSize
+                    TriangleHeight = _triangleHeight
                 });
 
             var counter = 0;
@@ -243,10 +243,10 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
             foreach (var center in centers)
             {
-                var pos = new Vector3(center.x, 0f, center.y);
+                var pos = center.WorldPosV3;
                 _sphereDrawData.Add(new(pos, DebugColor.Yellow, 0.5f));
                 var peak = (rowCounter % 2 == 0) == innerCircleTopTriangle.IsPeak;
-                AddTriangleDrawData(pos, peak, _triangleEdgeSize / raycastResolution, _drawData, DebugColor.Yellow, sizeCf: 0.95f);
+                AddTriangleDrawData(pos, peak, _triangleHeight / raycastResolution, _drawData, DebugColor.Yellow, sizeCf: 0.95f);
 
                 counter++;
                 rowCounter++;

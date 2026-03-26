@@ -67,7 +67,7 @@ namespace ZE.MechBattle.Navigation.Tests
             var hexTrisCount = TriangularMath.GetTrianglesCountInHex(radius);
             var excessTrisCount = 2 * radius * radius; // excess trison bottom left and top right corners
             var trisCount = hexTrisCount + excessTrisCount;
-            Debug.Log($"radius: {radius}, tris inside hex: {hexTrisCount}, excess tris: {excessTrisCount}, total: {trisCount}");
+            //Debug.Log($"radius: {radius}, tris inside hex: {hexTrisCount}, excess tris: {excessTrisCount}, total: {trisCount}");
             Assert.AreEqual(trisCount, squaredArray.Length, "squared array length not fit");
             
             var tris = new IntTriangularPos[trisCount];

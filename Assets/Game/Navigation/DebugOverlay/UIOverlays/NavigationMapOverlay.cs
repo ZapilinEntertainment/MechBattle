@@ -40,7 +40,10 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
             var btn = new Button(RedrawMap) { text = "RedrawMap" };
             root.Add(btn);
-            
+
+            var clr_btn = new Button(ClearMap) { text = "Clear Map" };
+            root.Add(clr_btn);
+
             SceneView.duringSceneGui += OnSceneGUI;
 
             return root;
@@ -104,7 +107,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
             if (_map == null)
             {
-                _map = new(_settingsSO);
+                _map = new(_settingsSO.ToStruct());
                 NavigationDebugDataContainer.SetMap(_map);
             }
 
@@ -123,6 +126,9 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             
             _caster?.Dispose();
             NavigationDebugDataContainer.SetCaster(null);
+
+            if (_drawerPrepared) 
+                _drawer.RedrawMap();
         }
     }
 

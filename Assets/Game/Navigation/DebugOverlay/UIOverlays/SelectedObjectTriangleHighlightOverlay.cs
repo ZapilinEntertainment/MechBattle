@@ -1,12 +1,9 @@
-using UnityEngine;
-using UnityEditor;
-using UnityEditor.Overlays;
-using UnityEditor.UI;
-using UnityEngine.UIElements;
-using UnityEditor.UIElements;
-using Unity.Collections;
 using R3;
 using Unity.Mathematics;
+using UnityEditor;
+using UnityEditor.Overlays;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace ZE.MechBattle.Navigation.DebugOverlay
 {
@@ -44,6 +41,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
             var printButton = new Button(PrintCalculations) {text = "Print Calculations" };
             root.Add(printButton);
+
+           
 
             GetOrCreateDrawer();
 
@@ -92,6 +91,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         private void OnSceneGUI(SceneView sceneView)
         {
+            
+
             if (!IsHandleActive)
                 return;
 
@@ -126,7 +127,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             int2 DefineAxleBorders(float3 normal)
             {
                 var projection = math.dot((double3)pos, (double3)normal);
-                var v = projection / NavigationDebugDataContainer.MapSettings.TriangleEdgeSize;
+                var v = projection / NavigationDebugDataContainer.MapSettings.TriangleHeight;
                 var n0 = (int)math.floor(v);
                 var n1 = n0 + 1;
 

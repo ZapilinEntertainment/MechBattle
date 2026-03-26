@@ -28,7 +28,7 @@ namespace ZE.MechBattle
             builder.Register<ViewReceiversList>(Lifetime.Scoped);
             builder.Register<CollidersTable>(Lifetime.Scoped);           
             
-            var map = new NavigationMap(_mapSettings);
+            var map = new NavigationMap(_mapSettings.ToStruct());
             builder.RegisterInstance<INavigationMap>(map);
             builder.Register<NavigationMapController>(Lifetime.Scoped);
             builder.Register<NavigationMap>(Lifetime.Scoped);

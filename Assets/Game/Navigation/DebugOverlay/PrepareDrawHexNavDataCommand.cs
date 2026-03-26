@@ -26,7 +26,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             foreach (var raycastResult in raycastResults)
             {
                 var pos = raycastResult.point;
-                var trianglePos = TriangularMath.WorldToTrianglePos(pos, caster.TriangleEdgeSize);
+                var trianglePos = TriangularMath.WorldToTrianglePos(pos, caster.TriangleHeight);
                 if (refinedData.TryGetValue(trianglePos, out var data))
                 {
                     drawData.Add(new(pos, data.IsPassable ? DebugColor.Green : DebugColor.Red, 0.5f));

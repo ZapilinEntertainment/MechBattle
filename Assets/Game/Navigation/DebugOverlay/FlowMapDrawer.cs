@@ -73,11 +73,11 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             }
 
             //draw:
-            _arrowSize = 0.3f * caster.TriangleEdgeSize;
+            _arrowSize = 0.3f * caster.TriangleHeight;
             foreach (var kvp in castedFlowMap.Data)
             {
                 // direction arrow:
-                var worldPos = TriangularMath.TriangularToWorld(kvp.Key, map.TriangleEdgeSize);
+                var worldPos = TriangularMath.TriangularToWorld(kvp.Key, map.TriangleHeight);
                 var flowMapCell = kvp.Value[exitEdge];
                 var vector = TriangularMath.TriangularDirectionToWorld(flowMapCell.Direction, kvp.Key.IsPeak);
 
@@ -87,7 +87,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 _gizmosDrawData.Add((endPos, 0.3f * _arrowSize * math.mul(rotationLeft, -vector) + endPos));
 
                 // triangle border:
-                var vertices = NavigationMapHelper.GetTriangleVertices(kvp.Key, caster.TriangleEdgeSize);
+                var vertices = GetTriangleVerticesCommand.Execute(kvp.Key, caster.TriangleHeight);
                 _gizmosDrawData.Add((vertices.A, vertices.B));
                 _gizmosDrawData.Add((vertices.B, vertices.C));
                 _gizmosDrawData.Add((vertices.A, vertices.C));
@@ -95,7 +95,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
 
             using var trianglesList = new NativeArray<IntTriangularPos>(caster.HexTrianglesCount, Allocator.TempJob);
-            var hexPos = new NavigationHexPosition(hexCoord.x, hexCoord.y, map.HexEdgeSize, map.TriangleEdgeSize);
+            var hexPos = new NavigationHexPosition(hexCoord.x, hexCoord.y, map.HexEdgeSize, map.TriangleHeight);
             GetTrianglesInHexCommand.Execute(hexPos.InnerRingTopTriangle, map.TrianglesPerHexEdge, trianglesList);
             foreach (var triPos in trianglesList)
             {

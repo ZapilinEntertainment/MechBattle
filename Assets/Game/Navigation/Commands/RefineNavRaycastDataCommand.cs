@@ -25,7 +25,7 @@ namespace ZE.MechBattle.Navigation
                 if (result.collider == null)
                     continue;
 
-                var trianglePos = TriangularMath.WorldToTrianglePos(result.point, caster.TriangleEdgeSize);
+                var trianglePos = TriangularMath.WorldToTrianglePos(result.point, caster.TriangleHeight);
                 intersectionsCount.TryGetValue(trianglePos, out var data);
 
                 data.AverageHeight = (data.AverageHeight * data.IntersectionsCount + result.point.y) / (data.IntersectionsCount + 1);

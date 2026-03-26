@@ -9,7 +9,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
     {
         private List<LineDrawData> _lineDrawData = new();
         private int _trianglesPerEdge;
-        private float _triangleEdgeSize;
+        private float _triangleHeight;
 
 
         public void Draw(int2 hexCoord, HexEdge edge)
@@ -21,9 +21,9 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 return;
             }
 
-            var hex = new NavigationHexPosition(hexCoord.x, hexCoord.y, map.HexEdgeSize, map.TriangleEdgeSize);
+            var hex = new NavigationHexPosition(hexCoord.x, hexCoord.y, map.HexEdgeSize, map.TriangleHeight);
             _trianglesPerEdge = map.TrianglesPerHexEdge;
-            _triangleEdgeSize = map.TriangleEdgeSize;
+            _triangleHeight = map.TriangleHeight;
 
             _lineDrawData.Clear();
             PreparePointsList(hex, edge);                  
@@ -64,7 +64,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         private void AddTrianglePoints(IntTriangularPos pos)
         {
-            var vertices = NavigationMapHelper.GetTriangleVertices(pos, _triangleEdgeSize);
+            var vertices = GetTriangleVerticesCommand.Execute(pos, _triangleHeight);
             _lineDrawData.Add(new(vertices.A, vertices.B));
             _lineDrawData.Add(new(vertices.B, vertices.C));
             _lineDrawData.Add(new(vertices.A, vertices.C));

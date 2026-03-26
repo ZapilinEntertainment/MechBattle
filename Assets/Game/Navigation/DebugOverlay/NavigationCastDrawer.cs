@@ -46,7 +46,9 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             var color = Color.white;
             foreach (var command in job.RaycastCommands)
             {                
-                _points.Add(new(command.from, color));
+                var point = command.from;
+                point.y = 0;
+                _points.Add(new(point, color));
             }            
         }
 

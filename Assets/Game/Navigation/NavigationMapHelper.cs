@@ -11,59 +11,7 @@ namespace ZE.MechBattle.Navigation
         private const float SQT_HALVED = NavigationConstants.SQRT_OF_THREE * 0.5f;
         private const float HEIGHT_PART_CF = SQT_HALVED * 2f / 3f; // 2/3 of height is orthocenter       
 
-
-        public struct TriangleSubdivisionProtocol
-        {
-            public float TriangleEdgeLength;
-            public int RaycastTrianglesPerEdge;
-            public NativeArray<float2> Centers;
-        }
-
-        [BurstCompile]
-        public static void SubdivideTriangleIntoSmallerAndGetCenters(
-            float2 center, 
-            bool isPeakTriangle, 
-            in TriangleSubdivisionProtocol protocol)
-        {
-            // divide triangle into n^2 smaller congruent triangles
-            var subdivisionsCount = protocol.RaycastTrianglesPerEdge;
-            var centers = protocol.Centers;
-
-            if (subdivisionsCount == 0 || subdivisionsCount == 1)
-            {
-                centers[0] = center;
-                return;
-            }
-
-            var smallTriangleSize = protocol.TriangleEdgeLength / subdivisionsCount;
-            // 2/3 of main triangle height - 2/3 of highest (single) triangle = center of the top small triangle (or lowest, if not a peak triangle)
-            var zeroPos = center;
-            zeroPos.y += (protocol.TriangleEdgeLength - smallTriangleSize) * HEIGHT_PART_CF * (isPeakTriangle ? 1f : -1f);
-            centers[0] = zeroPos;
-
-            // find each small triangle center (dont forget about if triangle is peak (one up, two at bottom) or valley (two up, one at bottom)
-            var nextCenterDir = math.mul(
-                quaternion.AxisAngle(math.down(), math.radians(isPeakTriangle ? 150f : 30f)),
-                new float3(0,0,smallTriangleSize))
-                .xz;
-
-            var index = 1;
-
-            // draw 4 equal triangles in single one, then connect their orthocenters to create new one
-            // its orthocenter will be the same as cup triangle's center
-            // mark proportions on the drawing an you see that y offset is 2/3 of triangle height
-            var cupTriangleCenterOffset = (isPeakTriangle ? 1 : -1) *  smallTriangleSize * HEIGHT_PART_CF * 0.5f; 
-            for (var row = 2; row <= subdivisionsCount; row++)
-            {
-                var startPos = zeroPos + nextCenterDir * (row - 1);
-                var trianglesInRow = 2 * row - 1;
-
-                for (var i = 0; i < trianglesInRow; i++)
-                {                    
-                    centers[index++] = new(startPos.x + i * smallTriangleSize * 0.5f, startPos.y + (i % 2) * cupTriangleCenterOffset);
-                }
-            }
-        }
+       
         /// <summary>
         /// add next triangles row started with peak triangle into list and returns next write index (AV...VA)
         /// </summary>
@@ -107,47 +55,10 @@ namespace ZE.MechBattle.Navigation
         }
 
         [BurstCompile]
-        public static IntTriangularPos GetInnerCircleTopTriangle(float2 hexCenterWorld, float triangleEdgeSize)
+        public static IntTriangularPos GetInnerCircleTopTriangle(float2 hexCenterWorld, float triangleHeight)
         {
-            var halfHeight = triangleEdgeSize * NavigationConstants.SQRT_OF_THREE * 0.125f;
-            return TriangularMath.WorldToTrianglePos(new(hexCenterWorld.x, 0f, hexCenterWorld.y + halfHeight), triangleEdgeSize);
-        }
-
-        [BurstCompile]
-        public static TriangleVertices GetTriangleVertices(in IntTriangularPos pos, in float triangleEdgeSize, float offset = 0.05f)
-        {
-            float3 pointA;
-            float3 pointB;
-            float3 pointC;
-
-            var a = pos.DownLeft;
-            var b = pos.Up;
-            var c = pos.DownRight;
-
-            // each coordinate represents orth line shift
-            // three numbers describes a triangle, that contained inside intersection of three lines
-            // so x is shift by dirX, y is shift by dirY and z is shift by dirZ from center
-            // make a drawing for proper understanding
-
-            if (!pos.IsPeak)
-            {
-                // valley (C -> A -> B, B is bottom)
-                pointA = new float3(a - 1 + offset, b - offset, c - offset);
-                pointB = new float3(a - offset, b - 1 + offset, c - offset);
-                pointC = new float3(a - offset, b - offset, c - 1 + offset);
-            }
-            else
-            {
-                pointA = new float3(a + 1 - offset, b + offset, c + offset);
-                pointB = new float3(a + offset, b + 1 - offset, c + offset);
-                pointC = new float3(a + offset, b + offset, c + 1 - offset);
-            }
-
-            return new(
-                new(TriangularMath.TriangularToWorld(pointA, triangleEdgeSize)),
-                new(TriangularMath.TriangularToWorld(pointB, triangleEdgeSize)),
-                new(TriangularMath.TriangularToWorld(pointC, triangleEdgeSize))
-                );
+            var halfHeight = triangleHeight * 0.5f;
+            return TriangularMath.WorldToTrianglePos(new(hexCenterWorld.x, 0f, hexCenterWorld.y + halfHeight), triangleHeight);
         }
     }
 }

@@ -38,7 +38,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 .Where(_ => IsSettingsPresented)
                 .Subscribe(pos => 
                 {
-                    _currentHexProperty.Value = TriangularMath.TriangularToHex(pos, _settings.TriangleEdgeSize, _settings.HexEdgeSize);
+                    _currentHexProperty.Value = TriangularMath.TriangularToHex(pos, _settings.TriangleHeight, _settings.HexEdgeSize);
                     UpdateVertexData(pos);
                 })
                 .AddTo(_compositeDisposable);
@@ -66,7 +66,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 return;
 
             _worldPos = pos;
-            _currentTrianglePosProperty.Value = TriangularMath.WorldToTrianglePos(pos, _settings.TriangleEdgeSize);
+            _currentTrianglePosProperty.Value = TriangularMath.WorldToTrianglePos(pos, _settings.TriangleHeight);
         }
 
         private void OnSettingsChanged(MapSettingsSO settings)
@@ -90,7 +90,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         private void UpdateVertexData(IntTriangularPos pos)
         {
-            var vertices = NavigationMapHelper.GetTriangleVertices(pos, _settings.TriangleEdgeSize, offset: 0f);
+            var vertices = GetTriangleVerticesCommand.Execute(pos, _settings.TriangleHeight, offset: 0f);
             _drawPoints[0] = vertices.A;
             _drawPoints[1] = vertices.B;
             _drawPoints[2] = vertices.C;

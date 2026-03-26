@@ -10,7 +10,7 @@ namespace ZE.MechBattle.Navigation
     public struct PrepareHexRaycastCommandsJob : IJob
     {
         public float2 HexCenterWorld;
-        public float TriangleEdgeSize;
+        public float TriangleHeight;
         public int TrianglesPerHexEdge;
         public int RaycastTrianglesPerEdge;
         public float CastingHeight;
@@ -19,30 +19,30 @@ namespace ZE.MechBattle.Navigation
 
 
         public NativeArray<IntTriangularPos> Positions;
-        public NativeArray<float2> RaycastPoints;
+        public NativeArray<SubdivideTriangleIntoSmallerOnesCommand.SmallTriangleData> RaycastPoints;
         [WriteOnly] public NativeArray<RaycastCommand> RaycastCommands;
 
         public void Execute()
         {
             // note: all static functions inside are burstable
-            var innerCircleTopTriangle = NavigationMapHelper.GetInnerCircleTopTriangle(HexCenterWorld, TriangleEdgeSize);
+            var innerCircleTopTriangle = NavigationMapHelper.GetInnerCircleTopTriangle(HexCenterWorld, TriangleHeight);
             GetTrianglesInHexCommand.Execute(innerCircleTopTriangle, TrianglesPerHexEdge, Positions);
 
             // why Vector3: raycast command constructor use it
             var direction = Vector3.down;
 
-            var subdivisionProtocol = new NavigationMapHelper.TriangleSubdivisionProtocol()
+            var subdivisionProtocol = new SubdivideTriangleIntoSmallerOnesCommand.TriangleSubdivisionProtocol()
             {
                 Centers = RaycastPoints,
-                TriangleEdgeLength = TriangleEdgeSize,
+                TriangleHeight = TriangleHeight,
                 RaycastTrianglesPerEdge = RaycastTrianglesPerEdge
             };
 
             var index = 0;
             foreach (var position in Positions)
             {
-                var cartesian = TriangularMath.TriangularToWorld(position, TriangleEdgeSize);
-                NavigationMapHelper.SubdivideTriangleIntoSmallerAndGetCenters(
+                var cartesian = TriangularMath.TriangularToWorld(position, TriangleHeight);
+                SubdivideTriangleIntoSmallerOnesCommand.Execute(
                     cartesian.xz, 
                     position.IsPeak, 
                     subdivisionProtocol);
@@ -50,7 +50,7 @@ namespace ZE.MechBattle.Navigation
                 var centers = subdivisionProtocol.Centers;
                 for (var i = 0; i < RaycastPoints.Length; i++)
                 {
-                    var raycastPos = RaycastPoints[i];
+                    var raycastPos = RaycastPoints[i].WorldPos;
                     RaycastCommands[index++] = new(new Vector3(raycastPos.x, CastingHeight, raycastPos.y), direction, QueryParameters, CastingRayLength);
                 }
             }

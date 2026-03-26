@@ -8,7 +8,7 @@ namespace ZE.MechBattle.Navigation
     public interface INavigationMap 
     {
         int TrianglesPerHexEdge { get; }
-        float TriangleEdgeSize { get; }
+        float TriangleHeight { get; }
         float HexEdgeSize { get; }
         IReadOnlyCollection<int2> HexCoords { get; }
         IReadOnlyCollection<INavigationHex> Hexes { get; }
@@ -26,23 +26,21 @@ namespace ZE.MechBattle.Navigation
 
     public class NavigationMap : INavigationMap, IDisposable
     {        
-        public readonly MapSettingsSO Settings;
+        public readonly MapSettings Settings;
 
         public bool IsInitialized { get;private set;} = false;
         public float HexEdgeSize => Settings.HexEdgeSize;
-        public float TriangleEdgeSize => _triangleEdgeSize;
+        public float TriangleHeight => Settings.TriangleHeight;
         public int TrianglesPerHexEdge => Settings.TrianglesPerHexEdge;
         public int Version { get;private set; } = 1;
         public IReadOnlyCollection<INavigationHex> Hexes => _hexes.Values;
         public IReadOnlyCollection<int2> HexCoords => _hexes.Keys;
 
-        private readonly float _triangleEdgeSize;
         private readonly Dictionary<int2, NavigationHex> _hexes = new();
     
-        public NavigationMap(MapSettingsSO settings)
+        public NavigationMap(MapSettings settings)
         {
             Settings = settings;
-            _triangleEdgeSize = settings.TriangleEdgeSize;
         }
 
         public void OnInitialized() => IsInitialized = true;
@@ -81,7 +79,7 @@ namespace ZE.MechBattle.Navigation
             return false;
         }
 
-        public NavigationHexPosition GetHexData(int2 hexCoord) => new(hexCoord.x, hexCoord.y, HexEdgeSize, _triangleEdgeSize);
+        public NavigationHexPosition GetHexData(int2 hexCoord) => new(hexCoord.x, hexCoord.y, HexEdgeSize, TriangleHeight);
        
 
         // todo: move to own command
@@ -108,7 +106,7 @@ namespace ZE.MechBattle.Navigation
         public float GetTriangleEntranceCost(IntTriangularPos pos) => IsTrianglePassable(pos) ? 1f : -1f;
         public bool IsTrianglePassable(IntTriangularPos pos)
         {
-            var hexCoord = TriangularMath.TriangularToHex(pos, _triangleEdgeSize, HexEdgeSize);
+            var hexCoord = TriangularMath.TriangularToHex(pos, TriangleHeight, HexEdgeSize);
             if (!_hexes.TryGetValue(hexCoord, out var hex) 
                 || !hex.TrianglesData.TryGet(pos, out var triangleData)
                 || triangleData.IsValid)

@@ -14,9 +14,9 @@ namespace ZE.MechBattle.Navigation
 
         public const float SQRT_OF_THREE = 1.73205f;
         public const double SQRT_OF_THREE_DBL = 1.732050807568877;
-
-        // triangle height * 2/3 (grid step)
-        public const float EDGE_TO_PARTIAL_HEIGHT_CF = 0.5773502f;
+        public const float SQRT_OF_THREE_HALVED = SQRT_OF_THREE * 0.5f;
+        public const float DIV_SQRT_OF_THREE = (float)(1 / SQRT_OF_THREE_DBL);
+        public const float DIV_THREE = 1f / 3f;
 
         public const double SQRT_THREE_D_3_DBL = SQRT_OF_THREE_DBL / 3;
         public const float SQRT_THREE_D_3 = SQRT_OF_THREE / 3f;
