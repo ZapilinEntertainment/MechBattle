@@ -5,26 +5,12 @@ using Unity.Mathematics;
 using Unity.Collections;
 using Unity.Jobs;
 using System;
-using System.Buffers;
 
 namespace ZE.MechBattle.Navigation
 {
     public static class CalculateHexFlowMapCommand
     {
-        private class DisposableArray : IDisposable
-        {
-            public readonly int[] Values;
-
-            public DisposableArray(int length)
-            {
-                Values = ArrayPool<int>.Shared.Rent(length);
-            }
-
-            public void Dispose()
-            {
-                ArrayPool<int>.Shared.Return(Values);
-            }
-        }
+       
 
         private class NativeCollectionsData : IDisposable
         {
@@ -67,6 +53,7 @@ namespace ZE.MechBattle.Navigation
 
             // TODO: move casting to own command
             var refinedData = RefineNavRaycastDataCommand.Execute(raycastData.AsReadOnly(), LOCK_PERCENT, caster);
+
             using var collections = new NativeCollectionsData(Allocator.Persistent, hex.TriangularCenterPos, caster);   
             var data = collections.SetupData;
            
@@ -102,6 +89,44 @@ namespace ZE.MechBattle.Navigation
             var calculationData = data.CalculationData;
             var length = setupData.Length;
 
+            using var disposableArray = new DisposableArray(length * 6);
+            var combinedData = disposableArray.Values;
+
+            for (var i = 0; i < 6; i++)
+            {
+                var edge = (HexEdge)i;
+                var job = new GenerateFlowFieldJob()
+                {
+                    SetupData = setupData,
+                    CalculationData = calculationData,
+                    HexData = hex,
+                    CalculationQueue = data.CalculationQueue,
+                    QueuedPositions = data.QueuedPositions,
+                    ExitEdge = edge,
+                    TrianglesPerEdge = caster.TrianglesPerHexEdge
+                };
+                var handle = job.ScheduleByRef();
+                while (!handle.IsCompleted)
+                {
+                    await Awaitable.NextFrameAsync();
+                }
+                handle.Complete();
+                Debug.Log($"{edge} completed");
+
+                if (cancellationToken.IsCancellationRequested)
+                    return default;
+
+                for (var j = 0; j < length; j++)
+                {
+                    var defaultData = setupData[j];
+                    if (defaultData.IsValid)
+                        continue;
+
+                    var calculatedData = calculationData[j];
+                    combinedData[i * length + j] = new FlowMapCellData(defaultData.IsPassable, calculatedData.FlowDirection, (ushort)calculatedData.IntegrationValue).Value;
+                }
+            }
+
             var resultingData = new NativeHashMap<IntTriangularPos, FlowMapCombinedCell>(caster.HexTrianglesCount, allocator);
             var coordsConverter = setupData.CoordsConverter;
             var cellData = new FlowMapCellData[6];
@@ -110,66 +135,13 @@ namespace ZE.MechBattle.Navigation
                 if (!setupData[i].IsValid)
                     continue;
                 for (var j = 0; j < 6; j++)
-                {                    
-                    cellData[j] = new(true, (int)((HexEdge)j).ToNeighbourDirectionFromPeak(), 0);
+                {
+                    cellData[j] = new(combinedData[j * length + i]);
                 }
                 resultingData.Add(coordsConverter.IndexToTriangular(i), new(cellData));
             }
 
             return resultingData;
-
-            //using var disposableArray = new DisposableArray(length * 6);
-            //var combinedData = disposableArray.Values;;
-
-            //for (var i = 0; i < 6; i++)
-            //{
-            //    var edge = (HexEdge)i;
-            //    var job = new GenerateFlowFieldJob()
-            //    {
-            //        SetupData = setupData,
-            //        CalculationData = calculationData,
-            //        HexData = hex,
-            //        CalculationQueue = data.CalculationQueue,
-            //        QueuedPositions = data.QueuedPositions,
-            //        ExitEdge = edge,
-            //        TrianglesPerEdge = caster.TrianglesPerHexEdge
-            //    };
-            //    var handle = job.ScheduleByRef();
-            //    while (!handle.IsCompleted)
-            //    {
-            //        await Awaitable.NextFrameAsync();
-            //    }
-            //    handle.Complete();
-
-            //    if (cancellationToken.IsCancellationRequested)
-            //        return default;
-
-            //    for (var j = 0; j < length; j++)
-            //    {
-            //        var defaultData = setupData[j];
-            //        if (defaultData.IsValid)
-            //            continue;
-
-            //        var calculatedData = calculationData[j];
-            //        combinedData[j * i] = new FlowMapCellData(defaultData.IsPassable, calculatedData.FlowDirection, (int)calculatedData.IntegrationValue).Value;
-            //    }
-            //}
-
-            //var resultingData = new NativeHashMap<IntTriangularPos, FlowMapCombinedCell>(caster.HexTrianglesCount, allocator);
-            //var coordsConverter = setupData.CoordsConverter;
-            //var cellData = new FlowMapCellData[6];
-            //for (var i = 0; i < length; i++)
-            //{
-            //    if (!setupData[i].IsValid)
-            //        continue;
-            //    for (var j = 0; j < 6; j++)
-            //    {
-            //        cellData[j] = new(combinedData[i * 6]);
-            //    }
-            //    resultingData.Add(coordsConverter.IndexToTriangular(i), new(cellData));
-            //}
-
-            //return resultingData;
         }
     }
 }

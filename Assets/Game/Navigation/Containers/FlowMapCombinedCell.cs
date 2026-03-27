@@ -11,17 +11,19 @@ namespace ZE.MechBattle.Navigation
         public int ExitDistance => Value & DISTANCE_MASK;
         public readonly int Value;
 
+
         public const int PASSABLE_SHIFT = 24;
         public const int INVALID_EXIT_DISTANCE = ushort.MaxValue;
         public const int DISTANCE_MASK = 0xFFFF;
+        public const int BYTE_MASK = 0xFF;
 
         // ATTENTION: UPDATE IF STRUCTURE ENLARGES
         public const int STRUCTURE_SIZE = sizeof(int);
 
-        private const int DIRECTION_SHIFT = 16;        
-        private const int BYTE_MASK = 0xFF;
+        private const int DIRECTION_SHIFT = 16;
+       
 
-        public FlowMapCellData(bool isPassable, int direction, int exitDistance)
+        public FlowMapCellData(bool isPassable, int direction, ushort exitDistance)
         {
             var p = isPassable ? 1 : 0;
             Value = (p << PASSABLE_SHIFT) |
@@ -30,6 +32,8 @@ namespace ZE.MechBattle.Navigation
         }
 
         public FlowMapCellData(int value) => Value = value;
+
+        public static FlowMapCellData BlockedCell => new(false, 0, ushort.MaxValue);
     }
 
     public unsafe struct FlowMapCombinedCell
@@ -48,6 +52,34 @@ namespace ZE.MechBattle.Navigation
             }
         }
 
+        public FlowMapCombinedCell(FlowMapCellData c0, FlowMapCellData c1, FlowMapCellData c2, FlowMapCellData c3, FlowMapCellData c4, FlowMapCellData c5)
+        {
+            Values[0] = c0.Value;
+            Values[1] = c1.Value;
+            Values[2] = c2.Value;
+            Values[3] = c3.Value;
+            Values[4] = c4.Value;
+            Values[5] = c5.Value;
+        }
+
+        public FlowMapCombinedCell(int c0, int c1, int c2, int c3, int c4, int c5)
+        {
+            Values[0] = c0;
+            Values[1] = c1;
+            Values[2] = c2;
+            Values[3] = c3;
+            Values[4] = c4;
+            Values[5] = c5;
+        }
+
+        public FlowMapCombinedCell(int[] cells)
+        {
+            for (var i = 0; i < 6; i++)
+            {
+                Values[i] = cells[i];
+            }
+        }
+
         // encoded if cell is passable in every mask
         // (all flow map should have same passability values for exact triangle)
         public int GetCombinedPassabilityMask()
@@ -55,7 +87,7 @@ namespace ZE.MechBattle.Navigation
             var mask = 0;
             for (var i = 0; i < 6; i++)
             {
-                mask |= ((Values[i] << PASSABLE_SHIFT) == 1) ? (1 << i) : 0;
+                mask |= (((Values[i] >> PASSABLE_SHIFT) & FlowMapCellData.BYTE_MASK) == 1) ? (1 << i) : 0;
             }
             return mask;
         }

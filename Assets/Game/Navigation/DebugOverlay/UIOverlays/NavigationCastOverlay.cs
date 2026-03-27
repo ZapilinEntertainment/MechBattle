@@ -91,7 +91,6 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             if (_castDrawerPresented & !_isCasting)
             {
                 _castDrawer.Clear();
-                _castDrawerPresented = false;
             }                
         }
 

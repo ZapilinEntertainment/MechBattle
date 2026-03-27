@@ -14,7 +14,7 @@ namespace ZE.MechBattle.Navigation
     }
 
     [BurstCompile]
-    public struct EdgeEnumerator<T> : IEnumerator<IntTriangularPos> where T : struct, IEdgeDirectionLogic
+    public struct EdgeEnumerator<T> : IEnumerator<IntTriangularPos>, IEnumerable<IntTriangularPos> where T : struct, IEdgeDirectionLogic
     {
         private T _logic;
         private int _limit;
@@ -69,6 +69,9 @@ namespace ZE.MechBattle.Navigation
         public EdgeEnumerator<T> GetEnumerator() => this;
         public void Dispose() { }
         public void Reset() { }
+
+        IEnumerator<IntTriangularPos> IEnumerable<IntTriangularPos>.GetEnumerator() => GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
 

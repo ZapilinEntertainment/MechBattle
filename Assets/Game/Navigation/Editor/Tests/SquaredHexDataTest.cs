@@ -33,7 +33,7 @@ namespace ZE.MechBattle.Navigation.Tests
 
             for (var i = 0; i < tris.Length; i++)
             {
-                Debug.Log($"{i} : {tris[i]}");
+                //Debug.Log($"{i} : {tris[i]}");
                 squaredArray.Set(tris[i], i);
             }
 
@@ -58,6 +58,7 @@ namespace ZE.MechBattle.Navigation.Tests
         [TestCase(2, 0, 0, 0)]
         [TestCase(4, 0,0,0)]
         [TestCase(32, 0, -96, 96)]
+      
         public void VariableTriangleHexSquaring(int radius, int hexCenterX, int hexCenterY, int hexCenterZ)
         {
             var center = new IntTriangularPos(hexCenterX, hexCenterY, hexCenterZ);
@@ -65,7 +66,7 @@ namespace ZE.MechBattle.Navigation.Tests
             var converter = squaredArray.CoordsConverter;
 
             var hexTrisCount = TriangularMath.GetTrianglesCountInHex(radius);
-            var excessTrisCount = 2 * radius * radius; // excess trison bottom left and top right corners
+            var excessTrisCount = 2 * radius * radius; // excess tris on bottom left and top right corners
             var trisCount = hexTrisCount + excessTrisCount;
             //Debug.Log($"radius: {radius}, tris inside hex: {hexTrisCount}, excess tris: {excessTrisCount}, total: {trisCount}");
             Assert.AreEqual(trisCount, squaredArray.Length, "squared array length not fit");
@@ -108,6 +109,33 @@ namespace ZE.MechBattle.Navigation.Tests
             {
                 Assert.AreEqual(true, squaredArray.TryGet(tris[i], out var result), $"{tris[i]} not exist");
                 Assert.AreEqual(i, result, $"{tris[i]} is not {i} but {result}");
+            }
+        }
+
+        [TestCase(0, -0, 100f, 4)]
+        [TestCase(2, 0, 100f, 2)]
+        [TestCase(4, 0, 400, 8)]
+        [TestCase(32, -8, -100f, 8)]
+        public void VariableTriangleHexSquaring2(int hexCoordX, int hexCoordY, float hexEdgeLength, int radius)
+        {
+            var triangleHeight = hexEdgeLength / radius * NavigationConstants.SQRT_OF_THREE_HALVED;
+            var hexPos = new NavigationHexPosition(hexCoordX, hexCoordY, hexEdgeLength, triangleHeight );
+            
+            var allocator = Allocator.TempJob;
+            var trianglesInHex = TriangularMath.GetTrianglesCountInHex(radius);
+            using var trianglesList = new NativeArray<IntTriangularPos>(trianglesInHex, allocator, NativeArrayOptions.UninitializedMemory);
+            GetTrianglesInHexCommand.Execute(hexPos.InnerRingTopTriangle, radius, trianglesList);
+
+            var squaredList = new SquaredHexTrianglesList<int>(hexPos.TriangularCenterPos, radius, allocator);
+            var coordsConverter = squaredList.CoordsConverter;
+
+            for (var i = 0; i < trianglesInHex; i++)
+            {
+                var tripos = trianglesList[i];
+                var index = coordsConverter.TriangularToIndex(tripos);
+                var backTripos = coordsConverter.IndexToTriangular(index);
+                TestContext.WriteLine($"{tripos} -> {index}");  
+                Assert.AreEqual(tripos, backTripos, $"wrong conversion: {tripos} -> {index} -> {backTripos}");
             }
         }
     }

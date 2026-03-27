@@ -1,0 +1,162 @@
+using System;
+using System.Threading.Tasks;
+using NUnit.Framework;
+using UnityEngine;
+using Unity.Mathematics;
+using Unity.Collections;
+using Unity.Jobs;
+
+namespace ZE.MechBattle.Navigation.Tests
+{
+    public class FlowMapBuildTest
+    {
+        private class TestData : IDisposable
+        {
+            public CombinedFlowMapCellsStorage CombinedMap;
+            public NativeArray<IntTriangularPos> HexTriangles;
+
+            public void Dispose()
+            {
+                CombinedMap.Dispose();
+                HexTriangles.Dispose();
+            }
+        }
+
+
+        [TestCase(0,0, 100f, 2)]
+        public async Task FullPassableFlowMapTest(int hexX, int hexY, float hexEdge, int trianglesPerEdge)
+        {
+            var testData = await PrepareTestData(hexX, hexY, hexEdge, trianglesPerEdge);
+            var length = testData.CombinedMap.SingleLength;
+
+            const int PASSABILITY_MASK = 0x3F;
+            var elements = new int[6];
+            var coordsConverter = testData.CombinedMap.CoordsConverter;
+
+            foreach (var triangle in testData.HexTriangles)
+            {
+                Assert.AreEqual(PASSABILITY_MASK, testData.CombinedMap.GetCombinedCell(triangle).GetCombinedPassabilityMask());
+            }
+
+            testData.Dispose();
+        }
+
+        private async Awaitable<TestData> PrepareTestData(int hexX, int hexY, float hexEdge, int trianglesPerEdge)
+        {
+            var data = new TestData();
+
+            var triangleHeight = (hexEdge / trianglesPerEdge) * NavigationConstants.SQRT_OF_THREE_HALVED;
+            var hexTrianglesCount = TriangularMath.GetTrianglesCountInHex(trianglesPerEdge);
+            var hexPos = new NavigationHexPosition(hexX, hexY, hexEdge, triangleHeight);
+
+            var allocator = Allocator.Persistent;
+            var setupData = new SquaredHexTrianglesList<FlowFieldCellSetupData>(hexPos.TriangularCenterPos, trianglesPerEdge, allocator);
+            var length = setupData.Length;
+            var calculationData = new NativeArray<FlowFieldCellCalculationData>(length, allocator);
+
+            data.HexTriangles = PrepareTrianglesData(setupData, hexPos, hexTrianglesCount, trianglesPerEdge);
+
+            var CalculationQueue = new NativeQueue<int>(allocator);
+            var QueuedPositions = new NativeHashSet<int>(hexTrianglesCount / 2, allocator);
+
+            var coordsConverter = setupData.CoordsConverter;
+            var compositeStorage = new CombinedFlowMapCellsStorage(length, coordsConverter);
+            data.CombinedMap = compositeStorage;
+            
+            for (var i = 0; i < 6; i++)
+            {
+                var edge = (HexEdge)i;
+                var job = new GenerateFlowFieldJob()
+                {
+                    SetupData = setupData,
+                    CalculationData = calculationData,
+                    HexData = hexPos,
+                    CalculationQueue = CalculationQueue,
+                    QueuedPositions = QueuedPositions,
+                    ExitEdge = edge,
+                    TrianglesPerEdge = trianglesPerEdge
+                };
+                var handle = job.ScheduleByRef();
+                while (!handle.IsCompleted)
+                {
+                    await Awaitable.NextFrameAsync();
+                }
+                handle.Complete();
+
+                //CheckEdgeDirections(calculationData, coordsConverter, edge);
+
+                var validTrisCount = 0;
+                for (var index = 0; index < length; index++)
+                {
+                    var cellSetupData = setupData[index];
+                    if (!cellSetupData.IsValid)
+                    {
+                        compositeStorage.SetValue(edge, index, FlowMapCellData.BlockedCell);
+                        continue;
+                    }
+
+                    validTrisCount++;
+                    var cellCalculatedData = calculationData[index];
+                    Assert.IsTrue(cellCalculatedData.IsCalculated, "cell not calculated");
+                    Assert.IsTrue(cellSetupData.IsPassable, "cell not passable");
+
+                    var cellData = new FlowMapCellData(cellSetupData.IsPassable, cellCalculatedData.FlowDirection, (ushort)cellCalculatedData.IntegrationValue);
+                    Assert.AreEqual(true, cellSetupData.IsPassable, "encoding unsuccessful");
+
+                    compositeStorage.SetValue(edge, index, cellData);
+                }
+
+                Assert.AreEqual(hexTrianglesCount, validTrisCount, "some hex tris were not valid");
+            }
+
+            setupData.Dispose();
+            calculationData.Dispose();
+            CalculationQueue.Dispose();
+            QueuedPositions.Dispose();
+
+            return data;
+        }
+
+        private NativeArray<IntTriangularPos> PrepareTrianglesData(
+            SquaredHexTrianglesList<FlowFieldCellSetupData> setupData, 
+            NavigationHexPosition hexPos,
+            int trianglesInHex,
+            int hexRadius)
+        {
+            var list = new NativeArray<IntTriangularPos>(trianglesInHex, Allocator.Persistent);
+            GetTrianglesInHexCommand.Execute(hexPos.InnerRingTopTriangle, hexRadius, list);
+            foreach (var tripos in list)
+            {
+                setupData.Set(tripos, new() { EntranceCost = 1, IsValid= true });
+            }
+            return list;
+        }
+
+        // checking ideal no-obstacles flow map
+        private void CheckEdgeDirections(
+            NativeArray<FlowFieldCellCalculationData> calculationData, 
+            TrianglesToIndexConverter coordsConverter,
+            HexEdge exitEdge)
+        {
+            var length = calculationData.Length;
+            for (var i = 0; i < length; i++)
+            {
+                //if (!setupData[i].IsValid)  continue;
+
+                var pos = coordsConverter.IndexToTriangular(i);
+                var flowDir = calculationData[i ].FlowDirection;
+
+                var peakDir = (int)exitEdge.ToNeighbourDirectionFromPeak();
+                var valleyDir = (int)exitEdge.ToNeighbourDirectionFromValley();
+
+                TestContext.WriteLine($"{exitEdge}: {i}: direction is {(pos.IsPeak ? "peak" : "valley")}.{(PeakNeighbour)flowDir}");
+
+                //if (pos.IsPeak)
+                //    Assert.AreEqual(flowDir, peakDir, $"{exitEdge}: {i}: direction is {(pos.IsPeak ? "peak" : "valley")}.{(PeakNeighbour)flowDir}");
+                //else
+                //    Assert.AreEqual(flowDir, valleyDir, $"{exitEdge}: {i}: direction is {(pos.IsPeak ? "peak" : "valley")}.{(ValleyNeighbour)flowDir}");
+            }
+        }
+    
+    }
+}

@@ -36,6 +36,9 @@ namespace ZE.MechBattle.Navigation
             _ => new (pos.DownLeft, pos.Up + 2, pos.DownRight)
         };
 
+        [BurstCompile]
+        public static IntTriangularPos GetPeakNeighbour(IntTriangularPos pos, int peakNeighbour) => GetPeakNeighbour(pos, peakNeighbour);
+
 
         [BurstCompile]
         public static IntTriangularPos GetValleyNeighbour(IntTriangularPos pos, ValleyNeighbour valleyNeighbour) => valleyNeighbour switch
@@ -53,6 +56,9 @@ namespace ZE.MechBattle.Navigation
             ValleyNeighbour.VertexUpLeftValley => new (pos.DownLeft, pos.Up + 1, pos.DownRight - 1),
             _ => new(pos.DownLeft - 1, pos.Up, pos.DownRight - 1)
         };
+
+        [BurstCompile]
+        public static IntTriangularPos GetValleyNeighbour(IntTriangularPos pos, int valleyNeighbour) => GetValleyNeighbour(pos, (ValleyNeighbour)valleyNeighbour);
 
         [BurstCompile]
         public static byte GetHexEdgeExitVector(HexEdge edge, bool isPeak) => edge switch

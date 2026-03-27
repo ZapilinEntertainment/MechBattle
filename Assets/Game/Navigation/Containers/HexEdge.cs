@@ -2,6 +2,7 @@ using UnityEngine;
 using Unity.Burst;
 using Unity.Mathematics;
 using System.Runtime.CompilerServices;
+using System.Collections.Generic;
 
 namespace ZE.MechBattle.Navigation
 {
@@ -59,6 +60,57 @@ namespace ZE.MechBattle.Navigation
                 case HexEdge.BottomLeft: return ValleyNeighbour.EdgeDownLeft;
                 case HexEdge.TopLeft: return ValleyNeighbour.VertexUpLeftPeak;
                 default: return ValleyNeighbour.EdgeUp;
+            }
+        }
+
+        [BurstCompile]
+        public static int3 GetHexCornerOffsetTriangularVector(this HexEdge edge, bool clockwise)
+        {
+            switch ((edge, clockwise))
+            {
+                // top, clockwise = top-right counter-clockwise
+                case (HexEdge.Top, true):
+                case (HexEdge.TopRight, false):
+                    return new int3(-1, 1, 0);
+
+                // top-right cw = bottom-right cc
+                case (HexEdge.TopRight, true):
+                case (HexEdge.BottomRight, false):
+                    return new int3(-1, 0, 1);
+
+                // bottom-right cw = bottom cc
+                case (HexEdge.BottomRight, true):
+                case (HexEdge.Bottom, false):
+                    return new int3(0, -1, 1);
+
+                // bottom cw = bottom-left cc
+                case (HexEdge.Bottom, true):
+                case (HexEdge.BottomLeft, false):
+                    return new(1, -1, 0);
+
+                // bottom-left cw = top-left cc
+                case (HexEdge.BottomLeft, true):
+                case (HexEdge.TopLeft, false):
+                    return new(1, 0, -1);
+
+                // top cc = top-left cw
+                case (HexEdge.TopLeft, true):
+                default:
+                    return new int3(0, 1, -1);
+            }
+        }
+
+        [BurstDiscard]
+        public static IEnumerable<IntTriangularPos> GetEnumerable(this HexEdge edge, int trianglesPerEdge, NavigationHexPosition hexPos)
+        {
+            switch (edge)
+            {
+                case HexEdge.TopRight: return new EdgeEnumerator<TopRightEdgeLogic>(trianglesPerEdge, hexPos);
+                case HexEdge.BottomRight: return new EdgeEnumerator<BottomRightEdgeLogic>(trianglesPerEdge, hexPos);
+                case HexEdge.Bottom: return new EdgeEnumerator<BottomEdgeLogic>(trianglesPerEdge, hexPos);
+                case HexEdge.BottomLeft: return new EdgeEnumerator<BottomLeftEdgeLogic>(trianglesPerEdge, hexPos);
+                case HexEdge.TopLeft: return new EdgeEnumerator<TopLeftEdgeLogic>(trianglesPerEdge, hexPos);
+                default: return new EdgeEnumerator<TopEdgeLogic>(trianglesPerEdge, hexPos);
             }
         }
     }

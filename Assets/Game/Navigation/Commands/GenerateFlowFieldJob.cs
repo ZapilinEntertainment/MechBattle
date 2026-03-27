@@ -76,14 +76,20 @@ namespace ZE.MechBattle.Navigation
 
         public void Execute()
         {
-            _coordsConverter = SetupData.CoordsConverter;
+            CalculationQueue.Clear();
+            QueuedPositions.Clear();
 
             for (var i = 0; i < CalculationData.Length; i++)
             {
                 var cellData = CalculationData[i];
                 cellData.IntegrationValue = float.MaxValue;
+                cellData.IsCalculated = false;
                 CalculationData[i] = cellData;
             }
+
+            _coordsConverter = SetupData.CoordsConverter;
+
+            
 
             _exitFlowDirectionPeak = TriangularMath.GetHexEdgeExitVector(ExitEdge, true);
             _exitFlowDirectionValley = TriangularMath.GetHexEdgeExitVector(ExitEdge, false);
@@ -118,11 +124,19 @@ namespace ZE.MechBattle.Navigation
         {
             var index = _coordsConverter.TriangularToIndex(pos);
             if (!SetupData.IsIndexValid(index))
+            {
+                Debug.LogWarning($"invalid index  {index} of {pos}");
                 return;
+            }
+                
 
             var setupData = SetupData[index];
             if (!setupData.IsPassable | !setupData.IsValid)
+            {
+                Debug.LogWarning($"isPassable:  {setupData.IsPassable} isValid: {setupData.IsValid}");
                 return;
+            }
+                
 
             var calculationData = CalculationData[index];
             calculationData.IntegrationValue = 0;

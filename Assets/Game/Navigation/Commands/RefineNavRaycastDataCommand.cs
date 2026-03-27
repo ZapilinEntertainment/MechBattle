@@ -50,6 +50,7 @@ namespace ZE.MechBattle.Navigation
                     IsPassable = !isLocked,
                 });
             }
+
             return trianglesData;
         }
     

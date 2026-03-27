@@ -46,5 +46,8 @@ namespace ZE.MechBattle.Navigation
                 new int2(pos.Z, pos.Y * 2),
                 new int2(pos.Z, pos.Y * 2 + 1),
                 pos.IsPeak);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsIndexValid(int index) => (uint)index < (uint)(ArrayWidth * ArrayHeight);
     }
 }

@@ -5,6 +5,7 @@ using Unity.Burst;
 using Unity.Collections;
 using System;
 using UnityEditor;
+using R3;
 
 namespace ZE.MechBattle.Navigation.DebugOverlay
 {
@@ -59,10 +60,13 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         }
     }
 
-    public class NavigationMapDrawer
+    public class NavigationMapDrawer : IDisposable
     {    
         public enum TrianglesDrawMode : byte { Disabled, All, OnlyLocked, OnlyPassable}
         public TrianglesDrawMode _trianglesDrawMode;
+
+        private readonly CompositeDisposable _compositeDisposable = new();
+        private readonly QueryParameters _castQueryParameters = NavigationConstants.GetGroundCastQueryParameters();
 
         private List<LineDrawData> _drawData = new();
         private List<SphereDrawData> _sphereDrawData = new();
@@ -71,32 +75,40 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         private float _triangleHeight;
         private int _trianglesInHexCount;
         private HexPointsPreset _hexPointsPreset;
-        private Vector3 _highlightHexCenter;
-        private QueryParameters _castQueryParameters;
+        private Vector3 _highlightHexCenter;       
+        private MapSettingsSO _mapSettings;
 
-        private readonly MapSettingsSO _mapSettings;
 
-        public NavigationMapDrawer(MapSettingsSO mapSettings)
+        public NavigationMapDrawer(Observable<MapSettingsSO> settingsObservable)
         {
-            _mapSettings = mapSettings;
+            settingsObservable
+                .Subscribe(RedrawMap)
+                .AddTo(_compositeDisposable);
         }
 
-        public void RedrawMap()
+        public void Dispose()
         {
-            _drawData.Clear();     
-            _sphereDrawData.Clear();
-            _bordersDrawData.Clear();
+            _compositeDisposable.Dispose();
+        }
 
-            if (_mapSettings == null)
+        public void RedrawMap(MapSettingsSO mapSettingsSO)
+        {
+           ClearDrawData();
+
+            if (mapSettingsSO == null)
                 return;
 
-            _castQueryParameters = NavigationConstants.GetGroundCastQueryParameters();
+            _mapSettings = mapSettingsSO;
             _hexPointsPreset = new(_mapSettings.HexEdgeSize);  
             DrawMapBorders();
-
             RecalculateDrawData();
+        }
 
-            //DrawTriangleSubdivision(float2.zero);
+        public void ClearDrawData()
+        {
+            _drawData.Clear();
+            _sphereDrawData.Clear();
+            _bordersDrawData.Clear();
         }
 
         private void RecalculateDrawData()
@@ -190,7 +202,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             data.Add(new(vertices.C, vertices.A, color));
         }
 
-        private static void AddTriangleDrawData(float3 cartesianCenter, bool isPeak, float triangleHeight, List<LineDrawData> data, DebugColor color, float sizeCf = 1f)
+        private void AddTriangleDrawData(float3 cartesianCenter, bool isPeak, float triangleHeight, List<LineDrawData> data, DebugColor color, float sizeCf = 1f)
         {
             float3 pointA;
             float3 pointB;
@@ -214,51 +226,6 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             data.Add(new(pointA, pointB, color));
             data.Add(new(pointB, pointC, color));
             data.Add(new(pointC, pointA, color));
-        }
-
-        private void DrawTriangleSubdivision(float2 zeroHexCenter)
-        {
-            var innerCircleTopTriangle = NavigationMapHelper.GetInnerCircleTopTriangle(zeroHexCenter, _triangleHeight);
-
-            // get neighboured one:
-            //innerCircleTopTriangle = TriangularMath.GetValleyNeighbour(innerCircleTopTriangle, ValleyNeighbour.EdgeDownRight);
-
-            var trianglePos = TriangularMath.TriangularToWorld(innerCircleTopTriangle, _triangleHeight);
-
-            var raycastResolution = _mapSettings.RaycastSubdivisionsPerEdge;
-            using var centers = new NativeArray<SubdivideTriangleIntoSmallerOnesCommand.SmallTriangleData>(raycastResolution * raycastResolution, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
-            SubdivideTriangleIntoSmallerOnesCommand.Execute(
-                trianglePos.xz,
-                innerCircleTopTriangle.IsPeak,
-                new()
-                {
-                    Centers = centers,
-                    RaycastTrianglesPerEdge = raycastResolution,
-                    TriangleHeight = _triangleHeight
-                });
-
-            var counter = 0;
-            var rowCounter = 0;
-            var row = 0;
-
-            foreach (var center in centers)
-            {
-                var pos = center.WorldPosV3;
-                _sphereDrawData.Add(new(pos, DebugColor.Yellow, 0.5f));
-                var peak = (rowCounter % 2 == 0) == innerCircleTopTriangle.IsPeak;
-                AddTriangleDrawData(pos, peak, _triangleHeight / raycastResolution, _drawData, DebugColor.Yellow, sizeCf: 0.95f);
-
-                counter++;
-                rowCounter++;
-
-                if (rowCounter == row * 2 + 1)
-                {
-                    row++;
-                    rowCounter = 0;
-                }
-
-                //if (counter == 2) break;
-            }
         }
 
         private void AddHexBorderPoints(float2 centerPos, List<LineDrawData> data)

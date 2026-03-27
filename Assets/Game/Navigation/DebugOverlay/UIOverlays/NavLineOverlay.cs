@@ -12,7 +12,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
     {
         private readonly LineDrawer _xDrawer, _zDrawer, _yDrawer;
         private bool _isSubscribedToUpdate = false;
-        private float _triangleEdgeSize = 1f;
+        private float _triangleEdgeSize = 25f;
 
         private class LineDrawer
         {
@@ -27,9 +27,10 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 _normal = normal;
             }
 
-            public void UpdateCoord(float val)
+            public void UpdateCoord(float edgeSize)
             {
-                var center = val * _normal;
+                var height = NavigationConstants.SQRT_OF_THREE_HALVED * edgeSize;
+                var center = height * _normal;
                 StartPos = center -2000f * _direction;
                 EndPos = center + 2000f * _direction;
             }

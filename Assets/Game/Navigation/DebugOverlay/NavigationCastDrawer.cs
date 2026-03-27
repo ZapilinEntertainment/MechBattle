@@ -13,11 +13,13 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         {
             public readonly Vector3 Pos;
             public readonly Color Color;
+            public readonly bool IsPassable;
 
-            public RaycastPointData(Vector3 pos, Color color)
+            public RaycastPointData(Vector3 pos, Color color, bool isPassable)
             {
                 Pos = pos;
                 Color = color;
+                IsPassable = isPassable;
             }
         }
 
@@ -48,7 +50,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             {                
                 var point = command.from;
                 point.y = 0;
-                _points.Add(new(point, color));
+                _points.Add(new(point, color, true));
             }            
         }
 
@@ -69,19 +71,27 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             }
             
             _points.Clear();
-            foreach (var point in raycastData) 
+            foreach (var hit in raycastData) 
             {
                 Color color;
-                if (point.collider == null)
+                var isPassable = false;
+                var pos = hit.point;
+
+                if (hit.collider == null)
                 {
+                    // actually, this will never happen, need to rework cast hex async output
                     color = _noColliderRayColor;
+                    pos = new Vector3(pos.x, 0.01f, pos.y);
                 }                    
                 else
                 {
-                    var t = (point.distance / COLOR_HEIGHT_STEP) - Mathf.Floor(point.distance / COLOR_HEIGHT_STEP);
+                    var t = (hit.distance / COLOR_HEIGHT_STEP) - Mathf.Floor(hit.distance / COLOR_HEIGHT_STEP);
                     color = Color.Lerp(_shortestRayColor, _longestRayColor, t);
+                    pos.y += 0.01f;
+
+                    isPassable = !hit.collider.CompareTag(NavigationConstants.OBSTACLE_TAG);
                 }
-                _points.Add(new(point.point + 0.01f * Vector3.up, color));
+                _points.Add(new(pos, color, isPassable));
             }
         }
 
@@ -103,7 +113,10 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             foreach (var point in _points)
             {
                 Handles.color = point.Color;
-                Handles.DrawSolidDisc(point.Pos, up, 1f);
+                if (point.IsPassable)
+                    Handles.DrawSolidDisc(point.Pos, up, 1f);
+                else
+                    Handles.DrawWireDisc(point.Pos, up, 1f);
             }
             Handles.zTest = previousZTest;
         }
