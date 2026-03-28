@@ -27,8 +27,13 @@ namespace ZE.MechBattle.Navigation
         {
             var p = isPassable ? 1 : 0;
             Value = (p << PASSABLE_SHIFT) |
-                     (direction << DIRECTION_SHIFT) |
+                     ((direction & BYTE_MASK) << DIRECTION_SHIFT) |
                      (exitDistance & DISTANCE_MASK);
+
+            #if UNITY_EDITOR
+            if (direction < 0 || direction > 12) 
+                Debug.LogError("Wrong direction value: " + direction.ToString());
+            #endif
         }
 
         public FlowMapCellData(int value) => Value = value;
@@ -43,6 +48,8 @@ namespace ZE.MechBattle.Navigation
         private const int DISTANCE_MASK = FlowMapCellData.DISTANCE_MASK;
 
         public FlowMapCellData this[HexEdge edge] => new(Values[(int)edge]);
+
+        public int this[int index] => Values[index];
 
         public FlowMapCombinedCell(FlowMapCellData[] cells)
         {

@@ -10,20 +10,19 @@ namespace ZE.MechBattle.Navigation
 {
     public static class CalculateHexFlowMapCommand
     {
-       
-
-        private class NativeCollectionsData : IDisposable
+        public class NativeCollectionsData : IDisposable
         {
             public SquaredHexTrianglesList<FlowFieldCellSetupData> SetupData;
             public NativeArray<FlowFieldCellCalculationData> CalculationData;
             public NativeQueue<int> CalculationQueue;
             public NativeHashSet<int> QueuedPositions;
 
-            public NativeCollectionsData(Allocator allocator, IntTriangularPos triangularCenterPos, INavigationCaster caster)
+            public NativeCollectionsData(Allocator allocator, IntTriangularPos triangularCenterPos, int trianglesRadius )
             {
-                SetupData = new SquaredHexTrianglesList<FlowFieldCellSetupData>(triangularCenterPos, caster.TrianglesPerHexEdge, allocator);
+                SetupData = new SquaredHexTrianglesList<FlowFieldCellSetupData>(triangularCenterPos, trianglesRadius, allocator);
                 CalculationQueue = new NativeQueue<int>(allocator);
-                QueuedPositions = new NativeHashSet<int>(caster.HexTrianglesCount / 2, allocator);
+                var hexTrianglesCount = TriangularMath.GetTrianglesCountInHex(trianglesRadius);
+                QueuedPositions = new NativeHashSet<int>(hexTrianglesCount / 2, allocator);
                 CalculationData = new NativeArray<FlowFieldCellCalculationData>(SetupData.Length, allocator, NativeArrayOptions.UninitializedMemory);
             }
 
@@ -54,7 +53,7 @@ namespace ZE.MechBattle.Navigation
             // TODO: move casting to own command
             var refinedData = RefineNavRaycastDataCommand.Execute(raycastData.AsReadOnly(), LOCK_PERCENT, caster);
 
-            using var collections = new NativeCollectionsData(Allocator.Persistent, hex.TriangularCenterPos, caster);   
+            using var collections = new NativeCollectionsData(Allocator.Persistent, hex.TriangularCenterPos, caster.TrianglesPerHexEdge);   
             var data = collections.SetupData;
            
             foreach (var triangleKvp in refinedData)
@@ -80,7 +79,7 @@ namespace ZE.MechBattle.Navigation
 
         private static async Awaitable<NativeHashMap<IntTriangularPos, FlowMapCombinedCell>> PrepareAndCombineFlowMaps(
             NativeCollectionsData data, 
-            NavigationHexPosition hex, 
+            NavigationHexPosition hexPos, 
             INavigationCaster caster,
             Allocator allocator,
             CancellationToken cancellationToken)
@@ -88,22 +87,35 @@ namespace ZE.MechBattle.Navigation
             var setupData = data.SetupData;
             var calculationData = data.CalculationData;
             var length = setupData.Length;
+            var coordsConverter = setupData.CoordsConverter;
+            var radius = caster.TrianglesPerHexEdge;
 
-            using var disposableArray = new DisposableArray(length * 6);
-            var combinedData = disposableArray.Values;
-
-            for (var i = 0; i < 6; i++)
+            using var compositeMap = new CombinedFlowMapCellsStorage(length, setupData.CoordsConverter);
+            var trianglesInHex = TriangularMath.GetTrianglesCountInHex(radius);
+            var hexTriangleIndices = new int[trianglesInHex];
+            var ti = 0;
+            foreach (var hexTrianglePos in new HexTrianglesEnumerator(hexPos, radius))
             {
-                var edge = (HexEdge)i;
+                var index = coordsConverter.TriangularToIndex(hexTrianglePos);
+                hexTriangleIndices[ti++] = index;
+
+                if (!setupData[index].IsPassable) 
+                    Debug.Log($"{hexTrianglePos} is not passable by default");
+            }
+
+
+            for (var e = 0; e < 6; e++)
+            {
+                var edge = (HexEdge)e;
                 var job = new GenerateFlowFieldJob()
                 {
                     SetupData = setupData,
                     CalculationData = calculationData,
-                    HexData = hex,
+                    HexData = hexPos,
                     CalculationQueue = data.CalculationQueue,
                     QueuedPositions = data.QueuedPositions,
                     ExitEdge = edge,
-                    TrianglesPerEdge = caster.TrianglesPerHexEdge
+                    TrianglesPerEdge = radius
                 };
                 var handle = job.ScheduleByRef();
                 while (!handle.IsCompleted)
@@ -111,34 +123,37 @@ namespace ZE.MechBattle.Navigation
                     await Awaitable.NextFrameAsync();
                 }
                 handle.Complete();
-                Debug.Log($"{edge} completed");
 
                 if (cancellationToken.IsCancellationRequested)
                     return default;
 
-                for (var j = 0; j < length; j++)
+                for (var i = 0; i < trianglesInHex; i++)
                 {
-                    var defaultData = setupData[j];
-                    if (defaultData.IsValid)
+                    var index = hexTriangleIndices[i];
+
+                    var defaultData = setupData[index];
+                    if (!defaultData.IsValid)
                         continue;
 
-                    var calculatedData = calculationData[j];
-                    combinedData[i * length + j] = new FlowMapCellData(defaultData.IsPassable, calculatedData.FlowDirection, (ushort)calculatedData.IntegrationValue).Value;
+                    var calculatedData = calculationData[index];
+                    if (calculatedData.FlowDirection < 0 || calculatedData.FlowDirection >= ushort.MaxValue)
+                        Debug.Log($"incorrect flow direction at {edge} {coordsConverter.IndexToTriangular(index)}");
+
+                    var cellData = new FlowMapCellData(defaultData.IsPassable, calculatedData.FlowDirection, (ushort)calculatedData.IntegrationValue);
+                    
+                    compositeMap.SetValue(edge, index, cellData);
                 }
             }
 
-            var resultingData = new NativeHashMap<IntTriangularPos, FlowMapCombinedCell>(caster.HexTrianglesCount, allocator);
-            var coordsConverter = setupData.CoordsConverter;
-            var cellData = new FlowMapCellData[6];
-            for (var i = 0; i < length; i++)
+            var resultingData = new NativeHashMap<IntTriangularPos, FlowMapCombinedCell>(caster.HexTrianglesCount, allocator);   
+            for (var i = 0; i < trianglesInHex; i++)
             {
-                if (!setupData[i].IsValid)
+                var index = hexTriangleIndices[i];
+
+                if (!setupData[index].IsValid)
                     continue;
-                for (var j = 0; j < 6; j++)
-                {
-                    cellData[j] = new(combinedData[j * length + i]);
-                }
-                resultingData.Add(coordsConverter.IndexToTriangular(i), new(cellData));
+                var compositeCell = compositeMap.GetCombinedCell(index);
+                resultingData.Add(coordsConverter.IndexToTriangular(index), compositeCell);
             }
 
             return resultingData;

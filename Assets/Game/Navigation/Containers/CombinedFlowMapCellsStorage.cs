@@ -18,7 +18,10 @@ namespace ZE.MechBattle.Navigation
             _values = new DisposableArray(SingleLength * 6);
         }
 
-        public void SetValue(HexEdge edge, int index, FlowMapCellData cellData) => _values[ToLocalIndex(edge, index)] = cellData.Value;
+        public void SetValue(HexEdge edge, int index, FlowMapCellData cellData) 
+        {
+            _values[ToLocalIndex(edge, index)] = cellData.Value;
+        }
 
 
         public FlowMapCellData GetValue(int edge, int index) =>

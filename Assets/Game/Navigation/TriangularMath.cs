@@ -37,7 +37,7 @@ namespace ZE.MechBattle.Navigation
         };
 
         [BurstCompile]
-        public static IntTriangularPos GetPeakNeighbour(IntTriangularPos pos, int peakNeighbour) => GetPeakNeighbour(pos, peakNeighbour);
+        public static IntTriangularPos GetPeakNeighbour(IntTriangularPos pos, int peakNeighbour) => GetPeakNeighbour(pos, (PeakNeighbour)peakNeighbour);
 
 
         [BurstCompile]

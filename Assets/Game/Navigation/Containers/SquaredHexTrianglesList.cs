@@ -70,6 +70,8 @@ namespace ZE.MechBattle.Navigation
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
+        // todo: add meaning check also
         public bool IsIndexValid(int index) => (uint)index < (uint)Length;
     }
 }

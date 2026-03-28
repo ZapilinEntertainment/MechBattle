@@ -122,7 +122,6 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 _points.Add((vertices.B, vertices.C));
                 _points.Add((vertices.A, vertices.C));
             }
-            Debug.Log($"draw points: {_points.Count}");
         }
 
 

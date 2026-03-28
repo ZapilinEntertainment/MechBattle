@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using UnityEngine;
+using System.Collections.Generic;
 using Unity.Mathematics;
 using Unity.Collections;
 using Unity.Jobs;
@@ -22,6 +23,16 @@ namespace ZE.MechBattle.Navigation.Tests
             }
         }
 
+        [TestCase(true, 0, 256)]
+        [TestCase(false, 8, 0)]
+        public void TestFlowMapCell(bool isPassable, int direction, int distance)
+        {
+            var cell = new FlowMapCellData(isPassable, direction, (ushort)distance);
+            Assert.AreEqual(isPassable, cell.IsPassable, "passable parameter doesnt match");
+            Assert.AreEqual((byte)direction, cell.Direction, "direction parameter doesnt match");
+            Assert.AreEqual((ushort)distance, cell.ExitDistance, "passable parameter doesnt match");
+        }
+
 
         [TestCase(0,0, 100f, 2)]
         public async Task FullPassableFlowMapTest(int hexX, int hexY, float hexEdge, int trianglesPerEdge)
@@ -32,10 +43,30 @@ namespace ZE.MechBattle.Navigation.Tests
             const int PASSABILITY_MASK = 0x3F;
             var elements = new int[6];
             var coordsConverter = testData.CombinedMap.CoordsConverter;
+            var hexTrisSet = new HashSet<int>();   
 
             foreach (var triangle in testData.HexTriangles)
             {
                 Assert.AreEqual(PASSABILITY_MASK, testData.CombinedMap.GetCombinedCell(triangle).GetCombinedPassabilityMask());
+                hexTrisSet.Add(coordsConverter.TriangularToIndex(triangle));
+            }
+
+            for (var e =1; e < 6; e++)
+            {
+                //Debug.Log((HexEdge)e);
+                for (var i = 0; i < length; i++)
+                {
+                    if (!hexTrisSet.Contains(i))
+                        continue;
+
+                    var pos = coordsConverter.IndexToTriangular(i);
+                    var data = testData.CombinedMap.GetCombinedCell(pos);
+                    var cellData = new FlowMapCellData(data[e]);
+                    //if (pos.IsPeak)
+                    //    Debug.Log($"{pos} : {(PeakNeighbour)cellData.Direction}");
+                   // else
+                   //     Debug.Log($"{pos} : {(ValleyNeighbour)cellData.Direction}");
+                }
             }
 
             testData.Dispose();
@@ -100,7 +131,11 @@ namespace ZE.MechBattle.Navigation.Tests
                     Assert.IsTrue(cellCalculatedData.IsCalculated, "cell not calculated");
                     Assert.IsTrue(cellSetupData.IsPassable, "cell not passable");
 
-                    var cellData = new FlowMapCellData(cellSetupData.IsPassable, cellCalculatedData.FlowDirection, (ushort)cellCalculatedData.IntegrationValue);
+                    var flowDirection = cellCalculatedData.FlowDirection;
+                    Assert.IsTrue(flowDirection >=0 && flowDirection < 12, "flow direction incorrect");
+                    Assert.IsTrue(cellCalculatedData.IntegrationValue >=0 && cellCalculatedData.IntegrationValue < ushort.MaxValue, "distance incorrect");
+
+                    var cellData = new FlowMapCellData(cellSetupData.IsPassable, flowDirection, (ushort)cellCalculatedData.IntegrationValue);
                     Assert.AreEqual(true, cellSetupData.IsPassable, "encoding unsuccessful");
 
                     compositeStorage.SetValue(edge, index, cellData);
@@ -138,6 +173,7 @@ namespace ZE.MechBattle.Navigation.Tests
             TrianglesToIndexConverter coordsConverter,
             HexEdge exitEdge)
         {
+
             var length = calculationData.Length;
             for (var i = 0; i < length; i++)
             {
@@ -149,7 +185,7 @@ namespace ZE.MechBattle.Navigation.Tests
                 var peakDir = (int)exitEdge.ToNeighbourDirectionFromPeak();
                 var valleyDir = (int)exitEdge.ToNeighbourDirectionFromValley();
 
-                TestContext.WriteLine($"{exitEdge}: {i}: direction is {(pos.IsPeak ? "peak" : "valley")}.{(PeakNeighbour)flowDir}");
+                //TestContext.WriteLine($"{exitEdge}: {i}: direction is {(pos.IsPeak ? "peak" : "valley")}.{(PeakNeighbour)flowDir}");
 
                 //if (pos.IsPeak)
                 //    Assert.AreEqual(flowDir, peakDir, $"{exitEdge}: {i}: direction is {(pos.IsPeak ? "peak" : "valley")}.{(PeakNeighbour)flowDir}");

@@ -89,8 +89,6 @@ namespace ZE.MechBattle.Navigation
 
             _coordsConverter = SetupData.CoordsConverter;
 
-            
-
             _exitFlowDirectionPeak = TriangularMath.GetHexEdgeExitVector(ExitEdge, true);
             _exitFlowDirectionValley = TriangularMath.GetHexEdgeExitVector(ExitEdge, false);
 
@@ -192,6 +190,7 @@ namespace ZE.MechBattle.Navigation
                     if (newIntegrationValue < neighbourCalculationData.IntegrationValue)
                     {
                         neighbourCalculationData.IntegrationValue = newIntegrationValue;
+                        CalculationData[neighbourIndex] = neighbourCalculationData;
                         Enqueue(neighbourIndex);
                     }
                 }
