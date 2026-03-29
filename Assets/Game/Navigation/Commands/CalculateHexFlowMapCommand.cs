@@ -136,10 +136,17 @@ namespace ZE.MechBattle.Navigation
                         continue;
 
                     var calculatedData = calculationData[index];
-                    if (calculatedData.FlowDirection < 0 || calculatedData.FlowDirection >= ushort.MaxValue)
-                        Debug.Log($"incorrect flow direction at {edge} {coordsConverter.IndexToTriangular(index)}");
-
-                    var cellData = new FlowMapCellData(defaultData.IsPassable, calculatedData.FlowDirection, (ushort)calculatedData.IntegrationValue);
+                    FlowMapCellData cellData;
+                    if (calculatedData.FlowDirection < 0)
+                    {
+                        var tripos = coordsConverter.IndexToTriangular(index);
+                        cellData = FlowMapCellData.FormBlockedCell(edge, tripos, (ushort)calculatedData.IntegrationValue);
+                    }
+                        
+                    else
+                    {
+                        cellData = new(defaultData.IsPassable, calculatedData.FlowDirection, (ushort)calculatedData.IntegrationValue);
+                    }                        
                     
                     compositeMap.SetValue(edge, index, cellData);
                 }

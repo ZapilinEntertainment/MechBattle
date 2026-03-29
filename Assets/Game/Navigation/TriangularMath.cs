@@ -61,12 +61,18 @@ namespace ZE.MechBattle.Navigation
         public static IntTriangularPos GetValleyNeighbour(IntTriangularPos pos, int valleyNeighbour) => GetValleyNeighbour(pos, (ValleyNeighbour)valleyNeighbour);
 
         [BurstCompile]
+        public static IntTriangularPos GetNeighbourByDirection(IntTriangularPos pos, int direction) =>
+            pos.IsPeak 
+            ? GetPeakNeighbour(pos, direction)
+            : GetValleyNeighbour(pos,direction);
+
+        [BurstCompile]
         public static byte GetHexEdgeExitVector(HexEdge edge, bool isPeak) => edge switch
         {
             HexEdge.TopRight => isPeak ? (byte)PeakNeighbour.EdgeUpRight : (byte)ValleyNeighbour.VertexUpRightPeak,
             HexEdge.BottomRight => isPeak ? (byte)PeakNeighbour.VertexDownRightValley : (byte)ValleyNeighbour.EdgeDownRight,
             HexEdge.BottomLeft => isPeak ? (byte)PeakNeighbour.VertexDownLeftValley : (byte)ValleyNeighbour.EdgeDownLeft,
-            HexEdge.TopLeft => isPeak ? (byte)PeakNeighbour.EdgeUpLeft : (byte)ValleyNeighbour.VertexUpRightPeak,
+            HexEdge.TopLeft => isPeak ? (byte)PeakNeighbour.EdgeUpLeft : (byte)ValleyNeighbour.VertexUpLeftPeak,
             HexEdge.Bottom => isPeak ? (byte)PeakNeighbour.EdgeDown : (byte)ValleyNeighbour.VertexDown,
             _ => isPeak ? (byte)PeakNeighbour.VertexUp : (byte)ValleyNeighbour.EdgeUp,
         };

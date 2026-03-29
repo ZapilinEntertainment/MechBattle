@@ -1,10 +1,12 @@
 using UnityEngine;
 using Unity.Collections;
 using Unity.Mathematics;
+using Unity.Burst;
 using System.Runtime.CompilerServices;
 
 namespace ZE.MechBattle.Navigation
 {
+    [BurstCompile]
     public readonly struct TrianglesToIndexConverter
     {
         public readonly int ArrayWidth;
@@ -21,14 +23,19 @@ namespace ZE.MechBattle.Navigation
             BottomLeftValleyTrianglePos = TriangularMath.GetPeakNeighbour(BottomLeftPeakTrianglePos, PeakNeighbour.EdgeUpRight);
         }
 
+        public bool TryConvertToIndex(IntTriangularPos pos, out int index)
+        {
+            var v2 = TriangularTo2d(pos);
+            index = Pos2dToIndex(v2);
+            return (uint)v2.x < (uint)ArrayWidth && (uint)v2.y < (uint)ArrayHeight;
+        }
+
         public int TriangularToIndex(IntTriangularPos pos)
         {
-            var delta = pos.IsPeak ? (pos - BottomLeftPeakTrianglePos) : (pos - BottomLeftValleyTrianglePos);
-            var y = delta.Y * 2 + (pos.IsPeak ? 0 : 1);
-            var x = delta.Z;
-
-            //Debug.Log($"{pos} -> ({x},{y})");
-            return x * ArrayHeight + y;
+            var v2 = TriangularTo2d(pos);
+            var index = Pos2dToIndex(v2);
+            //Debug.Log($"{pos} -> {v2} -> {index}");
+            return index;
         }
 
         public IntTriangularPos IndexToTriangular(int index)
@@ -49,5 +56,17 @@ namespace ZE.MechBattle.Navigation
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsIndexValid(int index) => (uint)index < (uint)(ArrayWidth * ArrayHeight);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int2 TriangularTo2d(IntTriangularPos pos)
+        {
+            var delta = pos.IsPeak ? (pos - BottomLeftPeakTrianglePos) : (pos - BottomLeftValleyTrianglePos);
+            var y = delta.Y * 2 + (pos.IsPeak ? 0 : 1);
+            var x = delta.Z;
+            return new(x,y);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int Pos2dToIndex(int2 v2) => v2.x * ArrayHeight + v2.y;
     }
 }

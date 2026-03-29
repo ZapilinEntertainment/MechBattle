@@ -122,7 +122,9 @@ namespace ZE.MechBattle.Navigation.Tests
                     var cellSetupData = setupData[index];
                     if (!cellSetupData.IsValid)
                     {
-                        compositeStorage.SetValue(edge, index, FlowMapCellData.BlockedCell);
+                        var tripos = coordsConverter.IndexToTriangular(index);
+                        var cell = FlowMapCellData.FormBlockedCell(edge, tripos, (ushort)calculationData[index].IntegrationValue);
+                        compositeStorage.SetValue(edge, index, cell);
                         continue;
                     }
 

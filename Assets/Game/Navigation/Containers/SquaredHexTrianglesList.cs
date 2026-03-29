@@ -50,11 +50,7 @@ namespace ZE.MechBattle.Navigation
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGetIndex(IntTriangularPos pos, out int index)
-        {
-            index = CoordsConverter.TriangularToIndex(pos);
-            return IsIndexValid(index);
-        }
+        public bool TryGetIndex(IntTriangularPos pos, out int index) => CoordsConverter.TryConvertToIndex(pos, out index);
 
         public void Set(IntTriangularPos pos, T value) 
         {

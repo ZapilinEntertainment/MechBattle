@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Unity.Collections;
 using Unity.Mathematics;
@@ -136,6 +137,97 @@ namespace ZE.MechBattle.Navigation.Tests
                 var backTripos = coordsConverter.IndexToTriangular(index);
                 TestContext.WriteLine($"{tripos} -> {index}");  
                 Assert.AreEqual(tripos, backTripos, $"wrong conversion: {tripos} -> {index} -> {backTripos}");
+            }
+        }
+
+        [TestCase(0, -0, 100f, 2)]
+        [TestCase(2, 0, 100f, 4)]
+        [TestCase(4, 0, 400, 8)]
+        [TestCase(32, -8, -100f, 8)]
+        public void NeighbourOffsetTest(int hexCoordX, int hexCoordY, float hexEdgeLength, int radius)
+        {
+            var triangleHeight = hexEdgeLength / radius * NavigationConstants.SQRT_OF_THREE_HALVED;
+            var hexPos = new NavigationHexPosition(hexCoordX, hexCoordY, hexEdgeLength, triangleHeight);
+
+            var allocator = Allocator.Persistent;
+            var trianglesInHex = TriangularMath.GetTrianglesCountInHex(radius);
+
+            using var squaredList = new SquaredHexTrianglesList<int>(hexPos.TriangularCenterPos, radius, allocator);
+            var coordsConverter = squaredList.CoordsConverter;
+
+            foreach (var pos in new HexTrianglesEnumerator(hexPos, radius))
+            { 
+                var index = coordsConverter.TriangularToIndex(pos);
+                Assert.AreEqual(pos, coordsConverter.IndexToTriangular(index), "tri-index-tri failed");
+
+
+                if (pos.IsPeak)
+                {
+                    for (var i = 0; i < 12; i++)
+                    {
+                        var neighbourDir = (PeakNeighbour)i;
+                        var neighbourPos = TriangularMath.GetPeakNeighbour(pos,neighbourDir);
+                        var conversionSuccess = coordsConverter.TryConvertToIndex(neighbourPos, out var neighbourIndex);
+                        Assert.AreEqual(neighbourPos, coordsConverter.IndexToTriangular(neighbourIndex), $"failed at {pos} {neighbourDir} [{index}] -> [{neighbourIndex}]");
+                    }
+                }
+                else
+                {
+                    for (var i = 0; i < 12; i++)
+                    {
+                        var neighbourDir = (ValleyNeighbour)i;
+                        var neighbourPos = TriangularMath.GetValleyNeighbour(pos, neighbourDir);
+                        if (coordsConverter.TryConvertToIndex(neighbourPos, out var neighbourIndex))
+                            Assert.AreEqual(neighbourPos, coordsConverter.IndexToTriangular(neighbourIndex), $"failed at {pos} {neighbourDir} [{index}] -> [{neighbourIndex}]");
+                    }
+                }
+            }
+        }
+
+        [TestCase(0, -0, 100f, 2)]
+        [TestCase(2, 0, 100f, 4)]
+        [TestCase(4, 0, 400, 8)]
+        [TestCase(32, -8, -100f, 8)]
+        public void TrianglesOutsideOfHexTest(int hexCoordX, int hexCoordY, float hexEdgeLength, int radius)
+        {
+            var triangleHeight = hexEdgeLength / radius * NavigationConstants.SQRT_OF_THREE_HALVED;
+            var hexPos = new NavigationHexPosition(hexCoordX, hexCoordY, hexEdgeLength, triangleHeight);
+
+            var allocator = Allocator.Persistent;
+            var trianglesInHex = TriangularMath.GetTrianglesCountInHex(radius);
+
+            using var squaredList = new SquaredHexTrianglesList<int>(hexPos.TriangularCenterPos, radius, allocator);
+            var coordsConverter = squaredList.CoordsConverter;
+
+            var hexSet = new HashSet<IntTriangularPos>(trianglesInHex);
+            foreach (var tripos in new HexTrianglesEnumerator(hexPos, radius))
+            {
+                hexSet.Add(tripos);
+                squaredList.Set(tripos, 1);
+            }
+
+            foreach (var tripos in new HexTrianglesEnumerator(hexPos, radius +1))
+            {
+                var isTriangleInsideHex = hexSet.Contains(tripos);
+                var indexValid = squaredList.TryGetIndex(tripos, out var index);
+                if (isTriangleInsideHex)
+                {
+                    Assert.IsTrue(indexValid, "hex triangle index is not valid");
+                }
+                else
+                {
+                    if (!indexValid)
+                        Assert.IsFalse(isTriangleInsideHex, "triangle is inside hex, but index is not valid");
+                }
+
+                if (squaredList.TryGet(tripos, out var result))
+                {
+                    Assert.AreEqual(result == 1, hexSet.Contains(tripos), $"value not match at {tripos}");
+                }
+                else
+                {
+                    Assert.IsFalse(hexSet.Contains(tripos), "non-hex triangle contains set value");
+                }
             }
         }
     }

@@ -58,10 +58,12 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         public override void OnWillBeDestroyed()
         {
-            _compositeDisposable.Dispose();
-            _drawer?.Dispose();
+            _compositeDisposable.Dispose();           
             _settingsProperty.Dispose();
             SceneView.duringSceneGui -= OnSceneGUI;
+
+            ClearMap();
+            _drawer?.Dispose();
         }
 
         private void OnSettingsChanged(MapSettingsSO settings)

@@ -38,7 +38,14 @@ namespace ZE.MechBattle.Navigation
 
         public FlowMapCellData(int value) => Value = value;
 
-        public static FlowMapCellData BlockedCell => new(false, 0, ushort.MaxValue);
+        [BurstCompile]
+        public static FlowMapCellData FormBlockedCell(HexEdge edge, IntTriangularPos tripos, ushort distance)
+        {
+            return new(
+                false, 
+                tripos.IsPeak ? (int)edge.ToNeighbourDirectionFromPeak() : (int)edge.ToNeighbourDirectionFromValley(), 
+                distance);
+        }
     }
 
     public unsafe struct FlowMapCombinedCell

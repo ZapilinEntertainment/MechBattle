@@ -66,6 +66,7 @@ namespace ZE.MechBattle.Navigation
         public NavigationHexPosition HexData;
         public int TrianglesPerEdge;
         public HexEdge ExitEdge;    
+
         private TrianglesToIndexConverter _coordsConverter;
 
         private const int NEIGHBOURS_COUNT = 12;
@@ -79,18 +80,19 @@ namespace ZE.MechBattle.Navigation
             CalculationQueue.Clear();
             QueuedPositions.Clear();
 
+            _coordsConverter = SetupData.CoordsConverter;
+
+            _exitFlowDirectionPeak = TriangularMath.GetHexEdgeExitVector(ExitEdge, true);
+            _exitFlowDirectionValley = TriangularMath.GetHexEdgeExitVector(ExitEdge, false);
+
             for (var i = 0; i < CalculationData.Length; i++)
             {
                 var cellData = CalculationData[i];
                 cellData.IntegrationValue = float.MaxValue;
                 cellData.IsCalculated = false;
+                cellData.FlowDirection = math.select(_exitFlowDirectionValley, _exitFlowDirectionPeak, _coordsConverter.IndexToTriangular(i).IsPeak);
                 CalculationData[i] = cellData;
             }
-
-            _coordsConverter = SetupData.CoordsConverter;
-
-            _exitFlowDirectionPeak = TriangularMath.GetHexEdgeExitVector(ExitEdge, true);
-            _exitFlowDirectionValley = TriangularMath.GetHexEdgeExitVector(ExitEdge, false);
 
             SetupExitCells();
             PrepareIntegrationField();
@@ -122,23 +124,14 @@ namespace ZE.MechBattle.Navigation
         {
             var index = _coordsConverter.TriangularToIndex(pos);
             if (!SetupData.IsIndexValid(index))
-            {
-                Debug.LogWarning($"invalid index  {index} of {pos}");
                 return;
-            }
-                
 
             var setupData = SetupData[index];
             if (!setupData.IsPassable | !setupData.IsValid)
-            {
-                Debug.LogWarning($"isPassable:  {setupData.IsPassable} isValid: {setupData.IsValid}");
                 return;
-            }
-                
 
             var calculationData = CalculationData[index];
             calculationData.IntegrationValue = 0;
-            calculationData.FlowDirection = math.select(_exitFlowDirectionPeak, _exitFlowDirectionValley, pos.IsPeak);
             CalculationData[index] = calculationData;
 
             Enqueue(index);            
@@ -169,19 +162,18 @@ namespace ZE.MechBattle.Navigation
                 var vectorsArray = pos.IsPeak ? PeakNeighbours : ValleyNeighbours;
                 var integrationValue = calculationData.IntegrationValue;
 
+                var checkMask = math.select(VALLEY_EDGES_MASK, PEAK_EDGES_MASK, pos.IsPeak);
                 for (var i = 0; i < NEIGHBOURS_COUNT; i++)
                 {
                     var neighbourPos = pos + vectorsArray[i];
-                    var neighbourIndex = _coordsConverter.TriangularToIndex(neighbourPos);
 
-                    if (!SetupData.IsIndexValid(neighbourIndex))
+                    if (!_coordsConverter.TryConvertToIndex(neighbourPos, out var neighbourIndex))
                         continue;
                    
                     var neighbourSetupData = SetupData[neighbourIndex];
                     if (!neighbourSetupData.IsValid | !neighbourSetupData.IsPassable)
                         continue;
-
-                    var checkMask = math.select(VALLEY_EDGES_MASK, PEAK_EDGES_MASK, neighbourPos.IsPeak);
+                    
                     var isEdge = ((checkMask & (1 << i)) != 0);
                     var stepCf =  math.select(NavigationConstants.VERTEX_PASS_COST, NavigationConstants.EDGE_PASS_COST, isEdge);
 
@@ -218,6 +210,10 @@ namespace ZE.MechBattle.Navigation
                 {
                     var neighbourPos = (pos + vectors[j]);
                     if (!SetupData.TryGetIndex(neighbourPos, out var neighbourDataIndex))
+                        continue;
+
+                    var neighbourSetupData = SetupData[neighbourDataIndex];
+                    if (!neighbourSetupData.IsValid | !neighbourSetupData.IsPassable)
                         continue;
 
                     var neighbourData = CalculationData[neighbourDataIndex];

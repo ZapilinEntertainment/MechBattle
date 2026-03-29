@@ -7,8 +7,9 @@ using Unity.Collections;
 
 namespace ZE.MechBattle.Navigation.DebugOverlay
 {
-    public class FlowMapDrawWizard : ScriptableWizard
+    public class GeneratedFlowMapDrawWizard : ScriptableWizard
     {
+        public bool DrawLocked = true;
         public int2 HexCoord;
         public HexEdge ExitEdge;
 
@@ -22,10 +23,10 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         private readonly quaternion rotationRight = Quaternion.AngleAxis(30f, Vector3.up);
         private readonly quaternion rotationLeft = Quaternion.AngleAxis(30f, Vector3.down);
 
-        [MenuItem("ZE.Navigation/Draw Hex Flow Map")]
+        [MenuItem("ZE.Navigation/Generate and Draw Hex Flow Map")]
         static void OpenWizard()
         {
-            DisplayWizard<FlowMapDrawWizard>("Flow Map Wizard", "Close", "Calculate");
+            DisplayWizard<GeneratedFlowMapDrawWizard>("Generated Flow Map Wizard", "Close", "Calculate");
         }
 
         void OnWizardUpdate()
@@ -105,8 +106,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             {
                 // direction arrow:
                 var worldPos = TriangularMath.TriangularToWorld(kvp.Key, caster.TriangleHeight);
-                var flowMapCell = kvp.Value[exitEdge];
-                if (!flowMapCell.IsPassable)
+                var flowMapCell = kvp.Value[exitEdge];                
+                if (!flowMapCell.IsPassable && !DrawLocked)
                     continue;
 
                 var vector = TriangularMath.TriangularDirectionToWorld(flowMapCell.Direction, kvp.Key.IsPeak);
