@@ -25,11 +25,7 @@ namespace ZE.MechBattle.Navigation.Tests
             var setupData = collectionsData.SetupData;
             foreach (var triangle in new HexTrianglesEnumerator(hexPos, radius))
             {
-                setupData.Set(triangle, new()
-                {
-                    EntranceCost = 1f,
-                    IsValid = true
-                });
+                setupData.Set(triangle, FlowFieldCellSetupData.DefaultPassable);
             }
 
             if (FlowMapCellData.STRUCTURE_SIZE * 6 * setupData.Length > 1024 * 900)

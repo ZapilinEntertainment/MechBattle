@@ -108,8 +108,7 @@ namespace ZE.MechBattle.Navigation
         {
             var hexCoord = TriangularMath.TriangularToHex(pos, TriangleHeight, HexEdgeSize);
             if (!_hexes.TryGetValue(hexCoord, out var hex) 
-                || !hex.TrianglesData.TryGet(pos, out var triangleData)
-                || triangleData.IsValid)
+                || !hex.TrianglesData.TryGet(pos, out var triangleData))
                 return Settings.UnscannedSurfacesArePassable;
 
             return triangleData.IsPassable;

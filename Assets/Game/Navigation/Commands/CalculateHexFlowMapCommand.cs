@@ -37,9 +37,9 @@ namespace ZE.MechBattle.Navigation
 
         private static readonly QueryParameters s_flowMapQueryParameters = NavigationConstants.GetGroundCastQueryParameters();
         private const float LOCK_PERCENT = NavigationConstants.NAV_OBSTACLES_LOCK_PERCENT;
-        private const float DEFAULT_ENTRANCE_COST = 1f;
 
         public static async Awaitable<HexFlowMap> ExecuteAsync(
+            Allocator allocator,
             NavigationHexPosition hex, 
             INavigationCaster caster, 
             CancellationToken cancellationToken)
@@ -53,23 +53,20 @@ namespace ZE.MechBattle.Navigation
             // TODO: move casting to own command
             var refinedData = RefineNavRaycastDataCommand.Execute(raycastData.AsReadOnly(), LOCK_PERCENT, caster);
 
-            using var collections = new NativeCollectionsData(Allocator.Persistent, hex.TriangularCenterPos, caster.TrianglesPerHexEdge);   
+            using var collections = new NativeCollectionsData(allocator, hex.TriangularCenterPos, caster.TrianglesPerHexEdge);   
             var data = collections.SetupData;
            
             foreach (var triangleKvp in refinedData)
             {
-                data.Set(triangleKvp.Key, new()
-                {
-                    EntranceCost = DEFAULT_ENTRANCE_COST,
-                    IsValid = true
-                });
+                var navdata = triangleKvp.Value;
+                data.Set(triangleKvp.Key, new(navdata));
             }
 
             if (FlowMapCellData.STRUCTURE_SIZE * 6 * data.Length > 1024 * 900)
                 throw new System.Exception("potential stack overflow");
 
 
-            var resultingData = await PrepareAndCombineFlowMaps(collections, hex, caster, Allocator.Persistent, cancellationToken);
+            var resultingData = await PrepareAndCombineFlowMaps(collections, hex, caster, allocator, cancellationToken);
             if (cancellationToken.IsCancellationRequested)
                 return default;
 
@@ -98,9 +95,6 @@ namespace ZE.MechBattle.Navigation
             {
                 var index = coordsConverter.TriangularToIndex(hexTrianglePos);
                 hexTriangleIndices[ti++] = index;
-
-                if (!setupData[index].IsPassable) 
-                    Debug.Log($"{hexTrianglePos} is not passable by default");
             }
 
 
@@ -136,18 +130,7 @@ namespace ZE.MechBattle.Navigation
                         continue;
 
                     var calculatedData = calculationData[index];
-                    FlowMapCellData cellData;
-                    if (calculatedData.FlowDirection < 0)
-                    {
-                        var tripos = coordsConverter.IndexToTriangular(index);
-                        cellData = FlowMapCellData.FormBlockedCell(edge, tripos, (ushort)calculatedData.IntegrationValue);
-                    }
-                        
-                    else
-                    {
-                        cellData = new(defaultData.IsPassable, calculatedData.FlowDirection, (ushort)calculatedData.IntegrationValue);
-                    }                        
-                    
+                    var cellData = new FlowMapCellData(defaultData.IsPassable, calculatedData.FlowDirection, (ushort)calculatedData.IntegrationValue);
                     compositeMap.SetValue(edge, index, cellData);
                 }
             }

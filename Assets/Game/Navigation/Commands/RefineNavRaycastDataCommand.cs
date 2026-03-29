@@ -47,7 +47,7 @@ namespace ZE.MechBattle.Navigation
                 trianglesData.Add(triKvp.Key, new()
                 {
                     Height = data.AverageHeight,
-                    IsPassable = !isLocked,
+                    IsPassable = !isLocked
                 });
             }
 

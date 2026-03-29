@@ -164,7 +164,7 @@ namespace ZE.MechBattle.Navigation.Tests
             GetTrianglesInHexCommand.Execute(hexPos.InnerRingTopTriangle, hexRadius, list);
             foreach (var tripos in list)
             {
-                setupData.Set(tripos, new() { EntranceCost = 1, IsValid= true });
+                setupData.Set(tripos, FlowFieldCellSetupData.DefaultPassable);
             }
             return list;
         }

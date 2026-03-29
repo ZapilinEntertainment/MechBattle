@@ -40,17 +40,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             SceneView.RepaintAll();
         }
 
-        void OnWizardCreate()
-        {
-            foreach (var map in _cachedMaps.Values)
-            {
-                map.Dispose();
-            }
-            _cachedMaps.Clear();
-
-            _cts.Cancel();
-            _cts.Dispose();
-        }
+        void OnWizardCreate() { }
 
         private void OnWizardOtherButton()
         {
@@ -88,7 +78,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                     return;
                 }
 
-                flowMap = await CalculateHexFlowMapCommand.ExecuteAsync(map.GetHexData(hexCoord), caster, cancellationToken);
+                flowMap = await CalculateHexFlowMapCommand.ExecuteAsync(Allocator.Persistent, map.GetHexData(hexCoord), caster, cancellationToken);
 
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -99,14 +89,13 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 _cachedMaps.Add(hexCoord, flowMap);
             }
            
-
             //draw:
             var arrowSize = 0.3f * caster.TriangleHeight;
             foreach (var kvp in flowMap.Data)
             {
                 // direction arrow:
                 var worldPos = TriangularMath.TriangularToWorld(kvp.Key, caster.TriangleHeight);
-                var flowMapCell = kvp.Value[exitEdge];                
+                var flowMapCell = kvp.Value[exitEdge];     
                 if (!flowMapCell.IsPassable && !DrawLocked)
                     continue;
 
@@ -129,11 +118,23 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         void OnEnable()
         {
             SceneView.duringSceneGui += OnSceneGUI;
+
+            _cts ??= new();
         }
 
         void OnDisable()
         {
             SceneView.duringSceneGui -= OnSceneGUI;
+
+            foreach (var map in _cachedMaps.Values)
+            {
+                map.Dispose();
+            }
+            _cachedMaps.Clear();
+
+            _cts.Cancel();
+            _cts.Dispose();
+            _cts= null;
         }
 
         void OnSceneGUI(SceneView sceneView)

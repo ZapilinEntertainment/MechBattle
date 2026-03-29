@@ -6,13 +6,6 @@ using Unity.Jobs;
 
 namespace ZE.MechBattle.Navigation
 {
-    public struct FlowFieldCellSetupData
-    {
-        public bool IsValid;
-        public float EntranceCost;
-        public bool IsPassable => EntranceCost >= 0f;
-    }
-
     public struct FlowFieldCellCalculationData
     {
         public float IntegrationValue;
