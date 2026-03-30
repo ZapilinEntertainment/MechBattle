@@ -26,7 +26,7 @@ namespace ZE.MechBattle.Navigation
 
         public readonly NavigationHexPosition Data;      
 
-        public SquaredHexTrianglesList<NavigationTriangleData> TrianglesData;
+        public SquaredHexTrianglesList<TriangleNavData> TrianglesData;
         private IDisposableFlowMap _flowMap;
 
 
@@ -42,7 +42,7 @@ namespace ZE.MechBattle.Navigation
             Version++;
         }
 
-        public void UpdateTrianglesData(in SquaredHexTrianglesList<NavigationTriangleData> data)
+        public void UpdateTrianglesData(in SquaredHexTrianglesList<TriangleNavData> data)
         {
             TrianglesData = data;
             Version++;

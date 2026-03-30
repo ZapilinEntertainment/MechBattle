@@ -9,8 +9,15 @@ namespace ZE.MechBattle.Navigation
         public const float NAV_OBSTACLES_LOCK_PERCENT = 0.5f;
         public const int MAX_TRIANGLES_PER_EDGE = 32; // NOTE: HexEdgesAccessMap depends on it
 
+
         public const float EDGE_PASS_COST = 1f;
         public const float VERTEX_PASS_COST = 2f;
+
+        public const int PEAK_EDGES_MASK = (1 << (int)PeakNeighbour.EdgeDown) + (1 << (int)PeakNeighbour.EdgeUpLeft) + (1 << (int)PeakNeighbour.EdgeUpRight);
+        public const int VALLEY_EDGES_MASK = (1 << (int)ValleyNeighbour.EdgeDownLeft) + (1 << (int)ValleyNeighbour.EdgeDownRight) + (1 << (int)ValleyNeighbour.EdgeUp);
+
+        public const sbyte DEFAULT_TRIANGLE_ENTRANCE_COST = 1;
+
 
         public const float SQRT_OF_THREE = 1.73205f;
         public const double SQRT_OF_THREE_DBL = 1.732050807568877;
@@ -20,6 +27,8 @@ namespace ZE.MechBattle.Navigation
 
         public const double SQRT_THREE_D_3_DBL = SQRT_OF_THREE_DBL / 3;
         public const float SQRT_THREE_D_3 = SQRT_OF_THREE / 3f;
+
+       
 
         public static QueryParameters GetGroundCastQueryParameters()
         {

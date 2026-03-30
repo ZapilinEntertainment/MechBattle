@@ -51,7 +51,7 @@ namespace ZE.MechBattle.Navigation
             TriangularMath.GetValleyNeighbour(IntTriangularPos.zero, ValleyNeighbour.VertexUpLeftValley),
         };
 
-        [NoAlias, ReadOnly] public SquaredHexTrianglesList<FlowFieldCellSetupData> SetupData;
+        [NoAlias, ReadOnly] public SquaredHexTrianglesList<TriangleNavData> SetupData;
         [NoAlias] public NativeQueue<int> CalculationQueue;
         [NoAlias] public NativeHashSet<int> QueuedPositions;        
         [NoAlias] public NativeArray<FlowFieldCellCalculationData> CalculationData;
@@ -65,8 +65,6 @@ namespace ZE.MechBattle.Navigation
         private const int NEIGHBOURS_COUNT = 12;
         private int _exitFlowDirectionPeak;
         private int _exitFlowDirectionValley;
-        private const int PEAK_EDGES_MASK =  (1 << (int)PeakNeighbour.EdgeDown) + (1 << (int)PeakNeighbour.EdgeUpLeft) + (1 << (int)PeakNeighbour.EdgeUpRight);
-        private const int VALLEY_EDGES_MASK = (1 << (int)ValleyNeighbour.EdgeDownLeft) + (1 << (int)ValleyNeighbour.EdgeDownRight) + (1 << (int)ValleyNeighbour.EdgeUp);
 
         public void Execute()
         {
@@ -155,7 +153,7 @@ namespace ZE.MechBattle.Navigation
                 var vectorsArray = pos.IsPeak ? PeakNeighbours : ValleyNeighbours;
                 var integrationValue = calculationData.IntegrationValue;
 
-                var checkMask = math.select(VALLEY_EDGES_MASK, PEAK_EDGES_MASK, pos.IsPeak);
+                var checkMask = math.select(NavigationConstants.VALLEY_EDGES_MASK, NavigationConstants.PEAK_EDGES_MASK, pos.IsPeak);
                 for (var i = 0; i < NEIGHBOURS_COUNT; i++)
                 {
                     var neighbourPos = pos + vectorsArray[i];

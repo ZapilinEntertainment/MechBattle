@@ -10,7 +10,7 @@ namespace ZE.MechBattle.Navigation
     {
         public static HexPathJobCollections Execute(Allocator allocator, INavigationMap map)
         {
-            var data = new HexPathJobCollections(Allocator.TempJob, map.Hexes.Count);
+            var data = new HexPathJobCollections(allocator, map.Hexes.Count);
             var indicesDictionary = new Dictionary<HexPathNodeKey, int>();
             var indicesSendArray = new int[6];
             var nextIndex = 0;

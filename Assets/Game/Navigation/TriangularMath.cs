@@ -199,5 +199,10 @@ namespace ZE.MechBattle.Navigation
             var world = TriangularToWorld(pos, triangleHeight);
             return HexMath.DefineHex(world.xz, hexEdge);
         }
+
+
+        // explanation: https://www.boristhebrave.com/2021/05/27/some-triangle-grid-extensions/
+        [BurstCompile]
+        public static int CalculateDistance(IntTriangularPos start, IntTriangularPos end) => ( math.abs(start.X - end.X) + math.abs(start.Y - end.Y) + math.abs(start.Z - end.Z)) / 2;
     }
 }

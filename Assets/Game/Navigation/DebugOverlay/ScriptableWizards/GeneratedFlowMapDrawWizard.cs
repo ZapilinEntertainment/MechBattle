@@ -95,8 +95,9 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             {
                 // direction arrow:
                 var worldPos = TriangularMath.TriangularToWorld(kvp.Key, caster.TriangleHeight);
+                var combinedData = kvp.Value;
                 var flowMapCell = kvp.Value[exitEdge];     
-                if (!flowMapCell.IsPassable && !DrawLocked)
+                if (!combinedData.IsPassable && !DrawLocked)
                     continue;
 
                 var vector = TriangularMath.TriangularDirectionToWorld(flowMapCell.Direction, kvp.Key.IsPeak);

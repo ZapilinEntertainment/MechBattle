@@ -66,7 +66,7 @@ namespace ZE.MechBattle.Navigation
 
         private static EdgeAccessData FormEdgeAccessMask<T>(EdgeEnumerator<T> enumerator, NativeHashMap<IntTriangularPos, FlowMapCombinedCell>.ReadOnly combinedCells) where T : struct, IEdgeDirectionLogic
         {
-            var combinedPassabilityMask = 0;
+            var isPassable = false;
             var combinedAccessMask = 0;
 
             foreach (var pos in enumerator)
@@ -74,11 +74,11 @@ namespace ZE.MechBattle.Navigation
                 if (!combinedCells.TryGetValue(pos, out var combinedCell))
                     continue;
 
-                combinedPassabilityMask |= combinedCell.GetCombinedPassabilityMask();
+                isPassable |= combinedCell.IsPassable;
                 combinedAccessMask |= combinedCell.GetCombinedEdgeAccessMask();
             }
 
-            return new EdgeAccessData(isPassable: combinedPassabilityMask != 0, accessMask: combinedAccessMask);
+            return new EdgeAccessData(isPassable: isPassable, accessMask: combinedAccessMask);
         }
     
     }

@@ -27,17 +27,18 @@ namespace ZE.MechBattle.Navigation
         public FlowMapCellData GetValue(int edge, int index) =>
             new(_values[ToLocalIndex(edge, index)]);
 
-        public FlowMapCombinedCell GetCombinedCell(int index) =>
+        public FlowMapCombinedCell GetCombinedCell(int index, TriangleNavData triangleData) =>
             new(
                 _values[ToLocalIndex(0,index)],
                 _values[ToLocalIndex(1, index)],
                 _values[ToLocalIndex(2, index)],
                 _values[ToLocalIndex(3, index)],
                 _values[ToLocalIndex(4, index)],
-                _values[ToLocalIndex(5, index)]
-                );
+                _values[ToLocalIndex(5, index)],
+                triangleData);
 
-        public FlowMapCombinedCell GetCombinedCell(IntTriangularPos tripos) => GetCombinedCell(CoordsConverter.TriangularToIndex(tripos));
+        public FlowMapCombinedCell GetCombinedCell(IntTriangularPos tripos, TriangleNavData triangleData) => 
+            GetCombinedCell(CoordsConverter.TriangularToIndex(tripos), triangleData);
 
         public void Dispose()
         {

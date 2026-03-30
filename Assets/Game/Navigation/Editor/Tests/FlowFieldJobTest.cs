@@ -22,7 +22,7 @@ namespace ZE.MechBattle.Navigation.Tests
             for (var i = 0; i < hexTrisCount; i++)
             {
                 var pos = hexTriangles[i];
-                collectionData.SetupData.Set(pos, FlowFieldCellSetupData.DefaultPassable);
+                collectionData.SetupData.Set(pos, TriangleNavData.CreateDefaultData(true));
             }
 
             var exitEdge = (HexEdge)edgeIndex;

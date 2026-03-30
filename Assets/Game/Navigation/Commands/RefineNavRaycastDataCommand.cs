@@ -14,9 +14,11 @@ namespace ZE.MechBattle.Navigation
             public int ObstaclesCount;
             //public float MaxHeight;
             public float AverageHeight;
+
+            public short GetResultingAverageHeight() => (short)math.round(AverageHeight);
         }
 
-        public static Dictionary<IntTriangularPos, NavigationTriangleData> Execute(NativeArray<RaycastHit>.ReadOnly raycastResults, float intersectionPercentForLock, INavigationCaster caster)
+        public static Dictionary<IntTriangularPos, TriangleNavData> Execute(NativeArray<RaycastHit>.ReadOnly raycastResults, float intersectionPercentForLock, INavigationCaster caster)
         {
             var intersectionsCount = new Dictionary<IntTriangularPos, TriangleRaycastData>();
             for (var i = 0; i < raycastResults.Length; i++)
@@ -38,17 +40,17 @@ namespace ZE.MechBattle.Navigation
                 intersectionsCount[trianglePos] = data;
             }
 
-            var trianglesData = new Dictionary<IntTriangularPos, NavigationTriangleData>();
+            var trianglesData = new Dictionary<IntTriangularPos, TriangleNavData>();
             var raycastsPerTriangle = (float)(caster.RaycastResolution * caster.RaycastResolution);
             foreach (var triKvp in intersectionsCount)
             {
                 var data = triKvp.Value;
                 var isLocked = (data.ObstaclesCount / raycastsPerTriangle) >= intersectionPercentForLock;
-                trianglesData.Add(triKvp.Key, new()
-                {
-                    Height = data.AverageHeight,
-                    IsPassable = !isLocked
-                });
+                trianglesData.Add(triKvp.Key, 
+                    new(
+                        isPassable: !isLocked, 
+                        height: data.GetResultingAverageHeight(), 
+                        entranceCost: NavigationConstants.DEFAULT_TRIANGLE_ENTRANCE_COST));
             }
 
             return trianglesData;

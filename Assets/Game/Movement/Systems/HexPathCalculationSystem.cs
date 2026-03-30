@@ -39,7 +39,6 @@ namespace ZE.MechBattle.Ecs
             if (!_map.IsInitialized)
                 return;
 
-            var jobDataResetRequired = false;
             if (_isTrackingActiveHandle)
             {
                 if (!_activeHandle.IsCompleted)
@@ -52,7 +51,6 @@ namespace ZE.MechBattle.Ecs
                 var path = new HexPath(points, _jobDataCollection.PathCost.Value);
                 _pathsList.AddCalculatedPath(path);
 
-                jobDataResetRequired = true;
             }
 
             if (!_pathsList.TryGetRequestedPath(out var pathKey))
@@ -63,11 +61,6 @@ namespace ZE.MechBattle.Ecs
                 _jobDataCollection?.Dispose();
                 _jobDataCollection = PrepareHexPathJobCollectionsCommand.Execute(Allocator.Persistent, _map);
                 _currentMapVersion = _map.Version;
-            }
-            else
-            {
-                if (jobDataResetRequired)
-                    _jobDataCollection.Reset();
             }
 
             var job = new ConstructHexPathJob()

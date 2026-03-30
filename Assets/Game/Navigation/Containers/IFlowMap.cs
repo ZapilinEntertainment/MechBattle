@@ -9,6 +9,7 @@ namespace ZE.MechBattle.Navigation
         static readonly IFlowMap FullAccess = new FullAccessFlowMap();
 
         bool IsStub { get;}
+
         FlowMapCombinedCell GetCombinedCellData(IntTriangularPos pos);
         HexEdgesAccessMap GetAccessMap();
     }
@@ -20,7 +21,7 @@ namespace ZE.MechBattle.Navigation
         public bool IsStub => true;
         public HexEdgesAccessMap GetAccessMap() => HexEdgesAccessMap.NoWayMap;
 
-        public FlowMapCombinedCell GetCombinedCellData(IntTriangularPos pos) => FlowMapCombinedCell.CreateDefaultCell(pos,false);
+        public FlowMapCombinedCell GetCombinedCellData(IntTriangularPos pos) => FlowMapCombinedCell.CreateDefaultCell(pos, TriangleNavData.CreateDefaultData(false));
     }
 
     public class FullAccessFlowMap : IFlowMap
@@ -28,7 +29,7 @@ namespace ZE.MechBattle.Navigation
         public bool IsStub => true;
         public HexEdgesAccessMap GetAccessMap() => HexEdgesAccessMap.FullAccessMap;
 
-        public FlowMapCombinedCell GetCombinedCellData(IntTriangularPos pos) => FlowMapCombinedCell.CreateDefaultCell(pos, true);
+        public FlowMapCombinedCell GetCombinedCellData(IntTriangularPos pos) => FlowMapCombinedCell.CreateDefaultCell(pos, TriangleNavData.CreateDefaultData(true));
     }
 
     public class StubFlowMap : IDisposableFlowMap
@@ -41,9 +42,10 @@ namespace ZE.MechBattle.Navigation
             _accessMap = accessMap;
         }
 
+
         public HexEdgesAccessMap GetAccessMap() => _accessMap;
 
-        public FlowMapCombinedCell GetCombinedCellData(IntTriangularPos pos) => FlowMapCombinedCell.CreateDefaultCell(pos,true);
+        public FlowMapCombinedCell GetCombinedCellData(IntTriangularPos pos) => FlowMapCombinedCell.CreateDefaultCell(pos, TriangleNavData.CreateDefaultData(true));
 
 
         public void Dispose() { }

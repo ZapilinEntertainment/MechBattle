@@ -12,14 +12,14 @@ namespace ZE.MechBattle.Navigation
     {
         public class NativeCollectionsData : IDisposable
         {
-            public SquaredHexTrianglesList<FlowFieldCellSetupData> SetupData;
+            public SquaredHexTrianglesList<TriangleNavData> SetupData;
             public NativeArray<FlowFieldCellCalculationData> CalculationData;
             public NativeQueue<int> CalculationQueue;
             public NativeHashSet<int> QueuedPositions;
 
             public NativeCollectionsData(Allocator allocator, IntTriangularPos triangularCenterPos, int trianglesRadius )
             {
-                SetupData = new SquaredHexTrianglesList<FlowFieldCellSetupData>(triangularCenterPos, trianglesRadius, allocator);
+                SetupData = new SquaredHexTrianglesList<TriangleNavData>(triangularCenterPos, trianglesRadius, allocator);
                 CalculationQueue = new NativeQueue<int>(allocator);
                 var hexTrianglesCount = TriangularMath.GetTrianglesCountInHex(trianglesRadius);
                 QueuedPositions = new NativeHashSet<int>(hexTrianglesCount / 2, allocator);
@@ -59,7 +59,7 @@ namespace ZE.MechBattle.Navigation
             foreach (var triangleKvp in refinedData)
             {
                 var navdata = triangleKvp.Value;
-                data.Set(triangleKvp.Key, new(navdata));
+                data.Set(triangleKvp.Key, navdata);
             }
 
             if (FlowMapCellData.STRUCTURE_SIZE * 6 * data.Length > 1024 * 900)
@@ -130,7 +130,7 @@ namespace ZE.MechBattle.Navigation
                         continue;
 
                     var calculatedData = calculationData[index];
-                    var cellData = new FlowMapCellData(defaultData.IsPassable, calculatedData.FlowDirection, (ushort)calculatedData.IntegrationValue);
+                    var cellData = new FlowMapCellData(direction: calculatedData.FlowDirection, exitDistance: (ushort)calculatedData.IntegrationValue);
                     compositeMap.SetValue(edge, index, cellData);
                 }
             }
@@ -139,10 +139,11 @@ namespace ZE.MechBattle.Navigation
             for (var i = 0; i < trianglesInHex; i++)
             {
                 var index = hexTriangleIndices[i];
-
-                if (!setupData[index].IsValid)
+                var triangleSetupData = setupData[index];
+                if (!triangleSetupData.IsValid)
                     continue;
-                var compositeCell = compositeMap.GetCombinedCell(index);
+
+                var compositeCell = compositeMap.GetCombinedCell(index, triangleSetupData);
                 resultingData.Add(coordsConverter.IndexToTriangular(index), compositeCell);
             }
 

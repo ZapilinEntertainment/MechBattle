@@ -8,7 +8,7 @@ namespace ZE.MechBattle.Navigation
     {
         public NativeHashMap<int2, HexEdgeNodesData> HexData;
         public NativeHashSet<int> OpenedList;
-        public NativeArray<NavigationHexNodeData> NavigationData;
+        public NativeArray<AstarPathNodeData<HexPathNodeKey>> NavigationData;
         public NativeList<HexPathNodeKey> ResultingData;
         public NativeReference<float> PathCost;
 
@@ -20,19 +20,6 @@ namespace ZE.MechBattle.Navigation
             NavigationData = new( (int)math.ceil(pointsCount * 0.8f), allocator);
             ResultingData = new(pointsCount, allocator);
             PathCost = new(allocator);
-        }
-
-        public void Reset()
-        {
-            var navData = NavigationData;
-            for (var i = 0; i < navData.Length; i++)
-            {
-                var data = navData[i];
-                navData[i] = new(data.NodeKey);
-            }
-
-            OpenedList.Clear();
-            ResultingData.Clear();
         }
 
         public void Dispose()

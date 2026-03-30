@@ -23,55 +23,6 @@ namespace ZE.MechBattle.Navigation.Tests
             }
         }
 
-        [TestCase(true, 0, 256)]
-        [TestCase(false, 8, 0)]
-        public void TestFlowMapCell(bool isPassable, int direction, int distance)
-        {
-            var cell = new FlowMapCellData(isPassable, direction, (ushort)distance);
-            Assert.AreEqual(isPassable, cell.IsPassable, "passable parameter doesnt match");
-            Assert.AreEqual((byte)direction, cell.Direction, "direction parameter doesnt match");
-            Assert.AreEqual((ushort)distance, cell.ExitDistance, "passable parameter doesnt match");
-        }
-
-
-        [TestCase(0,0, 100f, 2)]
-        public async Task FullPassableFlowMapTest(int hexX, int hexY, float hexEdge, int trianglesPerEdge)
-        {
-            var testData = await PrepareTestData(hexX, hexY, hexEdge, trianglesPerEdge);
-            var length = testData.CombinedMap.SingleLength;
-
-            const int PASSABILITY_MASK = 0x3F;
-            var elements = new int[6];
-            var coordsConverter = testData.CombinedMap.CoordsConverter;
-            var hexTrisSet = new HashSet<int>();   
-
-            foreach (var triangle in testData.HexTriangles)
-            {
-                Assert.AreEqual(PASSABILITY_MASK, testData.CombinedMap.GetCombinedCell(triangle).GetCombinedPassabilityMask());
-                hexTrisSet.Add(coordsConverter.TriangularToIndex(triangle));
-            }
-
-            for (var e =1; e < 6; e++)
-            {
-                //Debug.Log((HexEdge)e);
-                for (var i = 0; i < length; i++)
-                {
-                    if (!hexTrisSet.Contains(i))
-                        continue;
-
-                    var pos = coordsConverter.IndexToTriangular(i);
-                    var data = testData.CombinedMap.GetCombinedCell(pos);
-                    var cellData = new FlowMapCellData(data[e]);
-                    //if (pos.IsPeak)
-                    //    Debug.Log($"{pos} : {(PeakNeighbour)cellData.Direction}");
-                   // else
-                   //     Debug.Log($"{pos} : {(ValleyNeighbour)cellData.Direction}");
-                }
-            }
-
-            testData.Dispose();
-        }
-
         private async Awaitable<TestData> PrepareTestData(int hexX, int hexY, float hexEdge, int trianglesPerEdge)
         {
             var data = new TestData();
@@ -81,7 +32,7 @@ namespace ZE.MechBattle.Navigation.Tests
             var hexPos = new NavigationHexPosition(hexX, hexY, hexEdge, triangleHeight);
 
             var allocator = Allocator.Persistent;
-            var setupData = new SquaredHexTrianglesList<FlowFieldCellSetupData>(hexPos.TriangularCenterPos, trianglesPerEdge, allocator);
+            var setupData = new SquaredHexTrianglesList<TriangleNavData>(hexPos.TriangularCenterPos, trianglesPerEdge, allocator);
             var length = setupData.Length;
             var calculationData = new NativeArray<FlowFieldCellCalculationData>(length, allocator);
 
@@ -137,7 +88,7 @@ namespace ZE.MechBattle.Navigation.Tests
                     Assert.IsTrue(flowDirection >=0 && flowDirection < 12, "flow direction incorrect");
                     Assert.IsTrue(cellCalculatedData.IntegrationValue >=0 && cellCalculatedData.IntegrationValue < ushort.MaxValue, "distance incorrect");
 
-                    var cellData = new FlowMapCellData(cellSetupData.IsPassable, flowDirection, (ushort)cellCalculatedData.IntegrationValue);
+                    var cellData = new FlowMapCellData(flowDirection, (ushort)cellCalculatedData.IntegrationValue);
                     Assert.AreEqual(true, cellSetupData.IsPassable, "encoding unsuccessful");
 
                     compositeStorage.SetValue(edge, index, cellData);
@@ -155,16 +106,18 @@ namespace ZE.MechBattle.Navigation.Tests
         }
 
         private NativeArray<IntTriangularPos> PrepareTrianglesData(
-            SquaredHexTrianglesList<FlowFieldCellSetupData> setupData, 
+            SquaredHexTrianglesList<TriangleNavData> setupData, 
             NavigationHexPosition hexPos,
             int trianglesInHex,
             int hexRadius)
         {
             var list = new NativeArray<IntTriangularPos>(trianglesInHex, Allocator.Persistent);
             GetTrianglesInHexCommand.Execute(hexPos.InnerRingTopTriangle, hexRadius, list);
+
+            var passableTriangleData = TriangleNavData.CreateDefaultData(true);
             foreach (var tripos in list)
             {
-                setupData.Set(tripos, FlowFieldCellSetupData.DefaultPassable);
+                setupData.Set(tripos, passableTriangleData);
             }
             return list;
         }

@@ -5,11 +5,11 @@ namespace ZE.MechBattle.Navigation
 {
     public enum NavigationNodeStatus : byte { Undefined, Closed, Opened}
 
-    public struct NavigationHexNodeData
+    public struct AstarPathNodeData<T> where T : unmanaged
     {
-        public readonly HexPathNodeKey NodeKey;       
+        public readonly T NodeKey;       
 
-        public HexPathNodeKey ParentNodeKey;       
+        public T ParentNodeKey;       
         public float PathCost;
         public float HeuristicCost;
         public int StepsCount;
@@ -17,7 +17,7 @@ namespace ZE.MechBattle.Navigation
 
         public float NodeCost => HeuristicCost + PathCost;
 
-        public NavigationHexNodeData(HexPathNodeKey nodeKey)
+        public AstarPathNodeData(T nodeKey)
         {
             NodeKey = nodeKey;
 
@@ -27,5 +27,7 @@ namespace ZE.MechBattle.Navigation
             StepsCount = 0;
             Status = NavigationNodeStatus.Undefined;
         }
+
+        public AstarPathNodeData<T> Reset() => new(NodeKey);
     }
 }

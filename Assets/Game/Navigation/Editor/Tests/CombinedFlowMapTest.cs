@@ -23,9 +23,10 @@ namespace ZE.MechBattle.Navigation.Tests
             var allocator = Allocator.Persistent;
             using var collectionsData = new CalculateHexFlowMapCommand.NativeCollectionsData(allocator, hexPos.TriangularCenterPos, radius);
             var setupData = collectionsData.SetupData;
+            var triangleData = TriangleNavData.CreateDefaultData(true);
             foreach (var triangle in new HexTrianglesEnumerator(hexPos, radius))
             {
-                setupData.Set(triangle, FlowFieldCellSetupData.DefaultPassable);
+                setupData.Set(triangle, triangleData);
             }
 
             if (FlowMapCellData.STRUCTURE_SIZE * 6 * setupData.Length > 1024 * 900)
@@ -97,14 +98,8 @@ namespace ZE.MechBattle.Navigation.Tests
 
                     if (!defaultData.IsPassable)
                         Debug.Log($"{coordsConverter.IndexToTriangular(index)} is not passable when calculate cell data");
-                    var cellData = new FlowMapCellData(defaultData.IsPassable, calculatedData.FlowDirection, (ushort)calculatedData.IntegrationValue);
-                    Assert.AreEqual(defaultData.IsPassable, cellData.IsPassable, "passabilities not match");
-
+                    var cellData = new FlowMapCellData(calculatedData.FlowDirection, (ushort)calculatedData.IntegrationValue);
                     compositeMap.SetValue(edge, index, cellData);
-
-                    var returnedVal = compositeMap.GetValue((int)edge, index);
-                    Assert.IsTrue(cellData.IsPassable, "cell data is not passable");
-                    Assert.AreEqual(cellData.IsPassable, returnedVal.IsPassable, $"returned val not match: {cellData.Direction} : {returnedVal.Direction}");
 
                     settedIndices.Add(new((int)edge, index));
                     //Debug.Log($"handled: {edge}:{index}");
@@ -119,26 +114,20 @@ namespace ZE.MechBattle.Navigation.Tests
                 for (var e = 0; e < 6; e++)
                 {
                     Assert.IsTrue(settedIndices.Contains(new(e, index)), $"{(HexEdge)e}:{index} not handled before!");
-                    Assert.IsTrue(compositeMap.GetValue(e, index).IsPassable, $"composite value {e} not passable");
                 }
             }
 
 
             var resultingData = new NativeHashMap<IntTriangularPos, FlowMapCombinedCell>(trianglesInHex, allocator);
-            var visibilityMask = 0x3F;
             for (var i = 0; i < trianglesInHex; i++)
             {
                 var index = hexTriangleIndices[i];
+                var triangleSetupData = setupData[index];
 
-                if (!setupData[index].IsValid)
+                if (!triangleSetupData.IsValid)
                     continue;
 
-                Assert.IsTrue(setupData[index].IsPassable, "setup data is not passable");
-                var compositeCell = compositeMap.GetCombinedCell(index);
-                resultingData.Add(coordsConverter.IndexToTriangular(index), compositeCell);
-
-                var combinedPassableMask = compositeCell.GetCombinedPassabilityMask();
-                Assert.AreEqual(visibilityMask, combinedPassableMask, $"{coordsConverter.IndexToTriangular(index)} is not fully passable: {combinedPassableMask}");
+                Assert.IsTrue(triangleSetupData.IsPassable, "setup data is not passable");
             }
 
             return resultingData;
