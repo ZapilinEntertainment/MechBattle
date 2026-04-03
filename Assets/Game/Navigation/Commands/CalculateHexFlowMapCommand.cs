@@ -17,9 +17,14 @@ namespace ZE.MechBattle.Navigation
             public NativeQueue<int> CalculationQueue;
             public NativeHashSet<int> QueuedPositions;
 
+            private NativeArray<TriangleNavData> _setupDataArray;
+
             public NativeCollectionsData(Allocator allocator, IntTriangularPos triangularCenterPos, int trianglesRadius )
             {
-                SetupData = new SquaredHexTrianglesList<TriangleNavData>(triangularCenterPos, trianglesRadius, allocator);
+                var coordsConverter = new TrianglesToIndexConverter(triangularCenterPos, trianglesRadius);
+                _setupDataArray = new NativeArray<TriangleNavData>(coordsConverter.ArrayElementsCount, allocator);
+                SetupData = new SquaredHexTrianglesList<TriangleNavData>( _setupDataArray, coordsConverter);
+
                 CalculationQueue = new NativeQueue<int>(allocator);
                 var hexTrianglesCount = TriangularMath.GetTrianglesCountInHex(trianglesRadius);
                 QueuedPositions = new NativeHashSet<int>(hexTrianglesCount / 2, allocator);
@@ -28,7 +33,7 @@ namespace ZE.MechBattle.Navigation
 
             public void Dispose()
             {
-                SetupData.Dispose();
+                _setupDataArray.Dispose();
                 CalculationData.Dispose();
                 CalculationQueue.Dispose();
                 QueuedPositions.Dispose();

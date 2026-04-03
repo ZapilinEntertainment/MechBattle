@@ -18,7 +18,8 @@ namespace ZE.MechBattle.Navigation
                 data.SetupData.Set(tripos, cell.TriangleData);
 
                 var index = coordsConverter.TriangularToIndex(tripos);
-                data.CalculationData[index] = new AstarPathNodeData<IntTriangularPos>(tripos);
+                var calcData = data.CalculationData;
+                calcData[index] = new AstarPathNodeData<IntTriangularPos>(tripos);
             }
 
             return data;

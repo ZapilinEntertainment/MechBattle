@@ -66,14 +66,14 @@ namespace ZE.MechBattle.Navigation
 
 
         // encodes if edge can be reached from current cell (if distance to edge is not invalid)
-        public int GetCombinedEdgeAccessMask()
+        public HexEdgesMask GetCombinedEdgeAccessMask()
         {
             var mask = 0;
             for (var i = 0; i < 6; i++)
             {
                 mask |= ((Values[i] & FlowMapCellData.DISTANCE_MASK) == FlowMapCellData.INVALID_EXIT_DISTANCE) ? 0 : (1 << i);
             }
-            return mask;
+            return new(mask);
         }
 
         [BurstCompile]

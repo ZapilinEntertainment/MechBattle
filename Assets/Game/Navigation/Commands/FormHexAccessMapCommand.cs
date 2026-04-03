@@ -9,9 +9,9 @@ namespace ZE.MechBattle.Navigation
         private readonly struct EdgeAccessData
         {
             public readonly bool IsPassable;
-            public readonly int AccessMask;
+            public readonly uint AccessMask;
 
-            public EdgeAccessData(bool isPassable, int accessMask)
+            public EdgeAccessData(bool isPassable, uint accessMask)
             {
                 IsPassable = isPassable;
                 AccessMask = accessMask;
@@ -67,7 +67,7 @@ namespace ZE.MechBattle.Navigation
         private static EdgeAccessData FormEdgeAccessMask<T>(EdgeEnumerator<T> enumerator, NativeHashMap<IntTriangularPos, FlowMapCombinedCell>.ReadOnly combinedCells) where T : struct, IEdgeDirectionLogic
         {
             var isPassable = false;
-            var combinedAccessMask = 0;
+            uint combinedAccessMask = 0;
 
             foreach (var pos in enumerator)
             {

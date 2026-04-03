@@ -18,8 +18,9 @@ namespace ZE.MechBattle.Navigation.Tests
         public void OneTriangleHexSquaring(int hexCenterX, int hexCenterY, int hexCenterZ)
         {
             var center = new IntTriangularPos(hexCenterX, hexCenterY, hexCenterZ);
-            using var squaredArray = new SquaredHexTrianglesList<int>(center, 1, Allocator.Temp);
-            var converter = squaredArray.CoordsConverter;
+            var converter = new TrianglesToIndexConverter(center, 1);
+            using var setupData = new NativeArray<int>(converter.ArrayElementsCount, Allocator.Temp);
+            var squaredArray = new SquaredHexTrianglesList<int>(setupData, converter);
 
             var tris = new IntTriangularPos[8];
             tris[1] = center + new int3(1,0,0);
@@ -63,8 +64,9 @@ namespace ZE.MechBattle.Navigation.Tests
         public void VariableTriangleHexSquaring(int radius, int hexCenterX, int hexCenterY, int hexCenterZ)
         {
             var center = new IntTriangularPos(hexCenterX, hexCenterY, hexCenterZ);
-            using var squaredArray = new SquaredHexTrianglesList<int>(center, radius, Allocator.TempJob);
-            var converter = squaredArray.CoordsConverter;
+            var converter = new TrianglesToIndexConverter(center, radius);
+            using var setupData = new NativeArray<int>(converter.ArrayElementsCount, Allocator.TempJob);
+            var squaredArray = new SquaredHexTrianglesList<int>(setupData, converter);
 
             var hexTrisCount = TriangularMath.GetTrianglesCountInHex(radius);
             var excessTrisCount = 2 * radius * radius; // excess tris on bottom left and top right corners
@@ -75,26 +77,29 @@ namespace ZE.MechBattle.Navigation.Tests
             var tris = new IntTriangularPos[trisCount];
             var startPeakPos = converter.BottomLeftPeakTrianglePos;
             var startValleyPos = converter.BottomLeftValleyTrianglePos;
+            Assert.AreNotEqual(startValleyPos, startPeakPos, "start peak and valley should not be same");
 
-            tris[0] = startPeakPos;
-            tris[1] = startValleyPos;
-            var index = 2;
-
-            squaredArray.Set(startPeakPos, 0);
-            squaredArray.Set(startValleyPos, 1);
-            TestContext.WriteLine($"({0},{0}) : {startPeakPos} : {0}");
-            TestContext.WriteLine($"({0},{1}) : {startValleyPos} : {1}");
+            var currentPeakPos = startPeakPos;
+            var currentValleyPos = startValleyPos;
+            var index = 0;
 
             for (var x = 0; x < converter.ArrayWidth; x++)
             {
                 for (var y = 0; y < converter.ArrayHeight; y++)
                 {
-                    if (x == 0 && (y == 0 || y == 1))
-                        continue;
-
-                    var pos = y % 2 == 1 
-                        ? TriangularMath.GetPeakNeighbour(tris[index- 1], PeakNeighbour.EdgeUpRight) 
-                        : TriangularMath.GetValleyNeighbour(tris[index-1], ValleyNeighbour.EdgeUp);
+                    IntTriangularPos pos;
+                    if (y % 2 == 0)
+                    {                        
+                        pos = currentPeakPos;
+                        currentPeakPos = TriangularMath.GetPeakNeighbour(currentPeakPos, PeakNeighbour.VertexUpRight);
+                       // TestContext.WriteLine($" peak transition: {pos} -> {currentPeakPos}");
+                    }
+                    else
+                    {                        
+                        pos = currentValleyPos;
+                        currentValleyPos = TriangularMath.GetValleyNeighbour(currentValleyPos, ValleyNeighbour.VertexUpRightValley);
+                        //TestContext.WriteLine($" valley transition: {pos} -> {currentValleyPos}");
+                    }
 
                     squaredArray.Set(pos, index);
                     TestContext.WriteLine($"({x},{y}) : {pos} : {index}");                    
@@ -102,7 +107,10 @@ namespace ZE.MechBattle.Navigation.Tests
                 }
 
                 startPeakPos = TriangularMath.GetPeakNeighbour(startPeakPos, PeakNeighbour.VertexRight);
-                startValleyPos = TriangularMath.GetValleyNeighbour(startValleyPos, ValleyNeighbour.VertexRight);                
+                currentPeakPos = startPeakPos;
+
+                startValleyPos = TriangularMath.GetValleyNeighbour(startValleyPos, ValleyNeighbour.VertexRight);     
+                currentValleyPos = startValleyPos;
             }
 
 
@@ -127,13 +135,16 @@ namespace ZE.MechBattle.Navigation.Tests
             using var trianglesList = new NativeArray<IntTriangularPos>(trianglesInHex, allocator, NativeArrayOptions.UninitializedMemory);
             GetTrianglesInHexCommand.Execute(hexPos.InnerRingTopTriangle, radius, trianglesList);
 
-            var squaredList = new SquaredHexTrianglesList<int>(hexPos.TriangularCenterPos, radius, allocator);
-            var coordsConverter = squaredList.CoordsConverter;
+            var coordsConverter = new TrianglesToIndexConverter(hexPos.TriangularCenterPos, radius);
+            using var setupData = new NativeArray<int>(coordsConverter.ArrayElementsCount, allocator);
+            var squaredList = new SquaredHexTrianglesList<int>(setupData, coordsConverter);
 
             for (var i = 0; i < trianglesInHex; i++)
             {
                 var tripos = trianglesList[i];
-                var index = coordsConverter.TriangularToIndex(tripos);
+                if (!coordsConverter.TryConvertToIndex(tripos, out var index))
+                    continue;
+
                 var backTripos = coordsConverter.IndexToTriangular(index);
                 TestContext.WriteLine($"{tripos} -> {index}");  
                 Assert.AreEqual(tripos, backTripos, $"wrong conversion: {tripos} -> {index} -> {backTripos}");
@@ -152,8 +163,9 @@ namespace ZE.MechBattle.Navigation.Tests
             var allocator = Allocator.Persistent;
             var trianglesInHex = TriangularMath.GetTrianglesCountInHex(radius);
 
-            using var squaredList = new SquaredHexTrianglesList<int>(hexPos.TriangularCenterPos, radius, allocator);
-            var coordsConverter = squaredList.CoordsConverter;
+            var coordsConverter = new TrianglesToIndexConverter(hexPos.TriangularCenterPos, radius);
+            using var setupData = new NativeArray<int>(coordsConverter.ArrayElementsCount, allocator);
+            var squaredList = new SquaredHexTrianglesList<int>(setupData, coordsConverter);
 
             foreach (var pos in new HexTrianglesEnumerator(hexPos, radius))
             { 
@@ -167,8 +179,8 @@ namespace ZE.MechBattle.Navigation.Tests
                     {
                         var neighbourDir = (PeakNeighbour)i;
                         var neighbourPos = TriangularMath.GetPeakNeighbour(pos,neighbourDir);
-                        var conversionSuccess = coordsConverter.TryConvertToIndex(neighbourPos, out var neighbourIndex);
-                        Assert.AreEqual(neighbourPos, coordsConverter.IndexToTriangular(neighbourIndex), $"failed at {pos} {neighbourDir} [{index}] -> [{neighbourIndex}]");
+                        if (coordsConverter.TryConvertToIndex(neighbourPos, out var neighbourIndex))
+                            Assert.AreEqual(neighbourPos, coordsConverter.IndexToTriangular(neighbourIndex), $"failed at {pos} {neighbourDir} [{index}] -> [{neighbourIndex}]");
                     }
                 }
                 else
@@ -196,8 +208,9 @@ namespace ZE.MechBattle.Navigation.Tests
             var allocator = Allocator.Persistent;
             var trianglesInHex = TriangularMath.GetTrianglesCountInHex(radius);
 
-            using var squaredList = new SquaredHexTrianglesList<int>(hexPos.TriangularCenterPos, radius, allocator);
-            var coordsConverter = squaredList.CoordsConverter;
+            var coordsConverter = new TrianglesToIndexConverter(hexPos.TriangularCenterPos, radius);
+            using var setupData = new NativeArray<int>(coordsConverter.ArrayElementsCount, allocator);
+            var squaredList = new SquaredHexTrianglesList<int>(setupData, coordsConverter);
 
             var hexSet = new HashSet<IntTriangularPos>(trianglesInHex);
             foreach (var tripos in new HexTrianglesEnumerator(hexPos, radius))

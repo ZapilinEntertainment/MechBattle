@@ -14,6 +14,9 @@ namespace ZE.MechBattle.Navigation
         public readonly IntTriangularPos BottomLeftPeakTrianglePos;
         public readonly IntTriangularPos BottomLeftValleyTrianglePos;
 
+        public int ArrayElementsCount => ArrayWidth * ArrayHeight;
+        public int HexRadius => ArrayWidth / 2;
+
         public TrianglesToIndexConverter(IntTriangularPos hexCenterInTriangular, int trianglesPerEdge)
         {
             ArrayWidth = trianglesPerEdge * 2; // count only A triangles

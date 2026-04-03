@@ -24,6 +24,7 @@ namespace ZE.MechBattle.Navigation
 
         public static HexEdgesMask operator &(HexEdgesMask a, HexEdgesMask b) => new (a._bitfield.Value & b._bitfield.Value);
         public static HexEdgesMask operator |(HexEdgesMask a, HexEdgesMask b) => new (a._bitfield.Value | b._bitfield.Value);
+        public static uint operator |(uint a, HexEdgesMask b) => a | b._bitfield.Value;
 
         public bool HasOverlapsWith(HexEdgesMask b) => (_bitfield.Value & b._bitfield.Value) != 0;
 

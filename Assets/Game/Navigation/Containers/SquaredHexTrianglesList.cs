@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using Unity.Collections;
 using Unity.Mathematics;
@@ -6,20 +5,18 @@ using System.Runtime.CompilerServices;
 
 namespace ZE.MechBattle.Navigation
 {
-    public struct SquaredHexTrianglesList<T> : IDisposable where T : unmanaged
+    public struct SquaredHexTrianglesList<T> where T : unmanaged
     {
-        public readonly int Length;
-        public readonly TrianglesToIndexConverter CoordsConverter;
+        public int Length => _data.Length;
+        public TrianglesToIndexConverter CoordsConverter { get; private set; }  
 
         private NativeArray<T> _data;
         
 
-        public SquaredHexTrianglesList(IntTriangularPos hexCenterInTriangular, int trianglesPerEdge, Allocator allocator)
+        public SquaredHexTrianglesList(NativeArray<T> data, TrianglesToIndexConverter converter)
         {
-            CoordsConverter = new(hexCenterInTriangular, trianglesPerEdge);
-
-            Length = CoordsConverter.ArrayHeight * CoordsConverter.ArrayWidth;
-            _data = new NativeArray<T>(Length, allocator);            
+            _data = data;
+            CoordsConverter = converter;
         }
 
         public T this[int index]
@@ -62,15 +59,8 @@ namespace ZE.MechBattle.Navigation
                 _data[index] = value;
         }        
 
-        public void Dispose() 
-        {
-            if (_data.IsCreated)
-                _data.Dispose();
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 
-        // todo: add meaning check also
         public bool IsIndexValid(int index) => (uint)index < (uint)Length;
     }
 }

@@ -6,23 +6,34 @@ namespace ZE.MechBattle.Navigation
 {
     public class TriangularPathJobCollections : IDisposable
     {
-        public SquaredHexTrianglesList<TriangleNavData> SetupData;
-        public NativeArray<AstarPathNodeData<IntTriangularPos>> CalculationData;
-        public NativeList<IntTriangularPos> ResultList;
-        public NativeHashSet<int> OpenedList;
+        public SquaredHexTrianglesList<TriangleNavData> SetupData { get; private set; }
+        public NativeArray<AstarPathNodeData<IntTriangularPos>> CalculationData { get; private set; }
+        public NativeList<IntTriangularPos> ResultList { get; private set; }
+        public NativeHashSet<int> OpenedList { get; private set; }
+
+        private readonly NativeArray<TriangleNavData> _setupDataArray;
 
         public TriangularPathJobCollections(Allocator allocator, NavigationHexPosition hexPos, int hexRadius)
         {
             var trisCount = TriangularMath.GetTrianglesCountInHex(hexRadius);
-            SetupData = new(hexPos.TriangularCenterPos, hexRadius, allocator);
             CalculationData = new(SetupData.Length, allocator);
             ResultList = new(trisCount, allocator);
             OpenedList = new(trisCount-1, allocator);
+
+            var coordsConverter = new TrianglesToIndexConverter(hexPos.TriangularCenterPos, hexRadius);
+            _setupDataArray = new NativeArray<TriangleNavData>(coordsConverter.ArrayElementsCount, allocator);
+            SetupData = new SquaredHexTrianglesList<TriangleNavData>(_setupDataArray, coordsConverter);
+        }
+
+        public void ChangeCenter(NavigationHexPosition pos)
+        {
+            var newConverter = new TrianglesToIndexConverter(pos.TriangularCenterPos, SetupData.CoordsConverter.HexRadius);
+            SetupData = new(_setupDataArray, newConverter);
         }
 
         public void Dispose()
         {
-            SetupData.Dispose();
+            _setupDataArray.Dispose();
             CalculationData.Dispose();
             ResultList.Dispose();
             OpenedList.Dispose();

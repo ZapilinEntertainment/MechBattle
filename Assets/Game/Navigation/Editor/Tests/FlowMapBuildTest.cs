@@ -32,16 +32,19 @@ namespace ZE.MechBattle.Navigation.Tests
             var hexPos = new NavigationHexPosition(hexX, hexY, hexEdge, triangleHeight);
 
             var allocator = Allocator.Persistent;
-            var setupData = new SquaredHexTrianglesList<TriangleNavData>(hexPos.TriangularCenterPos, trianglesPerEdge, allocator);
+
+            var coordsConverter = new TrianglesToIndexConverter(hexPos.TriangularCenterPos, trianglesPerEdge);
+            var setupData = new NativeArray<TriangleNavData>(coordsConverter.ArrayElementsCount, allocator);
+            var squaredArray = new SquaredHexTrianglesList<TriangleNavData>(setupData, coordsConverter);
+
             var length = setupData.Length;
             var calculationData = new NativeArray<FlowFieldCellCalculationData>(length, allocator);
 
-            data.HexTriangles = PrepareTrianglesData(setupData, hexPos, hexTrianglesCount, trianglesPerEdge);
+            data.HexTriangles = PrepareTrianglesData(squaredArray, hexPos, hexTrianglesCount, trianglesPerEdge);
 
             var CalculationQueue = new NativeQueue<int>(allocator);
             var QueuedPositions = new NativeHashSet<int>(hexTrianglesCount / 2, allocator);
 
-            var coordsConverter = setupData.CoordsConverter;
             var compositeStorage = new CombinedFlowMapCellsStorage(length, coordsConverter);
             data.CombinedMap = compositeStorage;
             
@@ -50,7 +53,7 @@ namespace ZE.MechBattle.Navigation.Tests
                 var edge = (HexEdge)i;
                 var job = new GenerateFlowFieldJob()
                 {
-                    SetupData = setupData,
+                    SetupData = squaredArray,
                     CalculationData = calculationData,
                     HexData = hexPos,
                     CalculationQueue = CalculationQueue,

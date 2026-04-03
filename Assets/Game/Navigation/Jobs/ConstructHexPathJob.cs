@@ -38,6 +38,7 @@ namespace ZE.MechBattle.Navigation
             {
                 NavigationData[i] = NavigationData[i].Reset();
             }
+            PathCost.Value = 0f;
 
 
             //Debug.Log($"navigation data length: {NavigationData.Length}");
