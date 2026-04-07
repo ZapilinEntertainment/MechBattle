@@ -107,17 +107,20 @@ namespace ZE.MechBattle.Navigation.Tests
             map.AddHex(new int2(2, -2));
             map.AddHex(new int2(2, -1));
 
-            var flowMap = new StubFlowMap(HexEdgesAccessMap.FullAccessMap.SetEdgePassable(HexEdge.BottomRight, false));
+            var flowMap = new StubFlowMap(map, HexEdgesAccessMap.FullAccessMap.SetEdgePassable(HexEdge.BottomRight, false), true);
+            var fullyPassableMap = StubFlowMap.CreateFullPassableMap(map);
 
             map.UpdateHexFlowMap(int2.zero, flowMap);
-            map.UpdateHexFlowMap(new int2(1, 0), new StubFlowMap(HexEdgesAccessMap.FullAccessMap));
-            map.UpdateHexFlowMap(new int2(1, -1), new StubFlowMap(HexEdgesAccessMap.FullAccessMap));
-            map.UpdateHexFlowMap(new int2(2, -2), new StubFlowMap(HexEdgesAccessMap.FullAccessMap));
+            map.UpdateHexFlowMap(new int2(1, 0), fullyPassableMap);
+            map.UpdateHexFlowMap(new int2(1, -1), fullyPassableMap);
+            map.UpdateHexFlowMap(new int2(2, -2), fullyPassableMap);
 
             flowMap = new StubFlowMap(
+                map,
                     HexEdgesAccessMap.FullAccessMap
                     .SetEdgePassable(HexEdge.TopLeft, false)
-                    .SetEdgePassable(HexEdge.BottomLeft, false));
+                    .SetEdgePassable(HexEdge.BottomLeft, false),
+                    true);
             map.UpdateHexFlowMap(new int2(2, -1), flowMap);
 
             var jobData = PrepareHexPathJobCollectionsCommand.Execute(Allocator.TempJob, map);

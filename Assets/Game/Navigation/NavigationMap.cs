@@ -50,7 +50,7 @@ namespace ZE.MechBattle.Navigation
             if (TryGetHex(hexCoord, out var hex) && hex.FlowMap != null)
                 return hex.FlowMap;
 
-            return Settings.UnscannedSurfacesArePassable ? IFlowMap.FullAccess : IFlowMap.NoWay;
+            return Settings.UnscannedSurfacesArePassable ? StubFlowMap.CreateFullPassableMap(this) : StubFlowMap.CreateFullBlockedMap(this);
         }
 
         public void UpdateHexFlowMap(int2 hexCoord, IDisposableFlowMap flowMap)

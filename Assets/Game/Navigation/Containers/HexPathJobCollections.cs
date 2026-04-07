@@ -17,7 +17,7 @@ namespace ZE.MechBattle.Navigation
             var pointsCount = hexesCount * 6;
             HexData = new(pointsCount, allocator);
             OpenedList = new(pointsCount - 1, allocator);
-            NavigationData = new( (int)math.ceil(pointsCount * 0.8f), allocator);
+            NavigationData = new( pointsCount, allocator);
             ResultingData = new(pointsCount, allocator);
             PathCost = new(allocator);
         }

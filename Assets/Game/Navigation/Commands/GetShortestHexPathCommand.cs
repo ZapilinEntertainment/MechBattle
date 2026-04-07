@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
@@ -22,15 +24,16 @@ namespace ZE.MechBattle.Navigation
             public static PathfindResult Failed => new();
         }
 
-        public static async Awaitable<PathfindResult> Execute(
-            IntTriangularPos start, 
-            IntTriangularPos end, 
-            INavigationMap map, 
-            HexPathJobCollections hexPathJobData)
+        public static async Task<PathfindResult> ExecuteAsync(
+           IntTriangularPos start,
+           IntTriangularPos end,
+           INavigationMap map,
+           HexPathJobCollections hexPathJobData,
+           CancellationToken cancellationToken)
         {
             var startHex = TriangularMath.TriangularToHex(start, map.TriangleHeight, map.HexEdgeSize);
             var endHex = TriangularMath.TriangularToHex(end, map.TriangleHeight, map.HexEdgeSize);
-            
+
             var startHexFlowMap = map.GetFlowMap(startHex);
             var endHexFlowMap = map.GetFlowMap(endHex);
 
@@ -49,7 +52,7 @@ namespace ZE.MechBattle.Navigation
                 if (!startPointEdgesAccessMask.IsEdgePresented(startEdge)
                     || !startHexAccessMap.IsEdgePassable(startEdge))
                     continue;
-                
+
                 for (var endEdge = 0; endEdge < 6; endEdge++)
                 {
                     if (!endPointEdgesAccessMask.IsEdgePresented(endEdge)
@@ -70,8 +73,11 @@ namespace ZE.MechBattle.Navigation
                     var handle = hexPathJob.ScheduleByRef();
                     while (!handle.IsCompleted)
                     {
-                        await Awaitable.NextFrameAsync();
+                        await Task.Delay(100);
                     }
+                    handle.Complete();
+                    if (cancellationToken.IsCancellationRequested)
+                        return default;
 
                     if (hexPathJob.PathCost.Value < minCost)
                     {
@@ -93,6 +99,5 @@ namespace ZE.MechBattle.Navigation
 
             return new(results);
         }
-
     }
 }

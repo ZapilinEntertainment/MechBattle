@@ -1,4 +1,3 @@
-using UnityEngine;
 using Unity.Mathematics;
 using Unity.Burst;
 using Unity.Collections;
@@ -19,37 +18,6 @@ namespace ZE.MechBattle.Navigation
     [BurstCompile]
     public struct GenerateFlowFieldJob : IJob
     {
-        public static readonly IntTriangularPos[] PeakNeighbours = new IntTriangularPos[12]
-     {
-            TriangularMath.GetPeakNeighbour(IntTriangularPos.zero, PeakNeighbour.VertexUp),
-            TriangularMath.GetPeakNeighbour(IntTriangularPos.zero, PeakNeighbour.VertexUpRight),
-            TriangularMath.GetPeakNeighbour(IntTriangularPos.zero, PeakNeighbour.EdgeUpRight),
-            TriangularMath.GetPeakNeighbour(IntTriangularPos.zero, PeakNeighbour.VertexRight),
-            TriangularMath.GetPeakNeighbour(IntTriangularPos.zero, PeakNeighbour.VertexDownRightValley),
-            TriangularMath.GetPeakNeighbour(IntTriangularPos.zero, PeakNeighbour.VertexDownRightPeak),
-            TriangularMath.GetPeakNeighbour(IntTriangularPos.zero, PeakNeighbour.EdgeDown),
-            TriangularMath.GetPeakNeighbour(IntTriangularPos.zero, PeakNeighbour.VertexDownLeftPeak),
-            TriangularMath.GetPeakNeighbour(IntTriangularPos.zero, PeakNeighbour.VertexDownLeftValley),
-            TriangularMath.GetPeakNeighbour(IntTriangularPos.zero, PeakNeighbour.VertexLeft),
-            TriangularMath.GetPeakNeighbour(IntTriangularPos.zero, PeakNeighbour.EdgeUpLeft),
-            TriangularMath.GetPeakNeighbour(IntTriangularPos.zero, PeakNeighbour.VertexUpLeft),
-     };
-
-        public static readonly IntTriangularPos[] ValleyNeighbours = new IntTriangularPos[12]
-        {
-            TriangularMath.GetValleyNeighbour(IntTriangularPos.zero, ValleyNeighbour.EdgeUp),
-            TriangularMath.GetValleyNeighbour(IntTriangularPos.zero, ValleyNeighbour.VertexUpRightValley),
-            TriangularMath.GetValleyNeighbour(IntTriangularPos.zero, ValleyNeighbour.VertexUpRightPeak),
-            TriangularMath.GetValleyNeighbour(IntTriangularPos.zero, ValleyNeighbour.VertexRight),
-            TriangularMath.GetValleyNeighbour(IntTriangularPos.zero, ValleyNeighbour.EdgeDownRight),
-            TriangularMath.GetValleyNeighbour(IntTriangularPos.zero, ValleyNeighbour.VertexDownRight),
-            TriangularMath.GetValleyNeighbour(IntTriangularPos.zero, ValleyNeighbour.VertexDown),
-            TriangularMath.GetValleyNeighbour(IntTriangularPos.zero, ValleyNeighbour.VertexDownLeft),
-            TriangularMath.GetValleyNeighbour(IntTriangularPos.zero, ValleyNeighbour.EdgeDownLeft),
-            TriangularMath.GetValleyNeighbour(IntTriangularPos.zero, ValleyNeighbour.VertexLeft),
-            TriangularMath.GetValleyNeighbour(IntTriangularPos.zero, ValleyNeighbour.VertexUpLeftPeak),
-            TriangularMath.GetValleyNeighbour(IntTriangularPos.zero, ValleyNeighbour.VertexUpLeftValley),
-        };
 
         [NoAlias, ReadOnly] public SquaredHexTrianglesList<TriangleNavData> SetupData;
         [NoAlias] public NativeQueue<int> CalculationQueue;
@@ -94,16 +62,16 @@ namespace ZE.MechBattle.Navigation
         {
             switch (ExitEdge)
             {
-                case HexEdge.TopRight: SetupExitCells<TopRightEdgeLogic>(new(TrianglesPerEdge, HexData)); break;
-                case HexEdge.BottomRight: SetupExitCells<BottomRightEdgeLogic>(new(TrianglesPerEdge, HexData)); break;
-                case HexEdge.Bottom: SetupExitCells<BottomEdgeLogic>(new(TrianglesPerEdge, HexData)); break;
-                case HexEdge.BottomLeft: SetupExitCells<BottomLeftEdgeLogic>(new(TrianglesPerEdge, HexData)); break;
-                case HexEdge.TopLeft: SetupExitCells<TopLeftEdgeLogic>(new(TrianglesPerEdge, HexData)); break;
-                default: SetupExitCells<TopEdgeLogic>(new(TrianglesPerEdge, HexData)); break;
+                case HexEdge.TopRight: SetupExitCells<TopRightEdgeEnumerationLogic>(new(TrianglesPerEdge, HexData)); break;
+                case HexEdge.BottomRight: SetupExitCells<BottomRightEdgeEnumerationLogic>(new(TrianglesPerEdge, HexData)); break;
+                case HexEdge.Bottom: SetupExitCells<BottomEdgeEnumerationLogic>(new(TrianglesPerEdge, HexData)); break;
+                case HexEdge.BottomLeft: SetupExitCells<BottomLeftEdgeEnumerationLogic>(new(TrianglesPerEdge, HexData)); break;
+                case HexEdge.TopLeft: SetupExitCells<TopLeftEdgeEnumerationLogic>(new(TrianglesPerEdge, HexData)); break;
+                default: SetupExitCells<TopEdgeEnumerationLogic>(new(TrianglesPerEdge, HexData)); break;
             }
         }
 
-        void SetupExitCells<T>(EdgeEnumerator<T> enumerator) where T : struct, IEdgeDirectionLogic
+        void SetupExitCells<T>(EdgeEnumerator<T> enumerator) where T : struct, IEdgeEnumerationLogic
         {
             foreach (var pos in enumerator)
             {
@@ -148,15 +116,14 @@ namespace ZE.MechBattle.Navigation
             {
                 var index = Dequeue();
                 var pos = _coordsConverter.IndexToTriangular(index);
+                var isPeak = pos.IsPeak;
                 var calculationData = CalculationData[index];
 
-                var vectorsArray = pos.IsPeak ? PeakNeighbours : ValleyNeighbours;
                 var integrationValue = calculationData.IntegrationValue;
 
-                var checkMask = math.select(NavigationConstants.VALLEY_EDGES_MASK, NavigationConstants.PEAK_EDGES_MASK, pos.IsPeak);
                 for (var i = 0; i < NEIGHBOURS_COUNT; i++)
                 {
-                    var neighbourPos = pos + vectorsArray[i];
+                    var neighbourPos = pos + TriangularMath.GetNeighbourByDirection(pos, i);
 
                     if (!_coordsConverter.TryConvertToIndex(neighbourPos, out var neighbourIndex))
                         continue;
@@ -165,11 +132,10 @@ namespace ZE.MechBattle.Navigation
                     if (!neighbourSetupData.IsValid | !neighbourSetupData.IsPassable)
                         continue;
                     
-                    var isEdge = ((checkMask & (1 << i)) != 0);
-                    var stepCf =  math.select(NavigationConstants.VERTEX_PASS_COST, NavigationConstants.EDGE_PASS_COST, isEdge);
+                    var cost = TriangularMath.GetTransitionCost(i, isPeak);
 
                     var neighbourCalculationData = CalculationData[neighbourIndex];
-                    var newIntegrationValue = integrationValue + neighbourSetupData.EntranceCost * stepCf;
+                    var newIntegrationValue = integrationValue + neighbourSetupData.EntranceCost * cost;
                     if (newIntegrationValue < neighbourCalculationData.IntegrationValue)
                     {
                         neighbourCalculationData.IntegrationValue = newIntegrationValue;
@@ -193,13 +159,13 @@ namespace ZE.MechBattle.Navigation
                 // however, fill blocked cells - for cases, when unit moved off-grid
 
                 var pos = _coordsConverter.IndexToTriangular(i);
-                var vectors = pos.IsPeak ? PeakNeighbours : ValleyNeighbours;
                 var direction = 0;
                 var minIntegration = float.MaxValue;
+                var isPeak = pos.IsPeak;
 
                 for (var j = 0; j < NEIGHBOURS_COUNT; j++)
                 {
-                    var neighbourPos = (pos + vectors[j]);
+                    var neighbourPos = pos + TriangularMath.GetNeighbourByDirection(pos, j);
                     if (!SetupData.TryGetIndex(neighbourPos, out var neighbourDataIndex))
                         continue;
 
@@ -214,6 +180,7 @@ namespace ZE.MechBattle.Navigation
                     direction = math.select(direction, j, isNewMinIntegration);
                 }
 
+                //UnityEngine.Debug.Log(minIntegration);
                 var isLesserValueFound = minIntegration < calculationData.IntegrationValue;
                 calculationData.FlowDirection = math.select(calculationData.FlowDirection, direction, isLesserValueFound);
                 calculationData.IsCalculated = true;

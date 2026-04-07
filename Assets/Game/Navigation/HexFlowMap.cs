@@ -27,5 +27,7 @@ namespace ZE.MechBattle.Navigation
         }
 
         public FlowMapCombinedCell GetCombinedCellData(IntTriangularPos pos) => _data[pos];
+
+        public bool IsCellPassable(IntTriangularPos pos) => _data[pos].IsPassable;
     }
 }

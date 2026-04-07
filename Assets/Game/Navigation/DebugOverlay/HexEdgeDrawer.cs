@@ -44,16 +44,16 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         {
             switch (edge)
             {
-                case HexEdge.TopRight: PreparePointsList<TopRightEdgeLogic>(new(_trianglesPerEdge, hex)); break;
-                case HexEdge.BottomRight: PreparePointsList<BottomRightEdgeLogic>(new(_trianglesPerEdge, hex)); break;
-                case HexEdge.Bottom: PreparePointsList<BottomEdgeLogic>(new(_trianglesPerEdge, hex)); break;
-                case HexEdge.BottomLeft: PreparePointsList<BottomLeftEdgeLogic>(new(_trianglesPerEdge, hex)); break;
-                case HexEdge.TopLeft: PreparePointsList<TopLeftEdgeLogic>(new(_trianglesPerEdge, hex)); break;
-                default: PreparePointsList<TopEdgeLogic>(new(_trianglesPerEdge, hex)); break;
+                case HexEdge.TopRight: PreparePointsList<TopRightEdgeEnumerationLogic>(new(_trianglesPerEdge, hex)); break;
+                case HexEdge.BottomRight: PreparePointsList<BottomRightEdgeEnumerationLogic>(new(_trianglesPerEdge, hex)); break;
+                case HexEdge.Bottom: PreparePointsList<BottomEdgeEnumerationLogic>(new(_trianglesPerEdge, hex)); break;
+                case HexEdge.BottomLeft: PreparePointsList<BottomLeftEdgeEnumerationLogic>(new(_trianglesPerEdge, hex)); break;
+                case HexEdge.TopLeft: PreparePointsList<TopLeftEdgeEnumerationLogic>(new(_trianglesPerEdge, hex)); break;
+                default: PreparePointsList<TopEdgeEnumerationLogic>(new(_trianglesPerEdge, hex)); break;
             }
         }
 
-        private void PreparePointsList<T>(EdgeEnumerator<T> enumerator) where T : struct, IEdgeDirectionLogic
+        private void PreparePointsList<T>(EdgeEnumerator<T> enumerator) where T : struct, IEdgeEnumerationLogic
         {
             foreach (var pos in enumerator)
             {

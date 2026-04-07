@@ -94,7 +94,7 @@ namespace ZE.MechBattle.Navigation.Tests
                 }
                 TestContext.WriteLine();
 
-                var enumerable = edge.GetEnumerable(hexRadius, hexPos);
+                var enumerable = edge.GetEdgeEnumerable(hexRadius, hexPos);
                 foreach (var tripos in enumerable)
                 {
                     if (!set.ContainsKey(tripos))

@@ -5,49 +5,42 @@ namespace ZE.MechBattle.Navigation
 {
     public interface IFlowMap
     {
-        static readonly IFlowMap NoWay = new NoWayFlowMap();
-        static readonly IFlowMap FullAccess = new FullAccessFlowMap();
-
         bool IsStub { get;}
 
+        bool IsCellPassable(IntTriangularPos pos);
         FlowMapCombinedCell GetCombinedCellData(IntTriangularPos pos);
         HexEdgesAccessMap GetAccessMap();
     }
 
     public interface IDisposableFlowMap : IFlowMap, IDisposable { }
 
-    public class NoWayFlowMap : IFlowMap
-    {
-        public bool IsStub => true;
-        public HexEdgesAccessMap GetAccessMap() => HexEdgesAccessMap.NoWayMap;
-
-        public FlowMapCombinedCell GetCombinedCellData(IntTriangularPos pos) => FlowMapCombinedCell.CreateDefaultCell(pos, TriangleNavData.CreateDefaultData(false));
-    }
-
-    public class FullAccessFlowMap : IFlowMap
-    {
-        public bool IsStub => true;
-        public HexEdgesAccessMap GetAccessMap() => HexEdgesAccessMap.FullAccessMap;
-
-        public FlowMapCombinedCell GetCombinedCellData(IntTriangularPos pos) => FlowMapCombinedCell.CreateDefaultCell(pos, TriangleNavData.CreateDefaultData(true));
-    }
-
     public class StubFlowMap : IDisposableFlowMap
     {
         public bool IsStub => true;
         private readonly HexEdgesAccessMap _accessMap;
+        private readonly INavigationMap _map;
+        private readonly bool _defaultPassability;
 
-        public StubFlowMap(HexEdgesAccessMap accessMap)
+        public StubFlowMap(INavigationMap map, HexEdgesAccessMap accessMap, bool defaultPassability)
         {
+            _map = map;
             _accessMap = accessMap;
+            _defaultPassability = defaultPassability;
         }
 
 
+        public bool IsCellPassable(IntTriangularPos pos) => _defaultPassability;
         public HexEdgesAccessMap GetAccessMap() => _accessMap;
 
-        public FlowMapCombinedCell GetCombinedCellData(IntTriangularPos pos) => FlowMapCombinedCell.CreateDefaultCell(pos, TriangleNavData.CreateDefaultData(true));
-
+        public FlowMapCombinedCell GetCombinedCellData(IntTriangularPos pos) =>
+            FlowMapCombinedCell.CreateDefaultCell(
+                pos,
+                TriangleNavData.CreateDefaultData(_defaultPassability),
+                _map);
 
         public void Dispose() { }
+
+        public static StubFlowMap CreateFullPassableMap(INavigationMap map) => new(map, HexEdgesAccessMap.FullAccessMap, true);
+        public static StubFlowMap CreateFullBlockedMap(INavigationMap map) => new(map, HexEdgesAccessMap.NoWayMap, false);
     }
 }

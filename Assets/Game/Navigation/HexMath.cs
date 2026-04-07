@@ -114,6 +114,5 @@ namespace ZE.MechBattle.Navigation
 
             return new int2(rx, rz);
         }
-
     }
 }

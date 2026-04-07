@@ -1,4 +1,3 @@
-using UnityEngine;
 using Unity.Burst;
 using Unity.Jobs;
 using Unity.Collections;
@@ -18,8 +17,6 @@ namespace ZE.MechBattle.Navigation
         [NoAlias] public NativeArray<AstarPathNodeData<IntTriangularPos>> CalculationData;
         [NoAlias] public NativeList<IntTriangularPos> ResultList;
         [NoAlias] public NativeHashSet<int> OpenedList;
-        private const int EDGE_PASS_COST = 1;
-        private const int VERTEX_PASS_COST = 2;
 
         public void Execute()
         {
@@ -33,9 +30,9 @@ namespace ZE.MechBattle.Navigation
 
             if (!SetupData.TryGetIndex(Start, out var startTriangleIndex))
             {
-                #if UNITY_EDITOR
-                Debug.Log("start pos not valid");
-                #endif
+#if UNITY_EDITOR
+                UnityEngine.Debug.Log("start pos not valid");
+#endif
                 return;
             }    
 
@@ -51,6 +48,8 @@ namespace ZE.MechBattle.Navigation
 
             // start
             AstarLogic.SetupStartCell(startTriangleIndex, CalculationData);
+
+
             HandleNeighbours(Start, startTriangleIndex);
 
             do
@@ -82,15 +81,16 @@ namespace ZE.MechBattle.Navigation
         {
             var activeNodeData = CalculationData[index];
             var coordsConverter = SetupData.CoordsConverter;
-            for (var i = 0; i < 12; i++)
+            var isPeak = pos.IsPeak;
+
+            for (var neighbourDirection = 0; neighbourDirection < 12; neighbourDirection++)
             {
-                var neighbourPos = TriangularMath.GetNeighbourByDirection(pos, i);
+                var neighbourPos = TriangularMath.GetNeighbourByDirection(pos, neighbourDirection);
                 var data = SetupData.GetValidOrDefault(neighbourPos);
                 if (!data.IsValid | !data.IsPassable)
                     continue;
 
-                var edgesMask = math.select(VERTEX_PASS_COST, EDGE_PASS_COST, neighbourPos.IsPeak);
-                var cost = math.select(VERTEX_PASS_COST, EDGE_PASS_COST, ((1 << i) & edgesMask) != 0);
+                var cost = TriangularMath.GetTransitionCost(neighbourDirection, isPeak);
                 AstarLogic.HandleNeighbour(activeNodeData, coordsConverter.TriangularToIndex(neighbourPos), OpenedList, CalculationData, cost);
             }
         }
@@ -112,15 +112,7 @@ namespace ZE.MechBattle.Navigation
                 ResultList[i--] = currentPos;
                 var data = CalculationData[coordsConverter.TriangularToIndex(currentPos)];
                 currentPos = data.ParentNodeKey;
-            }
-
-            for (var j = 0; j < CalculationData.Length; j++)
-            {
-                var setupData = SetupData[j];
-                if (setupData.IsValid)
-                    continue;
-
-                //Debug.Log($"{coordsConverter.IndexToTriangular(j)}: {CalculationData[j].PathCost}");
+                //UnityEngine.Debug.Log(data.PathCost);
             }
         }
     }

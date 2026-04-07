@@ -12,7 +12,7 @@ namespace ZE.MechBattle.Navigation
         {
             var data = new HexPathJobCollections(allocator, map.Hexes.Count);
             var indicesDictionary = new Dictionary<HexPathNodeKey, int>();
-            var indicesSendArray = new int[6];
+            var currentHexEdgeDataIndices = new int[6];
             var nextIndex = 0;
             foreach (var hexPos in map.HexCoords)
             {
@@ -26,23 +26,25 @@ namespace ZE.MechBattle.Navigation
                     if (indicesDictionary.TryGetValue(key.ToOpposite(), out var alreadyAddedIndex))
                     {
                         // already presented by opposite edge
-                        indicesSendArray[edgeIndex] = alreadyAddedIndex;
+                        currentHexEdgeDataIndices[edgeIndex] = alreadyAddedIndex;
                         continue;
                     }
 
                     if (!accessMap.IsEdgePassable(edgeIndex))
                     {
-                        indicesSendArray[edgeIndex] = HexEdgeNodesData.INVALID_INDEX;
+                        currentHexEdgeDataIndices[edgeIndex] = HexEdgeNodesData.INVALID_INDEX;
                         continue;
                     }
 
                     var index = nextIndex++;
-                    indicesDictionary.Add(key, edgeIndex);
-                    indicesSendArray[edgeIndex] = index;
+                    indicesDictionary.Add(key, index);
+                    currentHexEdgeDataIndices[edgeIndex] = index;
+                    //Debug.Log($"{index} : {hexPos} : {edgeIndex}");
+
                     data.NavigationData[index] = new(new(hexPos, edgeIndex));
                 }
 
-                data.HexData.Add(hexPos, new(indicesSendArray, accessMap));                
+                data.HexData.Add(hexPos, new(currentHexEdgeDataIndices, accessMap));                
             }
 
             return data;

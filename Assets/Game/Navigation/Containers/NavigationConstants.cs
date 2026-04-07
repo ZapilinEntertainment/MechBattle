@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 namespace ZE.MechBattle.Navigation
 {
@@ -11,10 +12,12 @@ namespace ZE.MechBattle.Navigation
 
 
         public const float EDGE_PASS_COST = 1f;
-        public const float VERTEX_PASS_COST = 2f;
+        public const float VERTEX_PASS_COST = 2.01f;
+        public const float LONG_VERTEX_PASS_COST = SQRT_OF_THREE;
 
-        public const int PEAK_EDGES_MASK = (1 << (int)PeakNeighbour.EdgeDown) + (1 << (int)PeakNeighbour.EdgeUpLeft) + (1 << (int)PeakNeighbour.EdgeUpRight);
-        public const int VALLEY_EDGES_MASK = (1 << (int)ValleyNeighbour.EdgeDownLeft) + (1 << (int)ValleyNeighbour.EdgeDownRight) + (1 << (int)ValleyNeighbour.EdgeUp);
+        //public const int PEAK_EDGES_MASK = (1 << (int)PeakNeighbour.EdgeDown) + (1 << (int)PeakNeighbour.EdgeUpLeft) + (1 << (int)PeakNeighbour.EdgeUpRight);
+       // public const int PEAK_LONG_VERTEX_MASK = (1 << (int)PeakNeighbour.EdgeUpRight) + (1 << (int)PeakNeighbour.VertexRight) + (1 << (int)PeakNeighbour.VertexDownRightPeak) + ()
+       // public const int VALLEY_EDGES_MASK = (1 << (int)ValleyNeighbour.EdgeDownLeft) + (1 << (int)ValleyNeighbour.EdgeDownRight) + (1 << (int)ValleyNeighbour.EdgeUp);
 
         public const sbyte DEFAULT_TRIANGLE_ENTRANCE_COST = 1;
 
@@ -27,7 +30,6 @@ namespace ZE.MechBattle.Navigation
 
         public const double SQRT_THREE_D_3_DBL = SQRT_OF_THREE_DBL / 3;
         public const float SQRT_THREE_D_3 = SQRT_OF_THREE / 3f;
-
        
 
         public static QueryParameters GetGroundCastQueryParameters()
@@ -37,6 +39,5 @@ namespace ZE.MechBattle.Navigation
         }
 
         public const string OBSTACLE_TAG = "Obstacle";
-    
     }
 }

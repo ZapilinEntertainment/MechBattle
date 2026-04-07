@@ -18,7 +18,7 @@ namespace ZE.MechBattle.Navigation
 
         
         [ShowInInspector]
-        private float TriangleEdgeSize => HexEdgeSize / TrianglesPerHexEdge;
+        public float TriangleEdgeSize => HexEdgeSize / TrianglesPerHexEdge;
        public float TriangleHeight => TriangleEdgeSize * NavigationConstants.SQRT_OF_THREE_HALVED;
         public MapSettings ToStruct() => new MapSettings(this);
     }
@@ -36,7 +36,7 @@ namespace ZE.MechBattle.Navigation
         public readonly float2 TopRightCorner;
         public readonly bool UnscannedSurfacesArePassable;
 
-        private readonly float TriangleEdgeSize;
+        public readonly float TriangleEdgeSize;
 
         public MapSettings(MapSettingsSO so)
         {
@@ -52,21 +52,26 @@ namespace ZE.MechBattle.Navigation
             TriangleHeight = TriangleEdgeSize * NavigationConstants.SQRT_OF_THREE_HALVED;
         }
 
-        private MapSettings(float hexEdge, int trianglesPerEdge)
+        public MapSettings(
+            float hexEdge, 
+            int trianglesPerEdge, 
+            bool unscannedSurfacesArePassable = false, 
+            float intersectionPercentForLock = 0.5f,
+            int raycastSubdivisionPerEdge = 4)
         {
             TrianglesPerHexEdge = trianglesPerEdge;
             HexEdgeSize = hexEdge;
 
-            IntersectionPercentForLock = 0.5f;
-            RaycastSubdivisionsPerEdge = 4;
+            IntersectionPercentForLock = intersectionPercentForLock;
+            RaycastSubdivisionsPerEdge = raycastSubdivisionPerEdge;
             BottomLeftCorner = new(-500f, 500f);
             TopRightCorner = new (500f, 500f);
-            UnscannedSurfacesArePassable = false;
+            UnscannedSurfacesArePassable = unscannedSurfacesArePassable;
 
             TriangleEdgeSize = HexEdgeSize / TrianglesPerHexEdge;
             TriangleHeight = TriangleEdgeSize * NavigationConstants.SQRT_OF_THREE_HALVED;
         }
 
-        public static MapSettings Default => new(100f, 4);
+        public static MapSettings Default => new(100f, 4, true);
     }
 }

@@ -24,7 +24,7 @@ namespace ZE.MechBattle.Navigation
            int neighbourIndex,
            NativeHashSet<int> OpenedList,
            NativeArray<AstarPathNodeData<T>> NavigationData,
-           int pathCost) where T: unmanaged
+           float pathCost) where T: unmanaged
         {
             var neighbourData = NavigationData[neighbourIndex];
             if (neighbourData.Status == NavigationNodeStatus.Closed)

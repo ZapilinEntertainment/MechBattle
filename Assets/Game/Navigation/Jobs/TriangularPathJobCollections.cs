@@ -15,14 +15,15 @@ namespace ZE.MechBattle.Navigation
 
         public TriangularPathJobCollections(Allocator allocator, NavigationHexPosition hexPos, int hexRadius)
         {
-            var trisCount = TriangularMath.GetTrianglesCountInHex(hexRadius);
-            CalculationData = new(SetupData.Length, allocator);
+            var trisCount = TriangularMath.GetTrianglesCountInHex(hexRadius);            
             ResultList = new(trisCount, allocator);
             OpenedList = new(trisCount-1, allocator);
 
             var coordsConverter = new TrianglesToIndexConverter(hexPos.TriangularCenterPos, hexRadius);
             _setupDataArray = new NativeArray<TriangleNavData>(coordsConverter.ArrayElementsCount, allocator);
             SetupData = new SquaredHexTrianglesList<TriangleNavData>(_setupDataArray, coordsConverter);
+
+            CalculationData = new(SetupData.Length, allocator);
         }
 
         public void ChangeCenter(NavigationHexPosition pos)

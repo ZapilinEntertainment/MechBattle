@@ -55,16 +55,16 @@ namespace ZE.MechBattle.Navigation
         {
             switch ((HexEdge)edgeIndex)
             {
-                case HexEdge.TopRight: return FormEdgeAccessMask<TopRightEdgeLogic>(new(trianglesPerEdge, hex), combinedCells); 
-                case HexEdge.BottomRight: return FormEdgeAccessMask<BottomRightEdgeLogic>(new(trianglesPerEdge, hex), combinedCells); 
-                case HexEdge.Bottom: return FormEdgeAccessMask<BottomEdgeLogic>(new(trianglesPerEdge, hex), combinedCells); 
-                case HexEdge.BottomLeft: return FormEdgeAccessMask<BottomLeftEdgeLogic>(new(trianglesPerEdge, hex), combinedCells); 
-                case HexEdge.TopLeft: return FormEdgeAccessMask<TopLeftEdgeLogic>(new(trianglesPerEdge, hex), combinedCells); 
-                default: return FormEdgeAccessMask<TopEdgeLogic>(new(trianglesPerEdge, hex), combinedCells); 
+                case HexEdge.TopRight: return FormEdgeAccessMask<TopRightEdgeEnumerationLogic>(new(trianglesPerEdge, hex), combinedCells); 
+                case HexEdge.BottomRight: return FormEdgeAccessMask<BottomRightEdgeEnumerationLogic>(new(trianglesPerEdge, hex), combinedCells); 
+                case HexEdge.Bottom: return FormEdgeAccessMask<BottomEdgeEnumerationLogic>(new(trianglesPerEdge, hex), combinedCells); 
+                case HexEdge.BottomLeft: return FormEdgeAccessMask<BottomLeftEdgeEnumerationLogic>(new(trianglesPerEdge, hex), combinedCells); 
+                case HexEdge.TopLeft: return FormEdgeAccessMask<TopLeftEdgeEnumerationLogic>(new(trianglesPerEdge, hex), combinedCells); 
+                default: return FormEdgeAccessMask<TopEdgeEnumerationLogic>(new(trianglesPerEdge, hex), combinedCells); 
             }
         }
 
-        private static EdgeAccessData FormEdgeAccessMask<T>(EdgeEnumerator<T> enumerator, NativeHashMap<IntTriangularPos, FlowMapCombinedCell>.ReadOnly combinedCells) where T : struct, IEdgeDirectionLogic
+        private static EdgeAccessData FormEdgeAccessMask<T>(EdgeEnumerator<T> enumerator, NativeHashMap<IntTriangularPos, FlowMapCombinedCell>.ReadOnly combinedCells) where T : struct, IEdgeEnumerationLogic
         {
             var isPassable = false;
             uint combinedAccessMask = 0;

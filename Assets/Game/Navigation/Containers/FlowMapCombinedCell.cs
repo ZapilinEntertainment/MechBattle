@@ -1,5 +1,7 @@
+using System;
 using UnityEngine;
 using Unity.Burst;
+using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
@@ -76,19 +78,34 @@ namespace ZE.MechBattle.Navigation
             return new(mask);
         }
 
+
         [BurstCompile]
-        public static FlowMapCombinedCell CreateDefaultCell(IntTriangularPos pos, TriangleNavData triangleData)
+        public static FlowMapCombinedCell CreateDefaultCell(
+            IntTriangularPos pos, 
+            TriangleNavData triangleData,
+            INavigationMap map)
         {
             var cell = new FlowMapCombinedCell();
+            var hexCenter = new NavigationHexPosition(pos, map).TriangularCenterPos;
+            var radius = map.TrianglesPerHexEdge;
+
             for (var i = 0; i < 6; i++)
             {
                 var edge = (HexEdge)i;
-                cell.Values[i] = new FlowMapCellData(
-                    (pos.IsPeak ? (byte)edge.ToNeighbourDirectionFromPeak() : (byte)edge.ToNeighbourDirectionFromValley()),
-                    0).Value;
+                var logic = new UniversalEdgeLimitLogic(edge, hexCenter, radius);
+
+                var edgeCenter = edge.GetEdgeCenterPos(hexCenter, radius);
+                var rawDist = (ushort)TriangularMath.CalculateDistance(pos, edgeCenter);
+                var finalDist = (ushort)math.select(rawDist, 0, logic.IsEdgeTriangle(pos));
+
+                var hexSector = TriangularMath.DefineSector(pos, map.HexEdgeSize, radius);
+                var dir = hexSector.GetDefaultFlowDirection(edge, pos.IsPeak);
+
+                cell.Values[i] = new FlowMapCellData(dir, finalDist).Value;
             }
             cell._triangleData = triangleData;
             return cell;
         }
+
     }
 }
