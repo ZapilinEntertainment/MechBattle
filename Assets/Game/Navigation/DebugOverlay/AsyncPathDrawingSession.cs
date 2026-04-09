@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace ZE.MechBattle.Navigation.DebugOverlay
 {
-    public class PathDrawingSession : IDisposable
+    public class AsyncPathDrawingSession : IDisposable
     {
         public bool IsDisposed { get; private set; }
         public CancellationToken CancellationToken => _cancellationTokenSource.Token;
@@ -15,7 +15,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         private CompositeDisposable _compositeDisposable;
         private CancellationTokenSource _cancellationTokenSource;
 
-        public PathDrawingSession(Action onEditorUpdate)
+        public AsyncPathDrawingSession(Action onEditorUpdate)
         {
             _isAsyncOperationInProgressProperty = new(false);
             _compositeDisposable = new();

@@ -37,6 +37,7 @@ namespace ZE.MechBattle.Navigation
         public readonly bool UnscannedSurfacesArePassable;
 
         public readonly float TriangleEdgeSize;
+        public static float4 GetDefaultMapBorders() => new float4(-500f,-500f, 500f, 500f);
 
         public MapSettings(MapSettingsSO so)
         {
@@ -54,8 +55,9 @@ namespace ZE.MechBattle.Navigation
 
         public MapSettings(
             float hexEdge, 
-            int trianglesPerEdge, 
-            bool unscannedSurfacesArePassable = false, 
+            int trianglesPerEdge,
+            float4 mapBorders,
+            bool unscannedSurfacesArePassable = false,            
             float intersectionPercentForLock = 0.5f,
             int raycastSubdivisionPerEdge = 4)
         {
@@ -64,14 +66,14 @@ namespace ZE.MechBattle.Navigation
 
             IntersectionPercentForLock = intersectionPercentForLock;
             RaycastSubdivisionsPerEdge = raycastSubdivisionPerEdge;
-            BottomLeftCorner = new(-500f, 500f);
-            TopRightCorner = new (500f, 500f);
+            BottomLeftCorner = mapBorders.xy;
+            TopRightCorner = mapBorders.zw;
             UnscannedSurfacesArePassable = unscannedSurfacesArePassable;
 
             TriangleEdgeSize = HexEdgeSize / TrianglesPerHexEdge;
             TriangleHeight = TriangleEdgeSize * NavigationConstants.SQRT_OF_THREE_HALVED;
         }
 
-        public static MapSettings Default => new(100f, 4, true);
+        public static MapSettings Default => new(100f, 4, GetDefaultMapBorders(), true);
     }
 }

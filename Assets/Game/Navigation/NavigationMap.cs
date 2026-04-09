@@ -31,6 +31,7 @@ namespace ZE.MechBattle.Navigation
         public bool IsInitialized { get;private set;} = false;
         public float HexEdgeSize => Settings.HexEdgeSize;
         public float TriangleHeight => Settings.TriangleHeight;
+        public float TriangleEdgeSize => Settings.TriangleEdgeSize;
         public int TrianglesPerHexEdge => Settings.TrianglesPerHexEdge;
         public int Version { get;private set; } = 1;
         public IReadOnlyCollection<INavigationHex> Hexes => _hexes.Values;
@@ -50,7 +51,7 @@ namespace ZE.MechBattle.Navigation
             if (TryGetHex(hexCoord, out var hex) && hex.FlowMap != null)
                 return hex.FlowMap;
 
-            return Settings.UnscannedSurfacesArePassable ? StubFlowMap.CreateFullPassableMap(this) : StubFlowMap.CreateFullBlockedMap(this);
+            return Settings.UnscannedSurfacesArePassable ? VirtualFlowMap.CreateFullPassableMap(this) : VirtualFlowMap.CreateFullBlockedMap(this);
         }
 
         public void UpdateHexFlowMap(int2 hexCoord, IDisposableFlowMap flowMap)

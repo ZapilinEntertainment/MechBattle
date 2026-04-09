@@ -8,17 +8,24 @@ namespace ZE.MechBattle.Navigation
     // refines raycast data into triangles navigation data
     public static class RefineNavRaycastDataCommand
     {
+        // TODO: divide obstacle rays and pathfinding rays
+
         private struct TriangleRaycastData
         {
             public int IntersectionsCount;
             public int ObstaclesCount;
             //public float MaxHeight;
-            public float AverageHeight;
+            public float AverageGroundHeight;
+            public float AverageObstacleHeight;
 
-            public short GetResultingAverageHeight() => (short)math.round(AverageHeight);
+            public short GetResultingAverageHeight() => (short)math.round(AverageGroundHeight);
         }
 
-        public static Dictionary<IntTriangularPos, TriangleNavData> Execute(NativeArray<RaycastHit>.ReadOnly raycastResults, float intersectionPercentForLock, INavigationCaster caster)
+        public static Dictionary<IntTriangularPos, TriangleNavData> Execute(
+            NavigationHexPosition hexPos,
+            NativeArray<RaycastHit>.ReadOnly raycastResults, 
+            float intersectionPercentForLock, 
+            INavigationCaster caster)
         {
             var intersectionsCount = new Dictionary<IntTriangularPos, TriangleRaycastData>();
             for (var i = 0; i < raycastResults.Length; i++)
@@ -30,7 +37,7 @@ namespace ZE.MechBattle.Navigation
                 var trianglePos = TriangularMath.WorldToTrianglePos(result.point, caster.TriangleHeight);
                 intersectionsCount.TryGetValue(trianglePos, out var data);
 
-                data.AverageHeight = (data.AverageHeight * data.IntersectionsCount + result.point.y) / (data.IntersectionsCount + 1);
+                data.AverageGroundHeight = (data.AverageGroundHeight * data.IntersectionsCount + result.point.y) / (data.IntersectionsCount + 1);
                 data.IntersectionsCount++;
                 //data.MaxHeight = math.max(data.MaxHeight, result.point.y);
                 
@@ -51,6 +58,12 @@ namespace ZE.MechBattle.Navigation
                         isPassable: !isLocked, 
                         height: data.GetResultingAverageHeight(), 
                         entranceCost: NavigationConstants.DEFAULT_TRIANGLE_ENTRANCE_COST));
+            }
+
+            foreach (var tripos in new HexTrianglesEnumerator(hexPos, caster.TrianglesPerHexEdge))
+            {
+                if (!trianglesData.ContainsKey(tripos))
+                    trianglesData.Add(tripos, new(false, NavigationConstants.DEFAULT_HEIGHT, sbyte.MaxValue));
             }
 
             return trianglesData;

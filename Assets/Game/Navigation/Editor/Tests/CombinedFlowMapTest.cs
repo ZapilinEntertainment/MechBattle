@@ -21,7 +21,7 @@ namespace ZE.MechBattle.Navigation.Tests
             var hexPos = new NavigationHexPosition(hexCoordX, hexCoordY, hexEdge, hexEdge / radius * NavigationConstants.SQRT_OF_THREE_HALVED);
 
             var allocator = Allocator.Persistent;
-            using var collectionsData = new CalculateHexFlowMapCommand.NativeCollectionsData(allocator, hexPos.TriangularCenterPos, radius);
+            using var collectionsData = new FlowFieldCalculationCollections(allocator, hexPos.TriangularCenterPos, radius);
             var setupData = collectionsData.SetupData;
             var triangleData = TriangleNavData.CreateDefaultData(true);
             foreach (var triangle in new HexTrianglesEnumerator(hexPos, radius))
@@ -39,7 +39,7 @@ namespace ZE.MechBattle.Navigation.Tests
         }
 
         private NativeHashMap<IntTriangularPos, FlowMapCombinedCell> PrepareAndCombineFlowMaps(
-           CalculateHexFlowMapCommand.NativeCollectionsData data,
+           FlowFieldCalculationCollections data,
            NavigationHexPosition hexPos,
            int radius,
            Allocator allocator)

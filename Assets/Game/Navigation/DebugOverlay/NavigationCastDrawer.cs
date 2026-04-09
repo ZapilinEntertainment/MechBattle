@@ -64,7 +64,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             }
 
             var hexCenterWorld = HexMath.HexToWorld(hexCoord, caster.HexEdgeSize);
-            using var raycastData = await caster.CastHexAsync(hexCenterWorld, NavigationConstants.GetGroundCastQueryParameters(), cancellationToken);
+            using var raycastData = await caster.CastHexAsync(Unity.Collections.Allocator.Temp, hexCenterWorld, NavigationConstants.GetGroundCastQueryParameters(), cancellationToken);
             if (cancellationToken.IsCancellationRequested)
             {
                 return;

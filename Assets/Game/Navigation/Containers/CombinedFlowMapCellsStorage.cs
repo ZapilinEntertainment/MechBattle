@@ -8,14 +8,14 @@ namespace ZE.MechBattle.Navigation
     {
         public readonly int SingleLength;
         public readonly TrianglesToIndexConverter CoordsConverter;
-        private readonly DisposableArray _values;
+        private readonly DisposableArray<int> _values;
         
 
         public CombinedFlowMapCellsStorage(int singleMapCellsCount, TrianglesToIndexConverter coordsConverter)
         {
             SingleLength = singleMapCellsCount;
             CoordsConverter = coordsConverter;
-            _values = new DisposableArray(SingleLength * 6);
+            _values = new DisposableArray<int>(SingleLength * 6);
         }
 
         public void SetValue(HexEdge edge, int index, FlowMapCellData cellData) 

@@ -7,8 +7,10 @@ namespace ZE.MechBattle.Navigation
 {
     public class HexFlowMap : IDisposableFlowMap
     {
-        public bool IsStub => false;
         public NativeHashMap<IntTriangularPos, FlowMapCombinedCell>.ReadOnly Data => _data.AsReadOnly();
+
+        public FlowMapType Type => FlowMapType.Calculated;
+
         public HexEdgesAccessMap GetAccessMap() => _edgesAccessMap;
 
         private readonly HexEdgesAccessMap _edgesAccessMap;
@@ -29,5 +31,8 @@ namespace ZE.MechBattle.Navigation
         public FlowMapCombinedCell GetCombinedCellData(IntTriangularPos pos) => _data[pos];
 
         public bool IsCellPassable(IntTriangularPos pos) => _data[pos].IsPassable;
+
+        public short GetHeight(IntTriangularPos pos) => 
+            _data.TryGetValue(pos, out var cellData) ? cellData.Height : NavigationConstants.DEFAULT_HEIGHT;
     }
 }

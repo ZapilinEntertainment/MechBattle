@@ -107,15 +107,15 @@ namespace ZE.MechBattle.Navigation.Tests
             map.AddHex(new int2(2, -2));
             map.AddHex(new int2(2, -1));
 
-            var flowMap = new StubFlowMap(map, HexEdgesAccessMap.FullAccessMap.SetEdgePassable(HexEdge.BottomRight, false), true);
-            var fullyPassableMap = StubFlowMap.CreateFullPassableMap(map);
+            var flowMap = new VirtualFlowMap(map, HexEdgesAccessMap.FullAccessMap.SetEdgePassable(HexEdge.BottomRight, false), true);
+            var fullyPassableMap = VirtualFlowMap.CreateFullPassableMap(map);
 
             map.UpdateHexFlowMap(int2.zero, flowMap);
             map.UpdateHexFlowMap(new int2(1, 0), fullyPassableMap);
             map.UpdateHexFlowMap(new int2(1, -1), fullyPassableMap);
             map.UpdateHexFlowMap(new int2(2, -2), fullyPassableMap);
 
-            flowMap = new StubFlowMap(
+            flowMap = new VirtualFlowMap(
                 map,
                     HexEdgesAccessMap.FullAccessMap
                     .SetEdgePassable(HexEdge.TopLeft, false)

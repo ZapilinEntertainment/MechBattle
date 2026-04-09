@@ -6,6 +6,8 @@ namespace ZE.MechBattle.Navigation
 {
     public readonly struct IntTriangularPos : IEquatable<IntTriangularPos>
     {
+        public const int SERIALIZATION_LENGTH = sizeof(int) * 3;
+
         public readonly int DownLeft;
         public readonly int Up;
         public readonly int DownRight;

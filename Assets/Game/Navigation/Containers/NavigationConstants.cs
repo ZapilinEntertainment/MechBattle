@@ -10,6 +10,7 @@ namespace ZE.MechBattle.Navigation
         public const float NAV_OBSTACLES_LOCK_PERCENT = 0.5f;
         public const int MAX_TRIANGLES_PER_EDGE = 32; // NOTE: HexEdgesAccessMap depends on it
 
+        public const short DEFAULT_HEIGHT = 0;
 
         public const float EDGE_PASS_COST = 1f;
         public const float VERTEX_PASS_COST = 2.01f;

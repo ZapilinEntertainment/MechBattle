@@ -44,10 +44,10 @@ namespace ZE.MechBattle.Navigation
         }
 
         [BurstCompile]
-        public static TriangleVertices Execute(float2 center, bool isPeak, float edgeSize)
+        public static TriangleVertices Execute(float2 center, bool isPeak, float triangleEdgeSize)
         {
-            var r = edgeSize * NavigationConstants.DIV_SQRT_OF_THREE; // edgeSize / sqrt(3)
-            var halfEdge = edgeSize * 0.5f;
+            var r = triangleEdgeSize * NavigationConstants.DIV_SQRT_OF_THREE; // edgeSize / sqrt(3)
+            var halfEdge = triangleEdgeSize * 0.5f;
             var h_inner = r * 0.5f; // (r * sin(30°))
 
             if (isPeak)

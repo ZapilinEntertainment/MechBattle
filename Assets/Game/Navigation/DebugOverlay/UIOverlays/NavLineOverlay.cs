@@ -12,7 +12,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
     {
         private readonly LineDrawer _xDrawer, _zDrawer, _yDrawer;
         private bool _isSubscribedToUpdate = false;
-        private float _triangleEdgeSize = 50f;
+        private float _triangleEdgeSize = 12.5f;
 
         private class LineDrawer
         {

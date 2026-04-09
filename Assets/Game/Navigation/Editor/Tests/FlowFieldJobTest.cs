@@ -13,7 +13,7 @@ namespace ZE.MechBattle.Navigation.Tests
         {
             var hexPos = new NavigationHexPosition(hexCoordX, hexCoordY, hexEdgeSize, hexEdgeSize / radius * NavigationConstants.SQRT_OF_THREE_HALVED);
             var allocator = Allocator.Persistent;
-            using var collectionData = new CalculateHexFlowMapCommand.NativeCollectionsData(allocator, hexPos.TriangularCenterPos, radius);
+            using var collectionData = new FlowFieldCalculationCollections(allocator, hexPos.TriangularCenterPos, radius);
 
             var hexTrisCount = TriangularMath.GetTrianglesCountInHex(radius);
             using var hexTriangles = new NativeArray<IntTriangularPos>(hexTrisCount, allocator, NativeArrayOptions.UninitializedMemory);

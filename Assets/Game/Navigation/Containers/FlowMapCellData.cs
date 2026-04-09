@@ -36,6 +36,8 @@ namespace ZE.MechBattle.Navigation
         public byte Direction => (byte)((Value >> DIRECTION_SHIFT) & BYTE_MASK);
         public int ExitDistance => Value & DISTANCE_MASK;
 
+        public override string ToString() => $"direction: {Direction}, exit distance: {ExitDistance}";
+
         [BurstCompile]
         public static FlowMapCellData FormBlockedCell(HexEdge edge, IntTriangularPos tripos, ushort distance)
         {

@@ -7,18 +7,10 @@ using UnityEngine;
 
 namespace ZE.MechBattle.Navigation.DebugOverlay
 {
-    public class PathDrawingWizard : ScriptableWizard
+    public class PathDrawingWizard : PathDrawingWizardBase<AsyncTriangularPathBuilder>
     {
-        public int3 StartPos = new(-2,2,1);
-        public int3 EndPos = new(-4,1,2);
-        //public int3[] BlockedCells;
-
-        private List<(float3 start, float3 end)> _points = new();
         private GUIStyle _labelStyle = new GUIStyle();
-        private NavigationMap _map;
-        private TriangularPathBuilder _pathBuilder;
-        private PathDrawingSession _session;
-
+        private AsyncPathDrawingSession _session;
         
 
         [MenuItem("ZE.Navigation/Draw Navigation Path")]
@@ -27,34 +19,15 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             DisplayWizard<PathDrawingWizard>("PathDrawingWizard", "Close", "Redraw");
         }
 
-        void OnWizardUpdate() { }
+        protected override void Draw() => DoRedrawAsync(_session);
 
-        private void OnWizardOtherButton()
-        {
-            _points.Clear();
-
-            if (NavigationDebugDataContainer.Map == null || NavigationDebugDataContainer.MapSettings == null)
-            {
-                errorString = "map and map settings required";
-                return;
-            }
-            else
-            {
-                errorString = string.Empty;
-            }
-
-            _pathBuilder ??= new(GetMap());
-
-            DoRedrawAsync(_session);
-        }
-
-        private async void DoRedrawAsync(PathDrawingSession session)
+        private async void DoRedrawAsync(AsyncPathDrawingSession session)
         {
             session.OnAsyncOperationStarted();
-            TriangularPathBuilder.Result buildResult = default;
+            AsyncTriangularPathBuilder.Result buildResult = default;
             try
             {
-                buildResult = await _pathBuilder.Build(new(StartPos), new(EndPos), session.CancellationToken);
+                buildResult = await _pathBuilder.BuildAsync(new(StartPos), new(EndPos), session.CancellationToken);
             }
             catch (Exception ex)
             {
@@ -88,13 +61,17 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         }
        
 
-        private INavigationMap GetMap()
+        protected override INavigationMap GetMap()
         {
             if (_map == null)
             {
                 var map = NavigationDebugDataContainer.Map;
                 var existingSettings = NavigationDebugDataContainer.MapSettings;
-                var localSettings = new MapSettings(existingSettings.HexEdgeSize, existingSettings.TrianglesPerHexEdge, unscannedSurfacesArePassable: true);
+                var localSettings = new MapSettings(
+                    existingSettings.HexEdgeSize, 
+                    existingSettings.TrianglesPerHexEdge, 
+                    mapBorders: MapSettings.GetDefaultMapBorders(),
+                    unscannedSurfacesArePassable: true);
                 _map = new NavigationMap(localSettings);
                 
                 
@@ -107,37 +84,29 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             return _map;
         }
 
+        protected override AsyncTriangularPathBuilder GetPathBuilder()
+        {
+            _pathBuilder ??= new(GetMap());
+            return _pathBuilder;
+        }
+
+        protected override void OnWizardEnabled()
+        {           
+            _session = new(OnEditorUpdate);
+            _labelStyle.richText = true;
+        }
+
+        protected override void OnWizardDisabled()
+        {
+            _session?.Dispose();
+        }
+
         private void OnEditorUpdate()
         {
-           // Debug.Log("editor update");
+            // Debug.Log("editor update");
         }
 
+        void OnWizardOtherButton() => Redraw();
         void OnWizardCreate() { }
-
-
-        void OnEnable()
-        {
-            _session = new(OnEditorUpdate);
-
-            _labelStyle.richText = true;
-            SceneView.duringSceneGui += OnSceneGUI;            
-        }
-
-        void OnDisable()
-        {
-            SceneView.duringSceneGui -= OnSceneGUI;
-            _session?.Dispose();
-            _map?.Dispose();
-            _pathBuilder?.Dispose();
-        }
-
-
-        void OnSceneGUI(SceneView sceneView)
-        {
-            foreach (var pts in _points)
-            {
-                Handles.DrawLine(pts.start, pts.end);
-            }
-        }
     }
 }

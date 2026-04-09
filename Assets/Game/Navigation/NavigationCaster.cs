@@ -18,7 +18,15 @@ namespace ZE.MechBattle.Navigation
         int HexTrianglesCount { get;}
         int TrianglesPerHexEdge { get; }
         float HexEdgeSize { get; }
-        Awaitable<NativeArray<RaycastHit>> CastHexAsync(float2 hexWorldPos, QueryParameters queryParameters, CancellationToken token);
+        NativeArray<RaycastHit> CastHex(
+             Allocator allocator,
+             float2 hexWorldPos,
+             QueryParameters queryParameters);
+        Awaitable<NativeArray<RaycastHit>> CastHexAsync(
+            Allocator allocator, 
+            float2 hexWorldPos, 
+            QueryParameters queryParameters, 
+            CancellationToken token);
     }
 
     public class NavigationCaster : IDisposable, INavigationCaster
@@ -81,16 +89,16 @@ namespace ZE.MechBattle.Navigation
             };
         }
 
-        public async Awaitable<NativeArray<RaycastHit>> CastHexAsync(float2 hexWorldPos, QueryParameters queryParameters, CancellationToken cancellationToken)
+        public async Awaitable<NativeArray<RaycastHit>> CastHexAsync(
+            Allocator allocator,
+            float2 hexWorldPos,
+            QueryParameters queryParameters, 
+            CancellationToken cancellationToken)
         {
             if (_isDisposed)
                 throw new Exception("Caster disposed");
 
-            var positionsJob = ConstructPositionsJob(hexWorldPos, queryParameters);
-
-            var preparePositionsHandle = positionsJob.ScheduleByRef();
-            var raycastResults = new NativeArray<RaycastHit>(_raycastCommands.Length, Allocator.Persistent);
-            var castJobHandle = RaycastCommand.ScheduleBatch(_raycastCommands, raycastResults, 64, dependsOn: preparePositionsHandle);
+            var castJobHandle = PrepareCastJob(allocator, hexWorldPos, queryParameters, out var raycastResults);
 
             var ownToken = _casterLifetimeCts.Token;
             while (!castJobHandle.IsCompleted)
@@ -108,6 +116,32 @@ namespace ZE.MechBattle.Navigation
             {
                 return raycastResults;
             }
+        }
+
+        public NativeArray<RaycastHit> CastHex(
+             Allocator allocator, 
+             float2 hexWorldPos,
+             QueryParameters queryParameters)
+        {
+            if (_isDisposed)
+                throw new Exception("Caster disposed");
+
+            var castJobHandle = PrepareCastJob(allocator, hexWorldPos, queryParameters, out var raycastResults);
+            castJobHandle.Complete();
+            return raycastResults;
+        }
+
+        private JobHandle PrepareCastJob(
+            Allocator allocator, 
+            float2 hexWorldPos, 
+            QueryParameters queryParameters, 
+            out NativeArray<RaycastHit> raycastResults)
+        {
+            var positionsJob = ConstructPositionsJob(hexWorldPos, queryParameters);
+
+            var preparePositionsHandle = positionsJob.ScheduleByRef();
+            raycastResults = new NativeArray<RaycastHit>(_raycastCommands.Length, allocator);
+            return RaycastCommand.ScheduleBatch(_raycastCommands, raycastResults, 64, dependsOn: preparePositionsHandle);
         }
 
 
