@@ -8,12 +8,12 @@ namespace ZE.MechBattle.Navigation
     public struct SquaredHexTrianglesList<T> where T : unmanaged
     {
         public int Length => _data.Length;
-        public TrianglesToIndexConverter CoordsConverter { get; private set; }  
+        public TrianglesToIndexSquaredConverter CoordsConverter { get; private set; }  
 
         private NativeArray<T> _data;
         
 
-        public SquaredHexTrianglesList(NativeArray<T> data, TrianglesToIndexConverter converter)
+        public SquaredHexTrianglesList(NativeArray<T> data, TrianglesToIndexSquaredConverter converter)
         {
             _data = data;
             CoordsConverter = converter;

@@ -17,7 +17,7 @@ namespace ZE.MechBattle.Navigation.Tests
 
             var hexTrisCount = TriangularMath.GetTrianglesCountInHex(radius);
             using var hexTriangles = new NativeArray<IntTriangularPos>(hexTrisCount, allocator, NativeArrayOptions.UninitializedMemory);
-            GetTrianglesInHexCommand.Execute(hexPos.InnerRingTopTriangle, radius, hexTriangles);
+            GetTrianglesInHexCommand.Execute(hexPos.InnerRingTopValleyTriangle, radius, hexTriangles);
 
             for (var i = 0; i < hexTrisCount; i++)
             {

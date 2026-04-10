@@ -53,7 +53,7 @@ namespace ZE.MechBattle.Navigation.Tests
             var decodedData = FlowMapDecodingHandler.Decode(storedData, hexPos, map);
 
             Assert.AreEqual(virtualMap.GetAccessMap(), decodedData.GetAccessMap());
-            var pos = hexPos.InnerRingTopTriangle;
+            var pos = hexPos.InnerRingTopValleyTriangle;
             Assert.AreEqual(virtualMap.GetCombinedCellData(pos), decodedData.GetCombinedCellData(pos));
             Assert.AreEqual(virtualMap.GetHeight(pos), decodedData.GetHeight(pos));
         }
@@ -83,7 +83,7 @@ namespace ZE.MechBattle.Navigation.Tests
             var decodedData = (VirtualFlowMapWithHeights)FlowMapDecodingHandler.Decode(storedData, hexPos, map);
 
             Assert.AreEqual(virtualMap.GetAccessMap(), decodedData.GetAccessMap());
-            var pos = hexPos.InnerRingTopTriangle;
+            var pos = hexPos.InnerRingTopValleyTriangle;
             Assert.AreEqual(virtualMap.GetCombinedCellData(pos), decodedData.GetCombinedCellData(pos));
             Assert.AreEqual(virtualMap.GetHeight(pos), decodedData.GetHeight(pos));
 

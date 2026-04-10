@@ -17,7 +17,7 @@ namespace ZE.MechBattle.Navigation
         public FlowFieldCalculationCollections(Allocator allocator, IntTriangularPos triangularCenterPos, int hexRadius)
         {
             _hexRadius = hexRadius;
-            var coordsConverter = new TrianglesToIndexConverter(triangularCenterPos, _hexRadius);
+            var coordsConverter = new TrianglesToIndexSquaredConverter(triangularCenterPos, _hexRadius);
             _setupDataArray = new NativeArray<TriangleNavData>(coordsConverter.ArrayElementsCount, allocator);
             SetupData = new SquaredHexTrianglesList<TriangleNavData>(_setupDataArray, coordsConverter);
 
@@ -29,7 +29,7 @@ namespace ZE.MechBattle.Navigation
 
         public void ChangeHexPosAndReset(IntTriangularPos triangularCenterPos)
         {
-            var coordsConverter = new TrianglesToIndexConverter(triangularCenterPos, _hexRadius);
+            var coordsConverter = new TrianglesToIndexSquaredConverter(triangularCenterPos, _hexRadius);
 
             // note: setup data array is not disposed, this structure only operates it
             SetupData = new SquaredHexTrianglesList<TriangleNavData>(_setupDataArray, coordsConverter);

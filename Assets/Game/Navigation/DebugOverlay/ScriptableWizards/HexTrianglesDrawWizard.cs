@@ -33,7 +33,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             using (var list = new NativeArray<IntTriangularPos>(TriangularMath.GetTrianglesCountInHex(HexRadius), Allocator.TempJob))
             {
                 var navHex = new NavigationHexPosition(HexCoord.x, HexCoord.y, mapData.HexEdgeSize, mapData.TriangleHeight);
-                GetTrianglesInHexCommand.Execute(navHex.InnerRingTopTriangle, HexRadius, list);
+                GetTrianglesInHexCommand.Execute(navHex.InnerRingTopValleyTriangle, HexRadius, list);
 
                 foreach (var triangle in list)
                 {

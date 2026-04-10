@@ -9,9 +9,9 @@ namespace ZE.MechBattle.Navigation
     {
         public readonly int2 HexCoordinate;
         public readonly float2 CenterPosWorld;
-        public readonly IntTriangularPos InnerRingTopTriangle;
+        public readonly IntTriangularPos InnerRingTopValleyTriangle;
         public float3 CenterPos3DWorld => new float3(CenterPosWorld.x, 0f, CenterPosWorld.y);
-        public IntTriangularPos TriangularCenterPos => new IntTriangularPos(InnerRingTopTriangle.X, InnerRingTopTriangle.Y - 1, InnerRingTopTriangle.Z);
+        public IntTriangularPos TriangularCenterPos => new IntTriangularPos(InnerRingTopValleyTriangle.X, InnerRingTopValleyTriangle.Y - 1, InnerRingTopValleyTriangle.Z);
 
         public NavigationHexPosition(int hexCoordX, int hexCoordY, float hexEdge, float triangleHeight) : 
             this(hexCoord: new(hexCoordX, hexCoordY), hexEdge: hexEdge, triangleHeight: triangleHeight)
@@ -42,7 +42,7 @@ namespace ZE.MechBattle.Navigation
         {
             HexCoordinate = hexCoord;
             CenterPosWorld = HexMath.HexToWorld(HexCoordinate, hexEdge);
-            InnerRingTopTriangle = NavigationMapHelper.GetInnerCircleTopTriangle(CenterPosWorld, triangleHeight);
+            InnerRingTopValleyTriangle = NavigationMapHelper.GetInnerCircleTopTriangle(CenterPosWorld, triangleHeight);
         }
     }
 }

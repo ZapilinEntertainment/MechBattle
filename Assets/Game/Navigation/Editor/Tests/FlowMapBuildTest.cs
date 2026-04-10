@@ -33,7 +33,7 @@ namespace ZE.MechBattle.Navigation.Tests
 
             var allocator = Allocator.Persistent;
 
-            var coordsConverter = new TrianglesToIndexConverter(hexPos.TriangularCenterPos, trianglesPerEdge);
+            var coordsConverter = new TrianglesToIndexSquaredConverter(hexPos.TriangularCenterPos, trianglesPerEdge);
             var setupData = new NativeArray<TriangleNavData>(coordsConverter.ArrayElementsCount, allocator);
             var squaredArray = new SquaredHexTrianglesList<TriangleNavData>(setupData, coordsConverter);
 
@@ -115,7 +115,7 @@ namespace ZE.MechBattle.Navigation.Tests
             int hexRadius)
         {
             var list = new NativeArray<IntTriangularPos>(trianglesInHex, Allocator.Persistent);
-            GetTrianglesInHexCommand.Execute(hexPos.InnerRingTopTriangle, hexRadius, list);
+            GetTrianglesInHexCommand.Execute(hexPos.InnerRingTopValleyTriangle, hexRadius, list);
 
             var passableTriangleData = TriangleNavData.CreateDefaultData(true);
             foreach (var tripos in list)
@@ -128,7 +128,7 @@ namespace ZE.MechBattle.Navigation.Tests
         // checking ideal no-obstacles flow map
         private void CheckEdgeDirections(
             NativeArray<FlowFieldCellCalculationData> calculationData, 
-            TrianglesToIndexConverter coordsConverter,
+            TrianglesToIndexSquaredConverter coordsConverter,
             HexEdge exitEdge)
         {
 

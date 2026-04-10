@@ -15,7 +15,7 @@ namespace ZE.MechBattle.Navigation
             private readonly int _radius;
             private readonly int _trianglesInHex;
             private readonly FlowFieldCalculationCollections _data;
-            private readonly TrianglesToIndexConverter _coordsConverter;
+            private readonly TrianglesToIndexSquaredConverter _coordsConverter;
             private readonly SquaredHexTrianglesList<TriangleNavData> _setupData;            
             private readonly NavigationHexPosition _hexPos;
 

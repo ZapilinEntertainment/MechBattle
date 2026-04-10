@@ -19,7 +19,7 @@ namespace ZE.MechBattle.Navigation
             ResultList = new(trisCount, allocator);
             OpenedList = new(trisCount-1, allocator);
 
-            var coordsConverter = new TrianglesToIndexConverter(hexPos.TriangularCenterPos, hexRadius);
+            var coordsConverter = new TrianglesToIndexSquaredConverter(hexPos.TriangularCenterPos, hexRadius);
             _setupDataArray = new NativeArray<TriangleNavData>(coordsConverter.ArrayElementsCount, allocator);
             SetupData = new SquaredHexTrianglesList<TriangleNavData>(_setupDataArray, coordsConverter);
 
@@ -28,7 +28,7 @@ namespace ZE.MechBattle.Navigation
 
         public void ChangeCenter(NavigationHexPosition pos)
         {
-            var newConverter = new TrianglesToIndexConverter(pos.TriangularCenterPos, SetupData.CoordsConverter.HexRadius);
+            var newConverter = new TrianglesToIndexSquaredConverter(pos.TriangularCenterPos, SetupData.CoordsConverter.HexRadius);
             SetupData = new(_setupDataArray, newConverter);
         }
 

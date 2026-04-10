@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 namespace ZE.MechBattle.Navigation
 {
     [BurstCompile]
-    public readonly struct TrianglesToIndexConverter
+    public readonly struct TrianglesToIndexSquaredConverter
     {
         public readonly int ArrayWidth;
         public readonly int ArrayHeight;
@@ -17,7 +17,7 @@ namespace ZE.MechBattle.Navigation
         public int ArrayElementsCount => ArrayWidth * ArrayHeight;
         public int HexRadius => ArrayWidth / 2;
 
-        public TrianglesToIndexConverter(IntTriangularPos hexCenterInTriangular, int trianglesPerEdge)
+        public TrianglesToIndexSquaredConverter(IntTriangularPos hexCenterInTriangular, int trianglesPerEdge)
         {
             ArrayWidth = trianglesPerEdge * 2; // count only A triangles
             ArrayHeight = trianglesPerEdge * 4; // count both A and V triangles

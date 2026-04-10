@@ -18,7 +18,7 @@ namespace ZE.MechBattle.Navigation.Tests
         public void OneTriangleHexSquaring(int hexCenterX, int hexCenterY, int hexCenterZ)
         {
             var center = new IntTriangularPos(hexCenterX, hexCenterY, hexCenterZ);
-            var converter = new TrianglesToIndexConverter(center, 1);
+            var converter = new TrianglesToIndexSquaredConverter(center, 1);
             using var setupData = new NativeArray<int>(converter.ArrayElementsCount, Allocator.Temp);
             var squaredArray = new SquaredHexTrianglesList<int>(setupData, converter);
 
@@ -64,7 +64,7 @@ namespace ZE.MechBattle.Navigation.Tests
         public void VariableTriangleHexSquaring(int radius, int hexCenterX, int hexCenterY, int hexCenterZ)
         {
             var center = new IntTriangularPos(hexCenterX, hexCenterY, hexCenterZ);
-            var converter = new TrianglesToIndexConverter(center, radius);
+            var converter = new TrianglesToIndexSquaredConverter(center, radius);
             using var setupData = new NativeArray<int>(converter.ArrayElementsCount, Allocator.TempJob);
             var squaredArray = new SquaredHexTrianglesList<int>(setupData, converter);
 
@@ -133,9 +133,9 @@ namespace ZE.MechBattle.Navigation.Tests
             var allocator = Allocator.TempJob;
             var trianglesInHex = TriangularMath.GetTrianglesCountInHex(radius);
             using var trianglesList = new NativeArray<IntTriangularPos>(trianglesInHex, allocator, NativeArrayOptions.UninitializedMemory);
-            GetTrianglesInHexCommand.Execute(hexPos.InnerRingTopTriangle, radius, trianglesList);
+            GetTrianglesInHexCommand.Execute(hexPos.InnerRingTopValleyTriangle, radius, trianglesList);
 
-            var coordsConverter = new TrianglesToIndexConverter(hexPos.TriangularCenterPos, radius);
+            var coordsConverter = new TrianglesToIndexSquaredConverter(hexPos.TriangularCenterPos, radius);
             using var setupData = new NativeArray<int>(coordsConverter.ArrayElementsCount, allocator);
             var squaredList = new SquaredHexTrianglesList<int>(setupData, coordsConverter);
 
@@ -163,7 +163,7 @@ namespace ZE.MechBattle.Navigation.Tests
             var allocator = Allocator.Persistent;
             var trianglesInHex = TriangularMath.GetTrianglesCountInHex(radius);
 
-            var coordsConverter = new TrianglesToIndexConverter(hexPos.TriangularCenterPos, radius);
+            var coordsConverter = new TrianglesToIndexSquaredConverter(hexPos.TriangularCenterPos, radius);
             using var setupData = new NativeArray<int>(coordsConverter.ArrayElementsCount, allocator);
             var squaredList = new SquaredHexTrianglesList<int>(setupData, coordsConverter);
 
@@ -208,7 +208,7 @@ namespace ZE.MechBattle.Navigation.Tests
             var allocator = Allocator.Persistent;
             var trianglesInHex = TriangularMath.GetTrianglesCountInHex(radius);
 
-            var coordsConverter = new TrianglesToIndexConverter(hexPos.TriangularCenterPos, radius);
+            var coordsConverter = new TrianglesToIndexSquaredConverter(hexPos.TriangularCenterPos, radius);
             using var setupData = new NativeArray<int>(coordsConverter.ArrayElementsCount, allocator);
             var squaredList = new SquaredHexTrianglesList<int>(setupData, coordsConverter);
 

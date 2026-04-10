@@ -7,11 +7,11 @@ namespace ZE.MechBattle.Navigation
     public class CombinedFlowMapCellsStorage : IDisposable
     {
         public readonly int SingleLength;
-        public readonly TrianglesToIndexConverter CoordsConverter;
+        public readonly TrianglesToIndexSquaredConverter CoordsConverter;
         private readonly DisposableArray<int> _values;
         
 
-        public CombinedFlowMapCellsStorage(int singleMapCellsCount, TrianglesToIndexConverter coordsConverter)
+        public CombinedFlowMapCellsStorage(int singleMapCellsCount, TrianglesToIndexSquaredConverter coordsConverter)
         {
             SingleLength = singleMapCellsCount;
             CoordsConverter = coordsConverter;

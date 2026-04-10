@@ -28,7 +28,7 @@ namespace ZE.MechBattle.Navigation
         public int TrianglesPerEdge;
         public HexEdge ExitEdge;    
 
-        private TrianglesToIndexConverter _coordsConverter;
+        private TrianglesToIndexSquaredConverter _coordsConverter;
 
         private const int NEIGHBOURS_COUNT = 12;
         private int _exitFlowDirectionPeak;

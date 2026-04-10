@@ -18,7 +18,7 @@ namespace ZE.MechBattle.Navigation.Tests
 
             var triangleHeight = hexEdge / trianglesPerEdge * NavigationConstants.SQRT_OF_THREE_HALVED;
             var hexPos = new NavigationHexPosition(hexCoordX, hexCoordY, hexEdge, triangleHeight);
-            GetTrianglesInHexCommand.Execute(hexPos.InnerRingTopTriangle, trianglesPerEdge, list);
+            GetTrianglesInHexCommand.Execute(hexPos.InnerRingTopValleyTriangle, trianglesPerEdge, list);
 
             var hashset = new HashSet<IntTriangularPos>(trianglesInHex);
             var count = 0;

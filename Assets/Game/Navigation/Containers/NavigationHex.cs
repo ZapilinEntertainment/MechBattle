@@ -18,7 +18,7 @@ namespace ZE.MechBattle.Navigation
         public int Version { get; private set; } = 0;
         public IFlowMap FlowMap => _flowMap;
         public IntTriangularPos TriangularCenterPos => Data.TriangularCenterPos;
-        public IntTriangularPos InnerRingTopTrianglePos => Data.InnerRingTopTriangle;
+        public IntTriangularPos InnerRingTopTrianglePos => Data.InnerRingTopValleyTriangle;
         public float3 CenterPos3DWorld => Data.CenterPos3DWorld;
         public float2 CenterPosWorld => Data.CenterPosWorld;
 
