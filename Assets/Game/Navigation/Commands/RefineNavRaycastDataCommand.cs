@@ -5,68 +5,71 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
-    // refines raycast data into triangles navigation data
+    // refines raycast data into triangles navigation data (containing meaning ful info: is obstacled, heights, etc)
     public static class RefineNavRaycastDataCommand
     {
-        // TODO: divide obstacle rays and pathfinding rays
 
         private struct TriangleRaycastData
         {
-            public int IntersectionsCount;
-            public int ObstaclesCount;
-            //public float MaxHeight;
+            public int ObstacledCellsCount;
+
+            public int GroundCastsCount;
             public float AverageGroundHeight;
-            public float AverageObstacleHeight;
 
             public short GetResultingAverageHeight() => (short)math.round(AverageGroundHeight);
         }
 
-        public static Dictionary<IntTriangularPos, TriangleNavData> Execute(
-            NavigationHexPosition hexPos,
-            NativeArray<RaycastHit>.ReadOnly raycastResults, 
-            float intersectionPercentForLock, 
-            INavigationCaster caster)
+        public static NativeHashMap<IntTriangularPos, TriangleNavData> Execute(
+            Allocator allocator,
+           NavigationHexPosition hexPos,
+           NativeArray<RaycastHit>.ReadOnly walkableHits,
+           NativeArray<RaycastHit>.ReadOnly obstacleHits,
+           in MapSettings settings)
         {
-            var intersectionsCount = new Dictionary<IntTriangularPos, TriangleRaycastData>();
-            for (var i = 0; i < raycastResults.Length; i++)
-            {
-                var result = raycastResults[i];
-                if (result.collider == null)
-                    continue;
+            var triangleHeight = settings.TriangleHeight;
+            var raycastsPerTriangle = (float)(settings.RaycastSubdivisionsPerEdge * settings.RaycastSubdivisionsPerEdge);
+            var intersectionPercentForLock = settings.IntersectionPercentForLock;
 
-                var trianglePos = TriangularMath.WorldToTrianglePos(result.point, caster.TriangleHeight);
-                intersectionsCount.TryGetValue(trianglePos, out var data);
+            return default;
+            //var raycastData = new NativeHashMap<IntTriangularPos, TriangleRaycastData>();
+            //foreach (var i)
 
-                data.AverageGroundHeight = (data.AverageGroundHeight * data.IntersectionsCount + result.point.y) / (data.IntersectionsCount + 1);
-                data.IntersectionsCount++;
-                //data.MaxHeight = math.max(data.MaxHeight, result.point.y);
+            //for (var i = 0; i < walkableHits.Length; i++)
+            //{
+            //    raycastData.TryGetValue(trianglePos, out var data);
+
+            //    var result = walkableHits[i];
+            //    if (result.colliderInstanceID != 0)
+            //    {
+                    
+
+            //        data.AverageGroundHeight = (data.AverageGroundHeight * data.GroundCastsCount + result.point.y) / (data.GroundCastsCount + 1);
+            //        data.GroundCastsCount++;
+
+            //        raycastData[trianglePos] = data;
+            //    }
                 
-                if (result.collider.CompareTag(NavigationConstants.OBSTACLE_TAG))
-                    data.ObstaclesCount++;
+            //}
 
-                intersectionsCount[trianglePos] = data;
-            }
+            //var trianglesData = new Dictionary<IntTriangularPos, TriangleNavData>();
+            //foreach (var triKvp in raycastData)
+            //{
+            //    var data = triKvp.Value;
+            //    var isLocked = (data.ObstaclesCount / raycastsPerTriangle) >= intersectionPercentForLock;
+            //    trianglesData.Add(triKvp.Key, 
+            //        new(
+            //            isPassable: !isLocked, 
+            //            height: data.GetResultingAverageHeight(), 
+            //            entranceCost: NavigationConstants.DEFAULT_TRIANGLE_ENTRANCE_COST));
+            //}
 
-            var trianglesData = new Dictionary<IntTriangularPos, TriangleNavData>();
-            var raycastsPerTriangle = (float)(caster.RaycastResolution * caster.RaycastResolution);
-            foreach (var triKvp in intersectionsCount)
-            {
-                var data = triKvp.Value;
-                var isLocked = (data.ObstaclesCount / raycastsPerTriangle) >= intersectionPercentForLock;
-                trianglesData.Add(triKvp.Key, 
-                    new(
-                        isPassable: !isLocked, 
-                        height: data.GetResultingAverageHeight(), 
-                        entranceCost: NavigationConstants.DEFAULT_TRIANGLE_ENTRANCE_COST));
-            }
+            //foreach (var tripos in new HexTrianglesEnumerator(hexPos, settings.TrianglesPerHexEdge))
+            //{
+            //    if (!trianglesData.ContainsKey(tripos))
+            //        trianglesData.Add(tripos, new(false, NavigationConstants.DEFAULT_HEIGHT, sbyte.MaxValue));
+            //}
 
-            foreach (var tripos in new HexTrianglesEnumerator(hexPos, caster.TrianglesPerHexEdge))
-            {
-                if (!trianglesData.ContainsKey(tripos))
-                    trianglesData.Add(tripos, new(false, NavigationConstants.DEFAULT_HEIGHT, sbyte.MaxValue));
-            }
-
-            return trianglesData;
+            //return trianglesData;
         }
     
     }

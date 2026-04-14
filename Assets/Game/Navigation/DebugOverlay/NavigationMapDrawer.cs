@@ -66,7 +66,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         public TrianglesDrawMode _trianglesDrawMode;
 
         private readonly CompositeDisposable _compositeDisposable = new();
-        private readonly QueryParameters _castQueryParameters = NavigationConstants.GetGroundCastQueryParameters();
+        private readonly QueryParameters _castQueryParameters = NavigationConstants.GetWalkableCastQueryParameters();
 
         private List<LineDrawData> _drawData = new();
         private List<SphereDrawData> _sphereDrawData = new();

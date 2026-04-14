@@ -61,7 +61,7 @@ namespace ZE.MechBattle.Navigation
             return TriangularMath.WorldToTrianglePos(new(hexCenterWorld.x, 0f, hexCenterWorld.y + halfHeight), triangleHeight);
         }
 
-        public static IntTriangularPos[] GetOneTriangleHexPositions() => new IntTriangularPos[6]
+        public static IntTriangularPos[] GetSixInnerRingTriangles() => new IntTriangularPos[6]
         {
             new IntTriangularPos(0,1,0),
             new IntTriangularPos(-1,0,0),

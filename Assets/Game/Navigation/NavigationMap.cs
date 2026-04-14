@@ -12,6 +12,7 @@ namespace ZE.MechBattle.Navigation
         float HexEdgeSize { get; }
         IReadOnlyCollection<int2> HexCoords { get; }
         IReadOnlyCollection<INavigationHex> Hexes { get; }
+        MapSettings Settings { get; }
 
         void OnInitialized();
         void UpdateHexFlowMap(int2 hexCoord, IDisposableFlowMap flowMap);
@@ -26,7 +27,7 @@ namespace ZE.MechBattle.Navigation
 
     public class NavigationMap : INavigationMap, IDisposable
     {        
-        public readonly MapSettings Settings;
+        public MapSettings Settings { get;private set;}
 
         public bool IsInitialized { get;private set;} = false;
         public float HexEdgeSize => Settings.HexEdgeSize;

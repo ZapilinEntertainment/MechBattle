@@ -25,7 +25,7 @@ namespace ZE.MechBattle.Navigation.Tests
             var trianglesInHex = TriangularMath.GetTrianglesCountInHex(radius);
             var data = new Dictionary<IntTriangularPos, HexSector> (trianglesInHex);
 
-            var defaultHex = NavigationMapHelper.GetOneTriangleHexPositions();
+            var defaultHex = NavigationMapHelper.GetSixInnerRingTriangles();
             for (var i = 0; i < 6; i++)
             {
                 data.Add(defaultHex[i] + center, (HexSector)i);

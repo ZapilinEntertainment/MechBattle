@@ -7,11 +7,11 @@ namespace ZE.MechBattle.Navigation
 {
     public static class CalculateHexFlowMapCommand
     {
-        private static readonly QueryParameters s_flowMapQueryParameters = NavigationConstants.GetGroundCastQueryParameters();
+        private static readonly QueryParameters s_flowMapQueryParameters = NavigationConstants.GetWalkableCastQueryParameters();
         private const float LOCK_PERCENT = NavigationConstants.NAV_OBSTACLES_LOCK_PERCENT;
 
-        public static FlowFieldCalculationCollections PrepareCalculationCollections(Allocator allocator, NavigationHexPosition hexPos, INavigationCaster caster) =>
-            new FlowFieldCalculationCollections(allocator, hexPos.TriangularCenterPos, caster.TrianglesPerHexEdge);
+        public static FlowFieldCalculationCollections PrepareCalculationCollections(Allocator allocator, NavigationHexPosition hexPos, int trianglePerEdge) =>
+            new FlowFieldCalculationCollections(allocator, hexPos.TriangularCenterPos, trianglePerEdge);
 
         public static async Awaitable<HexFlowMap> ExecuteAsync(
             Allocator allocator,
@@ -19,7 +19,7 @@ namespace ZE.MechBattle.Navigation
             INavigationCaster caster, 
             CancellationToken cancellationToken)
         {
-            using var collections = PrepareCalculationCollections(Allocator.TempJob, hex, caster);   
+            using var collections = PrepareCalculationCollections(Allocator.TempJob, hex, caster.TrianglesPerHexEdge);   
             return await ExecuteAsyncWithCachedCollections(allocator, hex, caster, collections, cancellationToken);         
         }
 
@@ -30,14 +30,16 @@ namespace ZE.MechBattle.Navigation
             FlowFieldCalculationCollections collections,
             CancellationToken cancellationToken)
         {
-            using var raycastData = await caster.CastHexAsync(Allocator.TempJob, hexPos.CenterPosWorld, s_flowMapQueryParameters, cancellationToken);
+            await caster.CastHexAsync(hexPos, s_flowMapQueryParameters, cancellationToken);
             if (cancellationToken.IsCancellationRequested)
             {
                 return default;
             }
 
             // TODO: move casting to own command
-            var refinedData = RefineNavRaycastDataCommand.Execute(hexPos, raycastData.AsReadOnly(), LOCK_PERCENT, caster);
+            //var refinedData = RefineNavRaycastDataCommand.Execute(hexPos, caster.Results), LOCK_PERCENT, caster);
+            NativeHashMap<IntTriangularPos, TriangleNavData> refinedData = default;
+
             var data = collections.SetupData;
 
             foreach (var triangleKvp in refinedData)
@@ -45,11 +47,6 @@ namespace ZE.MechBattle.Navigation
                 var navdata = triangleKvp.Value;
                 data.Set(triangleKvp.Key, navdata);
             }
-
-            #if UNITY_EDITOR
-            if (FlowMapCellData.STRUCTURE_SIZE * 6 * data.Length > 1024 * 900)
-                throw new System.Exception("potential stack overflow");
-            #endif
 
 
             var resultingData = await CombineFlowMapsCommand.ExecuteAsync(collections, hexPos, caster, allocator, cancellationToken);
@@ -66,8 +63,9 @@ namespace ZE.MechBattle.Navigation
             INavigationCaster caster,
             FlowFieldCalculationCollections collections)
         {
-            using var raycastData = caster.CastHex(Allocator.TempJob, hexPos.CenterPosWorld, s_flowMapQueryParameters);
-            var refinedData = RefineNavRaycastDataCommand.Execute(hexPos, raycastData.AsReadOnly(), LOCK_PERCENT, caster);
+            caster.CastHex(hexPos, s_flowMapQueryParameters);
+            //var refinedData = RefineNavRaycastDataCommand.Execute(hexPos, caster.Results, LOCK_PERCENT, caster);
+            NativeHashMap<IntTriangularPos, TriangleNavData> refinedData = default;
             var data = collections.SetupData;
 
             foreach (var triangleKvp in refinedData)
@@ -75,11 +73,6 @@ namespace ZE.MechBattle.Navigation
                 var navdata = triangleKvp.Value;
                 data.Set(triangleKvp.Key, navdata);
             }
-
-#if UNITY_EDITOR
-            if (FlowMapCellData.STRUCTURE_SIZE * 6 * data.Length > 1024 * 900)
-                throw new System.Exception("potential stack overflow");
-#endif
 
             var resultingData = CombineFlowMapsCommand.Execute(collections, hexPos, caster, allocator);
             var accessMap = FormHexAccessMapCommand.Execute(resultingData.AsReadOnly(), hexPos, caster.TrianglesPerHexEdge);

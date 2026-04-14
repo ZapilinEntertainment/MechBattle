@@ -5,6 +5,7 @@ using Unity.Collections;
 
 namespace ZE.MechBattle.Navigation
 {
+    // for encoding triangles inside big triangle
     [BurstCompile]
     public readonly struct TrianglesToIndexFlattenedConverter
     {
@@ -53,22 +54,50 @@ namespace ZE.MechBattle.Navigation
                 _startPosValley = pinnaclePos;
                 _startPosPeak = TriangularMath.GetValleyNeighbour(pinnaclePos, ValleyNeighbour.EdgeUp);
             }
-            
+            //UnityEngine.Debug.Log($"{pinnaclePos} -> {_startPosPeak} : {_startPosValley}");
         }
 
         public int TriangularToIndex(IntTriangularPos pos)
         {
             var v2 = TriangularToV2(pos);
-            return (v2.y * (v2.y +1) / 2 + v2.x) + (pos.IsPeak ? 0 : _valleyTriangleIndexOffset);
+            return V2ToIndex(v2, pos.IsPeak);
+        }
+
+        public bool TryGetIndex(IntTriangularPos pos, out int index)
+        {
+            var v2 = TriangularToV2(pos);            
+            var isIndexValid = IsV2Valid(v2, pos.IsPeak);
+            //UnityEngine.Debug.Log($"{pos} -> {v2} -> {isIndexValid}");
+            index = V2ToIndex(v2, pos.IsPeak);
+            return isIndexValid;
         }
 
         public IntTriangularPos IndexToTriangular(int index) 
         { 
-            var isPeak = index < _valleyTriangleIndexOffset;
-            var correctedIndex = isPeak ? index : (index - _valleyTriangleIndexOffset);
-            var v2 = IndexToV2(correctedIndex);
+            var decodedIndex = DecodeIndex(index);
+            var v2 = decodedIndex.xy;
+            var isPeak = decodedIndex.z == 1;
             var pos = new int3(-v2.x, v2.y ,v2.x - v2.y) * _signCf;
             return new(pos + (isPeak ? _startPosPeak : _startPosValley));
+        }
+
+        public bool TryGetTriangular(int index, out IntTriangularPos pos)
+        {
+            var decodedIndex = DecodeIndex(index);
+            var v2 = decodedIndex.xy;
+            var isPeak = decodedIndex.z == 1;
+                        
+            if (IsV2Valid(v2.xy, isPeak))
+            {
+                var posV3 = new int3(-v2.x, v2.y, v2.x - v2.y) * _signCf;
+                pos = new(posV3 + (isPeak ? _startPosPeak : _startPosValley));
+                return true;
+            }
+            else
+            {
+                pos = default;
+                return false;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -80,6 +109,9 @@ namespace ZE.MechBattle.Navigation
             var startPos = pos.IsPeak ? _startPosPeak : _startPosValley;
             var xdelta = startPos.x - pos.X; // horizontal shift: (-1,0,1)  for valley / (1,0,-1) for peak
             var ydelta = pos.Y - startPos.y; // vertical shift: (0,-1,1) for peak / (0,1,-1) for valley
+
+            if (xdelta * _signCf < 0 || ydelta * _signCf < 0)
+                UnityEngine.Debug.LogError($"{startPos} -> {pos} = {new int2(xdelta, ydelta)} * {_signCf }");
             
             var v2 = new int2(xdelta, ydelta) * _signCf;
             return v2;
@@ -88,6 +120,11 @@ namespace ZE.MechBattle.Navigation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int2 IndexToV2(int index)
         {
+            #if UNITY_EDITOR
+            if (index < 0 || index >= _rowIndicesTable.Length)
+                UnityEngine.Debug.LogError($"invalid index: {index} / {_valleyTriangleIndexOffset} / {_trianglesPerEdge * _trianglesPerEdge} / {_rowIndicesTable.Length}");   
+            #endif
+            index = math.clamp(index, 0, _rowIndicesTable.Length-1);
             var y = _rowIndicesTable[index];
             var x = index - y *( y+1) / 2;
             return new(x,y);
@@ -119,5 +156,25 @@ namespace ZE.MechBattle.Navigation
 
             return array;
         }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int V2ToIndex(int2 v2, bool isPeak) => (v2.y * (v2.y + 1) / 2 + v2.x) + (isPeak ? 0 : _valleyTriangleIndexOffset);
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool IsV2Valid(int2 v2, bool isPeak) =>
+            math.all(v2 >= 0) | math.all(v2 < _trianglesPerEdge) | v2.x < v2.y + 1;
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int3 DecodeIndex(int index)
+        {
+            var isPeak = index < _valleyTriangleIndexOffset;
+            var correctedIndex = isPeak ? index : (index - _valleyTriangleIndexOffset);            
+            var v2 = IndexToV2(correctedIndex);
+            return new(v2.x, v2.y, isPeak ? 1 : 0);
+        }
+
     }
 }

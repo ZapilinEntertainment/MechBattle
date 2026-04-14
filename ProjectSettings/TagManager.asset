@@ -3,16 +3,15 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags:
-  - Obstacle
+  tags: []
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - Ground
+  - NAV_Walkable
   - Water
   - UI
-  - 
+  - NAV_Obstacle
   - 
   - 
   - 

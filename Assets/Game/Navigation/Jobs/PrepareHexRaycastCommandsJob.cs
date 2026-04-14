@@ -9,25 +9,19 @@ namespace ZE.MechBattle.Navigation
     [BurstCompile]
     public struct PrepareHexRaycastCommandsJob : IJob
     {
-        public float2 HexCenterWorld;
         public float TriangleHeight;
-        public int TrianglesPerHexEdge;
+        public int TrianglesPerEdge;
         public int RaycastTrianglesPerEdge;
         public float CastingHeight;
         public float CastingRayLength;
+        public NavigationHexPosition HexPos;
         public QueryParameters QueryParameters;
 
-
-        public NativeArray<IntTriangularPos> Positions;
         public NativeArray<SubdivideTriangleIntoSmallerOnesCommand.SmallTriangleData> RaycastPoints;
         [WriteOnly] public NativeArray<RaycastCommand> RaycastCommands;
 
         public void Execute()
         {
-            // note: all static functions inside are burstable
-            var innerCircleTopTriangle = NavigationMapHelper.GetInnerCircleTopTriangle(HexCenterWorld, TriangleHeight);
-            GetTrianglesInHexCommand.Execute(innerCircleTopTriangle, TrianglesPerHexEdge, Positions);
-
             // why Vector3: raycast command constructor use it
             var direction = Vector3.down;
 
@@ -39,12 +33,12 @@ namespace ZE.MechBattle.Navigation
             };
 
             var index = 0;
-            foreach (var position in Positions)
+            foreach (var tripos in new HexTrianglesEnumerator(HexPos, TrianglesPerEdge))
             {
-                var cartesian = TriangularMath.TriangularToWorld(position, TriangleHeight);
+                var cartesian = TriangularMath.TriangularToWorld(tripos, TriangleHeight);
                 SubdivideTriangleIntoSmallerOnesCommand.Execute(
-                    cartesian.xz, 
-                    position.IsPeak, 
+                    cartesian.xz,
+                    tripos.IsPeak, 
                     subdivisionProtocol);
 
                 var centers = subdivisionProtocol.Centers;

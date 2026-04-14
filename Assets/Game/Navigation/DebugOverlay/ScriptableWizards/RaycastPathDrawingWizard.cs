@@ -131,7 +131,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 _map.TriangleEdgeSize,
                 allocator);
 
-            using var raycastJobCollections = CalculateHexFlowMapCommand.PrepareCalculationCollections(allocator, default, caster);
+            using var raycastJobCollections = CalculateHexFlowMapCommand.PrepareCalculationCollections(allocator, default, _map.TrianglesPerHexEdge);
             for (var i = 0; i < hexes.Length; i++)
             {
                 var hexCoord = hexes[i];

@@ -38,8 +38,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 return;
             }
 
-            var hexCenterWorld = HexMath.HexToWorld(hexCoord, caster.HexEdgeSize);
-            var job = caster.ConstructPositionsJob(hexCenterWorld, NavigationConstants.GetGroundCastQueryParameters());
+            var hexPos = new NavigationHexPosition(hexCoord, caster.HexEdgeSize, caster.TrianglesPerHexEdge);
+            var job = caster.ConstructPositionsJob(hexPos, NavigationConstants.GetWalkableCastQueryParameters(), caster.TrianglesPerHexEdge);
             var handle = job.ScheduleByRef();
             handle.Complete();
 
@@ -54,45 +54,46 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             }            
         }
 
+        [System.Obsolete]
         public async Awaitable CastHexAsync(int2 hexCoord, CancellationToken cancellationToken)
         {
-            var caster = NavigationDebugDataContainer.Caster;
-            if (caster == null)
-            {
-                Debug.LogError("no caster found");
-                return;
-            }
+            //var caster = NavigationDebugDataContainer.Caster;
+            //if (caster == null)
+            //{
+            //    Debug.LogError("no caster found");
+            //    return;
+            //}
 
-            var hexCenterWorld = HexMath.HexToWorld(hexCoord, caster.HexEdgeSize);
-            using var raycastData = await caster.CastHexAsync(Unity.Collections.Allocator.Temp, hexCenterWorld, NavigationConstants.GetGroundCastQueryParameters(), cancellationToken);
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return;
-            }
+            //var hexCenterWorld = HexMath.HexToWorld(hexCoord, caster.HexEdgeSize);
+            //using var raycastData = await caster.CastHexAsync(Unity.Collections.Allocator.Temp, hexCenterWorld, NavigationConstants.GetWalkableCastQueryParameters(), cancellationToken);
+            //if (cancellationToken.IsCancellationRequested)
+            //{
+            //    return;
+            //}
             
-            _points.Clear();
-            foreach (var hit in raycastData) 
-            {
-                Color color;
-                var isPassable = false;
-                var pos = hit.point;
+            //_points.Clear();
+            //foreach (var hit in raycastData) 
+            //{
+            //    Color color;
+            //    var isPassable = false;
+            //    var pos = hit.point;
 
-                if (hit.collider == null)
-                {
-                    // actually, this will never happen, need to rework cast hex async output
-                    color = _noColliderRayColor;
-                    pos = new Vector3(pos.x, 0.01f, pos.y);
-                }                    
-                else
-                {
-                    var t = (hit.distance / COLOR_HEIGHT_STEP) - Mathf.Floor(hit.distance / COLOR_HEIGHT_STEP);
-                    color = Color.Lerp(_shortestRayColor, _longestRayColor, t);
-                    pos.y += 0.01f;
+            //    if (hit.collider == null)
+            //    {
+            //        // actually, this will never happen, need to rework cast hex async output
+            //        color = _noColliderRayColor;
+            //        pos = new Vector3(pos.x, 0.01f, pos.y);
+            //    }                    
+            //    else
+            //    {
+            //        var t = (hit.distance / COLOR_HEIGHT_STEP) - Mathf.Floor(hit.distance / COLOR_HEIGHT_STEP);
+            //        color = Color.Lerp(_shortestRayColor, _longestRayColor, t);
+            //        pos.y += 0.01f;
 
-                    isPassable = !hit.collider.CompareTag(NavigationConstants.OBSTACLE_TAG);
-                }
-                _points.Add(new(pos, color, isPassable));
-            }
+            //        isPassable = !hit.collider.CompareTag(NavigationConstants.OBSTACLE_TAG);
+            //    }
+            //    _points.Add(new(pos, color, isPassable));
+            //}
         }
 
         public void Clear()

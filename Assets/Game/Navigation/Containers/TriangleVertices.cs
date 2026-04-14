@@ -2,7 +2,6 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
-    // used for debug triangle display
     public readonly struct TriangleVertices
     {
         public readonly float3 A;

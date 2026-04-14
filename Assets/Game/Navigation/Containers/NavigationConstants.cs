@@ -33,12 +33,17 @@ namespace ZE.MechBattle.Navigation
         public const float SQRT_THREE_D_3 = SQRT_OF_THREE / 3f;
        
 
-        public static QueryParameters GetGroundCastQueryParameters()
+        public static QueryParameters GetWalkableCastQueryParameters()
         {
-            var layerMask = LayerMask.GetMask("Ground");
+            var layerMask = LayerMask.GetMask("NAV_Walkable");
             return new(layerMask, false, QueryTriggerInteraction.Ignore, false);
         }
 
-        public const string OBSTACLE_TAG = "Obstacle";
+        public static QueryParameters GetObstacleCastQueryParameters()
+        {
+            var layerMask = LayerMask.GetMask("NAV_Obstacle");
+            return new(layerMask, false, QueryTriggerInteraction.Ignore, false);
+        }
+
     }
 }

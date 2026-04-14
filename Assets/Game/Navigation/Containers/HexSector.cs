@@ -1,4 +1,4 @@
-using UnityEngine;
+using Unity.Burst;
 
 namespace ZE.MechBattle.Navigation
 {
@@ -14,6 +14,7 @@ namespace ZE.MechBattle.Navigation
 
     public static class HexSectorExtension
     {
+        [BurstCompile]
         public static int GetDefaultFlowDirection(this HexSector sector, HexEdge edge, bool isPeak)
         {
             // if sector matches the exit edge
@@ -104,6 +105,29 @@ namespace ZE.MechBattle.Navigation
             }
 
            return -1;
+        }
+
+        [BurstCompile]
+        public static IntTriangularPos GetPinnaclePos(this HexSector hexSector, IntTriangularPos innerRingPos, int hexRadius)
+        {
+            hexRadius -= 1;
+            switch (hexSector)
+            {
+                case HexSector.TopRight:
+                    return new(innerRingPos.X - hexRadius, innerRingPos.Y + hexRadius, innerRingPos.Z);
+
+                case HexSector.BottomRight:
+                    return new(innerRingPos.X, innerRingPos.Y - hexRadius, innerRingPos.Z + hexRadius);
+
+                case HexSector.BottomLeft:
+                    return new(innerRingPos.X + hexRadius, innerRingPos.Y - hexRadius, innerRingPos.Z);
+
+                case HexSector.TopLeft:
+                    return new(innerRingPos.X, innerRingPos.Y + hexRadius, innerRingPos.Z - hexRadius);
+
+                case HexSector.Bottom:
+                default: return innerRingPos;
+            }
         }
     }
 }

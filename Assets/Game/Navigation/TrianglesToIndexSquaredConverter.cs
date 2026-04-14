@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace ZE.MechBattle.Navigation
 {
+    // for encoding triangles inside hex
     [BurstCompile]
     public readonly struct TrianglesToIndexSquaredConverter
     {
