@@ -67,11 +67,12 @@ namespace ZE.MechBattle.Navigation.Tests
                 }
             }
 
+            var triangleHeight = hexEdge / radius * NavigationConstants.SQRT_OF_THREE_HALVED;
             foreach (var pos in new HexTrianglesEnumerator(hexPos, radius))
             {
                 Assert.IsTrue(data.ContainsKey(pos), $"no {pos} presented");
 
-                var definedSector = TriangularMath.DefineSector(pos, hexEdge, radius);
+                var definedSector = TriangularMath.DefineSector(pos, hexEdge, radius, triangleHeight);
                 Assert.AreEqual(data[pos], definedSector, $"error at {pos}");
             }
         }

@@ -30,8 +30,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             _vertices.Add(GetTriangleVerticesCommand.Execute(tripos, triangleHeight, offset: 0f));
 
             var center = TriangularMath.TriangularToWorld(tripos, triangleHeight).xz;
-            using var centersArray = SubdivideTriangleIntoSmallerOnesCommand.CreateDataArray(TrianglesPerEdge, Allocator.Temp);
-            SubdivideTriangleIntoSmallerOnesCommand.Execute(center, tripos.IsPeak, new()
+            using var centersArray = SubdivideTriangleCommand.CreateDataArray(TrianglesPerEdge, Allocator.Temp);
+            SubdivideTriangleCommand.Execute(center, tripos.IsPeak, new()
             {
                 Centers = centersArray,
                 RaycastTrianglesPerEdge = TrianglesPerEdge,

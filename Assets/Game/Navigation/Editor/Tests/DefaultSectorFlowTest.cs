@@ -24,7 +24,7 @@ namespace ZE.MechBattle.Navigation.Tests
 
                 foreach (var pos in new HexTrianglesEnumerator(hexPos, hexRadius))
                 {
-                    var sector = TriangularMath.DefineSector(pos, hexEdgeLength, hexRadius);
+                    var sector = TriangularMath.DefineSector(pos, hexEdgeLength, hexRadius, triangleHeight);
                     var defaultDirection = sector.GetDefaultFlowDirection(exitEdge, pos.IsPeak);
                     var nextPos = TriangularMath.GetNeighbourByDirection(pos, defaultDirection);
                     var nextPosHex = TriangularMath.TriangularToHex(nextPos, triangleHeight, hexEdgeLength);
@@ -41,7 +41,7 @@ namespace ZE.MechBattle.Navigation.Tests
                         }
                         else
                         {
-                            var nextPosSector = TriangularMath.DefineSector(nextPos, hexEdgeLength, hexRadius);
+                            var nextPosSector = TriangularMath.DefineSector(nextPos, hexEdgeLength, hexRadius, triangleHeight);
                             Assert.AreEqual(sector, nextPosSector, $"sector: {sector} exit edge: {exitEdge}  {pos} -> {nextPos} is out of sector {nextPosSector} / {sector}");
                         }
                     }

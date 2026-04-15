@@ -17,9 +17,8 @@ namespace ZE.MechBattle.Navigation
     }
 
     [BurstCompile]
-    public struct RefineNavRaycastDataJob
+    public struct RefineNavRaycastDataJob : IJobParallelFor
     {
-
         [ReadOnly, NoAlias] public NativeArray<RaycastHit> WalkableHits;
         [ReadOnly, NoAlias] public NativeArray<RaycastHit> ObstacleHits;
         [NoAlias] public NativeParallelHashMap<IntTriangularPos, TriangleRaycastData> RefinedData;
@@ -27,15 +26,11 @@ namespace ZE.MechBattle.Navigation
         public int HexRadius;
         public int RaycastsPerTriangle;
 
-        public void Execute()
+        public void Execute(int index)
         {
-            foreach (var tripos in new HexTrianglesEnumerator(HexPos, HexRadius))
-            {
-                for (var i = 0; i < RaycastsPerTriangle; i++)
-                {
-
-                }
-            }
+            var walkableHit = WalkableHits[index];
+            var isWalkable = walkableHit.colliderInstanceID != 0;
+            var walkableHeight = isWalkable ? walkableHit.point.y : NavigationConstants.DEFAULT_HEIGHT;
         }
     }
 }

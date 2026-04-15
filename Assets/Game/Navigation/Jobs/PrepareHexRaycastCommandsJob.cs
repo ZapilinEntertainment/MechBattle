@@ -17,7 +17,7 @@ namespace ZE.MechBattle.Navigation
         public NavigationHexPosition HexPos;
         public QueryParameters QueryParameters;
 
-        public NativeArray<SubdivideTriangleIntoSmallerOnesCommand.SmallTriangleData> RaycastPoints;
+        public NativeArray<SubdivideTriangleCommand.SmallTriangleData> RaycastPoints;
         [WriteOnly] public NativeArray<RaycastCommand> RaycastCommands;
 
         public void Execute()
@@ -25,7 +25,7 @@ namespace ZE.MechBattle.Navigation
             // why Vector3: raycast command constructor use it
             var direction = Vector3.down;
 
-            var subdivisionProtocol = new SubdivideTriangleIntoSmallerOnesCommand.TriangleSubdivisionProtocol()
+            var subdivisionProtocol = new SubdivideTriangleCommand.TriangleSubdivisionProtocol()
             {
                 Centers = RaycastPoints,
                 TriangleHeight = TriangleHeight,
@@ -36,7 +36,7 @@ namespace ZE.MechBattle.Navigation
             foreach (var tripos in new HexTrianglesEnumerator(HexPos, TrianglesPerEdge))
             {
                 var cartesian = TriangularMath.TriangularToWorld(tripos, TriangleHeight);
-                SubdivideTriangleIntoSmallerOnesCommand.Execute(
+                SubdivideTriangleCommand.Execute(
                     cartesian.xz,
                     tripos.IsPeak, 
                     subdivisionProtocol);

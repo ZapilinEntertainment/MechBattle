@@ -151,7 +151,7 @@ namespace ZE.MechBattle.Navigation
                 var rawDist = (ushort)TriangularMath.CalculateDistance(pos, edgeCenter);
                 var finalDist = (ushort)math.select(rawDist, 0, logic.IsEdgeTriangle(pos));
 
-                var hexSector = TriangularMath.DefineSector(pos, map.HexEdgeSize, radius);
+                var hexSector = TriangularMath.DefineSector(pos, map.HexEdgeSize, radius, map.TriangleHeight);
                 var dir = hexSector.GetDefaultFlowDirection(edge, pos.IsPeak);
 
                 cell.Values[i] = new FlowMapCellData(dir, finalDist).Value;

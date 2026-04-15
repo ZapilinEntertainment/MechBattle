@@ -30,6 +30,20 @@ namespace ZE.MechBattle.Navigation
         }
 
         [BurstCompile]
+        public static int3 ToTriangleOffsetVector(this HexEdge edge)
+        {
+            switch (edge)
+            {
+                case HexEdge.TopRight: return new(-1,0,0);
+                case HexEdge.BottomRight: return new(0, 0, 1);
+                case HexEdge.Bottom: return new(0, -1, 0);
+                case HexEdge.BottomLeft: return new(1, 0, 0);
+                case HexEdge.TopLeft: return new(0, 0, -1);
+                default: return new(0,1,0);
+            }
+        }
+
+        [BurstCompile]
         public static float2 ToEdgePosOffsetVector(this HexEdge edge)
         {
             var offsetVector = (float2)edge.ToHexOffsetVector();

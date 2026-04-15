@@ -28,9 +28,10 @@ namespace ZE.MechBattle.Navigation.Tests
             
             // 2. fill every triangle as non-handled
             var hexPos = new NavigationHexPosition(new int2(hexCoordX, hexCoordY), HEX_EDGE, hexRadius);
+            var triangleHeight = HEX_EDGE / hexRadius * NavigationConstants.SQRT_OF_THREE_HALVED;
             foreach (var pos in new HexTrianglesEnumerator(hexPos, hexRadius))
             {
-                var sectorIndex = (int)TriangularMath.DefineSector(pos, HEX_EDGE, hexRadius);
+                var sectorIndex = (int)TriangularMath.DefineSector(pos, HEX_EDGE, hexRadius, triangleHeight);
                 tris[sectorIndex].Add(pos, false);
             }
 

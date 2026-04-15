@@ -224,9 +224,8 @@ namespace ZE.MechBattle.Navigation
 
         
         [BurstCompile]
-        public static HexSector DefineSector(IntTriangularPos pos, float hexEdgeLength, int hexRadius)
+        public static HexSector DefineSector(IntTriangularPos pos, float hexEdgeLength, int hexRadius, float triangleHeight)
         {
-            var triangleHeight = hexEdgeLength / hexRadius * NavigationConstants.SQRT_OF_THREE_HALVED;
             var hexCoord = TriangularMath.TriangularToHex(pos, triangleHeight, hexEdgeLength);
             var hexPos = new NavigationHexPosition(hexCoord, hexEdgeLength, hexRadius);
 
@@ -266,19 +265,26 @@ namespace ZE.MechBattle.Navigation
             bool3 isEqual = p == c;
 
             bool3 mask = (isEqual & isPeak) | (!isEqual & isGreater);
-            int index = (mask.x ? 4 : 0) | (mask.y ? 2 : 0) | (mask.z ? 1 : 0);
+            int3 maskInt = math.select(new int3(0), new int3(4, 2, 1), mask);
+            int index = maskInt.x + maskInt.y + maskInt.z;
 
-            return index switch
-            {
-                0b110 => HexSector.TopLeft,   
-                0b111 => HexSector.TopLeft,     
-                0b101 => HexSector.Bottom,      // X=1, Y=0, Z=1
-                0b100 => HexSector.BottomLeft,  // X=1, Y=0, Z=0
-                0b011 => HexSector.TopRight,    // X=0, Y=1, Z=1
-                0b010 => HexSector.Top,         // X=0, Y=1, Z=0
-                0b000 => HexSector.BottomRight, // X=0, Y=0, Z=0
-                _ => HexSector.BottomRight      
-            };
+            //return index switch
+            //{
+            //    0b110 => HexSector.TopLeft,
+            //    0b111 => HexSector.TopLeft,
+            //    0b101 => HexSector.Bottom,      // X=1, Y=0, Z=1
+            //    0b100 => HexSector.BottomLeft,  // X=1, Y=0, Z=0
+            //    0b011 => HexSector.TopRight,    // X=0, Y=1, Z=1
+            //    0b010 => HexSector.Top,         // X=0, Y=1, Z=0
+            //    0b000 => HexSector.BottomRight, // X=0, Y=0, Z=0
+            //    _ => HexSector.BottomRight
+            //};
+            const ulong packedLut = 0x55341022;
+
+            // shift (index * 4) bit and get last 4 bits
+            int sectorValue = (int)((packedLut >> (index * 4)) & 0xF);
+
+            return (HexSector)sectorValue;
         }
 
         [BurstCompile]

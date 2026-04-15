@@ -30,8 +30,8 @@ namespace ZE.MechBattle.Navigation.Tests
         [TestCase(4, 4, 32)]
         public void CoordinatesTest(int hexCoordX, int hexCoordY, int radius)
         {
-            var hexEdgeLength = 100f;
-            var hexPos = new NavigationHexPosition(new int2(hexCoordX, hexCoordY), hexEdgeLength, radius );         
+            const float HEX_EDGE = 100f;
+            var hexPos = new NavigationHexPosition(new int2(hexCoordX, hexCoordY), HEX_EDGE, radius );         
             var readOnlyArray = _rowIndicesData.AsReadOnly();
 
             Span<TrianglesToIndexFlattenedConverter> converters = stackalloc TrianglesToIndexFlattenedConverter[6];
@@ -55,9 +55,10 @@ namespace ZE.MechBattle.Navigation.Tests
             converters[4] = new TrianglesToIndexFlattenedConverter(innerTriangles[4] + new int3(radius-1, -radius+1, 0), radius, readOnlyArray);
             converters[5] = new TrianglesToIndexFlattenedConverter(innerTriangles[5] + new int3(0, radius-1, -radius+1), radius, readOnlyArray);
 
+            var triangleHeight = HEX_EDGE / radius * NavigationConstants.SQRT_OF_THREE_HALVED;
             foreach (var pos in new HexTrianglesEnumerator(hexPos, radius))
             {
-                var sector = TriangularMath.DefineSector(pos, hexEdgeLength, radius);
+                var sector = TriangularMath.DefineSector(pos, HEX_EDGE, radius, triangleHeight);
                 var sectorIndex = (int)sector;
                 Assert.IsTrue(sectorIndex >=0 & sectorIndex < 6, "invalid sector index");
                 var converter = converters[sectorIndex];

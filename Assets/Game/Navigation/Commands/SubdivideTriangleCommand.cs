@@ -4,7 +4,7 @@ using Unity.Collections;
 
 namespace ZE.MechBattle.Navigation
 {
-    public static class SubdivideTriangleIntoSmallerOnesCommand
+    public static class SubdivideTriangleCommand
     {
         private const float ORTHOCENTER_CF = 2f / 3f; 
 

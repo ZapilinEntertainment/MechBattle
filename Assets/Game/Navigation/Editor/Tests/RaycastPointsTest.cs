@@ -26,7 +26,7 @@ namespace ZE.MechBattle.Navigation.Tests
             using var raycastCommands = new NativeArray<RaycastCommand>(raycastCommandsCount, allocator);
 
             var raycastsPerTriangle = RAYCAST_TRIANGLES_PER_EDGE * RAYCAST_TRIANGLES_PER_EDGE;
-            using var raycastPointsArray = new NativeArray<SubdivideTriangleIntoSmallerOnesCommand.SmallTriangleData>(raycastsPerTriangle, allocator, NativeArrayOptions.UninitializedMemory);
+            using var raycastPointsArray = new NativeArray<SubdivideTriangleCommand.SmallTriangleData>(raycastsPerTriangle, allocator, NativeArrayOptions.UninitializedMemory);
 
             var positionsJob = new PrepareHexRaycastCommandsJob()
             {
