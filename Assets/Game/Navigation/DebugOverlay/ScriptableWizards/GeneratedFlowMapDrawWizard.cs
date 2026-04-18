@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Collections.Generic;
 using UnityEditor;
@@ -17,6 +18,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         private bool _isCalculating = false;
         private CancellationTokenSource _cts = new();
         private List<(float3 start, float3 end)> _points = new();
+        private FlowMapFactory _flowMapFactory;
 
         private Dictionary<int2, HexFlowMap> _cachedMaps = new();
 
@@ -62,39 +64,52 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         private async Awaitable UpdateFlowMapAsync(int2 hexCoord, HexEdge exitEdge, CancellationToken cancellationToken)
         {
-            var caster = NavigationDebugDataContainer.Caster;
-            if (caster == null)
+            _flowMapFactory??= new FlowMapFactory(Allocator.Persistent, NavigationDebugDataContainer.MapSettings.ToStruct());
+            
+            var map = NavigationDebugDataContainer.Map;
+            if (map == null)
             {
-                Debug.LogError("no caster found");
+                Debug.LogError("no map found");
                 return;
             }
 
             if (!_cachedMaps.TryGetValue(hexCoord, out var flowMap))
             {
-                var map = NavigationDebugDataContainer.Map;
-                if (map == null)
+                using var timeTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                using var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeTokenSource.Token);
+                var combinedToken = combinedCts.Token;
+
+                try
                 {
-                    Debug.LogError("no map found");
-                    return;
+                    flowMap = await _flowMapFactory.CreateHexFlowMapAsync(Allocator.Persistent, hexCoord, combinedToken);                    
+                }
+                catch (OperationCanceledException)
+                {
+                    Debug.LogWarning("dispose timeout! Did you forget to set async flag to false?");
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogException(ex);
                 }
 
-                flowMap = await CalculateHexFlowMapCommand.ExecuteAsync(Allocator.Persistent, map.GetHexData(hexCoord), caster, cancellationToken);
-
-                if (cancellationToken.IsCancellationRequested)
+                if (combinedToken.IsCancellationRequested)
                 {
-                    flowMap.Dispose();
+                    flowMap?.Dispose();
                     return;
                 }
-                
-                _cachedMaps.Add(hexCoord, flowMap);
+                else
+                {
+                    _cachedMaps.Add(hexCoord, flowMap);
+                }
             }
            
             //draw:
-            var arrowSize = 0.3f * caster.TriangleHeight;
+            var triangleHeight = map.TriangleHeight;
+            var arrowSize = 0.3f * triangleHeight;
             foreach (var kvp in flowMap.Data)
             {
                 // direction arrow:
-                var worldPos = TriangularMath.TriangularToWorld(kvp.Key, caster.TriangleHeight);
+                var worldPos = TriangularMath.TriangularToWorld(kvp.Key, triangleHeight);
                 var combinedData = kvp.Value;
                 var flowMapCell = kvp.Value[exitEdge];     
                 if (!combinedData.IsPassable && !DrawLocked)
@@ -108,10 +123,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 _points.Add((endPos, 0.3f * arrowSize * math.mul(rotationLeft, -vector) + endPos));
 
                 // triangle border:
-                var vertices = GetTriangleVerticesCommand.Execute(kvp.Key, caster.TriangleHeight);
-                _points.Add((vertices.A, vertices.B));
-                _points.Add((vertices.B, vertices.C));
-                _points.Add((vertices.A, vertices.C));
+                var vertices = GetTriangleVerticesCommand.Execute(kvp.Key, triangleHeight);
+                vertices.AddPointsToList(_points);
             }
         }
 
@@ -136,6 +149,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             _cts.Cancel();
             _cts.Dispose();
             _cts= null;
+
+            _flowMapFactory?.Dispose();
         }
 
         void OnSceneGUI(SceneView sceneView)

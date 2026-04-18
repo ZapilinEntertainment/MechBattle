@@ -99,7 +99,7 @@ namespace ZE.MechBattle.Navigation.Tests
                 };
 
 
-            var map = new NavigationMap(MapSettings.Default);
+            using var map = new NavigationMap(MapSettings.Default, Allocator.TempJob);
 
             map.AddHex(int2.zero);
             map.AddHex(new int2(1, 0));

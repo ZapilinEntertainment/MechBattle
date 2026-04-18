@@ -18,7 +18,6 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         private bool _settingsAssetFound = false;
         private bool _drawerPrepared = false;        
         private NavigationMap _map;
-        private NavigationCaster _caster;
         private NavigationMapDrawer _drawer;
 
         private const string SELECTED_SETTINGS_KEY = "DebugNavigationSettings";
@@ -76,7 +75,6 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
             EditorPrefs.SetString(SELECTED_SETTINGS_KEY, AssetDatabase.GetAssetPath(settings));
             NavigationDebugDataContainer.SetMapSettings(settings);
-            UpdateCaster(settings);
             UpdateMap(settings);
             UpdateDrawer(settings);
         }
@@ -99,7 +97,6 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
             var settings = _settingsProperty.Value;
             UpdateMap(settings);
-            UpdateCaster(settings);
             UpdateDrawer(settings);            
         }
 
@@ -110,23 +107,10 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 _map.Dispose();
                 _map = null;
                 NavigationDebugDataContainer.SetMap(null);  
-            }
-            
-            if (_caster != null)
-            {
-                _caster.Dispose();
-                _caster = null;
-                NavigationDebugDataContainer.SetCaster(null);
-            }        
+            }    
             
             if (_drawerPrepared) 
                 _drawer.ClearDrawData();
-        }
-
-        private void UpdateCaster(MapSettingsSO settings)
-        {
-            _caster = new(settings, Allocator.Persistent);
-            NavigationDebugDataContainer.SetCaster(_caster);
         }
 
         private void UpdateDrawer(MapSettingsSO settings)
@@ -146,7 +130,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         {
             if (_map == null)
             {
-                _map = new(settings.ToStruct());
+                _map = new(settings.ToStruct(), Allocator.Persistent);
                 NavigationDebugDataContainer.SetMap(_map);
             }
         }

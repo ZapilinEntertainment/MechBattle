@@ -15,30 +15,28 @@ namespace ZE.MechBattle.Navigation
             private readonly int _radius;
             private readonly int _trianglesInHex;
             private readonly FlowFieldCalculationCollections _data;
-            private readonly TrianglesToIndexSquaredConverter _coordsConverter;
-            private readonly SquaredHexTrianglesList<TriangleNavData> _setupData;            
+            private readonly FlattenedHexList<CellPassabilityData> _setupData;            
             private readonly NavigationHexPosition _hexPos;
 
             private readonly CombinedFlowMapCellsStorage _compositeMap;
             private readonly DisposableArray<int> _hexTriangleIndices;
 
-            public Logic(FlowFieldCalculationCollections data, INavigationCaster caster, NavigationHexPosition hexPos)
+            public Logic(FlowFieldCalculationCollections data, NavigationHexPosition hexPos, int hexRadius)
             {
                 _data = data;
-                _setupData = _data.SetupData;
+                _setupData = _data.PassabilityData;
                 _calculationData = data.CalculationData;
                 _length = _setupData.Length;
-                _coordsConverter = _setupData.CoordsConverter;
-                _radius = caster.TrianglesPerHexEdge;
+                _radius = hexRadius;
                 _hexPos = hexPos;
 
-                _compositeMap = new CombinedFlowMapCellsStorage(_length, _setupData.CoordsConverter);
-                _trianglesInHex = caster.HexTrianglesCount;
+                _compositeMap = new CombinedFlowMapCellsStorage(_length, _setupData.GetCoordsConverter());
+                _trianglesInHex = TriangularMath.GetTrianglesCountInHex(_radius);
                 _hexTriangleIndices = new DisposableArray<int>(_trianglesInHex);
                 var ti = 0;
                 foreach (var hexTrianglePos in new HexTrianglesEnumerator(hexPos, _radius))
                 {
-                    var index = _coordsConverter.TriangularToIndex(hexTrianglePos);
+                    var index = _setupData.TriangularToIndex(hexTrianglePos);
                     _hexTriangleIndices[ti++] = index;
                 }
             }
@@ -47,7 +45,7 @@ namespace ZE.MechBattle.Navigation
             {
                 var job = new GenerateFlowFieldJob()
                 {
-                    SetupData = _setupData,
+                    PassabilityData = _setupData,
                     CalculationData = _calculationData,
                     HexData = _hexPos,
                     CalculationQueue = _data.CalculationQueue,
@@ -63,11 +61,6 @@ namespace ZE.MechBattle.Navigation
                 for (var i = 0; i < _trianglesInHex; i++)
                 {
                     var index = _hexTriangleIndices[i];
-
-                    var defaultData = _setupData[index];
-                    if (!defaultData.IsValid)
-                        continue;
-
                     var calculatedData = _calculationData[index];
                     var cellData = new FlowMapCellData(direction: calculatedData.FlowDirection, exitDistance: (ushort)calculatedData.IntegrationValue);
                     _compositeMap.SetValue(edge, index, cellData);
@@ -80,12 +73,8 @@ namespace ZE.MechBattle.Navigation
                 for (var i = 0; i < _trianglesInHex; i++)
                 {
                     var index = _hexTriangleIndices[i];
-                    var triangleSetupData = _setupData[index];
-                    if (!triangleSetupData.IsValid)
-                        continue;
-
-                    var compositeCell = _compositeMap.GetCombinedCell(index, triangleSetupData);
-                    resultingData.Add(_coordsConverter.IndexToTriangular(index), compositeCell);
+                    var compositeCell = _compositeMap.GetCombinedCell(index, _setupData[index]);
+                    resultingData.Add(_setupData.IndexToTriangular(index), compositeCell);
                 }
                 return resultingData;
             }
@@ -101,11 +90,11 @@ namespace ZE.MechBattle.Navigation
         public static async Awaitable<NativeHashMap<IntTriangularPos, FlowMapCombinedCell>> ExecuteAsync(
                FlowFieldCalculationCollections data,
                NavigationHexPosition hexPos,
-               INavigationCaster caster,
+               int hexRadius,
                Allocator allocator,
                CancellationToken cancellationToken)
         {
-            using var logic = new Logic(data, caster, hexPos);
+            using var logic = new Logic(data, hexPos, hexRadius);
 
             for (var e = 0; e < 6; e++)
             {
@@ -129,10 +118,10 @@ namespace ZE.MechBattle.Navigation
         public static NativeHashMap<IntTriangularPos, FlowMapCombinedCell> Execute(
               FlowFieldCalculationCollections data,
               NavigationHexPosition hexPos,
-              INavigationCaster caster,
+              int hexRadius,
               Allocator allocator)
         {
-            using var logic = new Logic(data, caster, hexPos);
+            using var logic = new Logic(data, hexPos, hexRadius);
             for (var e = 0; e < 6; e++)
             {
                 var edge = (HexEdge)e;

@@ -131,7 +131,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 Start = start,
                 End = end,
                 CalculationData = jobData.CalculationData,
-                SetupData = jobData.SetupData,
+                PassabilityData = jobData.PassabilityData,
                 OpenedList = jobData.OpenedList,
                 ResultList = jobData.ResultList,
             };
@@ -144,7 +144,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 _triangularPathJobData = PrepareTriangularPathJobCollectionsCommand.Execute(
                     Allocator.Persistent,
                     CreateHexPos(hexCoord),
-                    _map.TrianglesPerHexEdge,
+                    _map.Settings,
                     _map.GetFlowMap(hexCoord));
 
             else

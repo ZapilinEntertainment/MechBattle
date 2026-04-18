@@ -24,7 +24,8 @@ namespace ZE.MechBattle.Navigation
         {
             _hexCoord = hexPos.HexCoordinate;
             _radius = radius;
-            Current = hexPos.TriangularCenterPos + new int3(0,1,0);
+
+            Current = hexPos.TriangularCenterPos + new int3(0, 1, 0);
 
             _circleIndex = 0;
             _edgeIndex = 0;
@@ -127,6 +128,8 @@ namespace ZE.MechBattle.Navigation
         object IEnumerator.Current => Current;
 
         public void Dispose() { }
+
+        // don't use - caching of enumerator results in boxing
         public void Reset() { }
 
         public IEnumerator<IntTriangularPos> GetEnumerator() => this;

@@ -75,5 +75,6 @@ namespace ZE.MechBattle.Navigation
         }
 
         public static MapSettings Default => new(100f, 4, GetDefaultMapBorders(), true);
+        public static MapSettings CreateWithDefaultBorders(float hexEdge, int trianglesPerEdge) => new(hexEdge, trianglesPerEdge, GetDefaultMapBorders());
     }
 }

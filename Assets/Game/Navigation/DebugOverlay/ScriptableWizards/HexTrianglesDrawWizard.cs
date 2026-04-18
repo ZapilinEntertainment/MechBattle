@@ -67,9 +67,9 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             
             foreach (var triangleVertices in _vertices)
             {
-                Handles.DrawLine(triangleVertices.A, triangleVertices.B);
-                Handles.DrawLine(triangleVertices.B, triangleVertices.C);
-                Handles.DrawLine(triangleVertices.A, triangleVertices.C);
+                Handles.DrawLine(triangleVertices.PinnaclePos, triangleVertices.LeftBasisPos);
+                Handles.DrawLine(triangleVertices.LeftBasisPos, triangleVertices.RightBasisPos);
+                Handles.DrawLine(triangleVertices.RightBasisPos, triangleVertices.PinnaclePos);
             }
         }
     }

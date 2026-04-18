@@ -61,9 +61,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
                 // triangle border:
                 var vertices = GetTriangleVerticesCommand.Execute(tripos, triangleHeight);
-                _points.Add((vertices.A, vertices.B));
-                _points.Add((vertices.B, vertices.C));
-                _points.Add((vertices.A, vertices.C));
+                vertices.AddPointsToList(_points);
             }
 
             SceneView.RepaintAll();

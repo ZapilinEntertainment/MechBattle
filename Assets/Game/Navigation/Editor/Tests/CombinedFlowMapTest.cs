@@ -21,12 +21,12 @@ namespace ZE.MechBattle.Navigation.Tests
             var hexPos = new NavigationHexPosition(hexCoordX, hexCoordY, hexEdge, hexEdge / radius * NavigationConstants.SQRT_OF_THREE_HALVED);
 
             var allocator = Allocator.Persistent;
-            using var collectionsData = new FlowFieldCalculationCollections(allocator, hexPos.TriangularCenterPos, radius);
-            var setupData = collectionsData.SetupData;
-            var triangleData = TriangleNavData.CreateDefaultData(true);
+            using var collectionsData = FlowFieldCalculationCollections.CreateCollection(allocator, hexPos, MapSettings.CreateWithDefaultBorders(hexEdge, radius));
+            var setupData = collectionsData.PassabilityData;
+            var triangleData = CellPassabilityData.CreateDefaultData(true);
             foreach (var triangle in new HexTrianglesEnumerator(hexPos, radius))
             {
-                setupData.Set(triangle, triangleData);
+                setupData[triangle] = triangleData;
             }
 
             if (FlowMapCellData.STRUCTURE_SIZE * 6 * setupData.Length > 1024 * 900)
@@ -44,12 +44,11 @@ namespace ZE.MechBattle.Navigation.Tests
            int radius,
            Allocator allocator)
         {
-            var setupData = data.SetupData;
+            var setupData = data.PassabilityData;
             var calculationData = data.CalculationData;
             var length = setupData.Length;
-            var coordsConverter = setupData.CoordsConverter;
 
-            using var compositeMap = new CombinedFlowMapCellsStorage(length, setupData.CoordsConverter);
+            using var compositeMap = new CombinedFlowMapCellsStorage(length, setupData.GetCoordsConverter());
             var trianglesInHex = TriangularMath.GetTrianglesCountInHex(radius);
 
             // indices of triangles only in hex (squared array have also outside ones)
@@ -57,7 +56,7 @@ namespace ZE.MechBattle.Navigation.Tests
             var ti = 0;
             foreach (var hexTrianglePos in new HexTrianglesEnumerator(hexPos, radius))
             {
-                var index = coordsConverter.TriangularToIndex(hexTrianglePos);
+                var index = setupData.TriangularToIndex(hexTrianglePos);
                 hexTriangleIndices[ti++] = index;
                 Assert.IsTrue(setupData[index].IsPassable, $"{hexTrianglePos} is not passable by default");
             }
@@ -72,7 +71,7 @@ namespace ZE.MechBattle.Navigation.Tests
                 var edge = (HexEdge)e;
                 var job = new GenerateFlowFieldJob()
                 {
-                    SetupData = setupData,
+                    PassabilityData = setupData,
                     CalculationData = calculationData,
                     HexData = hexPos,
                     CalculationQueue = data.CalculationQueue,
@@ -87,17 +86,16 @@ namespace ZE.MechBattle.Navigation.Tests
                 {
                     var index = hexTriangleIndices[i];
 
-                    Assert.IsTrue(job.SetupData[index].IsPassable, "setup data was changed");
+                    Assert.IsTrue(job.PassabilityData[index].IsPassable, "setup data was changed");
 
                     var defaultData = setupData[index];
-                    Assert.IsTrue(defaultData.IsValid);
 
                     var calculatedData = job.CalculationData[index];
                     Assert.IsTrue(calculatedData.FlowDirection >= 0 && calculatedData.FlowDirection < ushort.MaxValue,
-                        $"incorrect flow direction at {edge} {coordsConverter.IndexToTriangular(index)} = {calculatedData.FlowDirection}");
+                        $"incorrect flow direction at {edge} {setupData.IndexToTriangular(index)} = {calculatedData.FlowDirection}");
 
                     if (!defaultData.IsPassable)
-                        Debug.Log($"{coordsConverter.IndexToTriangular(index)} is not passable when calculate cell data");
+                        Debug.Log($"{setupData.IndexToTriangular(index)} is not passable when calculate cell data");
                     var cellData = new FlowMapCellData(calculatedData.FlowDirection, (ushort)calculatedData.IntegrationValue);
                     compositeMap.SetValue(edge, index, cellData);
 
@@ -123,9 +121,6 @@ namespace ZE.MechBattle.Navigation.Tests
             {
                 var index = hexTriangleIndices[i];
                 var triangleSetupData = setupData[index];
-
-                if (!triangleSetupData.IsValid)
-                    continue;
 
                 Assert.IsTrue(triangleSetupData.IsPassable, "setup data is not passable");
             }

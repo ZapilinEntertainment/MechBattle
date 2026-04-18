@@ -1,10 +1,11 @@
+using System;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
-    public readonly struct HexFlattenedCoordConverter
+    public readonly struct FlattenedHexCoordsConverter
     {
         public readonly int TrianglesPerSector;
 
@@ -19,8 +20,20 @@ namespace ZE.MechBattle.Navigation
         private readonly TrianglesToIndexFlattenedConverter BottomLeftConverter;
         private readonly TrianglesToIndexFlattenedConverter TopLeftConverter;
 
+        /// <returns> row indices table native array </returns>
+        public static IDisposable CreateCoordsConverter(
+            Allocator allocator, 
+            IntTriangularPos hexCenter, 
+            in MapSettings mapSettings, 
+            out FlattenedHexCoordsConverter converter)
+        {
+            var hexRadius = mapSettings.TrianglesPerHexEdge;
+            var rowIndicesTable = TrianglesToIndexFlattenedConverter.FulfilRowIndices(allocator, hexRadius);
+            converter = new(hexCenter, hexRadius, mapSettings.HexEdgeSize, mapSettings.TriangleHeight, rowIndicesTable.AsReadOnly());
+            return rowIndicesTable;
+        }
 
-        public HexFlattenedCoordConverter(
+        public FlattenedHexCoordsConverter(
             IntTriangularPos hexCenter, 
             int hexRadius, 
             float hexEdgeLength,
@@ -32,7 +45,6 @@ namespace ZE.MechBattle.Navigation
             _triangleHeight = triangleHeight;
 
             TopConverter = new(new(hexCenter.X, hexCenter.Y + 1, hexCenter.Z), hexRadius, rowIndicesTable);
-
             TopRightConverter = CreateSectorConverter(HexSector.TopRight);
             BottomRightConverter = CreateSectorConverter(HexSector.BottomRight);
             BottomConverter = CreateSectorConverter(HexSector.Bottom);
@@ -77,20 +89,25 @@ namespace ZE.MechBattle.Navigation
         public bool TryGetIndex(IntTriangularPos pos, out int index)
         {
             var sector = TriangularMath.DefineSector(pos, _hexEdgeLength, _hexRadius, _triangleHeight);
+            index = -1;
+            var isSuccess = false;
             switch (sector)
             {
-                case HexSector.TopRight: return TopRightConverter.TryGetIndex(pos, out index);
-                case HexSector.BottomRight: return BottomRightConverter.TryGetIndex(pos, out index);
-                case HexSector.Bottom: return BottomConverter.TryGetIndex(pos, out index);
-                case HexSector.BottomLeft: return BottomLeftConverter.TryGetIndex(pos, out index);
-                case HexSector.TopLeft: return TopLeftConverter.TryGetIndex(pos, out index);
-                default: return TopConverter.TryGetIndex(pos, out index);
+                case HexSector.TopRight: isSuccess = TopRightConverter.TryGetIndex(pos, out index); break;
+                case HexSector.BottomRight: isSuccess = BottomRightConverter.TryGetIndex(pos, out index); break;
+                case HexSector.Bottom: isSuccess = BottomConverter.TryGetIndex(pos, out index); break;
+                case HexSector.BottomLeft: isSuccess = BottomLeftConverter.TryGetIndex(pos, out index); break;
+                case HexSector.TopLeft: isSuccess = TopLeftConverter.TryGetIndex(pos, out index); break;
+                default: isSuccess = TopConverter.TryGetIndex(pos, out index); break;
             }
+            index += GetIndexOffset(sector);
+            return isSuccess;
         }
 
         public IntTriangularPos IndexToTriangular(int index)
         {
             var localIndex = GetLocalIndex(index);
+            index = localIndex.localIndex;
             switch (localIndex.sector)
             {
                 case HexSector.TopRight: return TopRightConverter.IndexToTriangular(index);
@@ -115,5 +132,8 @@ namespace ZE.MechBattle.Navigation
                 default: return TopConverter.TryGetTriangular(data.localIndex, out pos);
             }
         }
+
+        public FlattenedHexCoordsConverter ChangeHexCenter(IntTriangularPos hexCenter) =>
+            new(hexCenter, _hexRadius, _hexEdgeLength, _triangleHeight, TopConverter.GetRowIndicesTable());
     }
 }

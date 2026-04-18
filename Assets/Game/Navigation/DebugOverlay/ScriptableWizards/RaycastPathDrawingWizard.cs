@@ -12,10 +12,13 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
     {
         public int2 BottomLeftCornerXZ = new (-200, -200);
         public int2 TopRightCornerXZ = new (200, 200);
+
         private readonly Color _zoneColor = new Color(0.78f, 0.71f, 0f, 0.1f);
         private readonly TrianglesDrawer _trisDrawer = new();
+
         private int _mapSizeHash = 0;
         private bool _mapCasted = false;
+        private FlowMapFactory _flowMapFactory;
 
         [MenuItem("ZE.Navigation/Draw Raycast Navigation Path")]
         static void OpenWizard()
@@ -84,7 +87,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                     existingSettings.TrianglesPerHexEdge, 
                     unscannedSurfacesArePassable: true,
                     mapBorders: new int4(BottomLeftCornerXZ, TopRightCornerXZ));
-                _map = new NavigationMap(localSettings);
+                _map = new NavigationMap(localSettings, Allocator.Persistent);
 
                 _mapSizeHash = HashCode.Combine(BottomLeftCornerXZ, TopRightCornerXZ);
             }
@@ -113,16 +116,11 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         protected override void OnWizardDisabled()
         {
             _trisDrawer?.Clear();
+            _flowMapFactory?.Dispose();
         }
 
         private void CastMap()
         {
-            var caster = NavigationDebugDataContainer.Caster;
-            if (caster == null)
-            {
-                throw new Exception("no caster found");
-            }
-
             var allocator = Allocator.Persistent;
             using var hexes = GetHexesInRectangleCommand.Execute(
                 BottomLeftCornerXZ,
@@ -131,18 +129,13 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 _map.TriangleEdgeSize,
                 allocator);
 
-            using var raycastJobCollections = CalculateHexFlowMapCommand.PrepareCalculationCollections(allocator, default, _map.TrianglesPerHexEdge);
+            _flowMapFactory ??= new FlowMapFactory(allocator, _map.Settings);           
+            
             for (var i = 0; i < hexes.Length; i++)
             {
                 var hexCoord = hexes[i];
-                var hexPos = new NavigationHexPosition(hexCoord, _map.HexEdgeSize, _map.TrianglesPerHexEdge);
-                raycastJobCollections.ChangeHexPosAndReset(hexPos.TriangularCenterPos);
-
-                var flowMap = CalculateHexFlowMapCommand.ExecuteWithCachedCollections(
-                    allocator,
-                    hexPos,
-                    caster,
-                    raycastJobCollections);
+                var hexPos = new NavigationHexPosition(hexCoord, _map.HexEdgeSize, _map.TrianglesPerHexEdge);                
+                var flowMap = _flowMapFactory.CreateHexFlowMap(allocator, hexCoord);
 
                 _map.UpdateHexFlowMap(hexCoord, flowMap);
                 _trisDrawer.DrawHexTriangles(hexPos, _map);

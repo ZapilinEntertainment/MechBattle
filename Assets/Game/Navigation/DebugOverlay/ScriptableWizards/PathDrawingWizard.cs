@@ -72,7 +72,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                     existingSettings.TrianglesPerHexEdge, 
                     mapBorders: MapSettings.GetDefaultMapBorders(),
                     unscannedSurfacesArePassable: true);
-                _map = new NavigationMap(localSettings);
+                _map = new NavigationMap(localSettings, Allocator.Persistent);
                 
                 
                 var hexes = GetHexesInRectangleCommand.Execute(existingSettings.BottomLeftCorner, existingSettings.TopRightCorner, existingSettings.HexEdgeSize, existingSettings.TriangleEdgeSize, Allocator.Temp);

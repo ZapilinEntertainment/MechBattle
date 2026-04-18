@@ -25,8 +25,6 @@ namespace ZE.MechBattle.Navigation
         public int2 HexCoordinate => Data.HexCoordinate;
 
         public readonly NavigationHexPosition Data;      
-
-        public SquaredHexTrianglesList<TriangleNavData> TrianglesData;
         private IDisposableFlowMap _flowMap;
 
 
@@ -39,12 +37,6 @@ namespace ZE.MechBattle.Navigation
         {
             _flowMap?.Dispose();
             _flowMap = flowMap;
-            Version++;
-        }
-
-        public void UpdateTrianglesData(in SquaredHexTrianglesList<TriangleNavData> data)
-        {
-            TrianglesData = data;
             Version++;
         }
 

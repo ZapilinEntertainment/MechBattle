@@ -9,7 +9,7 @@ namespace ZE.MechBattle.Navigation
     [BurstCompile]
     public struct ConstructTriangularPathJob : IJob
     {
-        [ReadOnly] public SquaredHexTrianglesList<TriangleNavData> SetupData;
+        [ReadOnly] public FlattenedHexList<CellPassabilityData> PassabilityData;
 
         public IntTriangularPos Start;
         public IntTriangularPos End;
@@ -28,7 +28,7 @@ namespace ZE.MechBattle.Navigation
             }
 
 
-            if (!SetupData.TryGetIndex(Start, out var startTriangleIndex))
+            if (!PassabilityData.TryGetIndex(Start, out var startTriangleIndex))
             {
 #if UNITY_EDITOR
                 UnityEngine.Debug.Log("start pos not valid");
@@ -80,26 +80,25 @@ namespace ZE.MechBattle.Navigation
         private void HandleNeighbours(IntTriangularPos pos, int index)
         {
             var activeNodeData = CalculationData[index];
-            var coordsConverter = SetupData.CoordsConverter;
             var isPeak = pos.IsPeak;
 
             for (var neighbourDirection = 0; neighbourDirection < 12; neighbourDirection++)
             {
                 var neighbourPos = TriangularMath.GetNeighbourByDirection(pos, neighbourDirection);
-                var data = SetupData.GetValidOrDefault(neighbourPos);
-                if (!data.IsValid | !data.IsPassable)
+                var isIndexValid = PassabilityData.TryGetValue(neighbourPos, out var neighbourPassabilityData, out var neighbourIndex);
+                
+                // not passable by default
+                if (!isIndexValid | !neighbourPassabilityData.IsPassable)
                     continue;
 
                 var cost = TriangularMath.GetTransitionCost(neighbourDirection, isPeak);
-                AstarLogic.HandleNeighbour(activeNodeData, coordsConverter.TriangularToIndex(neighbourPos), OpenedList, CalculationData, cost);
+                AstarLogic.HandleNeighbour(activeNodeData, neighbourIndex, OpenedList, CalculationData, cost);
             }
         }
 
         private void BuildPath(IntTriangularPos finalPos)
         {
-            var coordsConverter = SetupData.CoordsConverter;
-
-            var index = coordsConverter.TriangularToIndex(finalPos);
+            var index = PassabilityData.TriangularToIndex(finalPos);
             var finalNodeData = CalculationData[index];
             var stepsCount = finalNodeData.StepsCount;
             //PathCost.Value = finalNodeData.PathCost;
@@ -110,7 +109,7 @@ namespace ZE.MechBattle.Navigation
             while (i >= 0)
             {
                 ResultList[i--] = currentPos;
-                var data = CalculationData[coordsConverter.TriangularToIndex(currentPos)];
+                var data = CalculationData[PassabilityData.TriangularToIndex(currentPos)];
                 currentPos = data.ParentNodeKey;
                 //UnityEngine.Debug.Log(data.PathCost);
             }

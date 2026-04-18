@@ -18,17 +18,14 @@ namespace ZE.MechBattle.Navigation
     [BurstCompile]
     public struct GenerateFlowFieldJob : IJob
     {
-
-        [NoAlias, ReadOnly] public SquaredHexTrianglesList<TriangleNavData> SetupData;
-        [NoAlias] public NativeQueue<int> CalculationQueue;
-        [NoAlias] public NativeHashSet<int> QueuedPositions;        
-        [NoAlias] public NativeArray<FlowFieldCellCalculationData> CalculationData;
+        [ReadOnly] public FlattenedHexList<CellPassabilityData> PassabilityData;
+        public NativeQueue<int> CalculationQueue;
+        public NativeHashSet<int> QueuedPositions;        
+        public NativeArray<FlowFieldCellCalculationData> CalculationData;
 
         public NavigationHexPosition HexData;
         public int TrianglesPerEdge;
         public HexEdge ExitEdge;    
-
-        private TrianglesToIndexSquaredConverter _coordsConverter;
 
         private const int NEIGHBOURS_COUNT = 12;
         private int _exitFlowDirectionPeak;
@@ -39,8 +36,6 @@ namespace ZE.MechBattle.Navigation
             CalculationQueue.Clear();
             QueuedPositions.Clear();
 
-            _coordsConverter = SetupData.CoordsConverter;
-
             _exitFlowDirectionPeak = TriangularMath.GetHexEdgeExitVector(ExitEdge, true);
             _exitFlowDirectionValley = TriangularMath.GetHexEdgeExitVector(ExitEdge, false);
 
@@ -49,7 +44,9 @@ namespace ZE.MechBattle.Navigation
                 var cellData = CalculationData[i];
                 cellData.IntegrationValue = float.MaxValue;
                 cellData.IsCalculated = false;
-                cellData.FlowDirection = math.select(_exitFlowDirectionValley, _exitFlowDirectionPeak, _coordsConverter.IndexToTriangular(i).IsPeak);
+
+                var pos = PassabilityData.IndexToTriangular(i);
+                cellData.FlowDirection = math.select(_exitFlowDirectionValley, _exitFlowDirectionPeak, pos.IsPeak);
                 CalculationData[i] = cellData;
             }
 
@@ -81,12 +78,9 @@ namespace ZE.MechBattle.Navigation
 
         private void SetupExitCell(IntTriangularPos pos)
         {
-            var index = _coordsConverter.TriangularToIndex(pos);
-            if (!SetupData.IsIndexValid(index))
-                return;
+            var index = PassabilityData.TriangularToIndex(pos);
 
-            var setupData = SetupData[index];
-            if (!setupData.IsPassable | !setupData.IsValid)
+            if (!PassabilityData[index].IsPassable)
                 return;
 
             var calculationData = CalculationData[index];
@@ -115,9 +109,10 @@ namespace ZE.MechBattle.Navigation
             while (!CalculationQueue.IsEmpty())
             {
                 var index = Dequeue();
-                var pos = _coordsConverter.IndexToTriangular(index);
+                var pos = PassabilityData.IndexToTriangular(index);
                 var isPeak = pos.IsPeak;
                 var calculationData = CalculationData[index];
+                var passabilityData = PassabilityData[index];
 
                 var integrationValue = calculationData.IntegrationValue;
 
@@ -125,17 +120,17 @@ namespace ZE.MechBattle.Navigation
                 {
                     var neighbourPos = pos + TriangularMath.GetNeighbourByDirection(pos, i);
 
-                    if (!_coordsConverter.TryConvertToIndex(neighbourPos, out var neighbourIndex))
+                    if (!PassabilityData.TryGetIndex(neighbourPos, out var neighbourIndex))
                         continue;
                    
-                    var neighbourSetupData = SetupData[neighbourIndex];
-                    if (!neighbourSetupData.IsValid | !neighbourSetupData.IsPassable)
+                    var neighbourPassabilityData = PassabilityData[neighbourIndex];
+                    if (!neighbourPassabilityData.IsPassable | !passabilityData.IsNeighbourAccessible(i))
                         continue;
                     
                     var cost = TriangularMath.GetTransitionCost(i, isPeak);
 
                     var neighbourCalculationData = CalculationData[neighbourIndex];
-                    var newIntegrationValue = integrationValue + neighbourSetupData.EntranceCost * cost;
+                    var newIntegrationValue = integrationValue + neighbourPassabilityData.EntranceCost * cost;
                     if (newIntegrationValue < neighbourCalculationData.IntegrationValue)
                     {
                         neighbourCalculationData.IntegrationValue = newIntegrationValue;
@@ -148,17 +143,17 @@ namespace ZE.MechBattle.Navigation
 
         private void BuildFlowField()
         {
-            for (var i = 0; i< SetupData.Length; i++)
+            for (var i = 0; i< PassabilityData.Length; i++)
             {
-                var setupData = SetupData[i];
+                var setupData = PassabilityData[i];
                 var calculationData = CalculationData[i];
-                if (!setupData.IsValid | calculationData.IsCalculated)
+                if (calculationData.IsCalculated)
                     continue;
 
                 // ignore exit cells
                 // however, fill blocked cells - for cases, when unit moved off-grid
 
-                var pos = _coordsConverter.IndexToTriangular(i);
+                var pos = PassabilityData.IndexToTriangular(i);
                 var direction = 0;
                 var minIntegration = float.MaxValue;
                 var isPeak = pos.IsPeak;
@@ -166,11 +161,11 @@ namespace ZE.MechBattle.Navigation
                 for (var j = 0; j < NEIGHBOURS_COUNT; j++)
                 {
                     var neighbourPos = pos + TriangularMath.GetNeighbourByDirection(pos, j);
-                    if (!SetupData.TryGetIndex(neighbourPos, out var neighbourDataIndex))
+                    if (!PassabilityData.TryGetIndex(neighbourPos, out var neighbourDataIndex))
                         continue;
 
-                    var neighbourSetupData = SetupData[neighbourDataIndex];
-                    if (!neighbourSetupData.IsValid | !neighbourSetupData.IsPassable)
+                    var neighbourPassabilityData = PassabilityData[neighbourDataIndex];
+                    if (!neighbourPassabilityData.IsPassable | !neighbourPassabilityData.IsNeighbourAccessible(j))
                         continue;
 
                     var neighbourData = CalculationData[neighbourDataIndex];

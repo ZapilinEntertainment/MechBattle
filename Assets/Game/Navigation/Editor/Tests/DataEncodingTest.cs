@@ -45,7 +45,7 @@ namespace ZE.MechBattle.Navigation.Tests
         [TestCase(4,4,false)]
         public void VirtualFlowMapEncodingTest(int hexCoordX, int hexCoordY, bool defaultPassability)
         {
-            using var map = new NavigationMap(new(100f, 8, MapSettings.GetDefaultMapBorders()));
+            using var map = new NavigationMap(new(100f, 8, MapSettings.GetDefaultMapBorders()), Allocator.Temp);
             var virtualMap = new VirtualFlowMap(map, HexEdgesAccessMap.FullAccessMap, true);
             var hexPos = new NavigationHexPosition(hexCoordX, hexCoordY, map.HexEdgeSize, map.TriangleHeight);
 
@@ -55,42 +55,6 @@ namespace ZE.MechBattle.Navigation.Tests
             Assert.AreEqual(virtualMap.GetAccessMap(), decodedData.GetAccessMap());
             var pos = hexPos.InnerRingTopValleyTriangle;
             Assert.AreEqual(virtualMap.GetCombinedCellData(pos), decodedData.GetCombinedCellData(pos));
-            Assert.AreEqual(virtualMap.GetHeight(pos), decodedData.GetHeight(pos));
-        }
-
-        [TestCase(0, 0, true)]
-        [TestCase(0, 2, true)]
-        [TestCase(-1, 0, false)]
-        [TestCase(4, 4, false)]
-        public void VirtualFlowMapWithHeightEncodingTest(int hexCoordX, int hexCoordY, bool defaultPassability)
-        {
-            using var map = new NavigationMap(new(100f, 8, MapSettings.GetDefaultMapBorders()));
-            var hexPos = new NavigationHexPosition(hexCoordX, hexCoordY, map.HexEdgeSize, map.TriangleHeight);
-
-            var heights = new Dictionary<IntTriangularPos, short>(15);
-            var random = new Random();
-            foreach (var edgePos in new EdgeEnumerator<TopEdgeEnumerationLogic>(map.TrianglesPerHexEdge, hexPos))
-            {
-                var height = (short)(random.Next());                
-                heights.Add(edgePos, height);
-                //UnityEngine.Debug.Log($"{edgePos} : {height}");
-            }
-
-            var virtualMap = new VirtualFlowMapWithHeights(map, HexEdgesAccessMap.FullAccessMap, true, heights);           
-
-            UnityEngine.Debug.Log(map == null);
-            var storedData = FlowMapDecodingHandler.Encode(map, virtualMap, hexPos);
-            var decodedData = (VirtualFlowMapWithHeights)FlowMapDecodingHandler.Decode(storedData, hexPos, map);
-
-            Assert.AreEqual(virtualMap.GetAccessMap(), decodedData.GetAccessMap());
-            var pos = hexPos.InnerRingTopValleyTriangle;
-            Assert.AreEqual(virtualMap.GetCombinedCellData(pos), decodedData.GetCombinedCellData(pos));
-            Assert.AreEqual(virtualMap.GetHeight(pos), decodedData.GetHeight(pos));
-
-            foreach (var heightKvp in heights)
-            {
-                Assert.AreEqual(heightKvp.Value, decodedData.GetHeight(heightKvp.Key));
-            }
         }
 
         [Test]
@@ -102,7 +66,7 @@ namespace ZE.MechBattle.Navigation.Tests
                 cells[i] = new FlowMapCellData(i, (ushort)i).Value;
             }
 
-            var triangleData = new TriangleNavData(true, 25, 3);
+            var triangleData = new CellPassabilityData(true, 25, 3);
 
             var originalCombinedCellData = new FlowMapCombinedCell(cells, triangleData);
 
@@ -127,7 +91,7 @@ namespace ZE.MechBattle.Navigation.Tests
                 cells[i] = new FlowMapCellData(i,(ushort)i).Value;
             }
             
-            var triangleData = new TriangleNavData(true, 25, 3);
+            var triangleData = new CellPassabilityData(true, 25, 3);
 
             var originalCombinedCellData = new FlowMapCombinedCell(cells, triangleData);
 
@@ -162,7 +126,7 @@ namespace ZE.MechBattle.Navigation.Tests
         [TestCase(4, 4, true,8)]
         public void FullMapEncodingTest(int hexCoordX, int hexCoordY, bool defaultPassability, int radius)
         {
-            using var map = new NavigationMap(new(100f, radius, MapSettings.GetDefaultMapBorders()));
+            using var map = new NavigationMap(new(100f, radius, MapSettings.GetDefaultMapBorders()), Allocator.Temp);
             var hexPos = new NavigationHexPosition(hexCoordX, hexCoordY, map.HexEdgeSize, map.TriangleHeight);
 
             var trianglesInHex = TriangularMath.GetTrianglesCountInHex(map.TrianglesPerHexEdge);
@@ -174,7 +138,7 @@ namespace ZE.MechBattle.Navigation.Tests
                 var rvalue = random.Next();
                 if (rvalue < 0)
                     continue;
-                var triangleData = new TriangleNavData(rvalue % 2 == 0, (short)rvalue, 1);
+                var triangleData = new CellPassabilityData(rvalue % 2 == 0, (short)rvalue, 1);
                 
                 for (var i = 0; i < 6; i++)
                 {

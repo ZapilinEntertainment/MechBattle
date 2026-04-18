@@ -68,6 +68,6 @@ namespace ZE.MechBattle.Navigation
         public void Dispose() { }
 
         IEnumerator IEnumerable.GetEnumerator() => this;
-        public IEnumerator<IntTriangularPos> GetEnumerator() => this;
+        public IEnumerator<IntTriangularPos> GetEnumerator() => this;       
     }
 }

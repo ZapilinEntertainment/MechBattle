@@ -40,20 +40,6 @@ namespace ZE.MechBattle.Navigation.DataStoring
                     {
                         return new (null, FlowMapType.Virtual, flowMap.GetAccessMap(), (flowMap as VirtualFlowMap).DefaultPassability);
                     }
-                    case FlowMapType.VirtualWithRealHeights:
-                    {
-                        var trianglesCount = TriangularMath.GetTrianglesCountInHex(navMap.TrianglesPerHexEdge);
-                        var bytes = new byte[trianglesCount * 2];
-                        var offset = 0;
-                        foreach (var triangle in new HexTrianglesEnumerator(hexPos, navMap.TrianglesPerHexEdge))
-                        {
-                            var height = flowMap.GetHeight(triangle);
-                            //Debug.Log($"{triangle} : {height}");
-                            ByteCoder.WriteShortToBufferLittleEndian(bytes, height, offset);
-                            offset += 2;
-                        }
-                        return new (bytes,FlowMapType.VirtualWithRealHeights, flowMap.GetAccessMap(), (flowMap as VirtualFlowMap).DefaultPassability);
-                    }
             }
             return default;
         }
@@ -78,20 +64,6 @@ namespace ZE.MechBattle.Navigation.DataStoring
                         handle.Complete();
 
                         return new HexFlowMap(resultMap, data.EdgesAccessMap);
-                    }
-                 case FlowMapType.VirtualWithRealHeights:
-                    {
-                        var trianglesCount = TriangularMath.GetTrianglesCountInHex(navMap.TrianglesPerHexEdge);
-                        var heights = new Dictionary<IntTriangularPos, short>(trianglesCount);
-                        var offset = 0;
-                        foreach (var triangle in new HexTrianglesEnumerator(hexPos, navMap.TrianglesPerHexEdge))
-                        {
-                            var height = ByteCoder.ReadShortFromBufferLittleEndian(byteArray: data.Data, offset);
-                            //Debug.Log($"{triangle} : {height}");
-                            heights.Add(triangle, height);
-                            offset += 2;
-                        }
-                        return new VirtualFlowMapWithHeights(navMap, data.EdgesAccessMap, data.DefaultPassability, heights);
                     }
                  case FlowMapType.Virtual:
                     {

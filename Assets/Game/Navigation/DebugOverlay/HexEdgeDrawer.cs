@@ -65,9 +65,9 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         private void AddTrianglePoints(IntTriangularPos pos)
         {
             var vertices = GetTriangleVerticesCommand.Execute(pos, _triangleHeight);
-            _lineDrawData.Add(new(vertices.A, vertices.B));
-            _lineDrawData.Add(new(vertices.B, vertices.C));
-            _lineDrawData.Add(new(vertices.A, vertices.C));
+            _lineDrawData.Add(new(vertices.PinnaclePos, vertices.LeftBasisPos));
+            _lineDrawData.Add(new(vertices.LeftBasisPos, vertices.RightBasisPos));
+            _lineDrawData.Add(new(vertices.PinnaclePos, vertices.RightBasisPos));
         }
     }
 }

@@ -1,37 +1,40 @@
-using System.Runtime.InteropServices;
 using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
-    [StructLayout(LayoutKind.Sequential)]
     public readonly struct CellHeightData
     {
-        public readonly float3 VertexA;
-        public readonly float3 VertexB;
-        public readonly float3 VertexC;
-        public readonly float3 VertexM;
-        public readonly bool IsFlat;
-        private readonly bool3 _excessData;
+        public readonly short AverageHeight;
+        public int PinnacleHeight => AverageHeight + PinnacleHeightDelta;
+        public int LeftBasisHeight => AverageHeight + LeftBasisHeightDelta;
+        public int RightBasisHeight => AverageHeight + RightBasisHeightDelta;
 
-        public CellHeightData(float3 vertexA, float3 vertexB, float3 vertexC)
+
+        private readonly sbyte PinnacleHeightDelta;
+        private readonly sbyte LeftBasisHeightDelta;
+        private readonly sbyte RightBasisHeightDelta;       
+
+        public CellHeightData(RefinedTriangleRaycastData raycastData)
         {
-            VertexA = vertexA;
-            VertexB = vertexB;
-            VertexC = vertexC;
-            IsFlat = true;
-            VertexM = default;
-            _excessData = false;
+            var averageHeight = raycastData.AverageGroundHeight;
+            AverageHeight = (short)averageHeight;
+            PinnacleHeightDelta = GetDelta(raycastData.PinnacleHeight);
+            LeftBasisHeightDelta = GetDelta(raycastData.LeftBasisHeight);
+            RightBasisHeightDelta = GetDelta(raycastData.RightBasisHeight);
+
+            sbyte GetDelta(float height) => (sbyte)(math.clamp(height - averageHeight, sbyte.MinValue +1, sbyte.MaxValue -1));
         }
 
-        public CellHeightData(float3 vertexA, float3 vertexB, float3 vertexC, float3 vertexM)
+        
+        public float4 ToCombinedValue()
         {
-            VertexA = vertexA;
-            VertexB = vertexB;
-            VertexC = vertexC;
-            VertexM = vertexM;
-
-            IsFlat = false;
-            _excessData = false;
+            float4 val = new();
+            // order is important:
+            val[(int)TriangleHeightMeasurePoint.Average] = AverageHeight;
+            val[(int)TriangleHeightMeasurePoint.Pinnacle] = PinnacleHeight;
+            val[(int)TriangleHeightMeasurePoint.LeftBasis] = LeftBasisHeight;
+            val[(int)TriangleHeightMeasurePoint.RightBasis] = RightBasisHeight;
+            return val;
         }
 
     }

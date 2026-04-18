@@ -32,20 +32,14 @@ namespace ZE.MechBattle.Navigation.Tests
             var hexPos = new NavigationHexPosition(hexX, hexY, hexEdge, triangleHeight);
 
             var allocator = Allocator.Persistent;
+            using var calculationCollections = FlowFieldCalculationCollections.CreateCollection(allocator, hexPos, MapSettings.CreateWithDefaultBorders(hexEdge, trianglesPerEdge));
 
-            var coordsConverter = new TrianglesToIndexSquaredConverter(hexPos.TriangularCenterPos, trianglesPerEdge);
-            var setupData = new NativeArray<TriangleNavData>(coordsConverter.ArrayElementsCount, allocator);
-            var squaredArray = new SquaredHexTrianglesList<TriangleNavData>(setupData, coordsConverter);
+            data.HexTriangles = PrepareTrianglesData(ref calculationCollections.PassabilityData, hexPos, hexTrianglesCount, trianglesPerEdge);
 
-            var length = setupData.Length;
-            var calculationData = new NativeArray<FlowFieldCellCalculationData>(length, allocator);
+            using var CalculationQueue = new NativeQueue<int>(allocator);
+            using var QueuedPositions = new NativeHashSet<int>(hexTrianglesCount / 2, allocator);
 
-            data.HexTriangles = PrepareTrianglesData(squaredArray, hexPos, hexTrianglesCount, trianglesPerEdge);
-
-            var CalculationQueue = new NativeQueue<int>(allocator);
-            var QueuedPositions = new NativeHashSet<int>(hexTrianglesCount / 2, allocator);
-
-            var compositeStorage = new CombinedFlowMapCellsStorage(length, coordsConverter);
+            var compositeStorage = new CombinedFlowMapCellsStorage(hexTrianglesCount, calculationCollections.PassabilityData.GetCoordsConverter());
             data.CombinedMap = compositeStorage;
             
             for (var i = 0; i < 6; i++)
@@ -53,8 +47,8 @@ namespace ZE.MechBattle.Navigation.Tests
                 var edge = (HexEdge)i;
                 var job = new GenerateFlowFieldJob()
                 {
-                    SetupData = squaredArray,
-                    CalculationData = calculationData,
+                    PassabilityData = calculationCollections.PassabilityData,
+                    CalculationData = calculationCollections.CalculationData,
                     HexData = hexPos,
                     CalculationQueue = CalculationQueue,
                     QueuedPositions = QueuedPositions,
@@ -68,22 +62,10 @@ namespace ZE.MechBattle.Navigation.Tests
                 }
                 handle.Complete();
 
-                //CheckEdgeDirections(calculationData, coordsConverter, edge);
-
-                var validTrisCount = 0;
-                for (var index = 0; index < length; index++)
+                for (var index = 0; index < hexTrianglesCount; index++)
                 {
-                    var cellSetupData = setupData[index];
-                    if (!cellSetupData.IsValid)
-                    {
-                        var tripos = coordsConverter.IndexToTriangular(index);
-                        var cell = FlowMapCellData.FormBlockedCell(edge, tripos, (ushort)calculationData[index].IntegrationValue);
-                        compositeStorage.SetValue(edge, index, cell);
-                        continue;
-                    }
-
-                    validTrisCount++;
-                    var cellCalculatedData = calculationData[index];
+                    var cellSetupData = job.PassabilityData[index];
+                    var cellCalculatedData = job.CalculationData[index];
                     Assert.IsTrue(cellCalculatedData.IsCalculated, "cell not calculated");
                     Assert.IsTrue(cellSetupData.IsPassable, "cell not passable");
 
@@ -96,20 +78,13 @@ namespace ZE.MechBattle.Navigation.Tests
 
                     compositeStorage.SetValue(edge, index, cellData);
                 }
-
-                Assert.AreEqual(hexTrianglesCount, validTrisCount, "some hex tris were not valid");
             }
-
-            setupData.Dispose();
-            calculationData.Dispose();
-            CalculationQueue.Dispose();
-            QueuedPositions.Dispose();
 
             return data;
         }
 
         private NativeArray<IntTriangularPos> PrepareTrianglesData(
-            SquaredHexTrianglesList<TriangleNavData> setupData, 
+            ref FlattenedHexList<CellPassabilityData> setupData, 
             NavigationHexPosition hexPos,
             int trianglesInHex,
             int hexRadius)
@@ -117,40 +92,12 @@ namespace ZE.MechBattle.Navigation.Tests
             var list = new NativeArray<IntTriangularPos>(trianglesInHex, Allocator.Persistent);
             GetTrianglesInHexCommand.Execute(hexPos.InnerRingTopValleyTriangle, hexRadius, list);
 
-            var passableTriangleData = TriangleNavData.CreateDefaultData(true);
+            var passableTriangleData = CellPassabilityData.CreateDefaultData(true);
             foreach (var tripos in list)
             {
-                setupData.Set(tripos, passableTriangleData);
+                setupData[tripos] = passableTriangleData;
             }
             return list;
-        }
-
-        // checking ideal no-obstacles flow map
-        private void CheckEdgeDirections(
-            NativeArray<FlowFieldCellCalculationData> calculationData, 
-            TrianglesToIndexSquaredConverter coordsConverter,
-            HexEdge exitEdge)
-        {
-
-            var length = calculationData.Length;
-            for (var i = 0; i < length; i++)
-            {
-                //if (!setupData[i].IsValid)  continue;
-
-                var pos = coordsConverter.IndexToTriangular(i);
-                var flowDir = calculationData[i ].FlowDirection;
-
-                var peakDir = (int)exitEdge.ToNeighbourDirectionFromPeak();
-                var valleyDir = (int)exitEdge.ToNeighbourDirectionFromValley();
-
-                //TestContext.WriteLine($"{exitEdge}: {i}: direction is {(pos.IsPeak ? "peak" : "valley")}.{(PeakNeighbour)flowDir}");
-
-                //if (pos.IsPeak)
-                //    Assert.AreEqual(flowDir, peakDir, $"{exitEdge}: {i}: direction is {(pos.IsPeak ? "peak" : "valley")}.{(PeakNeighbour)flowDir}");
-                //else
-                //    Assert.AreEqual(flowDir, valleyDir, $"{exitEdge}: {i}: direction is {(pos.IsPeak ? "peak" : "valley")}.{(ValleyNeighbour)flowDir}");
-            }
-        }
-    
+        }    
     }
 }

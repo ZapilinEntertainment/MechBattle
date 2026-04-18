@@ -4,6 +4,7 @@ using Scellecs.Morpeh;
 using ZE.MechBattle.Views;
 using ZE.MechBattle.Navigation;
 using UnityEngine;
+using Unity.Collections;
 
 namespace ZE.MechBattle
 {
@@ -28,7 +29,7 @@ namespace ZE.MechBattle
             builder.Register<ViewReceiversList>(Lifetime.Scoped);
             builder.Register<CollidersTable>(Lifetime.Scoped);           
             
-            var map = new NavigationMap(_mapSettings.ToStruct());
+            var map = new NavigationMap(_mapSettings.ToStruct(), Unity.Collections.Allocator.Persistent);
             builder.RegisterInstance<INavigationMap>(map);
             builder.Register<NavigationMapController>(Lifetime.Scoped);
             builder.Register<NavigationMap>(Lifetime.Scoped);

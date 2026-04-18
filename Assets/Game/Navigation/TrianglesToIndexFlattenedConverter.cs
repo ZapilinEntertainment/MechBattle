@@ -41,8 +41,7 @@ namespace ZE.MechBattle.Navigation
             _isPeakZone = pinnaclePos.IsPeak;            
             _signCf = _isPeakZone ? -1 : 1;
 
-            var secondaryTypeTrianglesCount = _trianglesPerEdge * (_trianglesPerEdge - 1) / 2;
-            _valleyTriangleIndexOffset = _isPeakZone ? (_trianglesPerEdge * _trianglesPerEdge - secondaryTypeTrianglesCount) : (secondaryTypeTrianglesCount);
+            _valleyTriangleIndexOffset = CalculateValleyIndexOffset(trianglesPerEdge, _isPeakZone);
 
             if (_isPeakZone)
             {
@@ -54,8 +53,18 @@ namespace ZE.MechBattle.Navigation
                 _startPosValley = pinnaclePos;
                 _startPosPeak = TriangularMath.GetValleyNeighbour(pinnaclePos, ValleyNeighbour.EdgeUp);
             }
-            //UnityEngine.Debug.Log($"{pinnaclePos} -> {_startPosPeak} : {_startPosValley}");
+            //UnityEngine.Debug.Log($"Pinnacles: {pinnaclePos} -> {_startPosPeak} : {_startPosValley}");
         }
+
+        [BurstCompile]
+        public static int GetSubdivisionBasisIndex(bool isRight, bool isPeak, int subdivisions)
+        {
+            var x = (isPeak == isRight) ? 0 : (subdivisions - 1);
+            var valleyOffset = CalculateValleyIndexOffset(subdivisions, isPeak);
+            return V2ToIndex(new(x, subdivisions - 1)) + (isPeak ? 0 : valleyOffset);
+        }
+
+        public NativeArray<byte>.ReadOnly GetRowIndicesTable() => _rowIndicesTable;
 
         public int TriangularToIndex(IntTriangularPos pos)
         {
@@ -78,6 +87,7 @@ namespace ZE.MechBattle.Navigation
             var v2 = decodedIndex.xy;
             var isPeak = decodedIndex.z == 1;
             var pos = new int3(-v2.x, v2.y ,v2.x - v2.y) * _signCf;
+            //UnityEngine.Debug.Log($"{index} -> {v2} -> {pos} with pinnacle peak at {_startPosPeak}");
             return new(pos + (isPeak ? _startPosPeak : _startPosValley));
         }
 
@@ -109,9 +119,6 @@ namespace ZE.MechBattle.Navigation
             var startPos = pos.IsPeak ? _startPosPeak : _startPosValley;
             var xdelta = startPos.x - pos.X; // horizontal shift: (-1,0,1)  for valley / (1,0,-1) for peak
             var ydelta = pos.Y - startPos.y; // vertical shift: (0,-1,1) for peak / (0,1,-1) for valley
-
-            if (xdelta * _signCf < 0 || ydelta * _signCf < 0)
-                UnityEngine.Debug.LogError($"{startPos} -> {pos} = {new int2(xdelta, ydelta)} * {_signCf }");
             
             var v2 = new int2(xdelta, ydelta) * _signCf;
             return v2;
@@ -122,7 +129,7 @@ namespace ZE.MechBattle.Navigation
         {
             #if UNITY_EDITOR
             if (index < 0 || index >= _rowIndicesTable.Length)
-                UnityEngine.Debug.LogError($"invalid index: {index} / {_valleyTriangleIndexOffset} / {_trianglesPerEdge * _trianglesPerEdge} / {_rowIndicesTable.Length}");   
+                UnityEngine.Debug.LogError($"invalid index: {index} / valleyOffset: {_valleyTriangleIndexOffset} / total {_trianglesPerEdge * _trianglesPerEdge} / row indices length: {_rowIndicesTable.Length}");   
             #endif
             index = math.clamp(index, 0, _rowIndicesTable.Length-1);
             var y = _rowIndicesTable[index];
@@ -130,9 +137,9 @@ namespace ZE.MechBattle.Navigation
             return new(x,y);
         }
 
-        public static NativeArray<byte> FulfilRowIndices(Allocator allocator, int maxRowIndex)
+        public static NativeArray<byte> FulfilRowIndices(Allocator allocator, int rowsCount)
         {
-            var length = maxRowIndex * (maxRowIndex + 1) / 2;
+            var length = rowsCount * (rowsCount + 1) / 2;
             var array = new NativeArray<byte>(length, allocator, NativeArrayOptions.UninitializedMemory);
 
             array[0] = 0;
@@ -141,7 +148,7 @@ namespace ZE.MechBattle.Navigation
 
             var index = 3;
             var i = 2;
-            while (i < maxRowIndex && index < length)
+            while (i < rowsCount && index < length)
             {
                 var byteIndex = (byte)i;
                 var j = -1;
@@ -159,12 +166,15 @@ namespace ZE.MechBattle.Navigation
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int V2ToIndex(int2 v2, bool isPeak) => (v2.y * (v2.y + 1) / 2 + v2.x) + (isPeak ? 0 : _valleyTriangleIndexOffset);
+        private int V2ToIndex(int2 v2, bool isPeak) => TrianglesToIndexFlattenedConverter.V2ToIndex(v2) + (isPeak ? 0 : _valleyTriangleIndexOffset);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int V2ToIndex(int2 v2) => (v2.y * (v2.y + 1) / 2 + v2.x);
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsV2Valid(int2 v2, bool isPeak) =>
-            math.all(v2 >= 0) | math.all(v2 < _trianglesPerEdge) | v2.x < v2.y + 1;
+            math.all(v2 >= 0) & math.all(v2 < _trianglesPerEdge) & v2.x < v2.y + 1;
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -173,8 +183,19 @@ namespace ZE.MechBattle.Navigation
             var isPeak = index < _valleyTriangleIndexOffset;
             var correctedIndex = isPeak ? index : (index - _valleyTriangleIndexOffset);            
             var v2 = IndexToV2(correctedIndex);
+
+#if UNITY_EDITOR
+            if (correctedIndex >= Length)
+                UnityEngine.Debug.LogError($"{index} -> {correctedIndex} -> {v2} of {_trianglesPerEdge} length");
+#endif
             return new(v2.x, v2.y, isPeak ? 1 : 0);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int CalculateValleyIndexOffset(int trianglesPerEdge, bool isPeakZone)
+        {
+            var secondaryTypeTrianglesCount = trianglesPerEdge * (trianglesPerEdge - 1) / 2;
+            return isPeakZone ? (trianglesPerEdge * trianglesPerEdge - secondaryTypeTrianglesCount) : (secondaryTypeTrianglesCount);
+        }
     }
 }

@@ -16,16 +16,21 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         {
             public readonly Vector3[] Vertices;
             public readonly bool IsPassable;
+            private const float DRAW_HEIGHT_OFFSET = 0.01f;
 
-            public TriangleDrawData(TriangleVertices triangleVertices, float cellHeight, bool isPassable)
+            public TriangleDrawData(float3 vertexA, float3 vertexB, float3 vertexC, bool isPassable)
             {
-                var a = triangleVertices.A;
-                var b = triangleVertices.B;
-                var c = triangleVertices.C;
-                a.y = cellHeight + 0.1f;
-                b.y = cellHeight + 0.1f;
-                c.y = cellHeight + 0.1f;
-                Vertices = new Vector3[3] { a, b, c };
+                vertexA.y += DRAW_HEIGHT_OFFSET;
+                vertexB.y += DRAW_HEIGHT_OFFSET;
+                vertexC.y += DRAW_HEIGHT_OFFSET;
+                Vertices = new Vector3[3] { vertexA, vertexB, vertexC };
+                IsPassable = isPassable;
+            }
+
+            public TriangleDrawData(TriangleVertices vertices, bool isPassable)
+            {
+                vertices = vertices.AddHeight(DRAW_HEIGHT_OFFSET);
+                Vertices = new Vector3[3] { vertices.PinnaclePos, vertices.LeftBasisPos, vertices.RightBasisPos };
                 IsPassable = isPassable;
             }
         }
@@ -34,13 +39,15 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         public void DrawHexTriangles(NavigationHexPosition hexPos, INavigationMap map)
         {
-            var flowMap = map.GetFlowMap(hexPos.HexCoordinate);
             foreach (var tripos in new HexTrianglesEnumerator(hexPos, map.TrianglesPerHexEdge))
             {
-                var cell = flowMap.GetCombinedCellData(tripos);
-                // todo: add vertices height ?
+                var cellHeights = map.GetCellHeights(tripos);
                 var vertices = GetTriangleVerticesCommand.Execute(tripos, map.TriangleHeight, 0.01f);
-                _drawData.Add( new TriangleDrawData(vertices, cell.Height, cell.IsPassable));
+                vertices = vertices.ApplyHeights(cellHeights);
+
+                var isCellPassable = map.IsTrianglePassable(tripos);              
+
+                _drawData.Add( new TriangleDrawData(vertices, isCellPassable));
             }
         }
 

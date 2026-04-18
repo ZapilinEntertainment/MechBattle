@@ -8,6 +8,8 @@ namespace ZE.MechBattle.Navigation.Tests
 {
     public class SubtrianglesEnumeratorTest
     {
+        private const float HEX_EDGE = 100f;
+
         [TestCase(0,0,1)]
         [TestCase(0, 0, 2)]
         [TestCase(0, 0, 4)]
@@ -16,8 +18,6 @@ namespace ZE.MechBattle.Navigation.Tests
         [TestCase(4, -4, 4)]
         public void SectorsTest(int hexCoordX, int hexCoordY, int hexRadius)
         {
-            const float HEX_EDGE = 100f;
-
             // 1. prepare discrete sectors tris lists;
             var trianglesPerSector = hexRadius * hexRadius;
             Dictionary<IntTriangularPos, bool>[] tris = new Dictionary<IntTriangularPos, bool>[6];
@@ -59,6 +59,17 @@ namespace ZE.MechBattle.Navigation.Tests
                 }
             }
         }
-    
+
+        [TestCase(2)]
+        [TestCase(4)]
+        public void MeasurePointsTest(int subdivisions)
+        {
+            var peakLeftBasisIndex = TrianglesToIndexFlattenedConverter.GetSubdivisionBasisIndex(false, true, subdivisions);
+            var peakRightBasisIndex = TrianglesToIndexFlattenedConverter.GetSubdivisionBasisIndex(true, true, subdivisions);
+            var valleyLeftBasisIndex = TrianglesToIndexFlattenedConverter.GetSubdivisionBasisIndex(false, false, subdivisions);
+            var valleyRightBasisIndex = TrianglesToIndexFlattenedConverter.GetSubdivisionBasisIndex(true, false, subdivisions);
+
+            TestContext.WriteLine($"peak left basis: {peakLeftBasisIndex}, peak right basis: {peakRightBasisIndex}, valley left basis: {valleyLeftBasisIndex}, valley right basis : {valleyRightBasisIndex}");
+        }
     }
 }

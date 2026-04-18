@@ -7,11 +7,11 @@ namespace ZE.MechBattle.Navigation
     public class CombinedFlowMapCellsStorage : IDisposable
     {
         public readonly int SingleLength;
-        public readonly TrianglesToIndexSquaredConverter CoordsConverter;
+        public readonly FlattenedHexCoordsConverter CoordsConverter;
         private readonly DisposableArray<int> _values;
         
 
-        public CombinedFlowMapCellsStorage(int singleMapCellsCount, TrianglesToIndexSquaredConverter coordsConverter)
+        public CombinedFlowMapCellsStorage(int singleMapCellsCount, in FlattenedHexCoordsConverter coordsConverter)
         {
             SingleLength = singleMapCellsCount;
             CoordsConverter = coordsConverter;
@@ -27,7 +27,7 @@ namespace ZE.MechBattle.Navigation
         public FlowMapCellData GetValue(int edge, int index) =>
             new(_values[ToLocalIndex(edge, index)]);
 
-        public FlowMapCombinedCell GetCombinedCell(int index, TriangleNavData triangleData) =>
+        public FlowMapCombinedCell GetCombinedCell(int index, CellPassabilityData triangleData) =>
             new(
                 _values[ToLocalIndex(0,index)],
                 _values[ToLocalIndex(1, index)],
@@ -37,7 +37,7 @@ namespace ZE.MechBattle.Navigation
                 _values[ToLocalIndex(5, index)],
                 triangleData);
 
-        public FlowMapCombinedCell GetCombinedCell(IntTriangularPos tripos, TriangleNavData triangleData) => 
+        public FlowMapCombinedCell GetCombinedCell(IntTriangularPos tripos, CellPassabilityData triangleData) => 
             GetCombinedCell(CoordsConverter.TriangularToIndex(tripos), triangleData);
 
         public void Dispose()

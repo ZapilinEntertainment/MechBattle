@@ -197,9 +197,9 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         {
             var vertices = GetTriangleVerticesCommand.Execute(pos, _triangleHeight);
 
-            data.Add(new(vertices.A, vertices.B, color));
-            data.Add(new(vertices.B, vertices.C, color));
-            data.Add(new(vertices.C, vertices.A, color));
+            data.Add(new(vertices.PinnaclePos, vertices.LeftBasisPos, color));
+            data.Add(new(vertices.LeftBasisPos, vertices.RightBasisPos, color));
+            data.Add(new(vertices.RightBasisPos, vertices.PinnaclePos, color));
         }
 
         private void AddTriangleDrawData(float3 cartesianCenter, bool isPeak, float triangleHeight, List<LineDrawData> data, DebugColor color, float sizeCf = 1f)

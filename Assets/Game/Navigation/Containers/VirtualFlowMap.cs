@@ -17,14 +17,13 @@ namespace ZE.MechBattle.Navigation
             DefaultPassability = defaultPassability;
         }
 
-        public virtual short GetHeight(IntTriangularPos pos) => NavigationConstants.DEFAULT_HEIGHT;
         public bool IsCellPassable(IntTriangularPos pos) => DefaultPassability;
         public HexEdgesAccessMap GetAccessMap() => _accessMap;
 
         public virtual FlowMapCombinedCell GetCombinedCellData(IntTriangularPos pos) =>
             FlowMapCombinedCell.CreateDefaultCell(
                 pos,
-                TriangleNavData.CreateDefaultData(DefaultPassability),
+                CellPassabilityData.CreateDefaultData(DefaultPassability),
                 _map);
 
         public void Dispose() { }

@@ -6,6 +6,7 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
+    [System.Obsolete]
     public static class GetTrianglesInHexCommand
     {
         [BurstCompile]

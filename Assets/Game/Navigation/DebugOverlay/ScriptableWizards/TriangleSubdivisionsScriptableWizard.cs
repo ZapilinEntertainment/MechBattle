@@ -69,9 +69,9 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         {
             foreach (var tri in _vertices)
             {
-                Handles.DrawLine(tri.A, tri.B);
-                Handles.DrawLine(tri.B, tri.C);
-                Handles.DrawLine(tri.A, tri.C);
+                Handles.DrawLine(tri.PinnaclePos, tri.LeftBasisPos);
+                Handles.DrawLine(tri.LeftBasisPos, tri.RightBasisPos);
+                Handles.DrawLine(tri.RightBasisPos, tri.PinnaclePos);
             }
         }
     }

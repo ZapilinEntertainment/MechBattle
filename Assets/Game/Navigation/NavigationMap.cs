@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
+using Unity.Collections;
 using UnityEngine;
 
 namespace ZE.MechBattle.Navigation
@@ -13,10 +14,12 @@ namespace ZE.MechBattle.Navigation
         IReadOnlyCollection<int2> HexCoords { get; }
         IReadOnlyCollection<INavigationHex> Hexes { get; }
         MapSettings Settings { get; }
+        Allocator ResourcesAllocator { get; }
 
         void OnInitialized();
         void UpdateHexFlowMap(int2 hexCoord, IDisposableFlowMap flowMap);
         bool IsTrianglePassable(IntTriangularPos pos);
+        float4 GetCellHeights(IntTriangularPos pos);
         bool TryGetHex(int2 hexCoord, out INavigationHex protectedHex);
         float GetTriangleEntranceCost(IntTriangularPos pos);
         IFlowMap GetFlowMap(int2 hexCoord);
@@ -27,6 +30,7 @@ namespace ZE.MechBattle.Navigation
 
     public class NavigationMap : INavigationMap, IDisposable
     {        
+        public Allocator ResourcesAllocator => _allocator;
         public MapSettings Settings { get;private set;}
 
         public bool IsInitialized { get;private set;} = false;
@@ -38,11 +42,14 @@ namespace ZE.MechBattle.Navigation
         public IReadOnlyCollection<INavigationHex> Hexes => _hexes.Values;
         public IReadOnlyCollection<int2> HexCoords => _hexes.Keys;
 
+        private Allocator _allocator;
         private readonly Dictionary<int2, NavigationHex> _hexes = new();
+        private readonly Dictionary<IntTriangularPos, CellHeightData> _heights = new();
     
-        public NavigationMap(MapSettings settings)
+        public NavigationMap(MapSettings settings, Allocator allocator)
         {
             Settings = settings;
+            _allocator = allocator;
         }
 
         public void OnInitialized() => IsInitialized = true;
@@ -109,11 +116,10 @@ namespace ZE.MechBattle.Navigation
         public bool IsTrianglePassable(IntTriangularPos pos)
         {
             var hexCoord = TriangularMath.TriangularToHex(pos, TriangleHeight, HexEdgeSize);
-            if (!_hexes.TryGetValue(hexCoord, out var hex) 
-                || !hex.TrianglesData.TryGet(pos, out var triangleData))
+            if (_hexes.TryGetValue(hexCoord, out var hex))
+                return hex.FlowMap.IsCellPassable(pos);
+            else
                 return Settings.UnscannedSurfacesArePassable;
-
-            return triangleData.IsPassable;
         }
 
         public void Dispose()
@@ -126,5 +132,7 @@ namespace ZE.MechBattle.Navigation
         }
 
         private NavigationHex GetOrCreateHex(int2 pos) => _hexes.TryGetValue(pos, out var hex) ? hex : AddHex(pos);
+
+        public float4 GetCellHeights(IntTriangularPos pos) => _heights.TryGetValue(pos, out var heightData) ? heightData.ToCombinedValue() : NavigationConstants.DEFAULT_HEIGHT;
     }
 }

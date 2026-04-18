@@ -10,7 +10,6 @@ namespace ZE.MechBattle.Navigation
     {
         private const float SQT_HALVED = NavigationConstants.SQRT_OF_THREE * 0.5f;
         private const float HEIGHT_PART_CF = SQT_HALVED * 2f / 3f; // 2/3 of height is orthocenter       
-
        
         /// <summary>
         /// add next triangles row started with peak triangle into list and returns next write index (AV...VA)

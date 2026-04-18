@@ -25,7 +25,7 @@ namespace ZE.MechBattle.Navigation.Tests
             foreach (var tripos in new HexTrianglesEnumerator(hexPos, trianglesPerEdge))
             {
                 hashset.Add(tripos);
-                TestContext.WriteLine(tripos);
+                //TestContext.WriteLine(tripos);
                 count++;
                 if (count > trianglesInHex)
                 {
@@ -39,7 +39,7 @@ namespace ZE.MechBattle.Navigation.Tests
             {
                 Assert.IsTrue(hashset.Contains(list[i]));
             }
-        }
+        }      
     
     }
 }

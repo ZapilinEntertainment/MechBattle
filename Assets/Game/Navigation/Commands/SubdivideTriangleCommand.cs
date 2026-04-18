@@ -33,6 +33,8 @@ namespace ZE.MechBattle.Navigation
             new NativeArray<SmallTriangleData>(trianglesPerEdge * trianglesPerEdge, allocator, NativeArrayOptions.UninitializedMemory);
 
 
+        // TODO: Rework to use TriangleSubdivisionEnumerator to have correct order!
+
         [BurstCompile]
         public static void Execute(
              float2 center,

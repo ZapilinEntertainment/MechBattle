@@ -6,31 +6,32 @@ namespace ZE.MechBattle.Navigation
 {
     public class TriangularPathJobCollections : IDisposable
     {
-        public SquaredHexTrianglesList<TriangleNavData> SetupData { get; private set; }
         public NativeArray<AstarPathNodeData<IntTriangularPos>> CalculationData { get; private set; }
         public NativeList<IntTriangularPos> ResultList { get; private set; }
         public NativeHashSet<int> OpenedList { get; private set; }
+        public ref FlattenedHexList<CellPassabilityData> PassabilityData => ref _setupData;
 
-        private readonly NativeArray<TriangleNavData> _setupDataArray;
 
-        public TriangularPathJobCollections(Allocator allocator, NavigationHexPosition hexPos, int hexRadius)
+        private FlattenedHexList<CellPassabilityData> _setupData;
+        private readonly NativeArray<CellPassabilityData> _setupDataArray;
+        private readonly IDisposable _rowIndicesArray;
+
+        public TriangularPathJobCollections(Allocator allocator, NavigationHexPosition hexPos, in MapSettings mapSettings)
         {
+            var hexRadius = mapSettings.TrianglesPerHexEdge;
             var trisCount = TriangularMath.GetTrianglesCountInHex(hexRadius);            
             ResultList = new(trisCount, allocator);
             OpenedList = new(trisCount-1, allocator);
 
-            var coordsConverter = new TrianglesToIndexSquaredConverter(hexPos.TriangularCenterPos, hexRadius);
-            _setupDataArray = new NativeArray<TriangleNavData>(coordsConverter.ArrayElementsCount, allocator);
-            SetupData = new SquaredHexTrianglesList<TriangleNavData>(_setupDataArray, coordsConverter);
+            _rowIndicesArray = FlattenedHexCoordsConverter.CreateCoordsConverter(allocator, hexPos.TriangularCenterPos, mapSettings, out var coordsConverter);
+            _setupDataArray = new NativeArray<CellPassabilityData>(TriangularMath.GetTrianglesCountInHex(hexRadius), allocator);
+            _setupData = new FlattenedHexList<CellPassabilityData>(coordsConverter, _setupDataArray);
 
-            CalculationData = new(SetupData.Length, allocator);
+            CalculationData = new(_setupData.Length, allocator);
         }
 
-        public void ChangeCenter(NavigationHexPosition pos)
-        {
-            var newConverter = new TrianglesToIndexSquaredConverter(pos.TriangularCenterPos, SetupData.CoordsConverter.HexRadius);
-            SetupData = new(_setupDataArray, newConverter);
-        }
+        public void ChangeCenter(NavigationHexPosition pos) =>
+            _setupData = _setupData.ChangeHexCenter(pos.TriangularCenterPos);
 
         public void Dispose()
         {
@@ -38,6 +39,7 @@ namespace ZE.MechBattle.Navigation
             CalculationData.Dispose();
             ResultList.Dispose();
             OpenedList.Dispose();
+            _rowIndicesArray.Dispose();
         }
     }
 }

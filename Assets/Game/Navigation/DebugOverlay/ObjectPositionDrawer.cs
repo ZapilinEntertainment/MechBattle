@@ -91,9 +91,9 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         private void UpdateVertexData(IntTriangularPos pos)
         {
             var vertices = GetTriangleVerticesCommand.Execute(pos, _settings.TriangleHeight, offset: 0f);
-            _drawPoints[0] = vertices.A;
-            _drawPoints[1] = vertices.B;
-            _drawPoints[2] = vertices.C;
+            _drawPoints[0] = vertices.PinnaclePos;
+            _drawPoints[1] = vertices.LeftBasisPos;
+            _drawPoints[2] = vertices.RightBasisPos;
         }
     }
 }

@@ -9,9 +9,9 @@ namespace ZE.MechBattle.Navigation
         [BurstCompile]
         public static TriangleVertices Execute(IntTriangularPos pos, float triangleHeight, float offset = 0.05f)
         {
-            float3 pointA;
-            float3 pointB;
-            float3 pointC;
+            float3 pinnaclePos;
+            float3 leftBasisPos;
+            float3 rightBasisPos;
 
             var a = pos.DownLeft;
             var b = pos.Up;
@@ -24,22 +24,21 @@ namespace ZE.MechBattle.Navigation
 
             if (!pos.IsPeak)
             {
-                // valley (C -> A -> B, B is bottom)
-                pointA = new float3(a - 1 + offset, b - offset, c - offset);
-                pointB = new float3(a - offset, b - 1 + offset, c - offset);
-                pointC = new float3(a - offset, b - offset, c - 1 + offset);
+                leftBasisPos = new float3(a - 1 + offset, b - offset, c - offset);
+                rightBasisPos = new float3(a - offset, b - 1 + offset, c - offset);
+                pinnaclePos = new float3(a - offset, b - offset, c - 1 + offset);
             }
             else
             {
-                pointA = new float3(a + 1 - offset, b + offset, c + offset);
-                pointB = new float3(a + offset, b + 1 - offset, c + offset);
-                pointC = new float3(a + offset, b + offset, c + 1 - offset);
+                leftBasisPos = new float3(a + 1 - offset, b + offset, c + offset);
+                pinnaclePos = new float3(a + offset, b + 1 - offset, c + offset);
+                rightBasisPos = new float3(a + offset, b + offset, c + 1 - offset);
             }
 
             return new(
-                TriangularMath.TriangularToWorld(pointA, triangleHeight),
-                TriangularMath.TriangularToWorld(pointB, triangleHeight),
-                TriangularMath.TriangularToWorld(pointC, triangleHeight)
+                pinnacle: TriangularMath.TriangularToWorld(pinnaclePos, triangleHeight),
+                leftBasis: TriangularMath.TriangularToWorld(leftBasisPos, triangleHeight),
+                rightBasis: TriangularMath.TriangularToWorld(rightBasisPos, triangleHeight)
                 );
         }
 

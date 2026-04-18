@@ -18,10 +18,9 @@ namespace ZE.MechBattle.Navigation
         int HexTrianglesCount { get; }
         int TrianglesPerHexEdge { get; }
         float HexEdgeSize { get; }
-        void CastHex(NavigationHexPosition hexPos, QueryParameters queryParameters);
+        void CastHex(NavigationHexPosition hexPos);
         Awaitable CastHexAsync(
             NavigationHexPosition hexPos,
-            QueryParameters queryParameters,
             CancellationToken cancellationToken);
     }
 
@@ -43,6 +42,7 @@ namespace ZE.MechBattle.Navigation
         private readonly float _castingRayLength;
         private readonly float _hexEdgeSize;
         private readonly NativeArray<SubdivideTriangleCommand.SmallTriangleData> _raycastPointsArray;
+        private readonly QueryParameters _queryParameters;
 
         // final commands list
         private readonly NativeArray<RaycastCommand> _raycastCommands;
@@ -51,7 +51,7 @@ namespace ZE.MechBattle.Navigation
 
         private bool _isDisposed = false;
 
-        public NavigationCaster(in MapSettings mapSettings, Allocator allocator) 
+        public NavigationCaster(Allocator allocator, in MapSettings mapSettings, QueryParameters queryParameters) 
         { 
             _trianglesPerHexEdge = mapSettings.TrianglesPerHexEdge;
             _raycastTrianglesPerEdge = mapSettings.RaycastSubdivisionsPerEdge;
@@ -59,6 +59,7 @@ namespace ZE.MechBattle.Navigation
             _castingHeight = NavigationConstants.CASTING_HEIGHT;
             _castingRayLength = NavigationConstants.CASTING_RAY_LENGTH;
             _hexEdgeSize = mapSettings.HexEdgeSize;
+            _queryParameters = queryParameters;
 
             _hexTrianglesCount = TriangularMath.GetTrianglesCountInHex(mapSettings.TrianglesPerHexEdge);
             var raycastCommandsCount = _hexTrianglesCount * _raycastTrianglesPerEdge * _raycastTrianglesPerEdge;
@@ -69,16 +70,16 @@ namespace ZE.MechBattle.Navigation
             _raycastPointsArray = new (raycastsCount, allocator, NativeArrayOptions.UninitializedMemory);
         }
 
-        public NavigationCaster(MapSettingsSO mapSettings, Allocator allocator) : this(mapSettings.ToStruct(), allocator) { }
+        public NavigationCaster(Allocator allocator, MapSettingsSO mapSettings, QueryParameters queryParameters ) : this(allocator, mapSettings.ToStruct(), queryParameters) { }
 
-        public PrepareHexRaycastCommandsJob ConstructPositionsJob(NavigationHexPosition hexPos, in QueryParameters queryParameters, int trianglesPerEdge)
+        public PrepareHexRaycastCommandsJob ConstructPositionsJob(NavigationHexPosition hexPos, int trianglesPerEdge)
         {
             return new PrepareHexRaycastCommandsJob()
             {
                 CastingHeight = _castingHeight,
                 CastingRayLength = _castingRayLength,
                 RaycastCommands = _raycastCommands,
-                QueryParameters = queryParameters,
+                QueryParameters = _queryParameters,
                 RaycastPoints = _raycastPointsArray,
                 RaycastTrianglesPerEdge = _raycastTrianglesPerEdge,
                 TriangleHeight = _triangleHeight,
@@ -89,13 +90,12 @@ namespace ZE.MechBattle.Navigation
 
         public async Awaitable CastHexAsync(
             NavigationHexPosition hexPos,
-            QueryParameters queryParameters, 
             CancellationToken cancellationToken)
         {
             if (_isDisposed)
                 throw new Exception("Caster disposed");
 
-            var castJobHandle = PrepareCastJob(hexPos, queryParameters);
+            var castJobHandle = PrepareCastJob(hexPos);
 
             var ownToken = _casterLifetimeCts.Token;
             while (!castJobHandle.IsCompleted)
@@ -110,20 +110,18 @@ namespace ZE.MechBattle.Navigation
             }
         }
 
-        public void CastHex(NavigationHexPosition hexPos, QueryParameters queryParameters)
+        public void CastHex(NavigationHexPosition hexPos)
         {
             if (_isDisposed)
                 throw new Exception("Caster disposed");
 
-            var castJobHandle = PrepareCastJob(hexPos, queryParameters);
+            var castJobHandle = PrepareCastJob(hexPos);
             castJobHandle.Complete();
         }
 
-        public JobHandle PrepareCastJob(
-            NavigationHexPosition hexPos, 
-            QueryParameters queryParameters)
+        public JobHandle PrepareCastJob(NavigationHexPosition hexPos)
         {
-            var positionsJob = ConstructPositionsJob(hexPos, queryParameters, _trianglesPerHexEdge);
+            var positionsJob = ConstructPositionsJob(hexPos, _trianglesPerHexEdge);
 
             var preparePositionsHandle = positionsJob.ScheduleByRef();
             return RaycastCommand.ScheduleBatch(_raycastCommands, _raycastResults, 64, dependsOn: preparePositionsHandle);
