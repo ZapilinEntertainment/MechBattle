@@ -198,22 +198,22 @@ namespace ZE.MechBattle.Navigation
             _flowMapSetupDataJob.CoordsConverter = _flowMapCalculationCollections.PassabilityData.GetCoordsConverter();
             _flowMapSetupDataJob.Run(_trianglesPerHex);
 
-            var raycastsPerTriangle = _mapSettings.RaycastSubdivisionsPerEdge * _mapSettings.RaycastSubdivisionsPerEdge;
-            for (var i = 0; i < _trianglesPerHex; i++)
-            {
-                var decodedTripos = _flowMapSetupDataJob.CoordsConverter.IndexToTriangular(i);
-                for (var j = 0; j < raycastsPerTriangle; j++)
-                {
-                    var raycast = _refineNavRaycastDataJob.ObstacleHits[i * raycastsPerTriangle + j];
-                    var definedTripos = TriangularMath.WorldToTrianglePos(raycast.point, _mapSettings.TriangleHeight);
-                    if (definedTripos != decodedTripos)
-                    {
-                        UnityEngine.Debug.LogError($"{i} | {raycast.point} decoded: {decodedTripos}, defined {definedTripos}");
-                    }
+            //var raycastsPerTriangle = _mapSettings.RaycastSubdivisionsPerEdge * _mapSettings.RaycastSubdivisionsPerEdge;
+            //for (var i = 0; i < _trianglesPerHex; i++)
+            //{
+            //    var decodedTripos = _flowMapSetupDataJob.CoordsConverter.IndexToTriangular(i);
+            //    for (var j = 0; j < raycastsPerTriangle; j++)
+            //    {
+            //        var raycast = _refineNavRaycastDataJob.ObstacleHits[i * raycastsPerTriangle + j];
+            //        var definedTripos = TriangularMath.WorldToTrianglePos(raycast.point, _mapSettings.TriangleHeight);
+            //        if (definedTripos != decodedTripos)
+            //        {
+            //            UnityEngine.Debug.LogError($"{i} | {raycast.point} decoded: {decodedTripos}, defined {definedTripos}");
+            //        }
 
-                    UnityEngine.Debug.Log($"{i} | {raycast.point} obstacled: {raycast.colliderInstanceID != 0}");
-                }
-            }
+            //        UnityEngine.Debug.Log($"{i} | {raycast.point} obstacled: {raycast.colliderInstanceID != 0}");
+            //    }
+            //}
 
             var flowMapData = CombineFlowMapsCommand.Execute(_flowMapCalculationCollections, hexPos, _hexRadius, flowMapAllocator);
             var accessMap = FormHexAccessMapCommand.Execute(flowMapData.AsReadOnly(), hexPos, _hexRadius);

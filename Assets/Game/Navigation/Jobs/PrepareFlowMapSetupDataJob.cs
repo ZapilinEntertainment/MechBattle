@@ -54,7 +54,7 @@ namespace ZE.MechBattle.Navigation
             var refinedData = RefinedRaycastData[index];
 
             var isPassable = (refinedData.ObstacledCellsCount / SubdividedTrianglesCount) < IntersectionPercentForLock;
-            isPassable &= ((refinedData.GroundCastsCount / SubdividedTrianglesCount) >= IntersectionPercentForLock) | UncastedSpaceIsPassable;
+            //isPassable &= ((refinedData.GroundCastsCount / SubdividedTrianglesCount) >= IntersectionPercentForLock) | UncastedSpaceIsPassable;
 
             var pos = CoordsConverter.IndexToTriangular(index);
             var neighboursAccessMask = 0;
@@ -70,7 +70,7 @@ namespace ZE.MechBattle.Navigation
                 var cellHeight = refinedData.GetHeight(transitionMeasurePoints.CellMeasurePoint);
                 var neighbourHeight = RefinedRaycastData[neighbourIndex].GetHeight(transitionMeasurePoints.NeighbourMeasurePoint);
 
-                var neighbourAccessible = math.abs(cellHeight - neighbourHeight) > NavigationConstants.MAX_HEIGHT_STEP;
+                var neighbourAccessible = math.abs(cellHeight - neighbourHeight) < NavigationConstants.MAX_HEIGHT_STEP;
                 neighboursAccessMask |= neighbourAccessible ? (1 << i) : 0;
             }
 

@@ -10,7 +10,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 {
     public class GeneratedFlowMapDrawWizard : ScriptableWizard
     {
-        public bool DrawLocked = true;
+        public bool DrawLocked = false;
         public int2 HexCoord;
         public HexEdge ExitEdge;
 
@@ -105,7 +105,6 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
            
             //draw:            
             var triangleHeight = map.TriangleHeight;
-            Debug.Log(triangleHeight);
             var arrowSize = 0.3f * triangleHeight;
             foreach (var kvp in flowMap.Data)
             {

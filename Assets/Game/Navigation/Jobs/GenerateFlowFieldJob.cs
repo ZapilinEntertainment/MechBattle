@@ -27,7 +27,7 @@ namespace ZE.MechBattle.Navigation
         public int TrianglesPerEdge;
         public HexEdge ExitEdge;    
 
-        private const int NEIGHBOURS_COUNT = 12;
+        private const int NEIGHBOURS_COUNT = NavigationConstants.TRIANGLE_DIRECTIONS_COUNT;
         private int _exitFlowDirectionPeak;
         private int _exitFlowDirectionValley;
 
@@ -91,7 +91,7 @@ namespace ZE.MechBattle.Navigation
         }
 
         private void Enqueue(int index)
-        {
+        {            
             if (!QueuedPositions.Contains(index))
                 CalculationQueue.Enqueue(index);
         }
@@ -113,19 +113,28 @@ namespace ZE.MechBattle.Navigation
                 var isPeak = pos.IsPeak;
                 var calculationData = CalculationData[index];
                 var passabilityData = PassabilityData[index];
+                
+                //UnityEngine.Debug.Log($"goto {pos}, integration: {calculationData.IntegrationValue}");
 
                 var integrationValue = calculationData.IntegrationValue;
 
                 for (var i = 0; i < NEIGHBOURS_COUNT; i++)
                 {
-                    var neighbourPos = pos + TriangularMath.GetNeighbourByDirection(pos, i);
+                    var neighbourPos = TriangularMath.GetNeighbourByDirection(pos, i);
 
                     if (!PassabilityData.TryGetIndex(neighbourPos, out var neighbourIndex))
+                    {
+                        //UnityEngine.Debug.Log($"neighbour {neighbourPos} is out of hex");
                         continue;
+                    }
+                       
                    
                     var neighbourPassabilityData = PassabilityData[neighbourIndex];
                     if (!neighbourPassabilityData.IsPassable | !passabilityData.IsNeighbourAccessible(i))
+                    {
+                        //UnityEngine.Debug.Log($"neighbour is not reachable: {neighbourPos} passability {neighbourPassabilityData.IsPassable}, access: {passabilityData.IsNeighbourAccessible(i)}");
                         continue;
+                    }
                     
                     var cost = TriangularMath.GetTransitionCost(i, isPeak);
 
@@ -136,6 +145,8 @@ namespace ZE.MechBattle.Navigation
                         neighbourCalculationData.IntegrationValue = newIntegrationValue;
                         CalculationData[neighbourIndex] = neighbourCalculationData;
                         Enqueue(neighbourIndex);
+
+                        //UnityEngine.Debug.Log($"enqueue {neighbourPos}, current integration: {newIntegrationValue}");
                     }
                 }
             }
@@ -148,7 +159,7 @@ namespace ZE.MechBattle.Navigation
                 var setupData = PassabilityData[i];
                 var calculationData = CalculationData[i];
                 if (calculationData.IsCalculated)
-                    continue;
+                    continue;                
 
                 // ignore exit cells
                 // however, fill blocked cells - for cases, when unit moved off-grid
@@ -160,24 +171,34 @@ namespace ZE.MechBattle.Navigation
 
                 for (var j = 0; j < NEIGHBOURS_COUNT; j++)
                 {
-                    var neighbourPos = pos + TriangularMath.GetNeighbourByDirection(pos, j);
+                    var neighbourPos = TriangularMath.GetNeighbourByDirection(pos, j);
                     if (!PassabilityData.TryGetIndex(neighbourPos, out var neighbourDataIndex))
                         continue;
 
                     var neighbourPassabilityData = PassabilityData[neighbourDataIndex];
-                    if (!neighbourPassabilityData.IsPassable | !neighbourPassabilityData.IsNeighbourAccessible(j))
+                    if (!neighbourPassabilityData.IsPassable | !setupData.IsNeighbourAccessible(j))
                         continue;
+
 
                     var neighbourData = CalculationData[neighbourDataIndex];
                     var neighbourIntegration = neighbourData.IntegrationValue;
                     var isNewMinIntegration = neighbourIntegration < minIntegration;
+                    if (!isNewMinIntegration & (neighbourIntegration == minIntegration))
+                    {
+                        var targetDir = isPeak ? _exitFlowDirectionPeak : _exitFlowDirectionValley;
+                        var prevMinElementDelta = TriangularMath.GetDirectionsDelta(targetDir, direction);
+                        var newOptionDelta = TriangularMath.GetDirectionsDelta(targetDir, j);
+                        if (newOptionDelta < prevMinElementDelta) 
+                            isNewMinIntegration = true; 
+                    }
+
                     minIntegration = math.select(minIntegration, neighbourIntegration, isNewMinIntegration);
                     direction = math.select(direction, j, isNewMinIntegration);
                 }
-
-                //UnityEngine.Debug.Log(minIntegration);
                 var isLesserValueFound = minIntegration < calculationData.IntegrationValue;
                 calculationData.FlowDirection = math.select(calculationData.FlowDirection, direction, isLesserValueFound);
+
+
                 calculationData.IsCalculated = true;
 
                 CalculationData[i] = calculationData;

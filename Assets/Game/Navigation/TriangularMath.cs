@@ -323,6 +323,16 @@ namespace ZE.MechBattle.Navigation
             }
         }
 
+        [BurstCompile]
         public static float GetTransitionCost(int neighbourIndex, bool isPeak) => isPeak ? GetPeakTransitionCost((PeakNeighbour)neighbourIndex) : GetValleyTransitionCost((ValleyNeighbour)neighbourIndex);
+
+        [BurstCompile]
+        public static int GetDirectionsDelta(int targetDir, int currentDir)
+        {
+            const int HALF_DIR = NavigationConstants.TRIANGLE_DIRECTIONS_COUNT / 2;
+            var delta = math.abs(targetDir - currentDir);
+            if (delta > HALF_DIR) delta = NavigationConstants.TRIANGLE_DIRECTIONS_COUNT - delta;
+            return delta;
+        }
     }
 }
