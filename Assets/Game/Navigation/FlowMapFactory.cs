@@ -49,7 +49,7 @@ namespace ZE.MechBattle.Navigation
             var valleyRightBasisIndex = TrianglesToIndexFlattenedConverter.GetSubdivisionBasisIndex(true, false, subdivisions);
 
             var raycastsPerTriangle = subdivisions * subdivisions;
-            UnityEngine.Debug.Log($"raycast per triangle: {raycastsPerTriangle} peak left: {peakLeftBasisIndex} peak right: {peakRightBasisIndex} valley left: {valleyLeftBasisIndex} valley right: {valleyRightBasisIndex}");
+            //UnityEngine.Debug.Log($"raycast per triangle: {raycastsPerTriangle} peak left: {peakLeftBasisIndex} peak right: {peakRightBasisIndex} valley left: {valleyLeftBasisIndex} valley right: {valleyRightBasisIndex}");
 
             _refineNavRaycastDataJob = new RefineNavRaycastDataJob()
             {
@@ -75,7 +75,8 @@ namespace ZE.MechBattle.Navigation
                 SetupData = _flowMapCalculationCollections.PassabilityDataInnerArray,
                 RefinedRaycastData = _refinedData,
                 IntersectionPercentForLock = _mapSettings.IntersectionPercentForLock,
-                SubdividedTrianglesCount = subdivisions * subdivisions                
+                SubdividedTrianglesCount = subdivisions * subdivisions,
+                UncastedSpaceIsPassable = mapSettings.UnscannedSurfacesArePassable
             };
         }
 
@@ -156,9 +157,11 @@ namespace ZE.MechBattle.Navigation
         private void PrepareCalculationData(NavigationHexPosition hexPos)
         {
             var walkableDataHandle = _walkableSurfaceCaster.PrepareCastJob(hexPos);
-            var obstacleDataHandle = _obstaclesCaster.PrepareCastJob(hexPos);
+            
 
             walkableDataHandle.Complete();
+
+            var obstacleDataHandle = _obstaclesCaster.PrepareCastJob(hexPos);
             obstacleDataHandle.Complete();
 
             var hexRadius = _mapSettings.TrianglesPerHexEdge;
@@ -169,6 +172,17 @@ namespace ZE.MechBattle.Navigation
             {
                 var pos = collections.GetPosByIndex(j);
                 _isPeakData.Set(j, pos.IsPeak);
+            }
+
+            var raycastsPerTriangle = _mapSettings.RaycastSubdivisionsPerEdge * _mapSettings.RaycastSubdivisionsPerEdge;
+            var coordsConverter = _flowMapCalculationCollections.PassabilityData.GetCoordsConverter();
+            for (var i = 0; i < _obstaclesCaster.Results.Length; i++)
+            {
+                var result = _obstaclesCaster.Results[i];
+                if (result.colliderInstanceID == 0)
+                    continue;
+                var triangleIndex = i / raycastsPerTriangle;
+                //UnityEngine.Debug.Log($"{i} : {result.point} : {TriangularMath.WorldToTrianglePos(result.point, _mapSettings.TriangleHeight)} = {triangleIndex} -> {coordsConverter.IndexToTriangular(triangleIndex)}");
             }
         }
 
@@ -183,6 +197,23 @@ namespace ZE.MechBattle.Navigation
             // too easy to schedule
             _flowMapSetupDataJob.CoordsConverter = _flowMapCalculationCollections.PassabilityData.GetCoordsConverter();
             _flowMapSetupDataJob.Run(_trianglesPerHex);
+
+            var raycastsPerTriangle = _mapSettings.RaycastSubdivisionsPerEdge * _mapSettings.RaycastSubdivisionsPerEdge;
+            for (var i = 0; i < _trianglesPerHex; i++)
+            {
+                var decodedTripos = _flowMapSetupDataJob.CoordsConverter.IndexToTriangular(i);
+                for (var j = 0; j < raycastsPerTriangle; j++)
+                {
+                    var raycast = _refineNavRaycastDataJob.ObstacleHits[i * raycastsPerTriangle + j];
+                    var definedTripos = TriangularMath.WorldToTrianglePos(raycast.point, _mapSettings.TriangleHeight);
+                    if (definedTripos != decodedTripos)
+                    {
+                        UnityEngine.Debug.LogError($"{i} | {raycast.point} decoded: {decodedTripos}, defined {definedTripos}");
+                    }
+
+                    UnityEngine.Debug.Log($"{i} | {raycast.point} obstacled: {raycast.colliderInstanceID != 0}");
+                }
+            }
 
             var flowMapData = CombineFlowMapsCommand.Execute(_flowMapCalculationCollections, hexPos, _hexRadius, flowMapAllocator);
             var accessMap = FormHexAccessMapCommand.Execute(flowMapData.AsReadOnly(), hexPos, _hexRadius);

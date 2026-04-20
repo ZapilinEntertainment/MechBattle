@@ -18,7 +18,8 @@ namespace ZE.MechBattle.Navigation.Tests
             using var collectionData = new FlowFieldCalculationCollections(allocator, hexPos.TriangularCenterPos, mapSettings);
 
             var hexTrisCount = TriangularMath.GetTrianglesCountInHex(radius);
-            foreach (var tripos in new HexTrianglesEnumerator(hexPos, radius))
+            var hexEnumerator = new HexTrianglesEnumerator(hexPos.TriangularCenterPos, radius);
+            foreach (var tripos in hexEnumerator)
             {
                 collectionData.PassabilityData[tripos] = CellPassabilityData.CreateDefaultData(true);
             }
@@ -39,13 +40,16 @@ namespace ZE.MechBattle.Navigation.Tests
 
             var testCompleted = true;
 
-            foreach (var tripos in new HexTrianglesEnumerator(hexPos, radius))
+            hexEnumerator.Reset();
+            foreach (var tripos in hexEnumerator)
             {
                 var cellData = job.PassabilityData[tripos];
                 var calculationData = job.CalculationData[job.PassabilityData.TriangularToIndex(tripos)];
             }
 
-            foreach (var tripos in new HexTrianglesEnumerator(hexPos, radius))
+
+            hexEnumerator.Reset();
+            foreach (var tripos in hexEnumerator)
             {
                 var index = job.PassabilityData.TriangularToIndex(tripos);
                 var data = job.CalculationData[index];
@@ -110,7 +114,7 @@ namespace ZE.MechBattle.Navigation.Tests
             if (!testCompleted) Assert.Ignore("flow map is not ideal" );
 
             var calcData = job.CalculationData;
-            foreach (var tripos in new HexTrianglesEnumerator(hexPos, radius))
+            foreach (var tripos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, radius))
             {
                 var index = job.PassabilityData.TriangularToIndex(tripos);
                 var integration = calcData[index].IntegrationValue;

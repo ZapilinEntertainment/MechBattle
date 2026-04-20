@@ -11,26 +11,28 @@ namespace ZE.MechBattle.Navigation
         float2 CenterPosWorld {get; }
         int2 HexCoordinate { get;}
         IFlowMap FlowMap { get;}
+        public NavigationHexPosition Pos { get;}
     }
 
     public class NavigationHex : INavigationHex, IDisposable
     {
         public int Version { get; private set; } = 0;
         public IFlowMap FlowMap => _flowMap;
-        public IntTriangularPos TriangularCenterPos => Data.TriangularCenterPos;
-        public IntTriangularPos InnerRingTopTrianglePos => Data.InnerRingTopValleyTriangle;
-        public float3 CenterPos3DWorld => Data.CenterPos3DWorld;
-        public float2 CenterPosWorld => Data.CenterPosWorld;
+        public IntTriangularPos TriangularCenterPos => _pos.TriangularCenterPos;
+        public IntTriangularPos InnerRingTopTrianglePos => _pos.InnerRingTopValleyTriangle;
+        public float3 CenterPos3DWorld => _pos.CenterPos3DWorld;
+        public float2 CenterPosWorld => _pos.CenterPosWorld;
 
-        public int2 HexCoordinate => Data.HexCoordinate;
+        public int2 HexCoordinate => _pos.HexCoordinate;
 
-        public readonly NavigationHexPosition Data;      
+        public NavigationHexPosition Pos => _pos;
         private IDisposableFlowMap _flowMap;
+        private readonly NavigationHexPosition _pos;
 
 
         public NavigationHex(in NavigationHexPosition data)
         {
-            Data = data;
+            _pos = data;
         }
 
         public void UpdateFlowMap(IDisposableFlowMap flowMap)

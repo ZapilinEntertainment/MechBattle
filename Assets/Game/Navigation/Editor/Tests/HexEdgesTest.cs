@@ -99,7 +99,7 @@ namespace ZE.MechBattle.Navigation.Tests
 
             var hexTriangles = new IntTriangularPos[TriangularMath.GetTrianglesCountInHex(radius)];
             var index = 0;
-            foreach (var pos in new HexTrianglesEnumerator(hexPos, radius))
+            foreach (var pos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, radius))
             {
                 hexTriangles[index++] = pos;
             }

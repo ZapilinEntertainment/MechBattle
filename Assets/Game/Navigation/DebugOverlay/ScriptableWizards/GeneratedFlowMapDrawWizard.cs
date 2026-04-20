@@ -81,7 +81,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
                 try
                 {
-                    flowMap = await _flowMapFactory.CreateHexFlowMapAsync(Allocator.Persistent, hexCoord, combinedToken);                    
+                    flowMap = _flowMapFactory.CreateHexFlowMap(Allocator.Persistent, hexCoord);                    
                 }
                 catch (OperationCanceledException)
                 {
@@ -103,8 +103,9 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 }
             }
            
-            //draw:
+            //draw:            
             var triangleHeight = map.TriangleHeight;
+            Debug.Log(triangleHeight);
             var arrowSize = 0.3f * triangleHeight;
             foreach (var kvp in flowMap.Data)
             {
@@ -113,7 +114,11 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 var combinedData = kvp.Value;
                 var flowMapCell = kvp.Value[exitEdge];     
                 if (!combinedData.IsPassable && !DrawLocked)
+                {
+                    //Debug.Log($"{kvp.Key} locked");
                     continue;
+                }
+                    
 
                 var vector = TriangularMath.TriangularDirectionToWorld(flowMapCell.Direction, kvp.Key.IsPeak);
 
@@ -158,6 +163,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             if (!_mapSettingsPresented)
                 return;
 
+            Handles.color = Color.white;
             foreach (var pts in _points)
             {
                 Handles.DrawLine(pts.start, pts.end);

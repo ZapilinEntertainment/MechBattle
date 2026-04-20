@@ -16,7 +16,7 @@ namespace ZE.MechBattle.Navigation
             var data = new TriangularPathJobCollections(allocator, hexPos, mapSettings);            
             ref var setupData = ref data.PassabilityData;
 
-            foreach (var tripos in new HexTrianglesEnumerator(hexPos, mapSettings.TrianglesPerHexEdge))
+            foreach (var tripos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, mapSettings.TrianglesPerHexEdge))
             {
                 var cell = flowMap.GetCombinedCellData(tripos);
                 setupData[tripos] = cell.PassabilityData;

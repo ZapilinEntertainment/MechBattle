@@ -34,7 +34,7 @@ namespace ZE.MechBattle.Navigation
                 _trianglesInHex = TriangularMath.GetTrianglesCountInHex(_radius);
                 _hexTriangleIndices = new DisposableArray<int>(_trianglesInHex);
                 var ti = 0;
-                foreach (var hexTrianglePos in new HexTrianglesEnumerator(hexPos, _radius))
+                foreach (var hexTrianglePos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, _radius))
                 {
                     var index = _setupData.TriangularToIndex(hexTrianglePos);
                     _hexTriangleIndices[ti++] = index;

@@ -31,8 +31,9 @@ namespace ZE.MechBattle.Navigation
         public const float DIV_THREE = 1f / 3f;
 
         public const double SQRT_THREE_D_3_DBL = SQRT_OF_THREE_DBL / 3;
-        public const float SQRT_THREE_D_3 = SQRT_OF_THREE / 3f;
-       
+        public const float SQRT_THREE_D_3 = SQRT_OF_THREE / 3f;       
+
+
 
         public static QueryParameters GetWalkableCastQueryParameters()
         {

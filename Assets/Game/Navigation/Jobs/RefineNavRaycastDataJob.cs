@@ -63,20 +63,22 @@ namespace ZE.MechBattle.Navigation
             var readIndex = triangleIndex * RaycastsPerTriangle;
 
             Span<bool> walkablesHitMask = stackalloc bool[RaycastsPerTriangle];
+
             for (var i = 0; i < RaycastsPerTriangle; i++)
             {
                 var walkableHit = WalkableHits[readIndex + i];
                 var isWalkable = walkableHit.colliderInstanceID != 0;
                 walkablesHitMask[i] = isWalkable;
                 var walkableHeight = isWalkable ? walkableHit.point.y : NavigationConstants.DEFAULT_HEIGHT;
+                resultingData.GroundCastsCount += isWalkable ? 1 : 0;
 
                 var newAverageHeight = isWalkable ? resultingData.AddHeightAndRecalculate(walkableHeight) : resultingData.AverageGroundHeight;
                 resultingData.AverageGroundHeight = newAverageHeight;
-                resultingData.GroundCastsCount++;
+               
                 
                 var obstacleHit = ObstacleHits[readIndex + i];
                 var isObstacled = obstacleHit.colliderInstanceID != 0;
-                resultingData.ObstacledCellsCount += isObstacled ? 0 : 1;
+                resultingData.ObstacledCellsCount += isObstacled ? 1 : 0;
             }
 
             // preparing corner heights

@@ -10,6 +10,7 @@ namespace ZE.MechBattle.Navigation
         public NativeArray<FlowFieldCellCalculationData> CalculationData;
         public NativeQueue<int> CalculationQueue;
         public NativeHashSet<int> QueuedPositions;
+        public NativeArray<IntTriangularPos> Positions;
 
         public readonly NativeArray<CellPassabilityData> PassabilityDataInnerArray;
         private readonly int _hexRadius;

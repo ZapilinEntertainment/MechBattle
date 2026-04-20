@@ -33,20 +33,21 @@ namespace ZE.MechBattle.Navigation
             };
 
             var index = 0;
-            foreach (var tripos in new HexTrianglesEnumerator(HexPos, TrianglesPerEdge))
+            foreach (var tripos in new HexTrianglesEnumerator(HexPos.TriangularCenterPos, TrianglesPerEdge))
             {
-                var cartesian = TriangularMath.TriangularToWorld(tripos, TriangleHeight);
                 SubdivideTriangleCommand.Execute(
-                    cartesian.xz,
-                    tripos.IsPeak, 
+                    tripos, 
                     subdivisionProtocol);
 
                 var centers = subdivisionProtocol.Centers;
                 for (var i = 0; i < RaycastPoints.Length; i++)
                 {
-                    var raycastPos = RaycastPoints[i].WorldPos;
-                    RaycastCommands[index++] = new(new Vector3(raycastPos.x, CastingHeight, raycastPos.y), direction, QueryParameters, CastingRayLength);
+                    var subtrianglePos = RaycastPoints[i].WorldPos;
+                    var raycastPos = new Vector3(subtrianglePos.x, CastingHeight, subtrianglePos.y);
+                    RaycastCommands[index++] = new(raycastPos, direction, QueryParameters, CastingRayLength);
                 }
+
+               
             }
         }
     }

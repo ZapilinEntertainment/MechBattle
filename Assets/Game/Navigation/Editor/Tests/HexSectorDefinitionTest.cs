@@ -68,7 +68,7 @@ namespace ZE.MechBattle.Navigation.Tests
             }
 
             var triangleHeight = hexEdge / radius * NavigationConstants.SQRT_OF_THREE_HALVED;
-            foreach (var pos in new HexTrianglesEnumerator(hexPos, radius))
+            foreach (var pos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, radius))
             {
                 Assert.IsTrue(data.ContainsKey(pos), $"no {pos} presented");
 

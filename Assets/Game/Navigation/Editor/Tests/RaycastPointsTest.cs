@@ -71,6 +71,5 @@ namespace ZE.MechBattle.Navigation.Tests
             //}
 
         }
-    
     }
 }

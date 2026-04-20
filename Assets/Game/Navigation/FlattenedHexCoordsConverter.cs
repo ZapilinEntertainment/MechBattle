@@ -106,16 +106,15 @@ namespace ZE.MechBattle.Navigation
 
         public IntTriangularPos IndexToTriangular(int index)
         {
-            var localIndex = GetLocalIndex(index);
-            index = localIndex.localIndex;
-            switch (localIndex.sector)
+            var data = GetLocalIndex(index);
+            switch (data.sector)
             {
-                case HexSector.TopRight: return TopRightConverter.IndexToTriangular(index);
-                case HexSector.BottomRight: return BottomRightConverter.IndexToTriangular(index);
-                case HexSector.Bottom: return BottomConverter.IndexToTriangular(index);
-                case HexSector.BottomLeft: return BottomLeftConverter.IndexToTriangular(index);
-                case HexSector.TopLeft: return TopLeftConverter.IndexToTriangular(index);
-                default: return TopConverter.IndexToTriangular(index);
+                case HexSector.TopRight: return TopRightConverter.IndexToTriangular(data.localIndex);
+                case HexSector.BottomRight: return BottomRightConverter.IndexToTriangular(data.localIndex);
+                case HexSector.Bottom: return BottomConverter.IndexToTriangular(data.localIndex);
+                case HexSector.BottomLeft: return BottomLeftConverter.IndexToTriangular(data.localIndex);
+                case HexSector.TopLeft: return TopLeftConverter.IndexToTriangular(data.localIndex);
+                default: return TopConverter.IndexToTriangular(data.localIndex);
             }
         }
 

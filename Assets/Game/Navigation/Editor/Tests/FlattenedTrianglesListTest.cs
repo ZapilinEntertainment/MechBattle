@@ -43,6 +43,7 @@ namespace ZE.MechBattle.Navigation.Tests
         [TestCase(0, 0, 5)]
         [TestCase(0, 0, 10)]
         [TestCase(0, 0, 32)]
+        [TestCase(-1, 1, 2)]
         [TestCase(4, 4, 4)]
         [TestCase(4, 4, 32)]
         public void CoordinatesCalculationTest(int hexCoordX, int hexCoordY, int radius)
@@ -73,7 +74,7 @@ namespace ZE.MechBattle.Navigation.Tests
             converters[5] = new TrianglesToIndexFlattenedConverter(innerTriangles[5] + new int3(0, radius-1, -radius+1), radius, readOnlyArray);
 
             var triangleHeight = HEX_EDGE / radius * NavigationConstants.SQRT_OF_THREE_HALVED;
-            foreach (var pos in new HexTrianglesEnumerator(hexPos, radius))
+            foreach (var pos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, radius))
             {
                 var sector = TriangularMath.DefineSector(pos, HEX_EDGE, radius, triangleHeight);
                 var sectorIndex = (int)sector;

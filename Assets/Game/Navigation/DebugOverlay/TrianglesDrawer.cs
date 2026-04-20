@@ -37,9 +37,9 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         private List<TriangleDrawData> _drawData = new();
 
-        public void DrawHexTriangles(NavigationHexPosition hexPos, INavigationMap map)
+        public void DrawHexTriangles(NavigationHexPosition hexPos, INavigationMap map, bool drawUnpassable)
         {
-            foreach (var tripos in new HexTrianglesEnumerator(hexPos, map.TrianglesPerHexEdge))
+            foreach (var tripos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, map.TrianglesPerHexEdge))
             {
                 var cellHeights = map.GetCellHeights(tripos);
                 var vertices = GetTriangleVerticesCommand.Execute(tripos, map.TriangleHeight, 0.01f);
@@ -47,7 +47,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
                 var isCellPassable = map.IsTrianglePassable(tripos);              
 
-                _drawData.Add( new TriangleDrawData(vertices, isCellPassable));
+                if (drawUnpassable | isCellPassable) 
+                    _drawData.Add( new TriangleDrawData(vertices, isCellPassable));
             }
         }
 

@@ -11,7 +11,6 @@ namespace ZE.MechBattle.Navigation
         public readonly int DownLeft;
         public readonly int Up;
         public readonly int DownRight;
-        private readonly bool _isPeak;
 
         public int X => DownLeft;
         public int Y => Up;
@@ -21,7 +20,7 @@ namespace ZE.MechBattle.Navigation
         public int2 XY => new(X,Y);
         public int2 YZ => new(Y,Z);
 
-        public bool IsPeak => _isPeak;
+        public bool IsPeak => (DownLeft + Up + DownRight) % 3 != 1;
         public static IntTriangularPos zero => new(0,0,0);
 
         public static IntTriangularPos operator + (IntTriangularPos a, int3 delta) =>
@@ -77,7 +76,6 @@ namespace ZE.MechBattle.Navigation
             DownLeft = downLeft;
             DownRight = downRight;
             Up = up;
-            _isPeak = (DownLeft + Up + DownRight) % 3 != 1;
         }
 
         public IntTriangularPos(int3 pos) : this(pos.x, pos.y, pos.z) { }

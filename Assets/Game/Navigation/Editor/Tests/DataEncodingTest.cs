@@ -133,7 +133,7 @@ namespace ZE.MechBattle.Navigation.Tests
             var flowData = new NativeHashMap<IntTriangularPos, FlowMapCombinedCell>(trianglesInHex, Allocator.TempJob);
             var random = new Random();
             Span<int> values = stackalloc int[6];
-            foreach (var tripos in new HexTrianglesEnumerator(hexPos, map.TrianglesPerHexEdge))
+            foreach (var tripos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, map.TrianglesPerHexEdge))
             {
                 var rvalue = random.Next();
                 if (rvalue < 0)

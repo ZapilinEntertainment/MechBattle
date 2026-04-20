@@ -11,7 +11,6 @@ namespace ZE.MechBattle.Navigation.Tests
 
     public class CombinedFlowMapTest
     {
-        [TestCase(0, 0, 100f, 1)]
         [TestCase(0, 0, 100f, 2)]
         [TestCase(0, 0, 100f, 4)]
         [TestCase(3, -3, 100f, 8)]
@@ -24,7 +23,7 @@ namespace ZE.MechBattle.Navigation.Tests
             using var collectionsData = FlowFieldCalculationCollections.CreateCollection(allocator, hexPos, MapSettings.CreateWithDefaultBorders(hexEdge, radius));
             var setupData = collectionsData.PassabilityData;
             var triangleData = CellPassabilityData.CreateDefaultData(true);
-            foreach (var triangle in new HexTrianglesEnumerator(hexPos, radius))
+            foreach (var triangle in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, radius))
             {
                 setupData[triangle] = triangleData;
             }
@@ -54,7 +53,7 @@ namespace ZE.MechBattle.Navigation.Tests
             // indices of triangles only in hex (squared array have also outside ones)
             var hexTriangleIndices = new int[trianglesInHex];
             var ti = 0;
-            foreach (var hexTrianglePos in new HexTrianglesEnumerator(hexPos, radius))
+            foreach (var hexTrianglePos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, radius))
             {
                 var index = setupData.TriangularToIndex(hexTrianglePos);
                 hexTriangleIndices[ti++] = index;

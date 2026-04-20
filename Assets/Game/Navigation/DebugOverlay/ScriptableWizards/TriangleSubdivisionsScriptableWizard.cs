@@ -8,12 +8,13 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 {
     public class TriangleSubdivisionsScriptableWizard : ScriptableWizard
     {
-        public float TriangleEdgeSize = 25f;
+        public float TriangleEdgeSize = 10f;
         public int3 TrianglePos = new(0,1,0);
-        public int TrianglesPerEdge = 4;
+        public int TrianglesPerEdge = 4;       
 
+        private float _innerRadius;
         private List<TriangleVertices> _vertices = new();
-        private readonly float RAD_CF = math.sqrt(3) / 6f;
+        private List<Vector3> _centers = new();
 
         [MenuItem("ZE.Navigation/Draw Triangle Subdivision")]
         static void OpenWizard()
@@ -24,6 +25,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         void OnWizardUpdate() 
         {
             _vertices.Clear();
+            _centers.Clear();
 
             var tripos = new IntTriangularPos(TrianglePos);
             var triangleHeight = TriangleEdgeSize * NavigationConstants.SQRT_OF_THREE_HALVED;
@@ -31,12 +33,14 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
             var center = TriangularMath.TriangularToWorld(tripos, triangleHeight).xz;
             using var centersArray = SubdivideTriangleCommand.CreateDataArray(TrianglesPerEdge, Allocator.Temp);
-            SubdivideTriangleCommand.Execute(center, tripos.IsPeak, new()
+            var protocol = new SubdivideTriangleCommand.TriangleSubdivisionProtocol()
             {
                 Centers = centersArray,
                 RaycastTrianglesPerEdge = TrianglesPerEdge,
                 TriangleHeight = triangleHeight
-            });
+            };
+            SubdivideTriangleCommand.Execute(tripos, protocol);
+            _innerRadius = protocol.SubdividedTriangleHeight * NavigationConstants.DIV_THREE;
 
             var edge = TriangleEdgeSize / TrianglesPerEdge;
             for (var i = 0; i < centersArray.Length; i++)
@@ -44,7 +48,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 var data = centersArray[i];
                 var vertices = GetTriangleVerticesCommand.Execute(data.WorldPos, data.IsPeak, edge);
                 _vertices.Add(vertices);
-
+                _centers.Add(data.WorldPosV3);
             }
 
             SceneView.RepaintAll();
@@ -72,6 +76,12 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 Handles.DrawLine(tri.PinnaclePos, tri.LeftBasisPos);
                 Handles.DrawLine(tri.LeftBasisPos, tri.RightBasisPos);
                 Handles.DrawLine(tri.RightBasisPos, tri.PinnaclePos);
+            }
+
+            var vup = Vector3.up;
+            foreach (var center in _centers)
+            {
+                Handles.DrawSolidDisc(center, vup, _innerRadius);
             }
         }
     }

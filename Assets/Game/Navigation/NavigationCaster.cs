@@ -121,8 +121,7 @@ namespace ZE.MechBattle.Navigation
 
         public JobHandle PrepareCastJob(NavigationHexPosition hexPos)
         {
-            var positionsJob = ConstructPositionsJob(hexPos, _trianglesPerHexEdge);
-
+            var positionsJob = ConstructPositionsJob(hexPos, _trianglesPerHexEdge);           
             var preparePositionsHandle = positionsJob.ScheduleByRef();
             return RaycastCommand.ScheduleBatch(_raycastCommands, _raycastResults, 64, dependsOn: preparePositionsHandle);
         }

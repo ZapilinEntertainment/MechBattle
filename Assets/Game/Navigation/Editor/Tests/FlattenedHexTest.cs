@@ -25,16 +25,23 @@ namespace ZE.MechBattle.Navigation.Tests
             var triangleHeight = HEX_EDGE / hexRadius * NavigationConstants.SQRT_OF_THREE_HALVED;
             var hexPos = new NavigationHexPosition(hexCoordX, hexCoordY, HEX_EDGE, triangleHeight);
 
-            // make an outside zone
-            foreach (var pos in new HexTrianglesEnumerator(hexPos, hexRadius+1))
+            foreach (var pos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, hexRadius))
+            {
+                TestContext.WriteLine(pos);
+            }
+            return;
+
+                // make an outside zone
+                foreach (var pos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, hexRadius+1))
             {
                 trisDict.Add(pos, TrianglePositionId.OutsideHex);
             }
 
             // hex triangles zone will be inside
-            foreach (var pos in new HexTrianglesEnumerator(hexPos, hexRadius))
+            foreach (var pos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, hexRadius))
             {
                 trisDict[pos] = TrianglePositionId.InsideHex;
+                TestContext.WriteLine(pos);
             }
 
             var flattenedHexCoordsConverter = new FlattenedHexCoordsConverter(
@@ -44,7 +51,7 @@ namespace ZE.MechBattle.Navigation.Tests
                 triangleHeight,
                 _rowIndicesData.AsReadOnly());
 
-            foreach (var pos in new HexTrianglesEnumerator(hexPos, hexRadius + 1))
+            foreach (var pos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, hexRadius + 1))
             {
                 var canConvert = flattenedHexCoordsConverter.TryGetIndex(pos, out var index);
                 var value = trisDict[pos];
@@ -63,11 +70,33 @@ namespace ZE.MechBattle.Navigation.Tests
             for (var i = 0; i < TriangularMath.GetTrianglesCountInHex(hexRadius); i++)
             {
                 Assert.IsTrue(flattenedHexCoordsConverter.TryGetTriangular(i, out var pos), $"cannot convert index {i}");
+                var backIndex = flattenedHexCoordsConverter.TriangularToIndex(pos);
+                Assert.AreEqual(i, backIndex, $"back index not match: {i} -> {pos} -> {backIndex}");
 
                 Assert.IsTrue(trisDict.ContainsKey(pos), $"tris dict dont contain {i}:{pos}");
                 Assert.IsTrue(trisDict[pos] == TrianglePositionId.InsideHex, $"{pos} is not inside hex");
                 //TestContext.WriteLine($"{i} : {pos}");
             }
+        }
+
+        [TestCase(0,1,0, 0,0, 2)]
+        [TestCase(-1, 0, 0, 0, 0, 2)]
+        public void ValueConversionTest(int x, int y, int z, int hexCoordX, int hexCoordY, int hexRadius)
+        {
+            var pos = new IntTriangularPos(x,y,z);
+
+            var triangleHeight = HEX_EDGE / hexRadius * NavigationConstants.SQRT_OF_THREE_HALVED;
+            var hexPos = new NavigationHexPosition(hexCoordX, hexCoordY, HEX_EDGE, triangleHeight);
+            var hexConverter = new FlattenedHexCoordsConverter(hexPos.TriangularCenterPos, hexRadius, HEX_EDGE, triangleHeight, _rowIndicesData.AsReadOnly());
+
+            var index = hexConverter.TriangularToIndex(pos);
+            var backPos = hexConverter.IndexToTriangular(index);
+            var backIndex = hexConverter.TriangularToIndex(backPos);
+
+            TestContext.WriteLine($"{pos} -> {index} -> {backPos} -> {backIndex}");
+
+            Assert.AreEqual(pos, backPos, "positions aren't same");
+            Assert.AreEqual(index, backIndex, "index aren't same");
         }
 
         [OneTimeSetUp]

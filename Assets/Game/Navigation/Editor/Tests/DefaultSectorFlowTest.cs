@@ -22,7 +22,7 @@ namespace ZE.MechBattle.Navigation.Tests
             {
                 var exitEdge = (HexEdge)e;
 
-                foreach (var pos in new HexTrianglesEnumerator(hexPos, hexRadius))
+                foreach (var pos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, hexRadius))
                 {
                     var sector = TriangularMath.DefineSector(pos, hexEdgeLength, hexRadius, triangleHeight);
                     var defaultDirection = sector.GetDefaultFlowDirection(exitEdge, pos.IsPeak);

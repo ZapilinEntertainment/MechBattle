@@ -15,6 +15,7 @@ namespace ZE.MechBattle.Navigation
         public float IntersectionPercentForLock;
         public float SubdividedTrianglesCount;
         public sbyte DefaultEntranceCost;
+        public bool UncastedSpaceIsPassable;
 
         private static readonly TransitionMeasurePoints[] PeakMeasurePoints = new TransitionMeasurePoints[12]
         {
@@ -53,6 +54,7 @@ namespace ZE.MechBattle.Navigation
             var refinedData = RefinedRaycastData[index];
 
             var isPassable = (refinedData.ObstacledCellsCount / SubdividedTrianglesCount) < IntersectionPercentForLock;
+            isPassable &= ((refinedData.GroundCastsCount / SubdividedTrianglesCount) >= IntersectionPercentForLock) | UncastedSpaceIsPassable;
 
             var pos = CoordsConverter.IndexToTriangular(index);
             var neighboursAccessMask = 0;

@@ -12,6 +12,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
     {
         public int2 BottomLeftCornerXZ = new (-200, -200);
         public int2 TopRightCornerXZ = new (200, 200);
+        public bool NoSurfaceTrianglesArePassable = false;
+        public bool DrawUnpassableTris = false;
 
         private readonly Color _zoneColor = new Color(0.78f, 0.71f, 0f, 0.1f);
         private readonly TrianglesDrawer _trisDrawer = new();
@@ -27,7 +29,9 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         }
 
         protected override void Draw()
-        {            
+        {
+            _trisDrawer.Clear();
+
             if (_mapCasted && _mapSizeHash  != HashCode.Combine(BottomLeftCornerXZ, TopRightCornerXZ))
             {
                 _map.Dispose();
@@ -49,6 +53,15 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             {
                 Debug.LogError(ex);
             }
+
+            if (_map != null)
+            {                
+                foreach (var hex in _map.Hexes)
+                {
+                    _trisDrawer.DrawHexTriangles(hex.Pos, _map, DrawUnpassableTris);
+                }
+            }
+            
 
             if (buildResult.IsSucceed)
             {
@@ -85,7 +98,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 var localSettings = new MapSettings(
                     existingSettings.HexEdgeSize, 
                     existingSettings.TrianglesPerHexEdge, 
-                    unscannedSurfacesArePassable: true,
+                    unscannedSurfacesArePassable: NoSurfaceTrianglesArePassable,
                     mapBorders: new int4(BottomLeftCornerXZ, TopRightCornerXZ));
                 _map = new NavigationMap(localSettings, Allocator.Persistent);
 
@@ -137,8 +150,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 var hexPos = new NavigationHexPosition(hexCoord, _map.HexEdgeSize, _map.TrianglesPerHexEdge);                
                 var flowMap = _flowMapFactory.CreateHexFlowMap(allocator, hexCoord);
 
-                _map.UpdateHexFlowMap(hexCoord, flowMap);
-                _trisDrawer.DrawHexTriangles(hexPos, _map);
+                _map.UpdateHexFlowMap(hexCoord, flowMap);               
             }
 
             _mapCasted = true;
