@@ -11,7 +11,6 @@ namespace ZE.MechBattle.Navigation
         public const int MAX_TRIANGLES_PER_EDGE = 32; // NOTE: HexEdgesAccessMap depends on it
 
         public const short DEFAULT_HEIGHT = 0;
-        public const float MAX_HEIGHT_STEP = 5f;
 
         public const float EDGE_PASS_COST = 1f;
         public const float VERTEX_PASS_COST = 2.01f;
@@ -34,7 +33,6 @@ namespace ZE.MechBattle.Navigation
         public const float SQRT_THREE_D_3 = SQRT_OF_THREE / 3f;
         
         public const int TRIANGLE_DIRECTIONS_COUNT = 12;
-
 
 
         public static QueryParameters GetWalkableCastQueryParameters()

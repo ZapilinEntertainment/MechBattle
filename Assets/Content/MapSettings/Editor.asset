@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Editor
   m_EditorClassIdentifier: ZE.Navigation::ZE.MechBattle.Navigation.MapSettingsSO
   <HexEdgeSize>k__BackingField: 100
-  <TrianglesPerHexEdge>k__BackingField: 10
-  <RaycastSubdivisionsPerEdge>k__BackingField: 4
+  <TrianglesPerHexEdge>k__BackingField: 4
+  <RaycastSubdivisionsPerEdge>k__BackingField: 8
   <IntersectionPercentForLock>k__BackingField: 0.5
   <BottomLeftCorner>k__BackingField:
     x: -500
@@ -23,3 +23,4 @@ MonoBehaviour:
     x: 500
     y: 500
   <UnscannedSurfacesArePassable>k__BackingField: 0
+  <MaxElevationDifference>k__BackingField: 5

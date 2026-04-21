@@ -16,12 +16,12 @@ namespace ZE.MechBattle.Navigation
             RightBasisPos = rightBasis;
         }
 
-        public TriangleVertices(float2 pinnacle, float2 leftBasis, float2 rightBasis)
-        {
-            PinnaclePos = new(pinnacle.x, 0f, pinnacle.y);
-            LeftBasisPos = new(leftBasis.x, 0f, leftBasis.y);
-            RightBasisPos = new(rightBasis.x, 0f, rightBasis.y);
-        }
+        public static TriangleVertices ConstructWithDefaultHeight(float2 pinnacle, float2 leftBasis, float2 rightBasis) =>        
+            new (
+                new(pinnacle.x, NavigationConstants.DEFAULT_HEIGHT, pinnacle.y),
+                new(leftBasis.x, NavigationConstants.DEFAULT_HEIGHT, leftBasis.y),
+                new(rightBasis.x, NavigationConstants.DEFAULT_HEIGHT, rightBasis.y));
+        
 
         public TriangleVertices ApplyHeights(float4 heights)
         {

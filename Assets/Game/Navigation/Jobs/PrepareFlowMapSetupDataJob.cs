@@ -10,12 +10,14 @@ namespace ZE.MechBattle.Navigation
     {
         [ReadOnly] public NativeArray<RefinedTriangleRaycastData> RefinedRaycastData;
         [WriteOnly] public NativeArray<CellPassabilityData> SetupData;
+        [WriteOnly] public NativeArray<CellHeightData> HeightData;
 
         public FlattenedHexCoordsConverter CoordsConverter;
         public float IntersectionPercentForLock;
         public float SubdividedTrianglesCount;
         public sbyte DefaultEntranceCost;
         public bool UncastedSpaceIsPassable;
+        public float MaxElevationDifference;
 
         private static readonly TransitionMeasurePoints[] PeakMeasurePoints = new TransitionMeasurePoints[12]
         {
@@ -70,11 +72,13 @@ namespace ZE.MechBattle.Navigation
                 var cellHeight = refinedData.GetHeight(transitionMeasurePoints.CellMeasurePoint);
                 var neighbourHeight = RefinedRaycastData[neighbourIndex].GetHeight(transitionMeasurePoints.NeighbourMeasurePoint);
 
-                var neighbourAccessible = math.abs(cellHeight - neighbourHeight) < NavigationConstants.MAX_HEIGHT_STEP;
+
+                var neighbourAccessible = math.abs(cellHeight - neighbourHeight) < MaxElevationDifference;
                 neighboursAccessMask |= neighbourAccessible ? (1 << i) : 0;
             }
 
             SetupData[index] = new CellPassabilityData(isPassable, neighboursAccessMask, DefaultEntranceCost);
+            HeightData[index] = new CellHeightData(refinedData);
         }
     
     }

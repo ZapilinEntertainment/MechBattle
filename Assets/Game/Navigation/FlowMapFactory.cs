@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Mathematics;
 using Unity.Jobs;
@@ -9,6 +10,8 @@ namespace ZE.MechBattle.Navigation
 {
     public class FlowMapFactory : IDisposable
     {
+        public int TrianglesPerHex => _trianglesPerHex;
+
         private readonly Allocator _allocator;
         private readonly NavigationCaster _walkableSurfaceCaster;
         private readonly NavigationCaster _obstaclesCaster;
@@ -19,6 +22,7 @@ namespace ZE.MechBattle.Navigation
 
         private readonly NativeArray<RefinedTriangleRaycastData> _refinedData;
         private readonly NativeBitArray _isPeakData;
+        private readonly NativeArray<CellHeightData> _cellHeightData;
 
         private bool _disposeRequested = false;
         private bool _resourcesDisposed = false;
@@ -29,7 +33,7 @@ namespace ZE.MechBattle.Navigation
 
         private bool _isCalculating = false;
 
-        public FlowMapFactory(Allocator allocator, MapSettings mapSettings)
+        public FlowMapFactory(Allocator allocator, in MapSettings mapSettings)
         {
             _allocator = allocator;
             _mapSettings = mapSettings;
@@ -41,6 +45,7 @@ namespace ZE.MechBattle.Navigation
             _trianglesPerHex = TriangularMath.GetTrianglesCountInHex(_hexRadius);
             _refinedData = new NativeArray<RefinedTriangleRaycastData>(_trianglesPerHex, allocator, NativeArrayOptions.UninitializedMemory);
             _isPeakData = new NativeBitArray(_trianglesPerHex, allocator, NativeArrayOptions.UninitializedMemory);
+            _cellHeightData = new NativeArray<CellHeightData>(_trianglesPerHex, allocator, NativeArrayOptions.UninitializedMemory);
 
             var subdivisions = _mapSettings.RaycastSubdivisionsPerEdge;
             var peakLeftBasisIndex = TrianglesToIndexFlattenedConverter.GetSubdivisionBasisIndex(false, true, subdivisions);
@@ -50,6 +55,8 @@ namespace ZE.MechBattle.Navigation
 
             var raycastsPerTriangle = subdivisions * subdivisions;
             //UnityEngine.Debug.Log($"raycast per triangle: {raycastsPerTriangle} peak left: {peakLeftBasisIndex} peak right: {peakRightBasisIndex} valley left: {valleyLeftBasisIndex} valley right: {valleyRightBasisIndex}");
+
+            var ransacIterationsCount = math.clamp((int)(raycastsPerTriangle * 0.7), 3, 25);
 
             _refineNavRaycastDataJob = new RefineNavRaycastDataJob()
             {
@@ -64,7 +71,10 @@ namespace ZE.MechBattle.Navigation
                 ValleyRightBasisIndex = valleyRightBasisIndex,
 
                 WalkableHits = _walkableSurfaceCaster.Results,
-                ObstacleHits = _obstaclesCaster.Results,                
+                ObstacleHits = _obstaclesCaster.Results,        
+                
+                MaxHeightDifference = _mapSettings.MaxElevationDifference,
+                RansacIterationsCount = 50
             };
 
 
@@ -76,8 +86,20 @@ namespace ZE.MechBattle.Navigation
                 RefinedRaycastData = _refinedData,
                 IntersectionPercentForLock = _mapSettings.IntersectionPercentForLock,
                 SubdividedTrianglesCount = subdivisions * subdivisions,
-                UncastedSpaceIsPassable = mapSettings.UnscannedSurfacesArePassable
+                UncastedSpaceIsPassable = mapSettings.UnscannedSurfacesArePassable,
+                HeightData = _cellHeightData,
+                MaxElevationDifference = _mapSettings.MaxElevationDifference,
             };
+        }
+
+        public void FillHeightsArray(IList<(IntTriangularPos pos, CellHeightData heightData)> list)
+        {
+            var converter = _flowMapCalculationCollections.PassabilityData.GetCoordsConverter();
+            for (var i = 0; i < _trianglesPerHex; i++)
+            {
+                var pos = converter.IndexToTriangular(i);
+                list[i] = (pos, _cellHeightData[i]);
+            }
         }
 
         public HexFlowMap CreateHexFlowMap(Allocator allocator, int2 hexCoord)
@@ -150,6 +172,7 @@ namespace ZE.MechBattle.Navigation
             _isPeakData.Dispose();
 
             _flowMapCalculationCollections.Dispose();
+            _cellHeightData.Dispose();
 
             _resourcesDisposed = true;
         }
@@ -198,22 +221,6 @@ namespace ZE.MechBattle.Navigation
             _flowMapSetupDataJob.CoordsConverter = _flowMapCalculationCollections.PassabilityData.GetCoordsConverter();
             _flowMapSetupDataJob.Run(_trianglesPerHex);
 
-            //var raycastsPerTriangle = _mapSettings.RaycastSubdivisionsPerEdge * _mapSettings.RaycastSubdivisionsPerEdge;
-            //for (var i = 0; i < _trianglesPerHex; i++)
-            //{
-            //    var decodedTripos = _flowMapSetupDataJob.CoordsConverter.IndexToTriangular(i);
-            //    for (var j = 0; j < raycastsPerTriangle; j++)
-            //    {
-            //        var raycast = _refineNavRaycastDataJob.ObstacleHits[i * raycastsPerTriangle + j];
-            //        var definedTripos = TriangularMath.WorldToTrianglePos(raycast.point, _mapSettings.TriangleHeight);
-            //        if (definedTripos != decodedTripos)
-            //        {
-            //            UnityEngine.Debug.LogError($"{i} | {raycast.point} decoded: {decodedTripos}, defined {definedTripos}");
-            //        }
-
-            //        UnityEngine.Debug.Log($"{i} | {raycast.point} obstacled: {raycast.colliderInstanceID != 0}");
-            //    }
-            //}
 
             var flowMapData = CombineFlowMapsCommand.Execute(_flowMapCalculationCollections, hexPos, _hexRadius, flowMapAllocator);
             var accessMap = FormHexAccessMapCommand.Execute(flowMapData.AsReadOnly(), hexPos, _hexRadius);

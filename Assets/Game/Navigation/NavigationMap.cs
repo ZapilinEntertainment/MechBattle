@@ -18,14 +18,16 @@ namespace ZE.MechBattle.Navigation
 
         void OnInitialized();
         void UpdateHexFlowMap(int2 hexCoord, IDisposableFlowMap flowMap);
-        bool IsTrianglePassable(IntTriangularPos pos);
-        float4 GetCellHeights(IntTriangularPos pos);
+        bool IsTrianglePassable(IntTriangularPos pos);       
         bool TryGetHex(int2 hexCoord, out INavigationHex protectedHex);
         float GetTriangleEntranceCost(IntTriangularPos pos);
         IFlowMap GetFlowMap(int2 hexCoord);
         NavigationHexPosition GetHexData(int2 hexCoord);
         NavigationHex AddHex(int2 hexCoord);
-       
+
+        float4 GetCellHeights(IntTriangularPos pos);
+        void UpdateHexHeights(IReadOnlyList<(IntTriangularPos pos, CellHeightData height)> heightsData);
+
     }
 
     public class NavigationMap : INavigationMap, IDisposable
@@ -133,6 +135,16 @@ namespace ZE.MechBattle.Navigation
 
         private NavigationHex GetOrCreateHex(int2 pos) => _hexes.TryGetValue(pos, out var hex) ? hex : AddHex(pos);
 
-        public float4 GetCellHeights(IntTriangularPos pos) => _heights.TryGetValue(pos, out var heightData) ? heightData.ToCombinedValue() : NavigationConstants.DEFAULT_HEIGHT;
+        public float4 GetCellHeights(IntTriangularPos pos) => 
+            _heights.TryGetValue(pos, out var heightData) ? heightData.ToCombinedValue() : NavigationConstants.DEFAULT_HEIGHT;
+
+        public void UpdateHexHeights(IReadOnlyList<(IntTriangularPos pos, CellHeightData height)> data)
+        {
+            foreach (var element in data)
+            {
+                _heights[element.pos] = element.height;
+            }
+            Version++;
+        }
     }
 }

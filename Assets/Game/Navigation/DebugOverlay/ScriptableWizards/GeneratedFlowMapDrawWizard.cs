@@ -11,14 +11,16 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
     public class GeneratedFlowMapDrawWizard : ScriptableWizard
     {
         public bool DrawLocked = false;
-        public int2 HexCoord;
+        public int2 HexCoord = new(2,-1);
         public HexEdge ExitEdge;
 
         private bool _mapSettingsPresented = false;
         private bool _isCalculating = false;
+        private bool _areModulesReady = false;
         private CancellationTokenSource _cts = new();
         private List<(float3 start, float3 end)> _points = new();
         private FlowMapFactory _flowMapFactory;
+        private (IntTriangularPos pos, CellHeightData height)[] _heightData;
 
         private Dictionary<int2, HexFlowMap> _cachedMaps = new();
 
@@ -62,9 +64,18 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             Debug.Log("flow map completed!");
         }
 
+        private void PrepareModules()
+        {
+            _flowMapFactory = new FlowMapFactory(Allocator.Persistent, NavigationDebugDataContainer.MapSettings.ToStruct());
+            _heightData = new (IntTriangularPos pos, CellHeightData height)[_flowMapFactory.TrianglesPerHex];
+            _areModulesReady = true;
+        }
+
         private async Awaitable UpdateFlowMapAsync(int2 hexCoord, HexEdge exitEdge, CancellationToken cancellationToken)
         {
-            _flowMapFactory??= new FlowMapFactory(Allocator.Persistent, NavigationDebugDataContainer.MapSettings.ToStruct());
+            if (!_areModulesReady)
+                PrepareModules();
+            
             
             var map = NavigationDebugDataContainer.Map;
             if (map == null)
@@ -81,7 +92,9 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
                 try
                 {
-                    flowMap = _flowMapFactory.CreateHexFlowMap(Allocator.Persistent, hexCoord);                    
+                    flowMap = _flowMapFactory.CreateHexFlowMap(Allocator.Persistent, hexCoord);  
+                    _flowMapFactory.FillHeightsArray(_heightData);
+                    map.UpdateHexHeights(_heightData);
                 }
                 catch (OperationCanceledException)
                 {
@@ -120,15 +133,21 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                     
 
                 var vector = TriangularMath.TriangularDirectionToWorld(flowMapCell.Direction, kvp.Key.IsPeak);
+                var height = map.GetCellHeights(kvp.Key);
+
+                worldPos.y = height[(int)TriangleHeightMeasurePoint.Average];
 
                 var endPos = arrowSize * vector + worldPos;
                 _points.Add((worldPos, endPos));
                 _points.Add((endPos, 0.3f * arrowSize * math.mul(rotationRight, -vector) + endPos));
                 _points.Add((endPos, 0.3f * arrowSize * math.mul(rotationLeft, -vector) + endPos));
 
-                // triangle border:
-                var vertices = GetTriangleVerticesCommand.Execute(kvp.Key, triangleHeight);
-                vertices.AddPointsToList(_points);
+                //todo: draw triangle edges in correct places (in raycast points)
+
+                GetTriangleVerticesCommand
+                    .Execute(kvp.Key, triangleHeight, offset: 0f)
+                    .ApplyHeights(height)
+                    .AddPointsToList(_points);
             }
         }
 
@@ -152,7 +171,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
             _cts.Cancel();
             _cts.Dispose();
-            _cts= null;
+            _cts = null;
 
             _flowMapFactory?.Dispose();
         }

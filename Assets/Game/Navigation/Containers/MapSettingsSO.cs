@@ -15,8 +15,9 @@ namespace ZE.MechBattle.Navigation
         [field: SerializeField] public float2 BottomLeftCorner { get; private set; }
         [field: SerializeField] public float2 TopRightCorner { get; private set; }
         [field: SerializeField] public bool UnscannedSurfacesArePassable { get; private set; }
+        [field: SerializeField] public float MaxElevationDifference { get;private set;} = MapSettings.DEFAULT_MAX_ELEVATION_DIFFERENCE;
 
-        
+
         [ShowInInspector]
         public float TriangleEdgeSize => HexEdgeSize / TrianglesPerHexEdge;
        public float TriangleHeight => TriangleEdgeSize * NavigationConstants.SQRT_OF_THREE_HALVED;
@@ -29,6 +30,7 @@ namespace ZE.MechBattle.Navigation
         public readonly int TrianglesPerHexEdge;
         public readonly float IntersectionPercentForLock;
         public readonly float TriangleHeight;
+        public readonly float MaxElevationDifference;
 
         public readonly float HexEdgeSize;
         public readonly int RaycastSubdivisionsPerEdge;
@@ -38,6 +40,8 @@ namespace ZE.MechBattle.Navigation
 
         public readonly float TriangleEdgeSize;
         public static float4 GetDefaultMapBorders() => new float4(-500f,-500f, 500f, 500f);
+
+        public const float DEFAULT_MAX_ELEVATION_DIFFERENCE = 5f;
         private const int RAYCAST_SUBDIVISIONS_PER_EDGE = 4;
 
         public MapSettings(MapSettingsSO so)
@@ -52,6 +56,8 @@ namespace ZE.MechBattle.Navigation
 
             TriangleEdgeSize = HexEdgeSize / TrianglesPerHexEdge;
             TriangleHeight = TriangleEdgeSize * NavigationConstants.SQRT_OF_THREE_HALVED;
+
+            MaxElevationDifference = so.MaxElevationDifference;
         }
 
         public MapSettings(
@@ -60,7 +66,8 @@ namespace ZE.MechBattle.Navigation
             float4 mapBorders,
             bool unscannedSurfacesArePassable = false,            
             float intersectionPercentForLock = 0.5f,
-            int raycastSubdivisionPerEdge = RAYCAST_SUBDIVISIONS_PER_EDGE)
+            int raycastSubdivisionPerEdge = RAYCAST_SUBDIVISIONS_PER_EDGE,
+            float maxElevationDifference = DEFAULT_MAX_ELEVATION_DIFFERENCE)
         {
             TrianglesPerHexEdge = trianglesPerEdge;
             HexEdgeSize = hexEdge;
@@ -73,6 +80,8 @@ namespace ZE.MechBattle.Navigation
 
             TriangleEdgeSize = HexEdgeSize / TrianglesPerHexEdge;
             TriangleHeight = TriangleEdgeSize * NavigationConstants.SQRT_OF_THREE_HALVED;
+
+            MaxElevationDifference = maxElevationDifference;
         }
 
         public static MapSettings Default => new(100f, 4, GetDefaultMapBorders(), true);

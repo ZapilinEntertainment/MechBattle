@@ -24,9 +24,9 @@ namespace ZE.MechBattle.Navigation
 
             if (!pos.IsPeak)
             {
-                leftBasisPos = new float3(a - 1 + offset, b - offset, c - offset);
-                rightBasisPos = new float3(a - offset, b - 1 + offset, c - offset);
-                pinnaclePos = new float3(a - offset, b - offset, c - 1 + offset);
+                rightBasisPos = new float3(a - 1 + offset, b - offset, c - offset);
+                pinnaclePos = new float3(a - offset, b - 1 + offset, c - offset);
+                leftBasisPos = new float3(a - offset, b - offset, c - 1 + offset);
             }
             else
             {
@@ -51,17 +51,17 @@ namespace ZE.MechBattle.Navigation
 
             if (isPeak)
             {
-                return new(
-                    center + new float2(0, r),
-                    center + new float2(-halfEdge, -h_inner),
-                    center + new float2(halfEdge, -h_inner));
+                return TriangleVertices.ConstructWithDefaultHeight(
+                    pinnacle: center + new float2(0, r),
+                    leftBasis: center + new float2(-halfEdge, -h_inner),
+                    rightBasis: center + new float2(halfEdge, -h_inner));
             }
             else
             {
-                return new(
-                    center + new float2(0, -r),
-                    center + new float2(halfEdge, h_inner),
-                    center + new float2(-halfEdge, h_inner));
+                return TriangleVertices.ConstructWithDefaultHeight(
+                    pinnacle: center + new float2(0, -r),
+                    rightBasis: center + new float2(halfEdge, h_inner),
+                    leftBasis: center + new float2(-halfEdge, h_inner));
             }
         }
     }
