@@ -1,5 +1,6 @@
 using System.Collections.Generic;   
 using Unity.Mathematics;
+using Unity.Burst;
 
 namespace ZE.MechBattle.Navigation
 {
@@ -36,26 +37,15 @@ namespace ZE.MechBattle.Navigation
         VertexUpLeftValley
     }
 
-    public readonly struct TransitionMeasurePoints
+
+    public static class NeighbourDirectionExtension
     {
-        public readonly TriangleHeightMeasurePoint CellMeasurePoint;
-        public readonly TriangleHeightMeasurePoint NeighbourMeasurePoint;
-
-        public TransitionMeasurePoints(TriangleHeightMeasurePoint cellMeasurePoint, TriangleHeightMeasurePoint neighbourMeasurePoint)
-        {
-            CellMeasurePoint = cellMeasurePoint;
-            NeighbourMeasurePoint = neighbourMeasurePoint;
-        }
-    }
-
-    public static class TriangularDirectionExtension
-    {
-
+        [BurstCompile]
         public static TransitionMeasurePoints GetTransitionMeasurePoints(this PeakNeighbour neighbour)
         {
             switch (neighbour)
             {
-                case PeakNeighbour.VertexUp: 
+                case PeakNeighbour.VertexUp:
                     return new(TriangleHeightMeasurePoint.Pinnacle, TriangleHeightMeasurePoint.Pinnacle);
 
                 case PeakNeighbour.VertexUpRight:
@@ -69,7 +59,7 @@ namespace ZE.MechBattle.Navigation
                     return new(TriangleHeightMeasurePoint.RightBasis, TriangleHeightMeasurePoint.Pinnacle);
 
                 case PeakNeighbour.VertexDownLeftPeak:
-                    return new(TriangleHeightMeasurePoint.LeftBasis, TriangleHeightMeasurePoint.Pinnacle) ;
+                    return new(TriangleHeightMeasurePoint.LeftBasis, TriangleHeightMeasurePoint.Pinnacle);
 
                 case PeakNeighbour.VertexDownLeftValley:
                 case PeakNeighbour.VertexLeft:
@@ -79,10 +69,11 @@ namespace ZE.MechBattle.Navigation
                     return new(TriangleHeightMeasurePoint.Pinnacle, TriangleHeightMeasurePoint.RightBasis);
 
                 default:
-                    return new (TriangleHeightMeasurePoint.Average, TriangleHeightMeasurePoint.Average);
+                    return new(TriangleHeightMeasurePoint.Average, TriangleHeightMeasurePoint.Average);
             }
         }
 
+        [BurstCompile]
         public static TransitionMeasurePoints GetTransitionMeasurePoints(this ValleyNeighbour neighbour)
         {
             switch (neighbour)
@@ -112,6 +103,48 @@ namespace ZE.MechBattle.Navigation
 
                 default:
                     return new(TriangleHeightMeasurePoint.Average, TriangleHeightMeasurePoint.Average);
+            }
+        }
+
+        [BurstCompile]
+        public static int GetJumpNeighbourCheckIndex(this PeakNeighbour peakNeighbour)
+        {
+            switch (peakNeighbour) 
+            {
+                case PeakNeighbour.VertexUpRight: 
+                case PeakNeighbour.VertexRight:
+                    return (int)PeakNeighbour.EdgeUpRight;
+
+                case PeakNeighbour.VertexDownRightPeak:
+                case PeakNeighbour.VertexDownLeftPeak:
+                    return (int)PeakNeighbour.EdgeDown;
+
+                case PeakNeighbour.VertexLeft:
+                case PeakNeighbour.VertexUpLeft:
+                    return (int)PeakNeighbour.EdgeUpLeft;
+
+                default: return -1;
+            }
+        }
+
+        [BurstCompile]
+        public static int GetJumpNeighbourCheckIndex(this ValleyNeighbour valleyNeighbour)
+        {
+            switch (valleyNeighbour)
+            {
+                case ValleyNeighbour.VertexUpRightValley:
+                case ValleyNeighbour.VertexUpLeftValley:
+                    return (int)ValleyNeighbour.EdgeUp;
+
+                case ValleyNeighbour.VertexRight:
+                case ValleyNeighbour.VertexDownRight:
+                    return (int)ValleyNeighbour.EdgeDownRight;
+
+                case ValleyNeighbour.VertexDownLeft:
+                case ValleyNeighbour.VertexLeft:
+                    return (int)ValleyNeighbour.EdgeDownLeft;
+
+                default: return -1;
             }
         }
     }

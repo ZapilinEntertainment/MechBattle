@@ -38,6 +38,22 @@ namespace ZE.MechBattle.Navigation
         public const float RANSAC_THRESHOLD = 0.1f;
         public static int GetRansacIterationsCount(int raycastsPerTriangle) => math.clamp((int)(raycastsPerTriangle * 0.7f), 3, 25);
 
+        public const int PEAK_JUMP_NEIGHBOURS_MASK = 
+            (1<< (int)PeakNeighbour.VertexUpRight) 
+            | (1<<(int)PeakNeighbour.VertexRight) 
+            | (1 <<(int)PeakNeighbour.VertexDownRightPeak) 
+            | (1<<(int)PeakNeighbour.VertexDownLeftPeak) 
+            | (1<<(int)PeakNeighbour.VertexLeft)
+            | (1<<(int)PeakNeighbour.VertexUpLeft);
+
+        public const int VALLEY_JUMP_NEIGHBOURS_MASK = 
+            (1 << (int)ValleyNeighbour.VertexUpRightValley)
+            | (1 << (int)ValleyNeighbour.VertexRight)
+            | (1 << (int)ValleyNeighbour.VertexDownRight)
+            | (1 << (int)ValleyNeighbour.VertexDownLeft)
+            | (1 << (int)ValleyNeighbour.VertexLeft)
+            | (1 << (int)ValleyNeighbour.VertexUpLeftValley);
+
 
         public static QueryParameters GetWalkableCastQueryParameters()
         {

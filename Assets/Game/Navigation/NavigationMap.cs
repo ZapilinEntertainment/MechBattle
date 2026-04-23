@@ -28,6 +28,7 @@ namespace ZE.MechBattle.Navigation
         float4 GetCellHeights(IntTriangularPos pos);
         void UpdateHexHeights(IReadOnlyList<(IntTriangularPos pos, CellHeightData height)> heightsData);
 
+        float3 GetWorldPos(int3 pos);
     }
 
     public class NavigationMap : INavigationMap, IDisposable
@@ -145,6 +146,13 @@ namespace ZE.MechBattle.Navigation
                 _heights[element.pos] = element.height;
             }
             Version++;
+        }
+
+        public float3 GetWorldPos(int3 pos)
+        {
+            var worldPos = TriangularMath.TriangularToWorld(pos, TriangleHeight);
+            worldPos.y = GetCellHeights(pos)[(int)TriangleHeightMeasurePoint.Average];
+            return worldPos;
         }
     }
 }

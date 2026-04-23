@@ -10,7 +10,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
     public abstract class PathDrawingWizardBase<T> : ScriptableWizard where T: TriangularPathBuilderBase
     {
         public int3 StartPos = new(-2, 2, 1);
-        public int3 EndPos = new(4, -1, 4);
+        public int3 EndPos = new(-6, 23, -18);
 
         protected List<(float3 start, float3 end)> _points = new();
         protected NavigationMap _map;
@@ -65,8 +65,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             if (_map != null)
             {
                 Handles.color = Color.yellow;
-                Handles.DrawSolidDisc(TriangularMath.TriangularToWorld(StartPos, _map.TriangleHeight), Vector3.up, _map.TriangleHeight / 3f);
-                Handles.DrawSolidDisc(TriangularMath.TriangularToWorld(EndPos, _map.TriangleHeight), Vector3.up, _map.TriangleHeight / 3f);
+                Handles.DrawSolidDisc(_map.GetWorldPos(StartPos), Vector3.up, _map.TriangleHeight / 3f);
+                Handles.DrawSolidDisc(_map.GetWorldPos(EndPos), Vector3.up, _map.TriangleHeight / 3f);
             }
 
             foreach (var pts in _points)

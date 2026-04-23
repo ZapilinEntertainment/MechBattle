@@ -84,6 +84,9 @@ namespace ZE.MechBattle.Navigation
 
             for (var neighbourDirection = 0; neighbourDirection < 12; neighbourDirection++)
             {
+                if (!PassabilityData[index].IsNeighbourAccessible(neighbourDirection))
+                    continue;
+
                 var neighbourPos = TriangularMath.GetNeighbourByDirection(pos, neighbourDirection);
                 var isIndexValid = PassabilityData.TryGetValue(neighbourPos, out var neighbourPassabilityData, out var neighbourIndex);
                 

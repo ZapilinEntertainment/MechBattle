@@ -16,11 +16,10 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         public bool DrawUnpassableTris = false;
 
         private readonly Color _zoneColor = new Color(0.78f, 0.71f, 0f, 0.1f);
-        private readonly TrianglesDrawer _trisDrawer = new();
 
         private int _mapSizeHash = 0;
         private bool _mapCasted = false;
-        private FlowMapFactory _flowMapFactory;
+        private FlowMapFactory _flowMapFactory;        
 
         [MenuItem("ZE.Navigation/Draw Raycast Navigation Path")]
         static void OpenWizard()
@@ -30,8 +29,6 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         protected override void Draw()
         {
-            _trisDrawer.Clear();
-
             if (_mapCasted && _mapSizeHash  != HashCode.Combine(BottomLeftCornerXZ, TopRightCornerXZ))
             {
                 _map.Dispose();
@@ -53,25 +50,22 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             {
                 Debug.LogError(ex);
             }
-
-            if (_map != null)
-            {                
-                foreach (var hex in _map.Hexes)
-                {
-                    _trisDrawer.DrawHexTriangles(hex.Pos, _map, DrawUnpassableTris);
-                }
-            }
             
 
             if (buildResult.IsSucceed)
             {
                 var pts = buildResult.Points;
                 var triangleHeight = _map.TriangleHeight;
+               // Debug.Log(pts[0]);
                 for (var i = 1; i < pts.Count; i++)
                 {
                     var start = TriangularMath.TriangularToWorld(pts[i - 1], triangleHeight);
                     var end = TriangularMath.TriangularToWorld(pts[i], triangleHeight);
+
+                    start.y = _map.GetCellHeights(pts[i - 1])[(int)TriangleHeightMeasurePoint.Average];
+                    end.y = _map.GetCellHeights(pts[i])[(int)TriangleHeightMeasurePoint.Average];
                     _points.Add((start, end));
+                    //Debug.Log(pts[i]);
                 }
             }
             else
@@ -118,8 +112,6 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             Handles.color = _zoneColor;
             Handles.DrawAAConvexPolygon(point00, point01, point11, point10);
 
-            _trisDrawer.OnSceneGUI();
-
             base.OnSceneGUI(sceneView);
         }
 
@@ -128,7 +120,6 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         protected override void OnWizardDisabled()
         {
-            _trisDrawer?.Clear();
             _flowMapFactory?.Dispose();
         }
 
@@ -142,15 +133,20 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 _map.TriangleEdgeSize,
                 allocator);
 
-            _flowMapFactory ??= new FlowMapFactory(allocator, _map.Settings);           
-            
+            _flowMapFactory ??= new FlowMapFactory(allocator, _map.Settings);
+
+            var hexRadius = _map.TrianglesPerHexEdge;
+            var trianglesInHex = TriangularMath.GetTrianglesCountInHex(hexRadius);
+            var heightsData = new (IntTriangularPos pos, CellHeightData height)[trianglesInHex];
             for (var i = 0; i < hexes.Length; i++)
             {
                 var hexCoord = hexes[i];
-                var hexPos = new NavigationHexPosition(hexCoord, _map.HexEdgeSize, _map.TrianglesPerHexEdge);                
+                var hexPos = new NavigationHexPosition(hexCoord, _map.HexEdgeSize, hexRadius);                
                 var flowMap = _flowMapFactory.CreateHexFlowMap(allocator, hexCoord);
 
-                _map.UpdateHexFlowMap(hexCoord, flowMap);               
+                _map.UpdateHexFlowMap(hexCoord, flowMap);   
+                _flowMapFactory.FillHeightsArray(heightsData);
+                _map.UpdateHexHeights(heightsData);
             }
 
             _mapCasted = true;

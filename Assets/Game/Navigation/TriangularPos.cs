@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
@@ -32,7 +33,11 @@ namespace ZE.MechBattle.Navigation
         public static bool3 operator >(IntTriangularPos a, IntTriangularPos b) => a.ToInt3() > b.ToInt3();
         public static bool3 operator <(IntTriangularPos a, IntTriangularPos b) => a.ToInt3() < b.ToInt3();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator int3(IntTriangularPos sourceObject) => sourceObject.ToInt3();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator IntTriangularPos(int3 v) => new (v.x, v.y, v.z);
 
         public override string ToString() => $"({DownLeft},{Up},{DownRight}) {(IsPeak ? "peak" : "valley")}";
 
