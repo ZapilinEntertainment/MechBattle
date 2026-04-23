@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using UnityEngine;
 using Unity.Collections;
 using Unity.Mathematics;
 using Unity.Jobs;
@@ -19,6 +20,7 @@ namespace ZE.MechBattle.Navigation
         
         private readonly int _trianglesPerHex;
         private readonly int _hexRadius;
+        private readonly int _raycastsPerTriangle;
 
         private readonly NativeArray<RefinedTriangleRaycastData> _refinedData;
         private readonly NativeBitArray _isPeakData;
@@ -45,7 +47,7 @@ namespace ZE.MechBattle.Navigation
             _trianglesPerHex = TriangularMath.GetTrianglesCountInHex(_hexRadius);
             _refinedData = new NativeArray<RefinedTriangleRaycastData>(_trianglesPerHex, allocator, NativeArrayOptions.UninitializedMemory);
             _isPeakData = new NativeBitArray(_trianglesPerHex, allocator, NativeArrayOptions.UninitializedMemory);
-            _cellHeightData = new NativeArray<CellHeightData>(_trianglesPerHex, allocator, NativeArrayOptions.UninitializedMemory);
+            _cellHeightData = new NativeArray<CellHeightData>(_trianglesPerHex, allocator, NativeArrayOptions.UninitializedMemory);           
 
             var subdivisions = _mapSettings.RaycastSubdivisionsPerEdge;
             var peakLeftBasisIndex = TrianglesToIndexFlattenedConverter.GetSubdivisionBasisIndex(false, true, subdivisions);
@@ -53,16 +55,14 @@ namespace ZE.MechBattle.Navigation
             var valleyLeftBasisIndex = TrianglesToIndexFlattenedConverter.GetSubdivisionBasisIndex(false, false, subdivisions);
             var valleyRightBasisIndex = TrianglesToIndexFlattenedConverter.GetSubdivisionBasisIndex(true, false, subdivisions);
 
-            var raycastsPerTriangle = subdivisions * subdivisions;
+            _raycastsPerTriangle = subdivisions * subdivisions;           
             //UnityEngine.Debug.Log($"raycast per triangle: {raycastsPerTriangle} peak left: {peakLeftBasisIndex} peak right: {peakRightBasisIndex} valley left: {valleyLeftBasisIndex} valley right: {valleyRightBasisIndex}");
-
-            var ransacIterationsCount = math.clamp((int)(raycastsPerTriangle * 0.7), 3, 25);
 
             _refineNavRaycastDataJob = new RefineNavRaycastDataJob()
             {
                 HexRadius = _hexRadius,
                 RefinedData = _refinedData,
-                RaycastsPerTriangle = raycastsPerTriangle,
+                RaycastsPerTriangle = _raycastsPerTriangle,
                 IsPeakData = _isPeakData,
 
                 PeakLeftBasisIndex = peakLeftBasisIndex,
@@ -74,7 +74,8 @@ namespace ZE.MechBattle.Navigation
                 ObstacleHits = _obstaclesCaster.Results,        
                 
                 MaxHeightDifference = _mapSettings.MaxElevationDifference,
-                RansacIterationsCount = 50
+                RansacIterationsCount = NavigationConstants.GetRansacIterationsCount(_raycastsPerTriangle),
+                RansacThreshold = NavigationConstants.RANSAC_THRESHOLD
             };
 
 
@@ -99,6 +100,28 @@ namespace ZE.MechBattle.Navigation
             {
                 var pos = converter.IndexToTriangular(i);
                 list[i] = (pos, _cellHeightData[i]);
+            }
+        }
+
+        public void TEST_FillRaycastsArray(IList<Vector3> refinedPoints, IList<Vector3> oldPoints)
+        {
+            Span<float> heights = stackalloc float[_raycastsPerTriangle];
+            for (var i = 0; i < _trianglesPerHex; i++)
+            {
+                for (var j = 0; j < _raycastsPerTriangle; j++)
+                {
+                    var hit = _refineNavRaycastDataJob.WalkableHits[i * _raycastsPerTriangle + j];
+                    heights[j] = hit.colliderInstanceID == 0 ? NavigationConstants.DEFAULT_HEIGHT : hit.point.y;
+                }
+                _refineNavRaycastDataJob.RansacWithNormals(i * _raycastsPerTriangle, heights);
+                for (var j = 0; j < _raycastsPerTriangle; j++)
+                {
+                    var index = i * _raycastsPerTriangle + j;
+                    var pos = _refineNavRaycastDataJob.WalkableHits[index].point;
+                    var refinedHeight = heights[j];
+                    oldPoints[index] = pos;
+                    refinedPoints[index] = new(pos.x, refinedHeight, pos.z);
+                }
             }
         }
 
@@ -195,17 +218,6 @@ namespace ZE.MechBattle.Navigation
             {
                 var pos = collections.GetPosByIndex(j);
                 _isPeakData.Set(j, pos.IsPeak);
-            }
-
-            var raycastsPerTriangle = _mapSettings.RaycastSubdivisionsPerEdge * _mapSettings.RaycastSubdivisionsPerEdge;
-            var coordsConverter = _flowMapCalculationCollections.PassabilityData.GetCoordsConverter();
-            for (var i = 0; i < _obstaclesCaster.Results.Length; i++)
-            {
-                var result = _obstaclesCaster.Results[i];
-                if (result.colliderInstanceID == 0)
-                    continue;
-                var triangleIndex = i / raycastsPerTriangle;
-                //UnityEngine.Debug.Log($"{i} : {result.point} : {TriangularMath.WorldToTrianglePos(result.point, _mapSettings.TriangleHeight)} = {triangleIndex} -> {coordsConverter.IndexToTriangular(triangleIndex)}");
             }
         }
 

@@ -334,5 +334,8 @@ namespace ZE.MechBattle.Navigation
             if (delta > HALF_DIR) delta = NavigationConstants.TRIANGLE_DIRECTIONS_COUNT - delta;
             return delta;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float GetTriangleHeight(float triangleEdge) => triangleEdge * NavigationConstants.SQRT_OF_THREE_HALVED;
     }
 }

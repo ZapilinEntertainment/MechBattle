@@ -115,10 +115,14 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                     _cachedMaps.Add(hexCoord, flowMap);
                 }
             }
-           
-            //draw:            
-            var triangleHeight = map.TriangleHeight;
+
+            //draw:
+            var mapSettings = map.Settings;
+            var triangleHeight = mapSettings.TriangleHeight;
             var arrowSize = 0.3f * triangleHeight;
+            var triangleEdge = mapSettings.TriangleEdgeSize;
+            var subdivisions = mapSettings.RaycastSubdivisionsPerEdge;
+
             foreach (var kvp in flowMap.Data)
             {
                 // direction arrow:
@@ -141,11 +145,9 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 _points.Add((worldPos, endPos));
                 _points.Add((endPos, 0.3f * arrowSize * math.mul(rotationRight, -vector) + endPos));
                 _points.Add((endPos, 0.3f * arrowSize * math.mul(rotationLeft, -vector) + endPos));
-
-                //todo: draw triangle edges in correct places (in raycast points)
-
+                
                 GetTriangleVerticesCommand
-                    .Execute(kvp.Key, triangleHeight, offset: 0f)
+                    .GetRaycastCenters(kvp.Key, triangleEdge , subdivisions)
                     .ApplyHeights(height)
                     .AddPointsToList(_points);
             }

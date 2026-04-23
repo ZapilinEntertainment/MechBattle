@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
@@ -33,6 +34,9 @@ namespace ZE.MechBattle.Navigation
         public const float SQRT_THREE_D_3 = SQRT_OF_THREE / 3f;
         
         public const int TRIANGLE_DIRECTIONS_COUNT = 12;
+
+        public const float RANSAC_THRESHOLD = 0.1f;
+        public static int GetRansacIterationsCount(int raycastsPerTriangle) => math.clamp((int)(raycastsPerTriangle * 0.7f), 3, 25);
 
 
         public static QueryParameters GetWalkableCastQueryParameters()

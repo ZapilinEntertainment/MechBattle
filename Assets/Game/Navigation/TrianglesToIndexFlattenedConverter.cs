@@ -115,17 +115,18 @@ namespace ZE.MechBattle.Navigation
 
         public static NativeArray<byte> FulfilRowIndices(Allocator allocator, int rowsCount)
         {
-            #if UNITY_EDITOR
-            if (rowsCount < 2) 
-                throw new System.Exception("rows count < 2, not supported");
-            #endif
-
             var length = rowsCount * (rowsCount + 1) / 2;
             var array = new NativeArray<byte>(length, allocator, NativeArrayOptions.UninitializedMemory);
 
             array[0] = 0;
+            if (rowsCount == 1)
+                return array;
+
             array[1] = 1;
             array[2] = 1;
+
+            if (rowsCount == 2)
+                return array;
 
             var index = 3;
             var rowValue = 2;
