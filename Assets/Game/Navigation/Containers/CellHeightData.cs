@@ -25,6 +25,14 @@ namespace ZE.MechBattle.Navigation
             sbyte GetDelta(float height) => (sbyte)(math.clamp(height - averageHeight, sbyte.MinValue +1, sbyte.MaxValue -1));
         }
 
+        public CellHeightData(float singleHeight)
+        {
+            AverageHeight = (short)singleHeight;
+            PinnacleHeightDelta = 0;
+            LeftBasisHeightDelta = 0;
+            RightBasisHeightDelta = 0;
+        }
+
         
         public float4 ToCombinedValue()
         {
@@ -35,6 +43,20 @@ namespace ZE.MechBattle.Navigation
             val[(int)TriangleHeightMeasurePoint.LeftBasis] = LeftBasisHeight;
             val[(int)TriangleHeightMeasurePoint.RightBasis] = RightBasisHeight;
             return val;
+        }
+
+        public int this[TriangleHeightMeasurePoint measurePoint]
+        {
+            get
+            {
+                switch(measurePoint)
+                {
+                    case TriangleHeightMeasurePoint.Pinnacle: return PinnacleHeight;
+                    case TriangleHeightMeasurePoint.LeftBasis: return LeftBasisHeight;
+                    case TriangleHeightMeasurePoint.RightBasis: return RightBasisHeight;
+                    default: return AverageHeight;
+                }
+            }
         }
 
     }

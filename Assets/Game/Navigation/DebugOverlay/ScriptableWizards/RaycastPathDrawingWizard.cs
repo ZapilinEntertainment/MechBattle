@@ -148,6 +148,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 _flowMapFactory.FillHeightsArray(heightsData);
                 _map.UpdateHexHeights(heightsData);
             }
+            //UpdateHexEdgesPassabilityCommand.Execute(_map);
+
 
             _mapCasted = true;
         }

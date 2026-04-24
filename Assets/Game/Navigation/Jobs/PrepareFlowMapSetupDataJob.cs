@@ -70,11 +70,7 @@ namespace ZE.MechBattle.Navigation
                 if (!CoordsConverter.TryGetIndex(neighbourPos, out var neighbourIndex))
                     continue;
 
-                var transitionMeasurePoints = measurePoints[i];
-                var cellHeight = refinedData.GetHeight(transitionMeasurePoints.CellMeasurePoint);
-                var neighbourHeight = RefinedRaycastData[neighbourIndex].GetHeight(transitionMeasurePoints.NeighbourMeasurePoint);
-
-                var neighbourAccessible = math.abs(cellHeight - neighbourHeight) < MaxElevationDifference;
+                var neighbourAccessible = HeightLogic.AreTrianglesPassable(refinedData, RefinedRaycastData[neighbourIndex], measurePoints[i], MaxElevationDifference);
                 neighboursAccessMask |= neighbourAccessible ? (1 << i) : 0;
             }
 

@@ -6,11 +6,13 @@ using UnityEngine;
 
 namespace ZE.MechBattle.Navigation
 {
-    public interface INavigationMap 
+
+    public interface INavigationMap
     {
         int TrianglesPerHexEdge { get; }
         float TriangleHeight { get; }
         float HexEdgeSize { get; }
+        float MaxElevationDifference { get; }
         IReadOnlyCollection<int2> HexCoords { get; }
         IReadOnlyCollection<INavigationHex> Hexes { get; }
         MapSettings Settings { get; }
@@ -18,14 +20,15 @@ namespace ZE.MechBattle.Navigation
 
         void OnInitialized();
         void UpdateHexFlowMap(int2 hexCoord, IDisposableFlowMap flowMap);
-        bool IsTrianglePassable(IntTriangularPos pos);       
+        bool IsTrianglePassable(IntTriangularPos pos);     
+        bool ContainsHex(int2 hexCoord);
         bool TryGetHex(int2 hexCoord, out INavigationHex protectedHex);
         float GetTriangleEntranceCost(IntTriangularPos pos);
         IFlowMap GetFlowMap(int2 hexCoord);
         NavigationHexPosition GetHexData(int2 hexCoord);
         NavigationHex AddHex(int2 hexCoord);
 
-        float4 GetCellHeights(IntTriangularPos pos);
+        CellHeightData GetCellHeights(IntTriangularPos pos);
         void UpdateHexHeights(IReadOnlyList<(IntTriangularPos pos, CellHeightData height)> heightsData);
 
         float3 GetWorldPos(int3 pos);
@@ -40,6 +43,7 @@ namespace ZE.MechBattle.Navigation
         public float HexEdgeSize => Settings.HexEdgeSize;
         public float TriangleHeight => Settings.TriangleHeight;
         public float TriangleEdgeSize => Settings.TriangleEdgeSize;
+        public float MaxElevationDifference => Settings.MaxElevationDifference;
         public int TrianglesPerHexEdge => Settings.TrianglesPerHexEdge;
         public int Version { get;private set; } = 1;
         public IReadOnlyCollection<INavigationHex> Hexes => _hexes.Values;
@@ -79,6 +83,7 @@ namespace ZE.MechBattle.Navigation
             return hex;
         }        
 
+        public bool ContainsHex(int2 hexCoord) => _hexes.ContainsKey(hexCoord);
         public bool TryGetHex(int2 hexCoord, out INavigationHex protectedHex) 
         {
             if (_hexes.TryGetValue(hexCoord, out var hex))
@@ -136,8 +141,8 @@ namespace ZE.MechBattle.Navigation
 
         private NavigationHex GetOrCreateHex(int2 pos) => _hexes.TryGetValue(pos, out var hex) ? hex : AddHex(pos);
 
-        public float4 GetCellHeights(IntTriangularPos pos) => 
-            _heights.TryGetValue(pos, out var heightData) ? heightData.ToCombinedValue() : NavigationConstants.DEFAULT_HEIGHT;
+        public CellHeightData GetCellHeights(IntTriangularPos pos) => 
+            _heights.TryGetValue(pos, out var heightData) ? heightData : new(NavigationConstants.DEFAULT_HEIGHT);
 
         public void UpdateHexHeights(IReadOnlyList<(IntTriangularPos pos, CellHeightData height)> data)
         {
@@ -151,7 +156,7 @@ namespace ZE.MechBattle.Navigation
         public float3 GetWorldPos(int3 pos)
         {
             var worldPos = TriangularMath.TriangularToWorld(pos, TriangleHeight);
-            worldPos.y = GetCellHeights(pos)[(int)TriangleHeightMeasurePoint.Average];
+            worldPos.y = GetCellHeights(pos).AverageHeight;
             return worldPos;
         }
     }

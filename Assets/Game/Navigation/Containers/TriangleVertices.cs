@@ -31,6 +31,14 @@ namespace ZE.MechBattle.Navigation
             return new(pinnacle, leftBasis, rightBasis);
         }
 
+        public TriangleVertices ApplyHeights(CellHeightData heights)
+        {
+            var pinnacle = new float3(PinnaclePos.x, heights.PinnacleHeight, PinnaclePos.z);
+            var leftBasis = new float3(LeftBasisPos.x, heights.LeftBasisHeight, LeftBasisPos.z);
+            var rightBasis = new float3(RightBasisPos.x, heights.RightBasisHeight, RightBasisPos.z);
+            return new(pinnacle, leftBasis, rightBasis);
+        }
+
         public TriangleVertices AddHeight(float value)
         {
             var delta = new float3(0,value, 0);

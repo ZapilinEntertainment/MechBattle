@@ -92,15 +92,21 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             {
                 var cellData = flowMap.GetCombinedCellData(pos)[exitNode.Edge];
                 var flowDirection = cellData.Direction;
+               
+                exitFound = cellData.ExitDistance == 0;
+                if (exitFound)
+                {
 
-                if (pos.IsPeak)
-                    pos = TriangularMath.GetPeakNeighbour(pos, flowDirection);
+                }
                 else
-                    pos = TriangularMath.GetValleyNeighbour(pos, flowDirection);
+                {
+                    if (pos.IsPeak)
+                        pos = TriangularMath.GetPeakNeighbour(pos, flowDirection);
+                    else
+                        pos = TriangularMath.GetValleyNeighbour(pos, flowDirection);
+                }
 
                 points.Add(pos);
-
-                exitFound = cellData.ExitDistance == 0;
                 operationsCount++;
             }
 

@@ -36,6 +36,8 @@ namespace ZE.MechBattle.Navigation
         public const int TRIANGLE_DIRECTIONS_COUNT = 12;
 
         public const float RANSAC_THRESHOLD = 0.1f;
+
+        public const int STACKALLOC_LIMIT = 1024 * 64;
         public static int GetRansacIterationsCount(int raycastsPerTriangle) => math.clamp((int)(raycastsPerTriangle * 0.7f), 3, 25);
 
         public const int PEAK_JUMP_NEIGHBOURS_MASK = 

@@ -57,7 +57,7 @@ namespace ZE.MechBattle.Navigation
             TrianglesToIndexFlattenedConverter CreateSectorConverter(HexSector sector)
             {
                 var edge = (HexEdge)sector;
-                var pinnaclePos =  sector.GetPinnaclePos(hexCenter + edge.ToTriangleOffsetVector(), hexRadius);
+                var pinnaclePos =  sector.GetPinnaclePos(hexCenter + edge.ToInnerRingOffsetVector(), hexRadius);
                 return new TrianglesToIndexFlattenedConverter(pinnaclePos, hexRadius, rowIndicesTable);
             }
         }

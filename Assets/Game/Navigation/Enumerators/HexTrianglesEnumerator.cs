@@ -55,7 +55,7 @@ namespace ZE.MechBattle.Navigation
 
             var edge = (HexEdge)_sectorIndex;
             var sector = (HexSector)_sectorIndex;
-            var innerRingTriangle = _center + edge.ToTriangleOffsetVector();            
+            var innerRingTriangle = _center + edge.ToInnerRingOffsetVector();            
             var pinnacle = sector.GetPinnaclePos(innerRingTriangle, _radius);
 
             _sectorEnumerator = new(pinnacle, _radius);

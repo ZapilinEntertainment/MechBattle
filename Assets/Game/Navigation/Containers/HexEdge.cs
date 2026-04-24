@@ -30,7 +30,8 @@ namespace ZE.MechBattle.Navigation
         }
 
         [BurstCompile]
-        public static int3 ToTriangleOffsetVector(this HexEdge edge)
+        // use it to calculate inner ring triangle when hex center is defined
+        public static int3 ToInnerRingOffsetVector(this HexEdge edge)
         {
             switch (edge)
             {

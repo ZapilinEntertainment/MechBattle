@@ -38,6 +38,12 @@ namespace ZE.MechBattle.Navigation
                triangleHeight: map.TriangleHeight)
         { }
 
+        public NavigationHexPosition(HexPathNodeKey hexNode, float hexEdgeSize, int hexRadius) :
+           this(hexCoord: hexNode.HexCoord,
+               hexEdge: hexEdgeSize,
+               trianglesPerEdge: hexRadius)
+        { }
+
         private NavigationHexPosition(int2 hexCoord, float hexEdge, float triangleHeight)
         {
             HexCoordinate = hexCoord;

@@ -124,7 +124,7 @@ namespace ZE.MechBattle.Navigation
             }
 
             // neighboured hex:
-            var neighbouredHexPos = activeNodePos.ToNeighbouredHexPos();
+            var neighbouredHexPos = activeNodePos.ToOppositeHexCoord();
             if (!hexData.IsEdgePassable(activeNodePos.Edge) 
                 || !HexData.TryGetValue(neighbouredHexPos, out var neighbouredHexData)
                 || !neighbouredHexData.IsEdgePassable(activeNodePos.Edge.ToOpposite()))
