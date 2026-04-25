@@ -18,8 +18,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         private readonly Color _zoneColor = new Color(0.78f, 0.71f, 0f, 0.1f);
 
         private int _mapSizeHash = 0;
-        private bool _mapCasted = false;
-        private FlowMapFactory _flowMapFactory;        
+        private bool _mapCasted = false;    
 
         [MenuItem("ZE.Navigation/Draw Raycast Navigation Path")]
         static void OpenWizard()
@@ -62,8 +61,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                     var start = TriangularMath.TriangularToWorld(pts[i - 1], triangleHeight);
                     var end = TriangularMath.TriangularToWorld(pts[i], triangleHeight);
 
-                    start.y = _map.GetCellHeights(pts[i - 1])[(int)TriangleHeightMeasurePoint.Average];
-                    end.y = _map.GetCellHeights(pts[i])[(int)TriangleHeightMeasurePoint.Average];
+                    start.y = _map.GetHeightData(pts[i - 1])[(int)TriangleHeightMeasurePoint.Average];
+                    end.y = _map.GetHeightData(pts[i])[(int)TriangleHeightMeasurePoint.Average];
                     _points.Add((start, end));
                     //Debug.Log(pts[i]);
                 }
@@ -120,37 +119,13 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         protected override void OnWizardDisabled()
         {
-            _flowMapFactory?.Dispose();
+            _map?.Dispose();
+            _mapCasted = false;
         }
 
         private void CastMap()
         {
-            var allocator = Allocator.Persistent;
-            using var hexes = GetHexesInRectangleCommand.Execute(
-                BottomLeftCornerXZ,
-                TopRightCornerXZ,
-                _map.HexEdgeSize,
-                _map.TriangleEdgeSize,
-                allocator);
-
-            _flowMapFactory ??= new FlowMapFactory(allocator, _map.Settings);
-
-            var hexRadius = _map.TrianglesPerHexEdge;
-            var trianglesInHex = TriangularMath.GetTrianglesCountInHex(hexRadius);
-            var heightsData = new (IntTriangularPos pos, CellHeightData height)[trianglesInHex];
-            for (var i = 0; i < hexes.Length; i++)
-            {
-                var hexCoord = hexes[i];
-                var hexPos = new NavigationHexPosition(hexCoord, _map.HexEdgeSize, hexRadius);                
-                var flowMap = _flowMapFactory.CreateHexFlowMap(allocator, hexCoord);
-
-                _map.UpdateHexFlowMap(hexCoord, flowMap);   
-                _flowMapFactory.FillHeightsArray(heightsData);
-                _map.UpdateHexHeights(heightsData);
-            }
-            //UpdateHexEdgesPassabilityCommand.Execute(_map);
-
-
+            PrepareNavigationMapCommand.Execute(_map);
             _mapCasted = true;
         }
     }

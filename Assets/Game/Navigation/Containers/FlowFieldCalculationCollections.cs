@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Unity.Collections;
 
 
@@ -8,10 +9,12 @@ namespace ZE.MechBattle.Navigation
     {
         public ref FlattenedHexList<CellPassabilityData> PassabilityData => ref _passabilityData;
         public NativeArray<FlowFieldCellCalculationData> CalculationData;
-        public NativeQueue<int> CalculationQueue;
-        public NativeHashSet<int> QueuedPositions;
-        public NativeArray<IntTriangularPos> Positions;
 
+        public readonly NativeQueue<int> CalculationQueue;
+        public readonly NativeHashSet<int> QueuedPositions;
+        public readonly NativeArray<IntTriangularPos> Positions;
+
+        public readonly NativeArray<CombinedFlowData> FlowData;
         public readonly NativeArray<CellPassabilityData> PassabilityDataInnerArray;
         private readonly int _hexRadius;
         private readonly NativeArray<byte> _rowIndices;
@@ -39,6 +42,8 @@ namespace ZE.MechBattle.Navigation
             var hexTrianglesCount = TriangularMath.GetTrianglesCountInHex(_hexRadius);
             QueuedPositions = new NativeHashSet<int>(hexTrianglesCount / 2, allocator);
             CalculationData = new NativeArray<FlowFieldCellCalculationData>(_passabilityData.Length, allocator, NativeArrayOptions.UninitializedMemory);
+        
+            FlowData = new NativeArray<CombinedFlowData>(hexTrianglesCount, allocator, NativeArrayOptions.UninitializedMemory);        
         }
 
         public void ChangeHexPosAndReset(IntTriangularPos newHexCenter)
@@ -67,9 +72,13 @@ namespace ZE.MechBattle.Navigation
             CalculationQueue.Dispose();
             QueuedPositions.Dispose();
             _rowIndices.Dispose();
+            FlowData.Dispose();
         }
 
 
-        public IntTriangularPos GetPosByIndex(int index) => PassabilityData.IndexToTriangular(index);
+        public IntTriangularPos IndexToPos(int index) => PassabilityData.IndexToTriangular(index);
+        public int PosToIndex(IntTriangularPos pos) => PassabilityData.TriangularToIndex(pos);
+
+        public CombinedFlowData GetFlowData(IntTriangularPos pos) => FlowData[PosToIndex(pos)];
     }
 }

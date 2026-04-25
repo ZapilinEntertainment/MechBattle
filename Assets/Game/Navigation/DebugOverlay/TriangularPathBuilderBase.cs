@@ -78,7 +78,6 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         {
             var pos = startPos;
             var hexCoord = TriangularMath.TriangularToHex(pos, _map.TriangleHeight, _map.HexEdgeSize);
-            var flowMap = _map.GetFlowMap(hexCoord);
             var exitFound = false;
             points.Add(pos);
 
@@ -88,23 +87,20 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             var maxOperations = TriangularMath.GetTrianglesCountInHex(_map.TrianglesPerHexEdge);
             var operationsCount = 0;
 
+            var exitDirectionPeak = (int)exitNode.Edge.ToNeighbourDirectionFromPeak();
+            var exitDirectionValley = (int)exitNode.Edge.ToNeighbourDirectionFromValley();
+
             while (!exitFound && operationsCount < maxOperations)
             {
-                var cellData = flowMap.GetCombinedCellData(pos)[exitNode.Edge];
+                var cellData = _map.GetFlowData(pos)[exitNode.Edge];
+                var passabilityData = _map.GetPassabilityData(pos);
                 var flowDirection = cellData.Direction;
                
                 exitFound = cellData.ExitDistance == 0;
-                if (exitFound)
-                {
-
-                }
+                if (pos.IsPeak)
+                    pos = TriangularMath.GetPeakNeighbour(pos, flowDirection);
                 else
-                {
-                    if (pos.IsPeak)
-                        pos = TriangularMath.GetPeakNeighbour(pos, flowDirection);
-                    else
-                        pos = TriangularMath.GetValleyNeighbour(pos, flowDirection);
-                }
+                    pos = TriangularMath.GetValleyNeighbour(pos, flowDirection);
 
                 points.Add(pos);
                 operationsCount++;
@@ -150,8 +146,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 _triangularPathJobData = PrepareTriangularPathJobCollectionsCommand.Execute(
                     Allocator.Persistent,
                     CreateHexPos(hexCoord),
-                    _map.Settings,
-                    _map.GetFlowMap(hexCoord));
+                    _map);
 
             else
                 _triangularPathJobData.ChangeCenter(CreateHexPos(hexCoord));

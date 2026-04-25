@@ -185,7 +185,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
             foreach (var triangle in trianglePositionsArray)
             {
-                var isLocked = mapExists? map.IsTrianglePassable(triangle) : false;
+                var isLocked = mapExists? map.GetPassabilityData(triangle).IsPassable : false;
                 var draw = isLocked ? drawLocked : drawUnlocked;
                 if (!draw)
                     continue;

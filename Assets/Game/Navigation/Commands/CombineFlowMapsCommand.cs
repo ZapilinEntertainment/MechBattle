@@ -19,7 +19,6 @@ namespace ZE.MechBattle.Navigation
             private readonly NavigationHexPosition _hexPos;
 
             private readonly CombinedFlowMapCellsStorage _compositeMap;
-            private readonly DisposableArray<int> _hexTriangleIndices;
 
             public Logic(FlowFieldCalculationCollections data, NavigationHexPosition hexPos, int hexRadius)
             {
@@ -32,13 +31,6 @@ namespace ZE.MechBattle.Navigation
 
                 _compositeMap = new CombinedFlowMapCellsStorage(_length, _setupData.GetCoordsConverter());
                 _trianglesInHex = TriangularMath.GetTrianglesCountInHex(_radius);
-                _hexTriangleIndices = new DisposableArray<int>(_trianglesInHex);
-                var ti = 0;
-                foreach (var hexTrianglePos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, _radius))
-                {
-                    var index = _setupData.TriangularToIndex(hexTrianglePos);
-                    _hexTriangleIndices[ti++] = index;
-                }
             }
 
             public JobHandle ScheduleJob(HexEdge edge)
@@ -60,38 +52,32 @@ namespace ZE.MechBattle.Navigation
             {
                 for (var i = 0; i < _trianglesInHex; i++)
                 {
-                    var index = _hexTriangleIndices[i];
-                    var calculatedData = _calculationData[index];
+                    var calculatedData = _calculationData[i];
                     var cellData = new FlowMapCellData(direction: calculatedData.FlowDirection, exitDistance: (ushort)calculatedData.IntegrationValue);
-                    _compositeMap.SetValue(edge, index, cellData);
+                    _compositeMap.SetValue(edge, i, cellData);
                 }
             }
 
-            public NativeHashMap<IntTriangularPos, FlowMapCombinedCell> FormResultsMap(Allocator allocator)
+            public void FillResultsMap()
             {
-                var resultingData = new NativeHashMap<IntTriangularPos, FlowMapCombinedCell>(_trianglesInHex, allocator);
+                var flowData = _data.FlowData;
                 for (var i = 0; i < _trianglesInHex; i++)
                 {
-                    var index = _hexTriangleIndices[i];
-                    var compositeCell = _compositeMap.GetCombinedCell(index, _setupData[index]);
-                    resultingData.Add(_setupData.IndexToTriangular(index), compositeCell);
+                    flowData[i] = _compositeMap.GetCombinedCell(i);
                 }
-                return resultingData;
             }
 
             public void Dispose()
             {
                 _compositeMap.Dispose();
-                _hexTriangleIndices.Dispose();
             }
 
         }
 
-        public static async Awaitable<NativeHashMap<IntTriangularPos, FlowMapCombinedCell>> ExecuteAsync(
+        public static async Awaitable ExecuteAsync(
                FlowFieldCalculationCollections data,
                NavigationHexPosition hexPos,
                int hexRadius,
-               Allocator allocator,
                CancellationToken cancellationToken)
         {
             using var logic = new Logic(data, hexPos, hexRadius);
@@ -107,19 +93,18 @@ namespace ZE.MechBattle.Navigation
                 handle.Complete();
 
                 if (cancellationToken.IsCancellationRequested)
-                    return default;
+                    return;
 
                 logic.UpdateCompositeMap(edge);
             }            
 
-            return logic.FormResultsMap(allocator);
+            logic.FillResultsMap();
         }
 
-        public static NativeHashMap<IntTriangularPos, FlowMapCombinedCell> Execute(
+        public static void Execute(
               FlowFieldCalculationCollections data,
               NavigationHexPosition hexPos,
-              int hexRadius,
-              Allocator allocator)
+              int hexRadius)
         {
             using var logic = new Logic(data, hexPos, hexRadius);
             for (var e = 0; e < 6; e++)
@@ -131,7 +116,7 @@ namespace ZE.MechBattle.Navigation
                 logic.UpdateCompositeMap(edge);
             }
 
-            return logic.FormResultsMap(allocator);
+            logic.FillResultsMap();
         }
     }
 }

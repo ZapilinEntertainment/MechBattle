@@ -49,8 +49,9 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
             var prevPos = startPos;
             for (var i = 0; i < hexNodes.Count; i++)
-            {
+            {                
                 prevPos = AddPathTriangles(prevPos, hexNodes[i], points);
+                //Debug.Log($"{hexNodes[i]} : {prevPos}");
             }
 
             try

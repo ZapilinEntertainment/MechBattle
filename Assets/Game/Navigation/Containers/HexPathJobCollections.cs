@@ -32,6 +32,6 @@ namespace ZE.MechBattle.Navigation
         }
 
         public float GetPathCost(int2 hexCoord, HexEdge edge) => NavigationData[HexData[hexCoord].GetNodeIndex((int)edge)].NodeCost;
-        public bool IsEdgeAccessible(int2 hexCoord, HexEdge startEdge, HexEdge endEng) => HexData[hexCoord].AccessMap.IsEdgeAccessible(startEdge, endEng);
+        public bool IsEdgeAccessible(int2 hexCoord, HexEdge startEdge, HexEdge endEng) => HexData[hexCoord].AccessMap.AreEdgesConnected(startEdge, endEng);
     }
 }

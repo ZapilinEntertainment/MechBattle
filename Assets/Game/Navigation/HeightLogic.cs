@@ -7,7 +7,7 @@ namespace ZE.MechBattle.Navigation
     public static class HeightLogic
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool AreTrianglesPassable(CellHeightData heightA, CellHeightData heightB, TransitionMeasurePoints transitionMeasurePoints, float maxElevationDifference) =>
+        public static bool IsTransitionPossible(CellHeightData heightA, CellHeightData heightB, TransitionMeasurePoints transitionMeasurePoints, float maxElevationDifference) =>
             math.abs(heightA[transitionMeasurePoints.CellMeasurePoint] - heightB[transitionMeasurePoints.NeighbourMeasurePoint]) < maxElevationDifference;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -31,7 +31,7 @@ namespace ZE.MechBattle.Navigation
             if (!PassabilityData.TryGetIndex(Start, out var startTriangleIndex))
             {
 #if UNITY_EDITOR
-                UnityEngine.Debug.Log("start pos not valid");
+                UnityEngine.Debug.Log($"start pos not valid: {Start}");
 #endif
                 return;
             }    

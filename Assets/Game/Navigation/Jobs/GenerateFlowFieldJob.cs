@@ -59,28 +59,32 @@ namespace ZE.MechBattle.Navigation
         {
             switch (ExitEdge)
             {
-                case HexEdge.TopRight: SetupExitCells<TopRightEdgeEnumerationLogic>(new(TrianglesPerEdge, HexData)); break;
-                case HexEdge.BottomRight: SetupExitCells<BottomRightEdgeEnumerationLogic>(new(TrianglesPerEdge, HexData)); break;
-                case HexEdge.Bottom: SetupExitCells<BottomEdgeEnumerationLogic>(new(TrianglesPerEdge, HexData)); break;
-                case HexEdge.BottomLeft: SetupExitCells<BottomLeftEdgeEnumerationLogic>(new(TrianglesPerEdge, HexData)); break;
-                case HexEdge.TopLeft: SetupExitCells<TopLeftEdgeEnumerationLogic>(new(TrianglesPerEdge, HexData)); break;
-                default: SetupExitCells<TopEdgeEnumerationLogic>(new(TrianglesPerEdge, HexData)); break;
+                case HexEdge.TopRight: SetupExitCells<TopRightEdgeEnumerationLogic>(new(TrianglesPerEdge, HexData), HexEdge.TopRight); break;
+                case HexEdge.BottomRight: SetupExitCells<BottomRightEdgeEnumerationLogic>(new(TrianglesPerEdge, HexData), HexEdge.BottomRight); break;
+                case HexEdge.Bottom: SetupExitCells<BottomEdgeEnumerationLogic>(new(TrianglesPerEdge, HexData), HexEdge.Bottom); break;
+                case HexEdge.BottomLeft: SetupExitCells<BottomLeftEdgeEnumerationLogic>(new(TrianglesPerEdge, HexData), HexEdge.BottomLeft); break;
+                case HexEdge.TopLeft: SetupExitCells<TopLeftEdgeEnumerationLogic>(new(TrianglesPerEdge, HexData), HexEdge.TopLeft); break;
+                default: SetupExitCells<TopEdgeEnumerationLogic>(new(TrianglesPerEdge, HexData), HexEdge.Top); break;
             }
         }
 
-        void SetupExitCells<T>(EdgeEnumerator<T> enumerator) where T : struct, IEdgeEnumerationLogic
+        void SetupExitCells<T>(EdgeEnumerator<T> enumerator, HexEdge exitEdge) where T : struct, IEdgeEnumerationLogic
         {
+            var exitDirectionPeak = (int)exitEdge.ToNeighbourDirectionFromPeak();
+            var exitDirectionValley = (int)exitEdge.ToNeighbourDirectionFromValley();
+
             foreach (var pos in enumerator)
             {
-                SetupExitCell(pos);
+                SetupExitCell(pos, pos.IsPeak ? exitDirectionPeak : exitDirectionValley);
             }
         }
 
-        private void SetupExitCell(IntTriangularPos pos)
+        private void SetupExitCell(IntTriangularPos pos, int exitDirection)
         {
             var index = PassabilityData.TriangularToIndex(pos);
+            var passabilityData = PassabilityData[index];
 
-            if (!PassabilityData[index].IsPassable)
+            if (!passabilityData.IsPassable | !passabilityData.IsNeighbourAccessible(exitDirection))
                 return;
 
             var calculationData = CalculationData[index];

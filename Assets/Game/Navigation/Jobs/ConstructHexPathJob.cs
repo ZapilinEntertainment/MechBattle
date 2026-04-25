@@ -113,7 +113,7 @@ namespace ZE.MechBattle.Navigation
             for (var i = 0; i < 6; i++)
             {
                 if (!hexData.TryGetNodeIndex(i, out var neighbourIndex)
-                    || !hexData.AccessMap.IsEdgeAccessible(activeNodePos.Edge, (HexEdge)(i)))
+                    || !hexData.AccessMap.AreEdgesConnected(activeNodePos.Edge, (HexEdge)(i)))
                     continue;
 
                 AstarLogic.HandleNeighbour(activeNodeData,
@@ -134,7 +134,7 @@ namespace ZE.MechBattle.Navigation
             for (var i = 0; i < 6; i++)
             {
                 if (!neighbouredHexData.TryGetNodeIndex(i, out var neighbourIndex)
-                    ||!neighbouredHexData.AccessMap.IsEdgeAccessible(edgeInNeighbouredHex, (HexEdge)i))
+                    ||!neighbouredHexData.AccessMap.AreEdgesConnected(edgeInNeighbouredHex, (HexEdge)i))
                     continue;
 
                 AstarLogic.HandleNeighbour(

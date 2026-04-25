@@ -6,9 +6,20 @@ using UnityEngine;
 
 namespace ZE.MechBattle.Navigation
 {
+    public interface IUpdatableMap : INavigationMap
+    {
+        NavigationCell GetNavigationCell(IntTriangularPos pos);
+        void UpdateCell(IntTriangularPos pos, NavigationCell cell);
+        void UpdateCellPassability(IntTriangularPos pos, CellPassabilityData passability);
+
+        void UpdateVersion();
+        IUpdatableNavigationHex GetHex(int2 hexCoord);
+        IUpdatableNavigationHex AddHex(int2 hexCoord);
+    }
 
     public interface INavigationMap
     {
+        bool DefaultPassability { get; }
         int TrianglesPerHexEdge { get; }
         float TriangleHeight { get; }
         float HexEdgeSize { get; }
@@ -18,28 +29,30 @@ namespace ZE.MechBattle.Navigation
         MapSettings Settings { get; }
         Allocator ResourcesAllocator { get; }
 
+        CombinedFlowData GetFlowData(IntTriangularPos pos);
+        CellPassabilityData GetPassabilityData(IntTriangularPos pos);
+        CellHeightData GetHeightData(IntTriangularPos pos);
+
         void OnInitialized();
-        void UpdateHexFlowMap(int2 hexCoord, IDisposableFlowMap flowMap);
-        bool IsTrianglePassable(IntTriangularPos pos);     
         bool ContainsHex(int2 hexCoord);
         bool TryGetHex(int2 hexCoord, out INavigationHex protectedHex);
-        float GetTriangleEntranceCost(IntTriangularPos pos);
-        IFlowMap GetFlowMap(int2 hexCoord);
         NavigationHexPosition GetHexData(int2 hexCoord);
-        NavigationHex AddHex(int2 hexCoord);
+        INavigationHex GetOrCreateHex(int2 hexCoord);
 
-        CellHeightData GetCellHeights(IntTriangularPos pos);
-        void UpdateHexHeights(IReadOnlyList<(IntTriangularPos pos, CellHeightData height)> heightsData);
+       
 
         float3 GetWorldPos(int3 pos);
     }
 
-    public class NavigationMap : INavigationMap, IDisposable
+    public class NavigationMap : IUpdatableMap, IDisposable
     {        
         public Allocator ResourcesAllocator => _allocator;
         public MapSettings Settings { get;private set;}
 
+        public readonly VirtualHex _virtualHex;
+
         public bool IsInitialized { get;private set;} = false;
+        public bool DefaultPassability => Settings.UnscannedSurfacesArePassable;
         public float HexEdgeSize => Settings.HexEdgeSize;
         public float TriangleHeight => Settings.TriangleHeight;
         public float TriangleEdgeSize => Settings.TriangleEdgeSize;
@@ -51,35 +64,30 @@ namespace ZE.MechBattle.Navigation
 
         private Allocator _allocator;
         private readonly Dictionary<int2, NavigationHex> _hexes = new();
-        private readonly Dictionary<IntTriangularPos, CellHeightData> _heights = new();
+        private readonly Dictionary<IntTriangularPos, NavigationCell> _cells = new();        
     
         public NavigationMap(MapSettings settings, Allocator allocator)
         {
             Settings = settings;
             _allocator = allocator;
+            _virtualHex = Settings.UnscannedSurfacesArePassable ? VirtualHex.CreateFullPassableMap(this) : VirtualHex.CreateFullBlockedMap(this);
         }
 
         public void OnInitialized() => IsInitialized = true;
 
-        public IFlowMap GetFlowMap(int2 hexCoord)
-        {
-            if (TryGetHex(hexCoord, out var hex) && hex.FlowMap != null)
-                return hex.FlowMap;
+        public CombinedFlowData GetFlowData(IntTriangularPos pos) => 
+            _cells.TryGetValue(pos, out var cell) ? cell.FlowData : _virtualHex.GetCombinedCellData(pos);
 
-            return Settings.UnscannedSurfacesArePassable ? VirtualFlowMap.CreateFullPassableMap(this) : VirtualFlowMap.CreateFullBlockedMap(this);
-        }
+        public CellPassabilityData GetPassabilityData(IntTriangularPos pos) =>
+             _cells.TryGetValue(pos, out var cell) ? cell.Passability : NavigationLogic.GetDefaultPassability(this);
 
-        public void UpdateHexFlowMap(int2 hexCoord, IDisposableFlowMap flowMap)
-        {
-            GetOrCreateHex(hexCoord).UpdateFlowMap(flowMap);
-            Version++;
-        }
+        public CellHeightData GetHeightData(IntTriangularPos pos) =>
+            _cells.TryGetValue(pos, out var cell) ? cell.HeightData : new(NavigationConstants.DEFAULT_HEIGHT);
 
-        public NavigationHex AddHex(int2 hexCoord) 
+        public IUpdatableNavigationHex AddHex(int2 hexCoord) 
         { 
             var hex = new NavigationHex(GetHexData(hexCoord));
             _hexes.Add(hexCoord, hex);
-            Version++;
             return hex;
         }        
 
@@ -96,59 +104,38 @@ namespace ZE.MechBattle.Navigation
             return false;
         }
 
-        public NavigationHexPosition GetHexData(int2 hexCoord) => new(hexCoord.x, hexCoord.y, HexEdgeSize, TriangleHeight);
-       
-
-        // todo: move to own command
-        public NavigationHex GetNearestHex(float2 pointPos)
+        public INavigationHex GetOrCreateHex(int2 hexCoord)
         {
-            NavigationHex closestHex = default;
-            var smallestDistSq = float.PositiveInfinity;
-
-            foreach (var hex in _hexes.Values)
+            INavigationHex navHex;
+            if (!_hexes.TryGetValue(hexCoord, out var hex))
             {
-                var distSq = math.lengthsq(hex.CenterPosWorld - pointPos);
-                if (distSq < smallestDistSq)
-                {
-                    smallestDistSq = distSq;
-                    closestHex = hex;
-                }
+                var navigationHex = AddHex(hexCoord);
+                navigationHex.UpdateAccessMap(_virtualHex.GetAccessMap());
+                navigationHex.UpdateEdgesPassability(new(_virtualHex.DefaultPassability));
+                navHex = navigationHex;
             }
-
-            return closestHex;
-        }
-
-        public int2 WorldToHex(float3 worldPos) => HexMath.DefineHex(worldPos.xz, HexEdgeSize);
-
-        public float GetTriangleEntranceCost(IntTriangularPos pos) => IsTrianglePassable(pos) ? 1f : -1f;
-        public bool IsTrianglePassable(IntTriangularPos pos)
-        {
-            var hexCoord = TriangularMath.TriangularToHex(pos, TriangleHeight, HexEdgeSize);
-            if (_hexes.TryGetValue(hexCoord, out var hex))
-                return hex.FlowMap.IsCellPassable(pos);
             else
-                return Settings.UnscannedSurfacesArePassable;
+            {
+                navHex = hex;
+            }           
+            return navHex;
         }
+
+        public NavigationHexPosition GetHexData(int2 hexCoord) => new(hexCoord.x, hexCoord.y, HexEdgeSize, TriangleHeight);
 
         public void Dispose()
         {
-            foreach (var hex in _hexes.Values)
-            {
-                hex.Dispose();
-            }
             _hexes.Clear();
+            _cells.Clear();
         }
-
-        private NavigationHex GetOrCreateHex(int2 pos) => _hexes.TryGetValue(pos, out var hex) ? hex : AddHex(pos);
-
-        public CellHeightData GetCellHeights(IntTriangularPos pos) => 
-            _heights.TryGetValue(pos, out var heightData) ? heightData : new(NavigationConstants.DEFAULT_HEIGHT);
 
         public void UpdateHexHeights(IReadOnlyList<(IntTriangularPos pos, CellHeightData height)> data)
         {
             foreach (var element in data)
             {
-                _heights[element.pos] = element.height;
+                var cell = _cells[element.pos];
+                cell.HeightData = element.height;
+                _cells[element.pos] = cell;
             }
             Version++;
         }
@@ -156,8 +143,27 @@ namespace ZE.MechBattle.Navigation
         public float3 GetWorldPos(int3 pos)
         {
             var worldPos = TriangularMath.TriangularToWorld(pos, TriangleHeight);
-            worldPos.y = GetCellHeights(pos).AverageHeight;
+            worldPos.y = GetHeightData(pos).AverageHeight;
             return worldPos;
         }
+
+        public NavigationCell GetNavigationCell(IntTriangularPos pos) => 
+            _cells.TryGetValue(pos, out var cell) 
+            ? cell 
+            : NavigationLogic.CreateDefaultCell(this, pos);
+
+        public void UpdateCell(IntTriangularPos pos, NavigationCell cell) =>
+             _cells[pos] = cell;
+
+        public void UpdateCellPassability(IntTriangularPos pos, CellPassabilityData passabilityData)
+        {
+            var cell = _cells[pos];
+            cell.Passability = passabilityData;
+            _cells[pos] = cell;
+        }
+
+        public void UpdateVersion() => Version++;
+
+        public IUpdatableNavigationHex GetHex(int2 hexCoord) => _hexes[hexCoord];
     }
 }

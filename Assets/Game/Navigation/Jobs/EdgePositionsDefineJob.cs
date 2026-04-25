@@ -45,7 +45,8 @@ namespace ZE.MechBattle.Navigation
             var i = 0;
             foreach (var tripos in enumerator)
             {
-                Results[startIndex + i] = (new(tripos, tripos.IsPeak ? peakDir : valleyDir));
+                Results[startIndex + i] = new(tripos, tripos.IsPeak ? peakDir : valleyDir);
+                i++;
             }
         }
     }

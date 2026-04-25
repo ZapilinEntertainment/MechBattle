@@ -41,11 +41,11 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         {
             foreach (var tripos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, map.TrianglesPerHexEdge))
             {
-                var cellHeights = map.GetCellHeights(tripos);
+                var cellHeights = map.GetHeightData(tripos);
                 var vertices = GetTriangleVerticesCommand.Execute(tripos, map.TriangleHeight, 0.01f);
                 vertices = vertices.ApplyHeights(cellHeights);
 
-                var isCellPassable = map.IsTrianglePassable(tripos);              
+                var isCellPassable = map.GetPassabilityData(tripos).IsPassable;              
 
                 if (drawUnpassable | isCellPassable) 
                     _drawData.Add( new TriangleDrawData(vertices, isCellPassable));

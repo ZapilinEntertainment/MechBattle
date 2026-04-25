@@ -170,7 +170,7 @@ namespace ZE.MechBattle.Navigation.Tests
             }               
 
             var checkedPositions = new HashSet<IntTriangularPos>(results.Length);
-            var resultsHash = new HashSet<int3>(results.Length);
+            var resultsHash = new HashSet<IntTriangularPos>(results.Length);
             for (var i = 0; i < resultsHash.Count; i++)
             {
                 resultsHash.Add(results[i].xyz);

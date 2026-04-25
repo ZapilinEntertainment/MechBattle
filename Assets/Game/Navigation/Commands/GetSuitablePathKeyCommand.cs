@@ -115,10 +115,8 @@ namespace ZE.MechBattle.Navigation
         private static HexEdgesMask DefineAccessibleEdges(float3 worldPos, INavigationMap map)
         {
             var hexCoord = HexMath.DefineHex(worldPos.xz, map.HexEdgeSize);
-            var flowMap = map.GetFlowMap(hexCoord);
             var triangularPos = TriangularMath.WorldToTrianglePos(worldPos, map.TriangleHeight);
-            var cellData = flowMap.GetCombinedCellData(triangularPos);
-            return cellData.GetCombinedEdgeAccessMask();
+            return map.GetFlowData(triangularPos).GetCombinedEdgeAccessMask();
         }
     }
 }

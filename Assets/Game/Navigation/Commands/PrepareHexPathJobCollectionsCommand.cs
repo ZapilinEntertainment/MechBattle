@@ -16,8 +16,9 @@ namespace ZE.MechBattle.Navigation
             var nextIndex = 0;
             foreach (var hexPos in map.HexCoords)
             {
-                var flowMap = map.GetFlowMap(hexPos);
-                var accessMap = flowMap.GetAccessMap();
+                var hex = map.GetOrCreateHex(hexPos);
+                var accessMap = hex.AccessMap;
+                var edgesPassability = hex.EdgesPassability;
 
                 for (var edgeIndex = 0; edgeIndex < 6; edgeIndex++)
                 {
@@ -30,7 +31,7 @@ namespace ZE.MechBattle.Navigation
                         continue;
                     }
 
-                    if (!accessMap.IsEdgePassable(edgeIndex))
+                    if (!edgesPassability.IsEdgePresented(edgeIndex))
                     {
                         currentHexEdgeDataIndices[edgeIndex] = HexEdgeNodesData.INVALID_INDEX;
                         continue;
@@ -44,7 +45,7 @@ namespace ZE.MechBattle.Navigation
                     data.NavigationData[index] = new(new(hexPos, edgeIndex));
                 }
 
-                data.HexData.Add(hexPos, new(currentHexEdgeDataIndices, accessMap));                
+                data.HexData.Add(hexPos, new(currentHexEdgeDataIndices, accessMap, edgesPassability));                
             }
 
             return data;

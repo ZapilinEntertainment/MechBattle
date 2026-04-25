@@ -8,16 +8,26 @@ namespace ZE.MechBattle.Navigation
 {
     public interface INavigationHex
     {
-        float2 CenterPosWorld {get; }
-        int2 HexCoordinate { get;}
-        IFlowMap FlowMap { get;}
-        public NavigationHexPosition Pos { get;}
+        bool IsFlowMapCalculated { get; }
+        float2 CenterPosWorld { get; }
+        int2 HexCoordinate { get; }
+        HexEdgesAccessMap AccessMap { get; }
+        HexEdgesMask EdgesPassability { get;}
+        public NavigationHexPosition Pos { get; }
     }
 
-    public class NavigationHex : INavigationHex, IDisposable
+    public interface IUpdatableNavigationHex : INavigationHex
     {
+        void UpdateAccessMap(HexEdgesAccessMap map);
+        void UpdateEdgesPassability(HexEdgesMask mask);
+        void UpdateVersion();
+        void OnFlowMapCalculated();
+    }
+
+    public class NavigationHex : IUpdatableNavigationHex
+    {
+        public bool IsFlowMapCalculated { get; private set;}
         public int Version { get; private set; } = 0;
-        public IFlowMap FlowMap => _flowMap;
         public IntTriangularPos TriangularCenterPos => _pos.TriangularCenterPos;
         public IntTriangularPos InnerRingTopTrianglePos => _pos.InnerRingTopValleyTriangle;
         public float3 CenterPos3DWorld => _pos.CenterPos3DWorld;
@@ -26,25 +36,19 @@ namespace ZE.MechBattle.Navigation
         public int2 HexCoordinate => _pos.HexCoordinate;
 
         public NavigationHexPosition Pos => _pos;
-        private IDisposableFlowMap _flowMap;
+        public HexEdgesAccessMap AccessMap { get;private set;}
+        public HexEdgesMask EdgesPassability { get;private set;}
         private readonly NavigationHexPosition _pos;
 
 
-        public NavigationHex(in NavigationHexPosition data)
+        public NavigationHex(in NavigationHexPosition pos)
         {
-            _pos = data;
+            _pos = pos;
         }
 
-        public void UpdateFlowMap(IDisposableFlowMap flowMap)
-        {
-            _flowMap?.Dispose();
-            _flowMap = flowMap;
-            Version++;
-        }
-
-        public void Dispose()
-        {
-            _flowMap?.Dispose();
-        }
+        public void UpdateEdgesPassability(HexEdgesMask mask) => EdgesPassability = mask;
+        public void UpdateAccessMap(HexEdgesAccessMap accessMap) => AccessMap = accessMap;
+        public void OnFlowMapCalculated() => IsFlowMapCalculated = true;    
+        public void UpdateVersion() => Version++;
     }
 }

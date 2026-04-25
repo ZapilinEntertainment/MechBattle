@@ -6,7 +6,7 @@ namespace ZE.MechBattle.Navigation
 {
     public static class UpdateHexEdgesPassabilityCommand
     {
-        public static void Execute(INavigationMap map, DefineTransitionTrianglesJobCollection collection)
+        public static void Execute(IUpdatableMap map, DefineTransitionTrianglesJobCollection collection)
         {
             var mapSettings = map.Settings;
             var hexRadius = mapSettings.TrianglesPerHexEdge;
@@ -14,27 +14,13 @@ namespace ZE.MechBattle.Navigation
 
             var job = PrepareTransitionTrianglesJob(map, collection);
             job.RunByRef(collection.CalculatingNodes.Length);
+            
+            UpdateBorderTriangles(map, collection);
 
-            //for (var i = 0; i < collection.CalculatingNodes.Length; i++)
-            //{
-            //    var hexCoord = collection.CalculatingNodes[i].HexCoord;
-            //    var flowMap = map.GetFlowMap(hexCoord);
-            //    for (var a = 0; a < collection.TrianglesPerNode; a++)
-            //    {
-            //        var passa
-            //    }
-            //}
-            //foreach (var posData in collection.Results)
-            //{                
-            //    var cellPassability = map.GetPassabilityData(posData.xyz);
-            //    var cellHeight = map.GetCellHeights(posData.xyz);
+            foreach (var hexCoord in map.HexCoords)
+                UpdateHexEdgePassabilities(map, hexCoord);
 
-            //    var neighbourPos = TriangularMath.GetNeighbourByDirection(posData.xyz, posData.w);
-            //    var neighbourPassability = map.GetPassabilityData(neighbourPos);
-            //    var neighbourHeight = map.GetCellHeights(neighbourPos);
-
-
-            //}
+            map.UpdateVersion();
         }
 
         private static EdgePositionsDefineJob PrepareTransitionTrianglesJob(INavigationMap map, DefineTransitionTrianglesJobCollection collection)
@@ -66,5 +52,73 @@ namespace ZE.MechBattle.Navigation
             };
         }
 
+        private static void UpdateBorderTriangles(IUpdatableMap map, DefineTransitionTrianglesJobCollection collection)
+        {
+            foreach (var posData in collection.Results)
+            {
+                //UnityEngine.Debug.Log(pos);
+                UpdateTrianglePassability(map, posData.xyz);
+                var oppositePos = TriangularMath.GetNeighbourByDirection(posData.xyz, posData.w);
+                UpdateTrianglePassability(map, oppositePos);
+            }
+        }
+
+        private static void UpdateTrianglePassability(IUpdatableMap map, int3 pos)
+        {
+            var passability = map.GetPassabilityData(pos);
+            var neighboursMask = 0;
+            for (var i = 0; i < NavigationConstants.TRIANGLE_DIRECTIONS_COUNT; i++)
+            {
+                var neighbourPos = TriangularMath.GetNeighbourByDirection(pos, i);
+                if (TrianglesTransitionLogic.IsCloseTransitionPossible(map, pos, neighbourPos))
+                    neighboursMask |= (1 << i);
+            }
+            map.UpdateCellPassability(pos, new(passability.IsPassable, neighboursMask, passability.EntranceCost)); 
+        }
+
+        private static void UpdateHexEdgePassabilities(IUpdatableMap map, int2 hexCoord)
+        {
+            var mask = 0;
+            var hexPos = new NavigationHexPosition(hexCoord, map);
+
+            if (TryFindPassage<TopEdgeEnumerationLogic>(new(map.TrianglesPerHexEdge, hexPos), map, HexEdge.Top)) 
+                mask |= (1 << (int)HexEdge.Top);
+
+            if (TryFindPassage<TopRightEdgeEnumerationLogic>(new(map.TrianglesPerHexEdge, hexPos), map, HexEdge.TopRight))
+                mask |= (1 << (int)HexEdge.TopRight);
+
+            if (TryFindPassage<BottomRightEdgeEnumerationLogic>(new(map.TrianglesPerHexEdge, hexPos), map, HexEdge.BottomRight))
+                mask |= (1 << (int)HexEdge.BottomRight);
+
+            if (TryFindPassage<BottomEdgeEnumerationLogic>(new(map.TrianglesPerHexEdge, hexPos), map, HexEdge.Bottom))
+                mask |= (1 << (int)HexEdge.Bottom);
+
+            if (TryFindPassage<BottomLeftEdgeEnumerationLogic>(new(map.TrianglesPerHexEdge, hexPos), map, HexEdge.BottomLeft))
+                mask |= (1 << (int)HexEdge.BottomLeft);
+
+            if (TryFindPassage<TopLeftEdgeEnumerationLogic>(new(map.TrianglesPerHexEdge, hexPos), map, HexEdge.TopLeft))
+                mask |= (1 << (int)HexEdge.TopLeft);
+
+            var hex = map.GetHex(hexCoord);
+            hex.UpdateEdgesPassability(new(mask));
+            hex.UpdateVersion();
+        }
+
+        private static bool TryFindPassage<T>(EdgeEnumerator<T> enumerator, INavigationMap map, HexEdge edge) where T : unmanaged, IEdgeEnumerationLogic
+        {
+            var peakDir = (int)edge.ToNeighbourDirectionFromPeak();
+            var valleyDir = (int)edge.ToNeighbourDirectionFromValley();
+            foreach (var pos in enumerator)
+            {
+                var neighbourMask = map.GetPassabilityData(pos).NeighboursMask;
+                var directionMask = 1 << (pos.IsPeak ? peakDir : valleyDir);
+                if ((neighbourMask & directionMask) != 0)
+                {
+                    return true;
+                }     
+            }
+
+            return false;
+        }
     }
 }

@@ -35,6 +35,9 @@ namespace ZE.MechBattle.Navigation
             private readonly HexEdgesAccessMap StartHexAccessMap;
             private readonly HexEdgesAccessMap EndHexAccessMap;
 
+            private readonly HexEdgesMask StartEdgesPassability;
+            private readonly HexEdgesMask EndEdgesPassability;
+
             private readonly HexEdgesMask StartPointEdgesAccessMask;
             private readonly HexEdgesMask EndPointEdgesAccessMask;
             
@@ -46,25 +49,24 @@ namespace ZE.MechBattle.Navigation
                 StartHexCoord = TriangularMath.TriangularToHex(start, map.TriangleHeight, map.HexEdgeSize);
                 EndHexCoord = TriangularMath.TriangularToHex(end, map.TriangleHeight, map.HexEdgeSize);
 
-                var startHexFlowMap = map.GetFlowMap(StartHexCoord);
-                var endHexFlowMap = map.GetFlowMap(EndHexCoord);
+                var startHex = map.GetOrCreateHex(StartHexCoord);
+                var endHex = map.GetOrCreateHex(EndHexCoord);
 
-                StartHexAccessMap = startHexFlowMap.GetAccessMap();
-                EndHexAccessMap = endHexFlowMap.GetAccessMap();
+                StartHexAccessMap = startHex.AccessMap;
+                EndHexAccessMap = endHex.AccessMap;
 
-                StartPointEdgesAccessMask = startHexFlowMap.GetCombinedCellData(start).GetCombinedEdgeAccessMask();
-                EndPointEdgesAccessMask = endHexFlowMap.GetCombinedCellData(end).GetCombinedEdgeAccessMask();
+                StartEdgesPassability = startHex.EdgesPassability;
+                EndEdgesPassability = endHex.EdgesPassability;
+
+                StartPointEdgesAccessMask = map.GetFlowData(start).GetCombinedEdgeAccessMask();
+                EndPointEdgesAccessMask = map.GetFlowData(end).GetCombinedEdgeAccessMask();
 
                 Results = new List<HexPathNodeKey>();
             }
 
-            public bool IsStartEdgeOperable(int edgeIndex) => 
-                StartPointEdgesAccessMask.IsEdgePresented(edgeIndex)
-                && StartHexAccessMap.IsEdgePassable(edgeIndex);
+            public bool IsStartEdgePassable(int edgeIndex) => StartEdgesPassability.IsEdgePresented(edgeIndex);
+            public bool IsEndEdgeOperable(int edgeIndex) => EndEdgesPassability.IsEdgePresented(edgeIndex);
 
-            public bool IsEndEdgeOperable(int edgeIndex) =>
-                EndPointEdgesAccessMask.IsEdgePresented(edgeIndex)
-                && EndHexAccessMap.IsEdgePassable(edgeIndex);
 
             public ConstructHexPathJob ConstructJob(int startEdgeIndex, int endEdgeIndex) =>
                 new ConstructHexPathJob()
@@ -108,7 +110,7 @@ namespace ZE.MechBattle.Navigation
 
             for (var startEdge = 0; startEdge < 6; startEdge++)
             {
-                if (!logic.IsStartEdgeOperable(startEdge))
+                if (!logic.IsStartEdgePassable(startEdge))
                     continue;
 
                 for (var endEdge = 0; endEdge < 6; endEdge++)
@@ -131,7 +133,7 @@ namespace ZE.MechBattle.Navigation
                     calculatedPaths++;
                 }
             }
-
+            
             if (calculatedPaths == 0)
                 return PathfindResult.Failed;
 
@@ -151,7 +153,7 @@ namespace ZE.MechBattle.Navigation
 
             for (var startEdge = 0; startEdge < 6; startEdge++)
             {
-                if (!logic.IsStartEdgeOperable(startEdge))
+                if (!logic.IsStartEdgePassable(startEdge))
                     continue;
 
                 for (var endEdge = 0; endEdge < 6; endEdge++)

@@ -37,7 +37,7 @@ namespace ZE.MechBattle.Navigation.Tests
             //return new HexFlowMap(resultingData, accessMap);
         }
 
-        private NativeHashMap<IntTriangularPos, FlowMapCombinedCell> PrepareAndCombineFlowMaps(
+        private NativeHashMap<IntTriangularPos, CombinedFlowData> PrepareAndCombineFlowMaps(
            FlowFieldCalculationCollections data,
            NavigationHexPosition hexPos,
            int radius,
@@ -115,7 +115,7 @@ namespace ZE.MechBattle.Navigation.Tests
             }
 
 
-            var resultingData = new NativeHashMap<IntTriangularPos, FlowMapCombinedCell>(trianglesInHex, allocator);
+            var resultingData = new NativeHashMap<IntTriangularPos, CombinedFlowData>(trianglesInHex, allocator);
             for (var i = 0; i < trianglesInHex; i++)
             {
                 var index = hexTriangleIndices[i];

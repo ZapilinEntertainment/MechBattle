@@ -168,7 +168,7 @@ namespace ZE.MechBattle.Navigation
             foreach (var edgePos in enumerator)
             {
                 var pos = edgePos;
-                dict.Add(pos, new() { IsExit = isExit, IsPassable = map.IsTrianglePassable(pos) });
+                dict.Add(pos, new() { IsExit = isExit, IsPassable = map.GetPassabilityData(pos).IsPassable });
             }
         }
     }

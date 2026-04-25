@@ -17,7 +17,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         private bool _mapSettingsPresented = false;
         private bool _areModulesReady = false;
-        private FlowMapFactory _flowMapFactory;
+        private NavigationMap _map;
+        private MapUpdater _mapUpdater;
         private Vector3[] _refinedPoints;
         private Vector3[] _castPoints;
         private float _discRadius;
@@ -61,9 +62,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             
             try
             {
-                var flowMap = _flowMapFactory.CreateHexFlowMap(Allocator.Persistent, HexCoord);  
-                // no need in exact map, just calculations
-                flowMap.Dispose();
+                _mapUpdater.UpdateHex(HexCoord);
             }
             catch (OperationCanceledException)
             {
@@ -75,12 +74,13 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             }
             
          
-            _flowMapFactory.TEST_FillRaycastsArray(_refinedPoints, _castPoints);
+            _mapUpdater.TEST_FillRaycastsArray(_refinedPoints, _castPoints);
         }
 
         private void PrepareModules()
         {
-            _flowMapFactory = new FlowMapFactory(Allocator.Persistent, NavigationDebugDataContainer.MapSettings.ToStruct());
+            _map = new NavigationMap(NavigationDebugDataContainer.MapSettings.ToStruct(), Allocator.Persistent);
+            _mapUpdater = new MapUpdater(Allocator.Persistent, _map);
 
             var mapSettings = NavigationDebugDataContainer.MapSettings;
             var triangleHeight = mapSettings.TriangleHeight;
@@ -101,7 +101,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         void OnDisable()
         {
             SceneView.duringSceneGui -= OnSceneGUI;
-            _flowMapFactory?.Dispose();
+            _mapUpdater?.Dispose();
+            _map?.Dispose();
         }
 
         void OnSceneGUI(SceneView sceneView)

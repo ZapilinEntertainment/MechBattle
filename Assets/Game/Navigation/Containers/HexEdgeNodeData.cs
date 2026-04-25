@@ -6,16 +6,18 @@ namespace ZE.MechBattle.Navigation
     public unsafe struct HexEdgeNodesData
     {
         public readonly HexEdgesAccessMap AccessMap;
+        public readonly HexEdgesMask EdgesPassability;
         private fixed int _edgeDataIndices[6];
         public const int INVALID_INDEX = -1;
 
-        public HexEdgeNodesData(int[] indices, HexEdgesAccessMap accessMap)
+        public HexEdgeNodesData(int[] indices, HexEdgesAccessMap accessMap, HexEdgesMask edgesPassability)
         {
             for (var i = 0; i < indices.Length; i++)
             {
                 _edgeDataIndices[i] = indices[i];
             }
             AccessMap = accessMap;
+            EdgesPassability = edgesPassability;
         }
     
         public bool TryGetNodeIndex(int edgeIndex, out int index)
@@ -29,10 +31,10 @@ namespace ZE.MechBattle.Navigation
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsEdgePassable(int edgeIndex) => AccessMap.IsEdgePassable(edgeIndex);
+        public bool IsEdgePassable(int edgeIndex) => EdgesPassability.IsEdgePresented(edgeIndex);
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsEdgePassable(HexEdge edge) => AccessMap.IsEdgePassable(edge);
+        public bool IsEdgePassable(HexEdge edge) => EdgesPassability.IsEdgePresented(edge);
     }
 }
