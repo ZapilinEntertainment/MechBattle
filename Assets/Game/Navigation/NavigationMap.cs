@@ -9,7 +9,7 @@ namespace ZE.MechBattle.Navigation
     public interface IUpdatableMap : INavigationMap
     {
         NavigationCell GetNavigationCell(IntTriangularPos pos);
-        void UpdateCell(IntTriangularPos pos, NavigationCell cell);
+        void UpdateNavigationCell(IntTriangularPos pos, NavigationCell cell);
         void UpdateCellPassability(IntTriangularPos pos, CellPassabilityData passability);
 
         void UpdateVersion();
@@ -152,7 +152,7 @@ namespace ZE.MechBattle.Navigation
             ? cell 
             : NavigationLogic.CreateDefaultCell(this, pos);
 
-        public void UpdateCell(IntTriangularPos pos, NavigationCell cell) =>
+        public void UpdateNavigationCell(IntTriangularPos pos, NavigationCell cell) =>
              _cells[pos] = cell;
 
         public void UpdateCellPassability(IntTriangularPos pos, CellPassabilityData passabilityData)

@@ -63,7 +63,7 @@ namespace ZE.MechBattle.Navigation
             }
         }
 
-        private static void UpdateTrianglePassability(IUpdatableMap map, int3 pos)
+        private static void UpdateTrianglePassability(IUpdatableMap map, IntTriangularPos pos)
         {
             var passability = map.GetPassabilityData(pos);
             var neighboursMask = 0;
@@ -73,6 +73,7 @@ namespace ZE.MechBattle.Navigation
                 if (TrianglesTransitionLogic.IsCloseTransitionPossible(map, pos, neighbourPos))
                     neighboursMask |= (1 << i);
             }
+            TrianglesTransitionLogic.CheckMaskForJumpNeighbours(neighboursMask, pos.IsPeak);
             map.UpdateCellPassability(pos, new(passability.IsPassable, neighboursMask, passability.EntranceCost)); 
         }
 

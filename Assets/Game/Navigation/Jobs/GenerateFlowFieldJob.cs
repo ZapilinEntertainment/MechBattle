@@ -22,6 +22,7 @@ namespace ZE.MechBattle.Navigation
         public NativeQueue<int> CalculationQueue;
         public NativeHashSet<int> QueuedPositions;        
         public NativeArray<FlowFieldCellCalculationData> CalculationData;
+        public bool ExitNeighbourPassabilityRequired;
 
         public NavigationHexPosition HexData;
         public int TrianglesPerEdge;
@@ -84,13 +85,14 @@ namespace ZE.MechBattle.Navigation
             var index = PassabilityData.TriangularToIndex(pos);
             var passabilityData = PassabilityData[index];
 
-            if (!passabilityData.IsPassable | !passabilityData.IsNeighbourAccessible(exitDirection))
+            var neighbourPassability = !ExitNeighbourPassabilityRequired | passabilityData.IsNeighbourAccessible(exitDirection);
+
+            if (!passabilityData.IsPassable | !neighbourPassability)
                 return;
 
             var calculationData = CalculationData[index];
             calculationData.IntegrationValue = 0;
             CalculationData[index] = calculationData;
-
             Enqueue(index);            
         }
 

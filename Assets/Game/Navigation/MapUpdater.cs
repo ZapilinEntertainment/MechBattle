@@ -32,7 +32,8 @@ namespace ZE.MechBattle.Navigation
 
         private RefineNavRaycastDataJob _refineNavRaycastDataJob;
         private PrepareFlowMapSetupDataJob _flowMapSetupDataJob;
-        private FlowFieldCalculationCollections _collections;
+        private FlowFieldCalculationCollections _flowCalculationCollections;
+        private DefineTransitionTrianglesJobCollection _transitionCalculationCollections;
 
         private bool _isCalculating = false;
 
@@ -81,18 +82,19 @@ namespace ZE.MechBattle.Navigation
             };
 
 
-            _collections = FlowFieldCalculationCollections.CreateCollection(allocator, default, _mapSettings);
+            _flowCalculationCollections = FlowFieldCalculationCollections.CreateCollection(allocator, default, _mapSettings);
             _flowMapSetupDataJob = new PrepareFlowMapSetupDataJob()
             {
                 DefaultEntranceCost = NavigationConstants.DEFAULT_TRIANGLE_ENTRANCE_COST,
-                SetupData = _collections.PassabilityDataInnerArray,
+                SetupData = _flowCalculationCollections.PassabilityDataInnerArray,
                 RefinedRaycastData = _refinedData,
                 IntersectionPercentForLock = _mapSettings.IntersectionPercentForLock,
                 SubdividedTrianglesCount = subdivisions * subdivisions,
-                UncastedSpaceIsPassable = _mapSettings.UnscannedSurfacesArePassable,
                 HeightData = _cellHeightData,
                 MaxElevationDifference = _mapSettings.MaxElevationDifference,
             };
+
+            _transitionCalculationCollections = new(_allocator);
         }
 
         public void TEST_FillRaycastsArray(IList<Vector3> refinedPoints, IList<Vector3> oldPoints)
@@ -115,6 +117,87 @@ namespace ZE.MechBattle.Navigation
                     refinedPoints[index] = new(pos.x, refinedHeight, pos.z);
                 }
             }
+        }
+
+        public void UpdateMapCompletely()
+        {
+            if (_isCalculating)
+                throw new System.Exception("cannot create multiple flow maps simultaneously!");
+
+            var radius = _map.TrianglesPerHexEdge;
+            var subdividedTrisCount = _flowMapSetupDataJob.SubdividedTrianglesCount;
+            var intersectionPercentForLock = _flowMapSetupDataJob.IntersectionPercentForLock;
+
+            foreach (var hexCoord in _map.HexCoords)
+            {
+                // 1. get raw raycast data for walkables and obstacles
+                var hexPos = new NavigationHexPosition(hexCoord, _mapSettings.HexEdgeSize, _mapSettings.TrianglesPerHexEdge);
+                PrepareCalculationData(hexPos);
+
+                // 2. refine raw raycast data into readable containers
+                var handle = ScheduleRefineJob(hexPos);
+                handle.Complete();
+
+                // 3. define passability nad height completely
+                RunFlowMapSetupDataJob();
+
+                var index = 0;
+                foreach (var tripos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, radius))
+                {
+                    // 2. update height & passability of every cell into map
+
+                    var navCell = _map.GetNavigationCell(tripos);
+                    navCell.HeightData = _cellHeightData[index];
+                    navCell.Passability = _flowCalculationCollections.PassabilityDataInnerArray[index];
+                    _map.UpdateNavigationCell(tripos, navCell);
+                    index++;
+                }
+            }
+
+            // 3. check all edge triangles for between-hex passability connections
+            UpdateHexEdgesPassabilityCommand.Execute(_map, _transitionCalculationCollections);
+
+            //4. calculate flow maps with knowledge of edge passabilities
+
+            var trianglesPerHex = TriangularMath.GetTrianglesCountInHex(radius);
+            var cachedCells = new NavigationCell[trianglesPerHex];
+            foreach (var hexCoord in _map.HexCoords)
+            {
+                var hexPos = new NavigationHexPosition(hexCoord, _map);
+                _flowCalculationCollections.ChangeHexPosAndReset(hexPos.TriangularCenterPos);
+
+                var passabilityData = _flowCalculationCollections.PassabilityDataInnerArray;        
+                var heightData = _cellHeightData;
+                var index = 0;
+                // load already calculated data back into collections for flow map calculation
+
+                var hexEnumerator = new HexTrianglesEnumerator(hexPos.TriangularCenterPos, radius);
+                foreach (var tripos in hexEnumerator)
+                {
+                    var cell = _map.GetNavigationCell(tripos);
+                    passabilityData[index] = cell.Passability;
+                    heightData[index] = cell.HeightData;
+                    cachedCells[index] = cell;
+                    index++;
+                }
+                GenerateAndCombineFlowMapsCommand.Execute(_flowCalculationCollections, hexPos, _hexRadius, exitNeighbourCheckRequired: true);
+
+                hexEnumerator.Reset();
+                index = 0;
+                foreach (var tripos in hexEnumerator)
+                {
+                    var cachedCell = cachedCells[index];
+                    cachedCell.FlowData = _flowCalculationCollections.FlowData[index];
+                    _map.UpdateNavigationCell(tripos, cachedCell);
+                    index++;
+                }
+
+                var hex = _map.GetHex(hexCoord);
+                hex.OnFlowMapCalculated();
+                hex.UpdateVersion();
+            }
+
+           _map.UpdateVersion();
         }
 
         public void UpdateHex(int2 hexCoord)
@@ -182,8 +265,10 @@ namespace ZE.MechBattle.Navigation
             _refinedData.Dispose();
             _isPeakData.Dispose();
 
-            _collections.Dispose();
+            _flowCalculationCollections.Dispose();
             _cellHeightData.Dispose();
+
+            _transitionCalculationCollections.Dispose();
 
             _resourcesDisposed = true;
         }
@@ -191,8 +276,6 @@ namespace ZE.MechBattle.Navigation
         private void PrepareCalculationData(NavigationHexPosition hexPos)
         {
             var walkableDataHandle = _walkableSurfaceCaster.PrepareCastJob(hexPos);
-            
-
             walkableDataHandle.Complete();
 
             var obstacleDataHandle = _obstaclesCaster.PrepareCastJob(hexPos);
@@ -200,11 +283,10 @@ namespace ZE.MechBattle.Navigation
 
             var hexRadius = _mapSettings.TrianglesPerHexEdge;
 
-            var collections = _collections;
-            collections.ChangeHexPosAndReset(hexPos.TriangularCenterPos);
+            _flowCalculationCollections.ChangeHexPosAndReset(hexPos.TriangularCenterPos);
             for (var j = 0; j < _trianglesPerHex; j++)
             {
-                var pos = collections.IndexToPos(j);
+                var pos = _flowCalculationCollections.IndexToPos(j);
                 _isPeakData.Set(j, pos.IsPeak);
             }
         }
@@ -215,43 +297,46 @@ namespace ZE.MechBattle.Navigation
             return _refineNavRaycastDataJob.ScheduleByRef(_trianglesPerHex, 32);
         }
 
-        private void ApplyJobResults(NavigationHexPosition hexPos)
+        private void RunFlowMapSetupDataJob()
         {
             // too easy to schedule
-            _flowMapSetupDataJob.CoordsConverter = _collections.PassabilityData.GetCoordsConverter();
+            _flowMapSetupDataJob.CoordsConverter = _flowCalculationCollections.PassabilityData.GetCoordsConverter();
             _flowMapSetupDataJob.Run(_trianglesPerHex);
+        }
 
-            CombineFlowMapsCommand.Execute(_collections, hexPos, _hexRadius);
-            UpdateMap(hexPos);
+        private void ApplyJobResults(NavigationHexPosition hexPos)
+        {
+            RunFlowMapSetupDataJob();
+
+            GenerateAndCombineFlowMapsCommand.Execute(_flowCalculationCollections, hexPos, _hexRadius, exitNeighbourCheckRequired: false);
+            UpdateMapDataAtHex(hexPos);
         }
 
         private async Task ApplyJobResultsAsync(NavigationHexPosition hexPos, CancellationToken cancellationToken)
         {
-            // too easy to schedule
-            _flowMapSetupDataJob.CoordsConverter = _collections.PassabilityData.GetCoordsConverter();
-            _flowMapSetupDataJob.Run(_trianglesPerHex);
+            RunFlowMapSetupDataJob();
 
-            await CombineFlowMapsCommand.ExecuteAsync(_collections, hexPos, _hexRadius, cancellationToken);
+            await GenerateAndCombineFlowMapsCommand.ExecuteAsync(_flowCalculationCollections, hexPos,_hexRadius, exitNeighbourCheckRequired: false, cancellationToken);
             if (cancellationToken.IsCancellationRequested)
                 return;
 
-            UpdateMap(hexPos);
+            UpdateMapDataAtHex(hexPos);
         }
 
-        private void UpdateMap(NavigationHexPosition hexPos)
+        private void UpdateMapDataAtHex(NavigationHexPosition hexPos)
         {
             for (var i = 0; i < _trianglesPerHex; i++)
             {
-                var pos = _collections.IndexToPos(i);
+                var pos = _flowCalculationCollections.IndexToPos(i);
                 var cellData = _map.GetNavigationCell(pos);
-                cellData.FlowData = _collections.FlowData[i];
+                cellData.FlowData = _flowCalculationCollections.FlowData[i];
                 cellData.HeightData = _cellHeightData[i];
-                cellData.Passability = _collections.PassabilityData[i];
+                cellData.Passability = _flowCalculationCollections.PassabilityData[i];
 
-                _map.UpdateCell(pos, cellData);
+                _map.UpdateNavigationCell(pos, cellData);
             }
 
-            var accessMap = FormHexAccessMapCommand.Execute(_collections, hexPos, _hexRadius);
+            var accessMap = FormHexAccessMapCommand.Execute(_flowCalculationCollections, hexPos, _hexRadius);
 
             var hexCoord = hexPos.HexCoordinate;
 

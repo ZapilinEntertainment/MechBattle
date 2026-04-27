@@ -10,7 +10,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
     public abstract class PathDrawingWizardBase<T> : ScriptableWizard where T: TriangularPathBuilderBase
     {
         public int3 StartPos = new(-2, 2, 1);
-        public int3 EndPos = new(-6, 23, -18);
+        public int3 EndPos = new(11, 14, -26);
 
         protected List<(float3 start, float3 end)> _points = new();
         protected NavigationMap _map;

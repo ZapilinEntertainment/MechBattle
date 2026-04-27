@@ -6,10 +6,11 @@ using UnityEngine;
 
 namespace ZE.MechBattle.Navigation
 {
-    public static class CombineFlowMapsCommand
+    public static class GenerateAndCombineFlowMapsCommand
     {
         private readonly struct Logic : IDisposable
         {
+            private readonly bool _exitNeighbourCheckRequired;
             private readonly NativeArray<FlowFieldCellCalculationData> _calculationData;
             private readonly int _length;
             private readonly int _radius;
@@ -20,7 +21,7 @@ namespace ZE.MechBattle.Navigation
 
             private readonly CombinedFlowMapCellsStorage _compositeMap;
 
-            public Logic(FlowFieldCalculationCollections data, NavigationHexPosition hexPos, int hexRadius)
+            public Logic(FlowFieldCalculationCollections data, NavigationHexPosition hexPos, int hexRadius, bool exitNeighbourCheckRequired)
             {
                 _data = data;
                 _setupData = _data.PassabilityData;
@@ -28,6 +29,7 @@ namespace ZE.MechBattle.Navigation
                 _length = _setupData.Length;
                 _radius = hexRadius;
                 _hexPos = hexPos;
+                _exitNeighbourCheckRequired = exitNeighbourCheckRequired;
 
                 _compositeMap = new CombinedFlowMapCellsStorage(_length, _setupData.GetCoordsConverter());
                 _trianglesInHex = TriangularMath.GetTrianglesCountInHex(_radius);
@@ -43,7 +45,8 @@ namespace ZE.MechBattle.Navigation
                     CalculationQueue = _data.CalculationQueue,
                     QueuedPositions = _data.QueuedPositions,
                     ExitEdge = edge,
-                    TrianglesPerEdge = _radius
+                    TrianglesPerEdge = _radius,
+                    ExitNeighbourPassabilityRequired = _exitNeighbourCheckRequired
                 };
                 return job.ScheduleByRef();
             }
@@ -78,9 +81,10 @@ namespace ZE.MechBattle.Navigation
                FlowFieldCalculationCollections data,
                NavigationHexPosition hexPos,
                int hexRadius,
+               bool exitNeighbourCheckRequired,
                CancellationToken cancellationToken)
         {
-            using var logic = new Logic(data, hexPos, hexRadius);
+            using var logic = new Logic(data, hexPos, hexRadius, exitNeighbourCheckRequired);
 
             for (var e = 0; e < 6; e++)
             {
@@ -103,10 +107,11 @@ namespace ZE.MechBattle.Navigation
 
         public static void Execute(
               FlowFieldCalculationCollections data,
-              NavigationHexPosition hexPos,
-              int hexRadius)
+              NavigationHexPosition hexPos,              
+              int hexRadius,
+              bool exitNeighbourCheckRequired)
         {
-            using var logic = new Logic(data, hexPos, hexRadius);
+            using var logic = new Logic(data, hexPos, hexRadius, exitNeighbourCheckRequired);
             for (var e = 0; e < 6; e++)
             {
                 var edge = (HexEdge)e;

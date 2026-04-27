@@ -27,14 +27,13 @@ namespace ZE.MechBattle.Navigation
             var allocator = Allocator.TempJob;
             var settings = map.Settings;
             using var hexes = GetHexesInRectangleCommand.Execute(settings, allocator);
+            foreach (var hexCoord in hexes)
+            {
+                map.AddHex(hexCoord);
+            }
 
             using var mapUpdater = new MapUpdater(allocator, map);            
-            var mapResourcesAllocator = map.ResourcesAllocator;
-            for (var i = 0; i < hexes.Length; i++)
-            {
-                var hexCoord = hexes[i];
-                mapUpdater.UpdateHex(hexCoord);
-            }
+            mapUpdater.UpdateMapCompletely();
         }
     
     }

@@ -16,7 +16,6 @@ namespace ZE.MechBattle.Navigation
         public float IntersectionPercentForLock;
         public float SubdividedTrianglesCount;
         public sbyte DefaultEntranceCost;
-        public bool UncastedSpaceIsPassable;
         public float MaxElevationDifference;
         private const int NEIGHBOURS_COUNT = NavigationConstants.TRIANGLE_DIRECTIONS_COUNT;
 
@@ -55,9 +54,7 @@ namespace ZE.MechBattle.Navigation
         public void Execute(int index)
         {
             var refinedData = RefinedRaycastData[index];
-
             var isPassable = (refinedData.ObstacledCellsCount / SubdividedTrianglesCount) < IntersectionPercentForLock;
-            //isPassable &= ((refinedData.GroundCastsCount / SubdividedTrianglesCount) >= IntersectionPercentForLock) | UncastedSpaceIsPassable;
 
             var pos = CoordsConverter.IndexToTriangular(index);
             var neighboursAccessMask = 0;
@@ -73,35 +70,7 @@ namespace ZE.MechBattle.Navigation
                 var neighbourAccessible = HeightLogic.AreTrianglesPassable(refinedData, RefinedRaycastData[neighbourIndex], measurePoints[i], MaxElevationDifference);
                 neighboursAccessMask |= neighbourAccessible ? (1 << i) : 0;
             }
-
-
-            var jumpMask = isPeak ? NavigationConstants.PEAK_JUMP_NEIGHBOURS_MASK : NavigationConstants.VALLEY_JUMP_NEIGHBOURS_MASK;
-
-            // optimized by Google AI
-            for (var i = 0; i < NEIGHBOURS_COUNT; i++)
-            {
-                var checkIndex = TriangularMath.GetJumpNeighbourCheckIndex(isPeak, i);
-                int isAccessible = (neighboursAccessMask >> checkIndex) & 1;
-                int bitInJumpMask = (jumpMask >> i) & 1;
-                int shouldClear = bitInJumpMask & (isAccessible ^ 1);
-                neighboursAccessMask &= ~(shouldClear << i);
-            }
-            // original logic :
-            /*
-             *  for (var i = 0; i < NEIGHBOURS_COUNT; i++)
-            {
-                if ((jumpMask & (1 << i)) == 0)
-                    continue;
-
-                var checkIndex = TriangularMath.GetJumpNeighbourCheckIndex(isPeak, i);
-                #if UNITY_EDITOR
-                throw new Exception("jump neighbour check index is incorrect");
-                #endif
-
-                var transitionNeighbourIsAccessible = (neighboursAccessMask & (1 << checkIndex)) != 0;
-                neighboursAccessMask &= ((1 << i) & transitionNeighbourIsAccessible);
-            }
-             */
+            neighboursAccessMask = TrianglesTransitionLogic.CheckMaskForJumpNeighbours(neighboursAccessMask, isPeak);
 
 
             SetupData[index] = new CellPassabilityData(isPassable, neighboursAccessMask, DefaultEntranceCost);
