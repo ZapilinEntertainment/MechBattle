@@ -11,7 +11,18 @@ namespace ZE.MechBattle.Navigation.Tests
     public class HexEdgesTest
     {
         [Test]
-        public void SimpleTest()
+        public void OppositesTest()
+        {
+            Assert.AreEqual(HexEdge.Top, HexEdge.Bottom.ToOpposite(), "bottom opposite failed");
+            Assert.AreEqual(HexEdge.TopRight, HexEdge.BottomLeft.ToOpposite(), "bottom left opposite failed");
+            Assert.AreEqual(HexEdge.BottomRight, HexEdge.TopLeft.ToOpposite(), "top left opposite failed");
+            Assert.AreEqual(HexEdge.Bottom, HexEdge.Top.ToOpposite(), "top opposite failed");
+            Assert.AreEqual(HexEdge.BottomLeft, HexEdge.TopRight.ToOpposite(), "top right opposite failed");
+            Assert.AreEqual(HexEdge.TopLeft, HexEdge.BottomRight.ToOpposite(), "bottom right opposite failed");
+        }
+
+        [Test]
+        public void SimpleEdgeCenterTest()
         {
             var center = new IntTriangularPos(0,0,0);
 
@@ -43,7 +54,7 @@ namespace ZE.MechBattle.Navigation.Tests
         [TestCase(4, 4, 4, 50f)]
         [TestCase(4,4, 4, 25f)]
         [TestCase(-6, -18, 8, 50f)]
-        public void ComplexTest(int hexCenterX, int hexCenterY, int radius, float hexEdge)
+        public void ComplexEdgeCenterTest(int hexCenterX, int hexCenterY, int radius, float hexEdge)
         {
             var hexPos = new NavigationHexPosition(new int2(hexCenterX, hexCenterY), hexEdge, radius);
             var center = hexPos.TriangularCenterPos;
@@ -161,7 +172,8 @@ namespace ZE.MechBattle.Navigation.Tests
             using var jobCollections = new DefineTransitionTrianglesJobCollection(allocator);
             UpdateHexEdgesPassabilityCommand.Execute(map, jobCollections);
             var results = jobCollections.Results;
-
+            // NOTE: It returns only one triangle of neighbour pairs (you can get opposite by direction)
+            // handling will also count both, using only one
 
             if (results.Length == 0)
             {
@@ -171,7 +183,7 @@ namespace ZE.MechBattle.Navigation.Tests
 
             var checkedPositions = new HashSet<IntTriangularPos>(results.Length);
             var resultsHash = new HashSet<IntTriangularPos>(results.Length);
-            for (var i = 0; i < resultsHash.Count; i++)
+            for (var i = 0; i < results.Length; i++)
             {
                 resultsHash.Add(results[i].xyz);
             }
@@ -194,22 +206,22 @@ namespace ZE.MechBattle.Navigation.Tests
             {
                 switch (edge)
                 {
-                    case HexEdge.TopRight: EnumerateEdge<TopRightEdgeEnumerationLogic>(new(trianglesPerEdge, hexPos)); break;
-                    case HexEdge.BottomRight: EnumerateEdge<BottomRightEdgeEnumerationLogic>(new(trianglesPerEdge, hexPos)); break;
-                    case HexEdge.Bottom: EnumerateEdge<BottomEdgeEnumerationLogic>(new(trianglesPerEdge, hexPos)); break;
-                    case HexEdge.BottomLeft: EnumerateEdge<BottomLeftEdgeEnumerationLogic>(new(trianglesPerEdge, hexPos)); break;
-                    case HexEdge.TopLeft: EnumerateEdge<TopLeftEdgeEnumerationLogic>(new(trianglesPerEdge, hexPos)); break;
-                    default: EnumerateEdge<TopEdgeEnumerationLogic>(new (trianglesPerEdge, hexPos)); break;
+                    case HexEdge.TopRight: EnumerateEdge<TopRightEdgeEnumerationLogic>(new(trianglesPerEdge, hexPos), edge); break;
+                    case HexEdge.BottomRight: EnumerateEdge<BottomRightEdgeEnumerationLogic>(new(trianglesPerEdge, hexPos), edge); break;
+                    case HexEdge.Bottom: EnumerateEdge<BottomEdgeEnumerationLogic>(new(trianglesPerEdge, hexPos), edge); break;
+                    case HexEdge.BottomLeft: EnumerateEdge<BottomLeftEdgeEnumerationLogic>(new(trianglesPerEdge, hexPos), edge); break;
+                    case HexEdge.TopLeft: EnumerateEdge<TopLeftEdgeEnumerationLogic>(new(trianglesPerEdge, hexPos), edge); break;
+                    default: EnumerateEdge<TopEdgeEnumerationLogic>(new (trianglesPerEdge, hexPos), edge); break;
                 }
             }
 
-            void EnumerateEdge<T>(EdgeEnumerator<T> enumerator) where T : unmanaged, IEdgeEnumerationLogic
+            void EnumerateEdge<T>(EdgeEnumerator<T> enumerator, HexEdge edge) where T : unmanaged, IEdgeEnumerationLogic
             {
                 foreach (var tripos in enumerator)
                 {
-                    Assert.IsTrue(resultsHash.Contains(tripos), $"{tripos} not found in results");
+                    var dir = tripos.IsPeak ? (int)edge.ToNeighbourDirectionFromPeak() : (int)edge.ToNeighbourDirectionFromValley();
+                    Assert.IsTrue(resultsHash.Contains(tripos) || (resultsHash.Contains(TriangularMath.GetNeighbourByDirection(tripos, dir))), $"{tripos} or its opposite not found in results");
                     checkedPositions.Add(tripos);
-                    //Debug.Log(tripos);
                 }
             }
             
@@ -222,7 +234,7 @@ namespace ZE.MechBattle.Navigation.Tests
                 }
             }
 
-            Assert.AreEqual(results.Length, checkedPositions.Count, "checked and result positions doesnt match");
+            Assert.AreEqual(results.Length * 2, checkedPositions.Count, "checked and result positions doesnt match");
         }
     }
 }

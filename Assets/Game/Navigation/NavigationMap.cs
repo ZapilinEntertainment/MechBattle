@@ -157,7 +157,7 @@ namespace ZE.MechBattle.Navigation
 
         public void UpdateCellPassability(IntTriangularPos pos, CellPassabilityData passabilityData)
         {
-            var cell = _cells[pos];
+            var cell = GetNavigationCell(pos);
             cell.Passability = passabilityData;
             _cells[pos] = cell;
         }

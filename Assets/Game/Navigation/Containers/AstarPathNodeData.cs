@@ -10,12 +10,12 @@ namespace ZE.MechBattle.Navigation
         public readonly T NodeKey;       
 
         public T ParentNodeKey;       
-        public float PathCost;
+        public float CostFromStart;
         public float HeuristicCost;
         public int StepsCount;
         public NavigationNodeStatus Status;      
 
-        public float NodeCost => HeuristicCost + PathCost;
+        public float TotalPathCost => HeuristicCost + CostFromStart;
 
         public AstarPathNodeData(T nodeKey)
         {
@@ -23,7 +23,7 @@ namespace ZE.MechBattle.Navigation
 
             HeuristicCost = 0;
             ParentNodeKey = default;
-            PathCost = 0;
+            CostFromStart = 0;
             StepsCount = 0;
             Status = NavigationNodeStatus.Undefined;
         }

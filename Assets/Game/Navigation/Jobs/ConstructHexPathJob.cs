@@ -1,4 +1,3 @@
-using UnityEngine;
 using Unity.Burst;
 using Unity.Mathematics;
 using Unity.Jobs;
@@ -17,17 +16,16 @@ namespace ZE.MechBattle.Navigation
     [BurstCompile]
     public struct ConstructHexPathJob : IJob
     {
-        [NoAlias,WriteOnly] public NativeList<HexPathNodeKey> ResultingData;
+        [WriteOnly] public NativeList<HexPathNodeKey> ResultingData;
 
         public HexPathNodeKey Start;
         public HexPathNodeKey End;
         public NativeReference<float> PathCost;
        
-        [NoAlias, ReadOnly] public NativeHashMap<int2, HexEdgeNodesData> HexData;
+        [ReadOnly] public NativeHashMap<int2, HexEdgeNodesData> HexData;
         [NoAlias] public NativeHashSet<int> OpenedList;
         [NoAlias] public NativeArray<AstarPathNodeData<HexPathNodeKey>> NavigationData;
 
-        private const int FULL_RESEARCHED_NODE_MASK = 63;
         private const int DEFAULT_PATH_COST = 1;
 
         public void Execute()
@@ -49,7 +47,7 @@ namespace ZE.MechBattle.Navigation
             for (var i = 0; i < NavigationData.Length; i++)
             {
                 var data = NavigationData[i];
-                data.HeuristicCost = HexMath.CalculateDistance(data.NodeKey.HexCoord,Start.HexCoord);
+                data.HeuristicCost = HexMath.CalculateDistance(data.NodeKey.HexCoord,End.HexCoord);
                 NavigationData[i] = data;
             }
 
@@ -58,11 +56,14 @@ namespace ZE.MechBattle.Navigation
             AstarLogic.SetupStartCell(startDataIndex, NavigationData);
             HandleNeighbours(Start);
 
+            //UnityEngine.Debug.Log($"search for {Start} -> {End}");
             do
             {
                 var nextNode = AstarLogic.FindNextNode(OpenedList, NavigationData);
+                //UnityEngine.Debug.Log($"next {nextNode}");
                 if (nextNode.value == End)
                 {
+                    //UnityEngine.Debug.Log($"exit found: {nextNode}");
                     closestNode = End;
                     break;          
                 }
@@ -88,7 +89,7 @@ namespace ZE.MechBattle.Navigation
             var index = GetNodeIndex(finalPos);
             var finalNodeData = NavigationData[index];
             var stepsCount = finalNodeData.StepsCount;
-            PathCost.Value = finalNodeData.PathCost;
+            PathCost.Value = finalNodeData.CostFromStart;
             ResultingData.Resize(stepsCount+1, NativeArrayOptions.UninitializedMemory);
 
             var currentPos = finalPos;

@@ -14,12 +14,12 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
            IntTriangularPos endPos)
         {
             var points = new List<IntTriangularPos>();
-            var startHex = TriangularMath.TriangularToHex(startPos, _map.TriangleHeight, _map.HexEdgeSize);
-            var endHex = TriangularMath.TriangularToHex(endPos, _map.TriangleHeight, _map.HexEdgeSize);
+            var startHexCoord = TriangularMath.TriangularToHex(startPos, _map.TriangleHeight, _map.HexEdgeSize);
+            var endHexCoord = TriangularMath.TriangularToHex(endPos, _map.TriangleHeight, _map.HexEdgeSize);
 
-            if (math.all(startHex == endHex))
+            if (math.all(startHexCoord == endHexCoord))
             {
-                CalculateTrianglePath(startHex, startPos, endPos);
+                CalculateTrianglePath(startHexCoord, startPos, endPos);
                 foreach (var point in _triangularPathJobData.ResultList)
                 {
                     points.Add(point);
@@ -56,7 +56,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
             try
             {
-                CalculateTrianglePath(endHex, prevPos, endPos);
+                CalculateTrianglePath(endHexCoord, prevPos, endPos);
             }
             catch (Exception ex)
             {

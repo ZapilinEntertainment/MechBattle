@@ -27,10 +27,14 @@ namespace ZE.MechBattle.Navigation
         private readonly struct Logic
         {
             public readonly List<HexPathNodeKey> Results;
-            private readonly HexPathJobCollections _hexPathJobData;
+
+            private readonly int DirectHexDistance;
+            private readonly HexEdge DirectPathStartEdge;
 
             private readonly int2 StartHexCoord;
             private readonly int2 EndHexCoord;
+
+            private readonly HexPathJobCollections _hexPathJobData;
 
             private readonly HexEdgesAccessMap StartHexAccessMap;
             private readonly HexEdgesAccessMap EndHexAccessMap;
@@ -48,6 +52,10 @@ namespace ZE.MechBattle.Navigation
 
                 StartHexCoord = TriangularMath.TriangularToHex(start, map.TriangleHeight, map.HexEdgeSize);
                 EndHexCoord = TriangularMath.TriangularToHex(end, map.TriangleHeight, map.HexEdgeSize);
+                
+                DirectHexDistance = HexMath.CalculateDistance(StartHexCoord, EndHexCoord);
+                var dir = math.sign(EndHexCoord - StartHexCoord);
+                DirectPathStartEdge = HexMath.ToHexEdge(dir);
 
                 var startHex = map.GetOrCreateHex(StartHexCoord);
                 var endHex = map.GetOrCreateHex(EndHexCoord);
@@ -65,11 +73,22 @@ namespace ZE.MechBattle.Navigation
             }
 
             public bool IsStartEdgePassable(int edgeIndex) => StartEdgesPassability.IsEdgePresented(edgeIndex);
-            public bool IsEndEdgeOperable(int edgeIndex) => EndEdgesPassability.IsEdgePresented(edgeIndex);
+            public bool IsEndEdgePassable(int edgeIndex) => EndEdgesPassability.IsEdgePresented(edgeIndex);
 
 
-            public ConstructHexPathJob ConstructJob(int startEdgeIndex, int endEdgeIndex) =>
-                new ConstructHexPathJob()
+            public bool TryConstructJob(int startEdgeIndex, int endEdgeIndex, float currentMinCost, out ConstructHexPathJob job)
+            {
+                var startHexEdge = (HexEdge)startEdgeIndex;
+                var endHexEdge = (HexEdge) endEdgeIndex;
+                var directPathLength = DirectHexDistance + HexMath.GetDelta(startHexEdge, DirectPathStartEdge) + HexMath.GetDelta(endHexEdge, DirectPathStartEdge);
+
+                if (directPathLength > currentMinCost)
+                {
+                    job = default;
+                    return false;
+                }                    
+
+                job = new ConstructHexPathJob()
                 {
                     HexData = _hexPathJobData.HexData,
                     NavigationData = _hexPathJobData.NavigationData,
@@ -80,6 +99,9 @@ namespace ZE.MechBattle.Navigation
                     Start = new(StartHexCoord, startEdgeIndex),
                     End = new(EndHexCoord, endEdgeIndex)
                 };
+                return true;
+            }
+                
 
             public float CheckJobResults(in ConstructHexPathJob job, float minCost)
             { 
@@ -95,6 +117,18 @@ namespace ZE.MechBattle.Navigation
                 }
                 return minCost;
             }
+
+            public bool CheckForOneStepPath(out HexPathNodeKey node)
+            {
+                if (DirectHexDistance != 1)
+                {
+                    node = default;
+                    return false;
+                }
+                
+                node = new(StartHexCoord, DirectPathStartEdge);
+                return IsStartEdgePassable((int)DirectPathStartEdge) && IsEndEdgePassable((int)(DirectPathStartEdge.ToOpposite()));
+            }
         }
 
         public static async Task<PathfindResult> ExecuteAsync(
@@ -105,6 +139,9 @@ namespace ZE.MechBattle.Navigation
            CancellationToken cancellationToken)
         {
             var logic = new Logic(hexPathJobData, map, start,end);
+            if (logic.CheckForOneStepPath(out var singleNode))
+                return new(new() { singleNode });
+
             var minCost = float.MaxValue;
             var calculatedPaths = 0;
 
@@ -115,10 +152,12 @@ namespace ZE.MechBattle.Navigation
 
                 for (var endEdge = 0; endEdge < 6; endEdge++)
                 {
-                    if (!logic.IsEndEdgeOperable(endEdge))
+                    if (!logic.IsEndEdgePassable(endEdge))
                         continue;
 
-                    var job = logic.ConstructJob(startEdge, endEdge);
+                    if (!logic.TryConstructJob(startEdge, endEdge, minCost, out var job))
+                        continue;
+
                     var handle = job.ScheduleByRef();
                     while (!handle.IsCompleted)
                     {
@@ -147,9 +186,12 @@ namespace ZE.MechBattle.Navigation
           HexPathJobCollections hexPathJobData)
         {
             var logic = new Logic(hexPathJobData, map, start, end);
+            if (logic.CheckForOneStepPath(out var singleNode))
+                return new(new() { singleNode });
 
             var calculatedPaths = 0;
             var minCost = float.MaxValue;
+            var shortestPathFound = false;
 
             for (var startEdge = 0; startEdge < 6; startEdge++)
             {
@@ -158,18 +200,25 @@ namespace ZE.MechBattle.Navigation
 
                 for (var endEdge = 0; endEdge < 6; endEdge++)
                 {
-                    if (!logic.IsEndEdgeOperable(endEdge))
+                    if (!logic.IsEndEdgePassable(endEdge))
                         continue;
 
-                    var job = logic.ConstructJob(startEdge, endEdge);
+                    if (!logic.TryConstructJob(startEdge, endEdge, minCost, out var job))
+                        continue;
+
                     var handle = job.ScheduleByRef();
                     handle.Complete();
 
                     minCost = logic.CheckJobResults(job, minCost);
                     calculatedPaths++;
                 }
+
+                if (shortestPathFound)
+                    break;
             }
 
+            Debug.Log($"calculatedPaths: {calculatedPaths}, minCost: {minCost} of path: {logic.Results[0]} -> {logic.Results[logic.Results.Count - 1]}");
+            
             if (calculatedPaths == 0)
                 return PathfindResult.Failed;
 

@@ -12,7 +12,7 @@ namespace ZE.MechBattle.Navigation
         public static void SetupStartCell<T>(int startDataIndex, NativeArray<AstarPathNodeData<T>> NavigationData) where T : unmanaged
         {
             var navData = NavigationData[startDataIndex];
-            navData.PathCost = navData.HeuristicCost;
+            navData.CostFromStart = navData.HeuristicCost;
             navData.StepsCount = 0;
             navData.Status = NavigationNodeStatus.Closed;
             NavigationData[startDataIndex] = navData;            
@@ -30,11 +30,11 @@ namespace ZE.MechBattle.Navigation
             if (neighbourData.Status == NavigationNodeStatus.Closed)
                 return;
 
-            var newNeighbourPathCost = activeNodeData.PathCost + pathCost;
+            var newNeighbourPathCost = activeNodeData.CostFromStart + pathCost;
             var updateData = true;
             if (neighbourData.Status == NavigationNodeStatus.Opened)
             {
-                updateData = neighbourData.PathCost > newNeighbourPathCost;
+                updateData = neighbourData.CostFromStart > newNeighbourPathCost;
             }
             else
             {
@@ -44,7 +44,7 @@ namespace ZE.MechBattle.Navigation
 
             if (updateData)
             {
-                neighbourData.PathCost = newNeighbourPathCost;
+                neighbourData.CostFromStart = newNeighbourPathCost;
                 neighbourData.ParentNodeKey = activeNodeData.NodeKey;
                 neighbourData.StepsCount = activeNodeData.StepsCount + 1;
                 NavigationData[neighbourIndex] = neighbourData;
@@ -64,7 +64,7 @@ namespace ZE.MechBattle.Navigation
             foreach (var index in OpenedList)
             {
                 var data = NavigationData[index];
-                var fsum = data.NodeCost;
+                var fsum = data.TotalPathCost;
                 if (fsum < minDist)
                 {
                     minDist = fsum;
