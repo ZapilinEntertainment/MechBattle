@@ -14,14 +14,12 @@ namespace ZE.MechBattle.Ecs
     {
         public World World { get;set; }
         private readonly IUpdatableMap _map;
-        private readonly MapSettingsSO _mapSettings;
         private readonly CancellationTokenSource _tokenSource = new();
 
         [Inject]
-        public NavigationMapInitializer(IUpdatableMap map, MapSettingsSO settings) 
+        public NavigationMapInitializer(IUpdatableMap map) 
         {
             _map = map;            
-            _mapSettings = settings;
         }
 
         public void OnAwake()

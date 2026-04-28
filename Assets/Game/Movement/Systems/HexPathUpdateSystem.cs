@@ -15,7 +15,7 @@ namespace ZE.MechBattle.Ecs
         public World World { get; set; }
 
         private readonly NavigationHexPathsList _pathsList;
-        private NavigationMap _map;
+        private readonly INavigationMap _map;
 
         private Filter _invalidPathsFilter;
         private Filter _noPathEntitiesFilter;
@@ -27,9 +27,10 @@ namespace ZE.MechBattle.Ecs
         private Stash<InvalidHexPathTag> _invalidTags;
         private Stash<CalculatingHexPathComponent> _calculatingComponents;
 
-        public HexPathUpdateSystem(NavigationHexPathsList pathsList)
+        public HexPathUpdateSystem(NavigationHexPathsList pathsList, INavigationMap map)
         {
             _pathsList = pathsList;
+            _map = map;
         }
 
         public void OnAwake()

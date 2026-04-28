@@ -5283,7 +5283,7 @@ MonoBehaviour:
   - {fileID: 779334341}
   - {fileID: 1522614553}
   - {fileID: 1259888751}
-  _mapSettings: {fileID: 0}
+  _mapSettings: {fileID: 11400000, guid: 39c64f95c3d079b47937b0dd6bfa3578, type: 2}
 --- !u!4 &1761267475
 Transform:
   m_ObjectHideFlags: 0

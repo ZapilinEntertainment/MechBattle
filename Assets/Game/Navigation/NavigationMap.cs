@@ -19,8 +19,10 @@ namespace ZE.MechBattle.Navigation
 
     public interface INavigationMap
     {
+        bool IsInitialized { get; }
         bool DefaultPassability { get; }
         int TrianglesPerHexEdge { get; }
+        int Version { get;}
         float TriangleHeight { get; }
         float HexEdgeSize { get; }
         float MaxElevationDifference { get; }

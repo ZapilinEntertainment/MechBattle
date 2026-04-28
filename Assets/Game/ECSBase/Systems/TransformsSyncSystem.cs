@@ -79,7 +79,8 @@ namespace ZE.MechBattle.Ecs {
 
         public void Dispose()
         {
-            _syncTable.Dispose();
+            if (_syncTable.IsCreated)
+                _syncTable.Dispose();
         }
 
         private void IncreaseSyncTableCapacity(int requiredCapacity)

@@ -15,7 +15,7 @@ namespace ZE.MechBattle.Ecs
     {
         public World World { get; set;}
         private readonly NavigationHexPathsList _pathsList;
-        private readonly NavigationMap _map;  
+        private readonly INavigationMap _map;  
 
         private bool _isTrackingActiveHandle = false;
         private int _currentMapVersion;
@@ -24,7 +24,7 @@ namespace ZE.MechBattle.Ecs
         private HexPathJobCollections _jobDataCollection;
 
         [Inject]
-        public HexPathCalculationSystem(NavigationHexPathsList list, NavigationMap map)
+        public HexPathCalculationSystem(NavigationHexPathsList list, INavigationMap map)
         {
             _pathsList = list;
             _map = map;
