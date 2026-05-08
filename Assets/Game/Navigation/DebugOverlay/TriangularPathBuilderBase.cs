@@ -77,7 +77,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         protected IntTriangularPos AddPathTriangles(IntTriangularPos startPos, HexPathNodeKey exitNode, List<IntTriangularPos> points)
         {
             var pos = startPos;
-            var hexCoord = TriangularMath.TriangularToHex(pos, _map.TriangleHeight, _map.HexEdgeSize);
+            var hexCoord = TriangularMath.TriangularToHex(pos, _map.TriangleHeight, _map.HexEdgeLength);
             var exitFound = false;
             points.Add(pos);
 
@@ -154,18 +154,21 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             return _triangularPathJobData;
         }
 
-        protected NavigationHexPosition CreateHexPos(int2 hexCoord) => new(hexCoord, _map.HexEdgeSize, _map.TrianglesPerHexEdge);
+        protected NavigationHexPosition CreateHexPos(int2 hexCoord) => new(hexCoord, _map.HexEdgeLength, _map.TrianglesPerHexEdge);
 
         private bool TryFormRoutePlan(IntTriangularPos startPos, IntTriangularPos endPos, IReadOnlyList<HexPathNodeKey> hexNodes, out RoutePlanPoint[] planPoints)
         {
             var singleTransition = hexNodes.Count == 1;
 
             planPoints = new RoutePlanPoint[hexNodes.Count / 2 + 2];
+
+            var searchDictionary = TryGetHexTransitionTrianglesCommand.PrepareCellsDictionary(_map.TrianglesPerHexEdge);
             var transitionSearchResult = TryGetHexTransitionTrianglesCommand.Execute(
                 _map,
                 hexNodes[0],
                 startPos,
-                singleTransition ? endPos : GetEdgeCenter(hexNodes[1]));
+                singleTransition ? endPos : GetEdgeCenter(hexNodes[1]),
+                searchDictionary);
 
             if (!transitionSearchResult.IsSucceed)
             {
@@ -183,7 +186,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 _map,
                 hexNodes[1],
                 currentStartPos,
-                isLastTransition ? endPos : GetEdgeCenter(hexNodes[i + 1]));
+                isLastTransition ? endPos : GetEdgeCenter(hexNodes[i + 1]),
+                searchDictionary);
 
                 if (!transitionSearchResult.IsSucceed)
                 {

@@ -1,16 +1,17 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
-    public class TriangularPathJobCollections : IDisposable
+    public class TriangularPathJobCollections : IDisposable, IReadOnlyList<IntTriangularPos>
     {
         public NativeArray<AstarPathNodeData<IntTriangularPos>> CalculationData { get; private set; }
         public NativeList<IntTriangularPos> ResultList { get; private set; }
         public NativeHashSet<int> OpenedList { get; private set; }
         public ref FlattenedHexList<CellPassabilityData> PassabilityData => ref _setupData;
-
 
         private FlattenedHexList<CellPassabilityData> _setupData;
         private readonly NativeArray<CellPassabilityData> _setupDataArray;
@@ -41,5 +42,13 @@ namespace ZE.MechBattle.Navigation
             OpenedList.Dispose();
             _rowIndicesArray.Dispose();
         }
+
+        #region IReadonlyList of IntTriangularPos
+        public int Count => ResultList.Length;
+
+        public IntTriangularPos this[int index] => ResultList[index];
+        public IEnumerator<IntTriangularPos> GetEnumerator() => ResultList.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => ResultList.GetEnumerator();
+        #endregion
     }
 }

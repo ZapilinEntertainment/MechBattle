@@ -1,4 +1,5 @@
 using UnityEngine;
+using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle
 {
@@ -8,7 +9,7 @@ namespace ZE.MechBattle
         public static readonly int AimCastMask = LayerMask.GetMask(DEFAULT_LAYER_NAME, GROUND_LAYER_NAME);
         public static readonly int ProjectilesCastMask = LayerMask.GetMask(DEFAULT_LAYER_NAME, GROUND_LAYER_NAME);
 
-        private const string GROUND_LAYER_NAME = "Ground";
+        private const string GROUND_LAYER_NAME = NavigationConstants.WALKABLE_LAYER_NAME;
         private const string DEFAULT_LAYER_NAME = "Default";
     }
 }

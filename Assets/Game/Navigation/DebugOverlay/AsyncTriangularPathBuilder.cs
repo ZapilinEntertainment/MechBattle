@@ -22,8 +22,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             CancellationToken cancellationToken)
         {
             var points = new List<IntTriangularPos>();
-            var startHex = TriangularMath.TriangularToHex(startPos, _map.TriangleHeight, _map.HexEdgeSize);
-            var endHex = TriangularMath.TriangularToHex(endPos, _map.TriangleHeight, _map.HexEdgeSize);
+            var startHex = TriangularMath.TriangularToHex(startPos, _map.TriangleHeight, _map.HexEdgeLength);
+            var endHex = TriangularMath.TriangularToHex(endPos, _map.TriangleHeight, _map.HexEdgeLength);
 
             if (math.all(startHex == endHex))
             {

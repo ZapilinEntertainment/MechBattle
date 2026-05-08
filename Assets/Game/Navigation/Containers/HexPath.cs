@@ -6,26 +6,23 @@ namespace ZE.MechBattle.Navigation
     {
         public readonly HexPathNodeKey[] Points;
         public readonly float Cost;
-        public HexPathNodeKey Start => Points[0];
-        public HexPathNodeKey End => Points[Points.Length - 1];
-        public HexPathKey GetKey() => new(Start,End);
 
         public HexPath(HexPathNodeKey[] pts, float cost) 
         {
             Points = pts;
             Cost = cost;
         }
-    }
 
-    public readonly struct HexPathKey
-    {
-        public readonly HexPathNodeKey Start;
-        public readonly HexPathNodeKey End;
-
-        public HexPathKey(HexPathNodeKey start, HexPathNodeKey end)
+        public bool TryGetNode(int index, out HexPathNodeKey node)
         {
-            Start = start;
-            End = end;
+            if (index < 0 || index > Points.Length)
+            {
+                node = default;
+                return false;
+            }
+            
+            node = Points[index];
+            return true;
         }
     }
 }

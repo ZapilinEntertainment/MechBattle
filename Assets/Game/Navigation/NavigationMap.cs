@@ -24,7 +24,8 @@ namespace ZE.MechBattle.Navigation
         int TrianglesPerHexEdge { get; }
         int Version { get;}
         float TriangleHeight { get; }
-        float HexEdgeSize { get; }
+        float InvertedTriangleHeight => 1f/ TriangleHeight;
+        float HexEdgeLength { get; }
         float MaxElevationDifference { get; }
         IReadOnlyCollection<int2> HexCoords { get; }
         IReadOnlyCollection<INavigationHex> Hexes { get; }
@@ -55,7 +56,7 @@ namespace ZE.MechBattle.Navigation
 
         public bool IsInitialized { get;private set;} = false;
         public bool DefaultPassability => Settings.UnscannedSurfacesArePassable;
-        public float HexEdgeSize => Settings.HexEdgeSize;
+        public float HexEdgeLength => Settings.HexEdgeSize;
         public float TriangleHeight => Settings.TriangleHeight;
         public float TriangleEdgeSize => Settings.TriangleEdgeSize;
         public float MaxElevationDifference => Settings.MaxElevationDifference;
@@ -123,7 +124,7 @@ namespace ZE.MechBattle.Navigation
             return navHex;
         }
 
-        public NavigationHexPosition GetHexData(int2 hexCoord) => new(hexCoord.x, hexCoord.y, HexEdgeSize, TriangleHeight);
+        public NavigationHexPosition GetHexData(int2 hexCoord) => new(hexCoord.x, hexCoord.y, HexEdgeLength, TriangleHeight);
 
         public void Dispose()
         {

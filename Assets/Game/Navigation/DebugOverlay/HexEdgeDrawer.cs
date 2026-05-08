@@ -21,7 +21,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 return;
             }
 
-            var hex = new NavigationHexPosition(hexCoord.x, hexCoord.y, map.HexEdgeSize, map.TriangleHeight);
+            var hex = new NavigationHexPosition(hexCoord.x, hexCoord.y, map.HexEdgeLength, map.TriangleHeight);
             _trianglesPerEdge = map.TrianglesPerHexEdge;
             _triangleHeight = map.TriangleHeight;
 

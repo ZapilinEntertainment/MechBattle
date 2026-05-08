@@ -14,8 +14,8 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
            IntTriangularPos endPos)
         {
             var points = new List<IntTriangularPos>();
-            var startHexCoord = TriangularMath.TriangularToHex(startPos, _map.TriangleHeight, _map.HexEdgeSize);
-            var endHexCoord = TriangularMath.TriangularToHex(endPos, _map.TriangleHeight, _map.HexEdgeSize);
+            var startHexCoord = TriangularMath.TriangularToHex(startPos, _map.TriangleHeight, _map.HexEdgeLength);
+            var endHexCoord = TriangularMath.TriangularToHex(endPos, _map.TriangleHeight, _map.HexEdgeLength);
 
             if (math.all(startHexCoord == endHexCoord))
             {

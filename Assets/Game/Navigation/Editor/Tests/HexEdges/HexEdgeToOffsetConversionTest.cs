@@ -31,7 +31,7 @@ namespace ZE.MechBattle.Navigation.Tests
         {
             foreach (var (expectedEdge, vector) in TestCases)
             {
-                HexEdge result = vector.ToHexEdge();
+                HexEdge result = vector.HexOffsetVectorToEdge();
                 Assert.AreEqual(expectedEdge, result, $"ToHexEdge incorrect for {vector}");
             }
         }
@@ -42,7 +42,7 @@ namespace ZE.MechBattle.Navigation.Tests
             for (int i = 0; i < 6; i++)
             {
                 HexEdge original = (HexEdge)i;
-                HexEdge processed = original.ToHexOffsetVector().ToHexEdge();
+                HexEdge processed = original.ToHexOffsetVector().HexOffsetVectorToEdge();
 
                 Assert.AreEqual(original, processed, $"Double convertation failed {original}");
             }

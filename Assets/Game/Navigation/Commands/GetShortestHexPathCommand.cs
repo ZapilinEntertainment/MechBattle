@@ -8,6 +8,8 @@ using Unity.Jobs;
 
 namespace ZE.MechBattle.Navigation
 {
+    // IMPORTANT: this is a debug search command, game systems use HexPathSearcher. 
+    // TODO: Merge logics
     public static class GetShortestHexPathCommand
     {
         public struct PathfindResult
@@ -50,12 +52,12 @@ namespace ZE.MechBattle.Navigation
             {
                 _hexPathJobData = hexPathJobData;
 
-                StartHexCoord = TriangularMath.TriangularToHex(start, map.TriangleHeight, map.HexEdgeSize);
-                EndHexCoord = TriangularMath.TriangularToHex(end, map.TriangleHeight, map.HexEdgeSize);
+                StartHexCoord = TriangularMath.TriangularToHex(start, map.TriangleHeight, map.HexEdgeLength);
+                EndHexCoord = TriangularMath.TriangularToHex(end, map.TriangleHeight, map.HexEdgeLength);
                 
                 DirectHexDistance = HexMath.CalculateDistance(StartHexCoord, EndHexCoord);
                 var dir = math.sign(EndHexCoord - StartHexCoord);
-                DirectPathStartEdge = HexMath.ToHexEdge(dir);
+                DirectPathStartEdge = HexMath.HexOffsetVectorToEdge(dir);
 
                 var startHex = map.GetOrCreateHex(StartHexCoord);
                 var endHex = map.GetOrCreateHex(EndHexCoord);

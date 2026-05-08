@@ -22,19 +22,19 @@ namespace ZE.MechBattle.Navigation
         { }
 
         public NavigationHexPosition(IntTriangularPos anyHexTriangle, INavigationMap map) :
-            this(hexCoord: TriangularMath.TriangularToHex(anyHexTriangle, map.TriangleHeight, map.HexEdgeSize),
-                hexEdge: map.HexEdgeSize,
+            this(hexCoord: TriangularMath.TriangularToHex(anyHexTriangle, map.TriangleHeight, map.HexEdgeLength),
+                hexEdge: map.HexEdgeLength,
                 triangleHeight: map.TriangleHeight)
         { }
 
         public NavigationHexPosition(HexPathNodeKey hexNode, INavigationMap map) :
             this(hexCoord: hexNode.HexCoord,
-                hexEdge: map.HexEdgeSize,
+                hexEdge: map.HexEdgeLength,
                 triangleHeight: map.TriangleHeight)
         { }
         public NavigationHexPosition(int2 hexCoord, INavigationMap map) :
            this(hexCoord: hexCoord,
-               hexEdge: map.HexEdgeSize,
+               hexEdge: map.HexEdgeLength,
                triangleHeight: map.TriangleHeight)
         { }
 

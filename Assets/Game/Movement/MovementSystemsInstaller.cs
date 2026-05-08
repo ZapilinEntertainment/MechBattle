@@ -10,24 +10,56 @@ namespace ZE.MechBattle.Ecs
     {
         public static void RegisterSystems(IContainerBuilder builder)
         {
-            builder.Register<HexPathUpdateSystem>(Lifetime.Scoped);
-            builder.Register<HexPathCalculationSystem>(Lifetime.Scoped);
-            builder.Register<NavComponentsClearSystem>(Lifetime.Scoped);
+            void RegisterSystem<T>() where T : ISystem => builder.Register<T>(Lifetime.Scoped);
+
+            RegisterSystem<TriangularPosUpdateSystem>();
+            RegisterSystem<NoTargetPathsClearingSystem>();
+
+            RegisterSystem<HexPathUpdateSystem>();
+            RegisterSystem<HexPathCalculationSystem>();
+
+            RegisterSystem<TrianglePathAssignSystem>();
+            RegisterSystem<TrianglePathCalculationSystem>();
+            RegisterSystem<TrianglePathsAccountingSystem>();
+
+            RegisterSystem<TrianglePathWaypointSetSystem>();
+            RegisterSystem<WaypointsMovementSystem>();
+            RegisterSystem<TrianglePathProgressionUpdateSystem>();
+            RegisterSystem<HexPathProgressionUpdateSystem>();
+
+            RegisterSystem<HexPathClearSystem>();
+            RegisterSystem<TrianglePathClearSystem>();
 
             builder.Register<NavigationHexPathsList>(_ => new(), Lifetime.Scoped);
+            builder.Register<NavigationTrianglePathsBuffer>(_ => new(), Lifetime.Scoped);
 
             builder.Register<NavigationMapInitializer>(Lifetime.Transient);
+
+            builder.Register<HexPathSearcher>(Lifetime.Scoped);
+
         }
 
+        // TODO: add triangle path systems
         public static void Install(SystemsResolver resolver)
         {
-            // 1. sets or updates hex-to-hex path (upper nav level)
+            resolver.AddSystem<TriangularPosUpdateSystem>(SystemGroupOrder.RegularUpdate);
+
+            resolver.AddSystem<NoTargetPathsClearingSystem>(SystemGroupOrder.RegularUpdate);
+
             resolver.AddSystem<HexPathUpdateSystem>(SystemGroupOrder.RegularUpdate);
-            // 2 
-            // 3
-            // 4 calculte paths (move to different group!)
             resolver.AddSystem<HexPathCalculationSystem>(SystemGroupOrder.RegularUpdate);
-            // 5 remove nav components on objects with no move target (use clear group!)
+
+            resolver.AddSystem<TrianglePathAssignSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<TrianglePathCalculationSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<TrianglePathsAccountingSystem>(SystemGroupOrder.RegularUpdate);
+
+            resolver.AddSystem<TrianglePathWaypointSetSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<WaypointsMovementSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<TrianglePathProgressionUpdateSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<HexPathProgressionUpdateSystem>(SystemGroupOrder.RegularUpdate);
+
+            resolver.AddSystem<HexPathClearSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<TrianglePathClearSystem>(SystemGroupOrder.RegularUpdate);
 
             resolver.AddInitializer<NavigationMapInitializer>(SystemGroupOrder.Initialization);
         }

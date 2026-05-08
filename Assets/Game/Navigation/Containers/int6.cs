@@ -22,6 +22,16 @@ namespace ZE.MechBattle.Navigation
             this.f6 = f6;
         }
 
+        public int6(int3 a, int3 b)
+        {
+            f1 = a.x;
+            f2 = a.y;
+            f3 = a.z;
+            f4 = b.x;
+            f5 = b.y;
+            f6 = b.z;
+        }
+
         public int6(int x)
         {
             f1 = f2 = f3 = f4 = f5 = f6 = x;

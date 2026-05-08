@@ -45,7 +45,7 @@ namespace ZE.MechBattle.Navigation
             return new EdgePositionsDefineJob()
             {
                 CalculatingNodes = collection.CalculatingNodes,
-                HexEdgeSize = map.HexEdgeSize,
+                HexEdgeSize = map.HexEdgeLength,
                 HexRadius = map.TrianglesPerHexEdge,
                 Results = collection.Results,
                 TrianglesPerNode = collection.TrianglesPerNode

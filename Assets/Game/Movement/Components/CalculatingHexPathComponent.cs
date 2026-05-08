@@ -27,7 +27,7 @@ namespace ZE.MechBattle.Ecs
             UsedPathListVersion = pathListVersion;
         }
 
-        public CalculatingHexPathComponent(in GetSuitablePathKeyCommand.HexPathSearchResultData data)
+        public CalculatingHexPathComponent(in HexPathSearchResultData data)
         {
             StartHex = data.StartHex;
             EndHex = data.EndHex;

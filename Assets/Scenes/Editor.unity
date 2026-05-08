@@ -4064,6 +4064,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1259888753}
   - component: {fileID: 1259888752}
+  - component: {fileID: 1259888754}
   m_Layer: 0
   m_Name: DEVELOP
   m_TagString: Untagged
@@ -4083,9 +4084,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0508f5c1d688d354ba74dc029c8da97f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ZE.MechBattle.DEV_UnitsMoveCommandScript
-  _commandKey: 109
   _center: {x: 0, y: 0, z: 0}
   _radius: 250
+  _manualDefinedTarget: {x: -130, y: 0, z: 206}
 --- !u!4 &1259888753
 Transform:
   m_ObjectHideFlags: 0
@@ -4095,12 +4096,26 @@ Transform:
   m_GameObject: {fileID: 1259888751}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -49.8, y: 0, z: 60.1}
+  m_LocalPosition: {x: -130.2, y: 0, z: 206.8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1259888754
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259888751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 389272dba315e414fbbf293c4412f342, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.UnitsNavigationTracker
+  _data: []
+  _updateEveryTick: 1
 --- !u!1 &1324568865
 GameObject:
   m_ObjectHideFlags: 0

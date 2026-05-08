@@ -9,7 +9,7 @@ namespace ZE.MechBattle.Navigation
     {
 
         [BurstCompile]
-        public static HexEdge ToHexEdge(this int2 vector)
+        public static HexEdge HexOffsetVectorToEdge(this int2 vector)
         {            
             //6=(-1,1)=TopLeft(5)     7=(0,1)=Top(0)
             //3=(-1,0)=BottomLeft(4)  4=(0,0)=X           5=(1,0)=TopRight(1)

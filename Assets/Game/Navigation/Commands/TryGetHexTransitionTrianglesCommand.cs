@@ -5,6 +5,8 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
+    // obsolete - now all edges are recalculate in map updater, and you can simple follow the flow map
+    [Obsolete] 
     public static class TryGetHexTransitionTrianglesCommand
     {
         public readonly struct Result
@@ -23,10 +25,16 @@ namespace ZE.MechBattle.Navigation
             public static Result Failed => new();
         }
 
-        private struct EdgeCellData
+        public struct EdgeCellData
         {
             public bool IsPassable;
             public bool IsExit;
+        }
+
+        public static Dictionary<IntTriangularPos,EdgeCellData> PrepareCellsDictionary(int trianglesPerHexEdge)
+        {
+            var edgeTrianglesCount = TriangularMath.GetTwoRowEdgeTrianglesCount(trianglesPerHexEdge);
+            return new(edgeTrianglesCount * 2);
         }
 
         /// <summary>
@@ -43,13 +51,11 @@ namespace ZE.MechBattle.Navigation
             INavigationMap map,
             HexPathNodeKey startNode,
             IntTriangularPos startPos,
-            IntTriangularPos farEndPos)
+            IntTriangularPos farEndPos,
+            Dictionary<IntTriangularPos, EdgeCellData> cellsDictionary)
         {
-
+            cellsDictionary.Clear();
             var exitNode = startNode.ToOpposite();
-            var edgeTrianglesCount = TriangularMath.GetTwoRowEdgeTrianglesCount(map.TrianglesPerHexEdge);
-            var cellsDictionary = new Dictionary<IntTriangularPos, EdgeCellData>(edgeTrianglesCount * 2);            
-            
             var startHexPos = new NavigationHexPosition(startNode, map);
             FulfillEdgesList(startNode, cellsDictionary, map, false);
 

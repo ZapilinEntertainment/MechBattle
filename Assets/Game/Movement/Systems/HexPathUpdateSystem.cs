@@ -3,6 +3,7 @@ using Unity.Mathematics;
 using VContainer;
 using Scellecs.Morpeh;
 using ZE.MechBattle.Navigation;
+using ZE.MechBattle.Movement;
 
 namespace ZE.MechBattle.Ecs
 {
@@ -16,39 +17,39 @@ namespace ZE.MechBattle.Ecs
 
         private readonly NavigationHexPathsList _pathsList;
         private readonly INavigationMap _map;
+        private readonly HexPathSearcher _hexPathSearcher;
 
-        private Filter _invalidPathsFilter;
         private Filter _noPathEntitiesFilter;
         private Filter _calculatingPathsFilter;
 
         private Stash<MoveTargetComponent> _moveTargets;
         private Stash<PositionComponent> _positions;
-        private Stash<NavHexPathComponent> _hexPaths;
-        private Stash<InvalidHexPathTag> _invalidTags;
+        private Stash<RegularHexPathComponent> _regularHexPaths;
+        private Stash<TransitionHexPathComponent> _transitionHexPaths;
         private Stash<CalculatingHexPathComponent> _calculatingComponents;
+        private Stash<HexPathDefinedTag> _definedTags;
 
-        public HexPathUpdateSystem(NavigationHexPathsList pathsList, INavigationMap map)
+        public HexPathUpdateSystem(NavigationHexPathsList pathsList, INavigationMap map, HexPathSearcher hexPathSearcher)
         {
             _pathsList = pathsList;
             _map = map;
+            _hexPathSearcher = hexPathSearcher;
         }
 
         public void OnAwake()
         {
             _moveTargets = World.GetStash<MoveTargetComponent>();
             _positions = World.GetStash<PositionComponent>();
-            _hexPaths = World.GetStash<NavHexPathComponent>();
-            _invalidTags = World.GetStash<InvalidHexPathTag>();
+            _regularHexPaths = World.GetStash<RegularHexPathComponent>();
+            _transitionHexPaths = World.GetStash<TransitionHexPathComponent>();
             _calculatingComponents = World.GetStash<CalculatingHexPathComponent>();
-
-            _invalidPathsFilter = World.Filter
-                .With<InvalidHexPathTag>()
-                .Build();
+            _definedTags = World.GetStash<HexPathDefinedTag>();
+            
 
             _noPathEntitiesFilter = World.Filter
+                .With<NavigationAgentComponent>()
                 .With<MoveTargetComponent>()
-                .Without<NavHexPathComponent>()
-                .Without<CalculatingHexPathComponent>()
+                .Without<HexPathDefinedTag>()
                 .Build();
 
             _calculatingPathsFilter = World.Filter
@@ -58,42 +59,52 @@ namespace ZE.MechBattle.Ecs
 
         public void OnUpdate(float deltaTime)
         {
-            foreach (var entity in _invalidPathsFilter)
-            {
-                _hexPaths.Remove(entity);
-                _invalidTags.Remove(entity);
-            }
-
             if (!_map.IsInitialized)
                 return;
 
+            AssignHexPathComponents();
+            CheckIfCalculatingPathsAreReady();            
+        }
+
+        public void Dispose() { }
+
+        private void AssignHexPathComponents()
+        {
             foreach (var entity in _noPathEntitiesFilter)
             {
                 var checkResult = CheckForAvailablePaths(entity, out var searchResultData);
 
                 switch (checkResult)
                 {
-                    case GetSuitablePathKeyCommand.HexPathSearchResult.PointsAreInSameHex:
+                    // do nothing - no path needed:
+                    //case HexPathSearchResult.PointsAreInSameHex:
+
+                    case HexPathSearchResult.NoPathFound:
                         {
-                            _hexPaths.Set(entity, new() { IsEmpty = true});
-                            break;
-                        }
-                    case GetSuitablePathKeyCommand.HexPathSearchResult.NoPathFound:
-                        {
-                            // no path found, wait until being calculated (request done inside command)
-                            
+                            // no path found, wait until being calculated                           
                             _calculatingComponents.Set(entity, new(searchResultData));
                             break;
                         }
-                     case GetSuitablePathKeyCommand.HexPathSearchResult.PathFound:
+                    case HexPathSearchResult.PathFound:
                         {
                             // path already calculated
-                            _hexPaths.Set(entity, new() { PathId = searchResultData.PathId, StepIndex = 0 });
+                            _regularHexPaths.Set(entity, new(searchResultData));
+                            break;
+                        }
+                    case HexPathSearchResult.SingleEdgePass:
+                        {
+                            // only 1 edge transition needed
+                            _transitionHexPaths.Set(entity, new(searchResultData.EndHex, searchResultData.ExitEdge));
                             break;
                         }
                 }
+                _definedTags.Add(entity);
+                //Debug.Log(checkResult);
             }
+        }
 
+        private void CheckIfCalculatingPathsAreReady()
+        {
             foreach (var entity in _calculatingPathsFilter)
             {
                 var pathData = _calculatingComponents.Get(entity);
@@ -107,12 +118,12 @@ namespace ZE.MechBattle.Ecs
                     continue;
 
                 var checkResult = CheckForAvailablePaths(entity, out var searchResultData);
-                if (checkResult == GetSuitablePathKeyCommand.HexPathSearchResult.NoPathFound)
+                if (checkResult == HexPathSearchResult.NoPathFound)
                     continue;
 
-                if (checkResult == GetSuitablePathKeyCommand.HexPathSearchResult.PathFound)
+                if (checkResult == HexPathSearchResult.PathFound)
                 {
-                    _hexPaths.Set(entity, new() { PathId = searchResultData.PathId, StepIndex = 0 });
+                    _regularHexPaths.Set(entity, new(searchResultData));
                     _calculatingComponents.Remove(entity);
                 }
                 else
@@ -120,26 +131,21 @@ namespace ZE.MechBattle.Ecs
 #if UNITY_EDITOR
                     Debug.LogWarning("this is not supposed to be!");
 #endif
-
-                    _hexPaths.Set(entity, new() { IsEmpty = true });
+                    // do path request again:
                     _calculatingComponents.Remove(entity);
+                    _definedTags.Remove(entity);
                 }
-
             }
         }
 
-        public void Dispose() { }
-
-        private GetSuitablePathKeyCommand.HexPathSearchResult CheckForAvailablePaths(Entity entity, out GetSuitablePathKeyCommand.HexPathSearchResultData searchResultData)
+        private HexPathSearchResult CheckForAvailablePaths(Entity entity, out HexPathSearchResultData searchResultData)
         {
             var entityPos = _positions.Get(entity).Value;
-            var targetPos = _moveTargets.Get(entity).Value;
+            var targetPos = _moveTargets.Get(entity).WorldPos;
 
-            return GetSuitablePathKeyCommand.TryGetClosestPath(
+            return _hexPathSearcher.TryGetShortestPath(
                 entityPos,
                 targetPos,
-                _map,
-                _pathsList,
                 out searchResultData);
         }
     }

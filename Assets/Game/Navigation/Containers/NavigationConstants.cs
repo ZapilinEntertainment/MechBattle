@@ -56,16 +56,18 @@ namespace ZE.MechBattle.Navigation
             | (1 << (int)ValleyNeighbour.VertexLeft)
             | (1 << (int)ValleyNeighbour.VertexUpLeftValley);
 
+        public const string WALKABLE_LAYER_NAME = "NAV_Walkable";
+        public const string OBSTACLE_LAYER_NAME = "NAV_Obstacle";
 
         public static QueryParameters GetWalkableCastQueryParameters()
         {
-            var layerMask = LayerMask.GetMask("NAV_Walkable");
+            var layerMask = LayerMask.GetMask(WALKABLE_LAYER_NAME);
             return new(layerMask, false, QueryTriggerInteraction.Ignore, false);
         }
 
         public static QueryParameters GetObstacleCastQueryParameters()
         {
-            var layerMask = LayerMask.GetMask("NAV_Obstacle");
+            var layerMask = LayerMask.GetMask(OBSTACLE_LAYER_NAME);
             return new(layerMask, false, QueryTriggerInteraction.Ignore, false);
         }
 

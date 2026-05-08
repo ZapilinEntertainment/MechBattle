@@ -49,11 +49,11 @@ namespace ZE.MechBattle.Ecs
 
                 var points = _jobDataCollection.ResultingData.AsArray().ToArray();
                 var path = new HexPath(points, _jobDataCollection.PathCost.Value);
-                _pathsList.AddCalculatedPath(path);
+                _pathsList.AddCalculatedPath(_calculatingPathKey, path);
 
             }
 
-            if (!_pathsList.TryGetRequestedPath(out var pathKey))
+            if (!_pathsList.TryGetNextRequestedPath(out var pathKey))
                 return;
 
             if (_map.Version != _currentMapVersion)

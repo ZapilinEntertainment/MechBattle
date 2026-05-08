@@ -24,11 +24,11 @@ namespace ZE.MechBattle.Navigation
 
         public void Dispose()
         {
-            HexData.Dispose();
-            OpenedList.Dispose();
-            NavigationData.Dispose();
-            ResultingData.Dispose();
-            PathCost.Dispose();
+            if (HexData.IsCreated) HexData.Dispose();
+            if (OpenedList.IsCreated) OpenedList.Dispose();
+            if (NavigationData.IsCreated) NavigationData.Dispose();
+            if (ResultingData.IsCreated) ResultingData.Dispose();
+            if (PathCost.IsCreated) PathCost.Dispose();
         }
 
         public float GetPathCost(int2 hexCoord, HexEdge edge) => NavigationData[HexData[hexCoord].GetNodeIndex((int)edge)].TotalPathCost;

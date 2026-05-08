@@ -24,7 +24,7 @@ namespace ZE.MechBattle
             void RegisterSystem<T>() where T : class, ISystem => builder.Register<T>(Lifetime.Scoped);
             void RegisterInitializer<T>() where T : class, IInitializer => builder.Register<T>(Lifetime.Transient);
 
-            RegisterInitializer<SceneInitializer>();
+            RegisterInitializer<WorldInitializer>();
             RegisterInitializer<DamageablesInitializer>();
             RegisterInitializer<SceneUnitsInitializer>();
 
@@ -69,7 +69,7 @@ namespace ZE.MechBattle
             void AddSystem<T>(SystemGroupOrder order) where T : class, ISystem => systemResolver.AddSystem<T>(order);
             void AddInitializer<T>(SystemGroupOrder order) where T : class, IInitializer => systemResolver.AddInitializer<T>(order);
 
-            AddInitializer<SceneInitializer>(SystemGroupOrder.Initialization);
+            AddInitializer<WorldInitializer>(SystemGroupOrder.Initialization);
 
             AddInitializer<DamageablesInitializer>(SystemGroupOrder.Default);
             AddInitializer<SceneUnitsInitializer>(SystemGroupOrder.Default);

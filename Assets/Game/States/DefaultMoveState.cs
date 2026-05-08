@@ -31,7 +31,7 @@ namespace ZE.MechBattle.Ecs.States
         public override StateKey Update(Entity entity, float dt)
         {
             var point = TransformAspectHandler.GetPoint(entity);
-            var targetPos = MoveTargets.Get(entity).Value;
+            var targetPos = MoveTargets.Get(entity).WorldPos;
 
             var fwd = math.mul(point.rot, math.forward());
             var dir = targetPos - point.pos;
