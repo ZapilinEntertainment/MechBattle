@@ -58,9 +58,6 @@ namespace ZE.MechBattle.Ecs
         {
             foreach (var entity in _regularPathsFilter)
             {
-                var triangularPath = _flowPaths.Get(entity);
-                var tripos = _triangularPositions.Get(entity).Value;
-
                 var pathComponent = _regularPaths.Get(entity);
                 var pathId = pathComponent.PathId;
                 var pathStepIndex = pathComponent.StepIndex;

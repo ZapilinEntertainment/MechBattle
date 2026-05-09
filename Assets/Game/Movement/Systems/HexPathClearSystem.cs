@@ -8,34 +8,37 @@ namespace ZE.MechBattle.Ecs {
     public sealed class HexPathClearSystem : ICleanupSystem 
     {
         public World World { get; set;}
-        private Filter _requestedFilter;
-        private Filter _noTargetsFilter;
+        private Filter _clearFilter;
 
         private Stash<ClearHexPathTag> _hexClearTags;
-        private Stash<RegularHexPathComponent> _hexPaths;
+        private Stash<RegularHexPathComponent> _regularHexPaths;
+        private Stash<TransitionHexPathComponent> _transitionHexPaths;
         private Stash<ClearTrianglePathTag> _triangleClearTags;
         private Stash<HexPathDefinedTag> _hexPathDefinedTags;
 
         public void OnAwake() 
         {
-            _requestedFilter = World.Filter.With<ClearHexPathTag>().Build();
+            _clearFilter = World.Filter.With<ClearHexPathTag>().Build();
 
             _hexClearTags = World.GetStash<ClearHexPathTag>();
-            _hexPaths = World.GetStash<RegularHexPathComponent>();
+            _regularHexPaths = World.GetStash<RegularHexPathComponent>();
             _triangleClearTags = World.GetStash<ClearTrianglePathTag>();
             _hexPathDefinedTags = World.GetStash<HexPathDefinedTag>();
+            _transitionHexPaths = World.GetStash<TransitionHexPathComponent>();
         }
 
         public void OnUpdate(float deltaTime) 
         {
-            foreach (var entity in _requestedFilter)
+            foreach (var entity in _clearFilter)
             {
-                _hexClearTags.Remove(entity);
-                _triangleClearTags.Set(entity);
-                _hexPaths.Remove(entity);
+                _hexClearTags.Remove(entity);                
+                _regularHexPaths.Remove(entity);
                 _hexPathDefinedTags.Remove(entity);
+                _transitionHexPaths.Remove(entity);
 
-                #if UNITY_EDITOR
+                _triangleClearTags.Set(entity);
+
+#if UNITY_EDITOR
                 var calculatingHexPath = entity.Has<CalculatingHexPathComponent>();
                 var calculatingTrianglePath = entity.Has<CalculatingTrianglePathComponent>();
                 if ( calculatingHexPath | calculatingTrianglePath) 

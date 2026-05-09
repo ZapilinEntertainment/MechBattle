@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
@@ -16,25 +17,43 @@ namespace ZE.MechBattle.Navigation
         private FlattenedHexList<CellPassabilityData> _setupData;
         private readonly NativeArray<CellPassabilityData> _setupDataArray;
         private readonly IDisposable _rowIndicesArray;
+        private readonly Allocator _allocator;
 
         public TriangularPathJobCollections(Allocator allocator, NavigationHexPosition hexPos, in MapSettings mapSettings)
         {
+            _allocator = allocator;
             var hexRadius = mapSettings.TrianglesPerHexEdge;
             var trisCount = TriangularMath.GetTrianglesCountInHex(hexRadius);            
-            ResultList = new(trisCount, allocator);
-            OpenedList = new(trisCount-1, allocator);
+            ResultList = new(trisCount, _allocator);
+            OpenedList = new(trisCount-1, _allocator);
 
-            _rowIndicesArray = FlattenedHexCoordsConverter.CreateCoordsConverter(allocator, hexPos.TriangularCenterPos, mapSettings, out var coordsConverter);
-            _setupDataArray = new NativeArray<CellPassabilityData>(TriangularMath.GetTrianglesCountInHex(hexRadius), allocator);
+            _rowIndicesArray = FlattenedHexCoordsConverter.CreateCoordsConverter(_allocator, hexPos.TriangularCenterPos, mapSettings, out var coordsConverter);
+            _setupDataArray = new NativeArray<CellPassabilityData>(TriangularMath.GetTrianglesCountInHex(hexRadius), _allocator);
             _setupData = new FlattenedHexList<CellPassabilityData>(coordsConverter, _setupDataArray);
 
-            CalculationData = new(_setupData.Length, allocator);
+            CalculationData = new(_setupData.Length, _allocator);
         }
 
         public void ChangeCenter(NavigationHexPosition pos) =>
             _setupData = _setupData.ChangeHexCenter(pos.TriangularCenterPos);
 
         public void Dispose()
+        {
+            #if UNITY_EDITOR
+            try
+            {
+                DisposeResources();
+            }
+            catch 
+            {
+                // collections are disposed before scope (editor-only situation)
+            }
+            #else
+            DisposeResources();
+            #endif            
+        }
+
+        private void DisposeResources()
         {
             _setupDataArray.Dispose();
             CalculationData.Dispose();

@@ -5,6 +5,7 @@ using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
 using Unity.Jobs;
 using Unity.Collections;
+using Unity.Mathematics;
 using VContainer;
 using ZE.MechBattle.Navigation;
 
@@ -43,15 +44,16 @@ namespace ZE.MechBattle.Ecs
         public void Launch(int pathId, IntTriangularPos start, IntTriangularPos end)
         {
             PathId = pathId;
-            var hexPos = new NavigationHexPosition(start, _map);
-            _collections.ChangeCenter(hexPos);
+            ChangeTrianglePathJobSetupDataCommand.Execute(ref _job, _collections, start, _map);
+
             _job.Start = start;
             _job.End = end;
+            
             _activeHandle = _job.ScheduleByRef();
             _isLaunched = true;
             ProcessIteration++;
 
-            UnityEngine.Debug.Log($"launched triangle path calculation: {start} -> {end}");
+            //UnityEngine.Debug.Log($"launched triangle path calculation: {start} -> {end}, {_collections.PassabilityData.TryGetIndex(start, out _)} {_collections.PassabilityData.TryGetIndex(end, out _)}");
         }
 
         public NativeArray<IntTriangularPos> Stop()

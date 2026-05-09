@@ -63,10 +63,9 @@ namespace ZE.MechBattle
                 return HexPathSearchResult.PointsAreInSameHex;
             }
 
-            var dir = endHex - startHex;
-            if (math.lengthsq(dir) == 1)
+            if (HexMath.AreNeighbours(startHex, endHex))
             {
-                var offsetEdge = HexMath.HexOffsetVectorToEdge(math.sign(dir));
+                var offsetEdge = HexMath.HexOffsetVectorToEdge(math.sign(endHex - startHex));                
                 if (startEdgesMask.IsEdgePresented(offsetEdge) && endEdgesMask.IsEdgePresented(offsetEdge.ToOpposite()))
                 {
                     // hexes are neighbours and there is direct edge passage

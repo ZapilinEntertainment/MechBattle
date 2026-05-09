@@ -90,14 +90,15 @@ namespace ZE.MechBattle.Ecs
                 if (math.all(hexCoord == transitionComponent.TargetHex))
                 {
                     // already in target hex
+                    UnityEngine.Debug.Log("single transition: path to final target");
                     RequestTrianglePathCalculationToFinalTarget(entity);
                 }
                 else
                 {
                     // still in start hex
+                    UnityEngine.Debug.Log("single transition: flow map");
                    SetupFlowMapMovement(entity, transitionComponent.TransitionEdge, transitionComponent.TargetHex);
                 }
-                UnityEngine.Debug.Log($"is in target hex {math.all(hexCoord == transitionComponent.TargetHex)}");
             }
 
             // not-neighboured hex path

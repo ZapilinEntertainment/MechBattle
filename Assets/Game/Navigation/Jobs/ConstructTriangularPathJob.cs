@@ -22,11 +22,8 @@ namespace ZE.MechBattle.Navigation
         {
             OpenedList.Clear();
             ResultList.Clear();
-            for (var i = 0; i < CalculationData.Length; i++)
-            {
-                CalculationData[i] = CalculationData[i].Reset();
-            }
 
+            // passability and recalculation data are prepared outside job
 
             if (!PassabilityData.TryGetIndex(Start, out var startTriangleIndex))
             {
@@ -42,7 +39,7 @@ namespace ZE.MechBattle.Navigation
             for (var i = 0; i < CalculationData.Length; i++)
             {
                 var data = CalculationData[i];
-                data.HeuristicCost = TriangularMath.CalculateDistance(data.NodeKey, Start);
+                data.HeuristicCost = TriangularMath.CalculateDistance(data.NodeKey, End);
                 CalculationData[i] = data;
             }
 
@@ -87,11 +84,8 @@ namespace ZE.MechBattle.Navigation
                 if (!PassabilityData[index].IsNeighbourAccessible(neighbourDirection))
                     continue;
 
-                var neighbourPos = TriangularMath.GetNeighbourByDirection(pos, neighbourDirection);
-                var isIndexValid = PassabilityData.TryGetValue(neighbourPos, out var neighbourPassabilityData, out var neighbourIndex);
-                
-                // not passable by default
-                if (!isIndexValid | !neighbourPassabilityData.IsPassable)
+                var neighbourPos = TriangularMath.GetNeighbourByDirection(pos, neighbourDirection);                
+                if (!PassabilityData.TryGetValue(neighbourPos, out var neighbourPassabilityData, out var neighbourIndex))
                     continue;
 
                 var cost = TriangularMath.GetTransitionCost(neighbourDirection, isPeak);

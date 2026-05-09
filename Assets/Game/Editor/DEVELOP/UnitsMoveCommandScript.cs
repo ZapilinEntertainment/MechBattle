@@ -49,6 +49,9 @@ namespace ZE.MechBattle.Develop
             }
         }
 
+        [Button("Move to object")]
+        private void MoveToObject() => SetEntitiesTarget(transform.position);
+
         private void SetEntitiesTarget(float3 pos)
         {
             foreach (var entity in _filter)

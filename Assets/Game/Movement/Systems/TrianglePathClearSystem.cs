@@ -8,29 +8,17 @@ namespace ZE.MechBattle.Ecs {
     public sealed class TrianglePathClearSystem : ICleanupSystem 
     {
         public World World { get; set;}
-        private Filter _clearRegularPathsFilter;
-        private Filter _clearFlowPathsFilter;
-        private Filter _clearCompletedFilter;
+        private Filter _clearFilter;
 
         private Stash<ClearTrianglePathTag> _clearTags;
         private Stash<FlowTrianglePathComponent> _flowPaths;
         private Stash<RegularTrianglePathComponent> _regularPaths;
         private Stash<CompletedTrianglePathTag> _completedTags;
+        private Stash<TrianglePathDefinedTag> _trianglePathDefinedTags;
 
         public void OnAwake() 
         {
-            _clearRegularPathsFilter = World.Filter
-                .With<RegularTrianglePathComponent>()
-                .With<ClearTrianglePathTag>()
-                .Build();
-
-            _clearFlowPathsFilter = World.Filter
-                .With<FlowTrianglePathComponent>()
-                .With< ClearTrianglePathTag>()
-                .Build();
-
-            _clearCompletedFilter = World.Filter
-                .With<CompletedTrianglePathTag>()
+            _clearFilter = World.Filter
                 .With<ClearTrianglePathTag>()
                 .Build();
 
@@ -38,26 +26,18 @@ namespace ZE.MechBattle.Ecs {
             _flowPaths = World.GetStash<FlowTrianglePathComponent>();
             _regularPaths = World.GetStash<RegularTrianglePathComponent>();
             _completedTags = World.GetStash<CompletedTrianglePathTag>();
+            _trianglePathDefinedTags = World.GetStash<TrianglePathDefinedTag>();
         }
 
         public void OnUpdate(float deltaTime) 
         {
-            foreach (var entity in _clearRegularPathsFilter)
-            {
-                _clearTags.Remove(entity);
-                _regularPaths.Remove(entity);
-            }
-
-            foreach (var entity in _clearFlowPathsFilter)
-            {
-                _clearTags.Remove(entity);
-                _flowPaths.Remove(entity);
-            }
-
-            foreach (var entity in _clearCompletedFilter)
+            foreach (var entity in _clearFilter)
             {
                 _completedTags.Remove(entity);
+                _regularPaths.Remove(entity);
+                _flowPaths.Remove(entity);
                 _clearTags.Remove(entity);
+                _trianglePathDefinedTags.Remove(entity);
             }
         }
 
