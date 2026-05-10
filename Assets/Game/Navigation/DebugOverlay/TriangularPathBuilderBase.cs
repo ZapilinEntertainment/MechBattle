@@ -136,6 +136,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 PassabilityData = jobData.PassabilityData,
                 OpenedList = jobData.OpenedList,
                 ResultList = jobData.ResultList,
+                PathCost = jobData.PathCostReference
             };
             return job.ScheduleByRef();
         }

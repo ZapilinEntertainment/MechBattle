@@ -8,7 +8,7 @@ namespace ZE.MechBattle.Ecs
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public sealed class TrianglePathAssignSystem : ISystem 
+    public sealed class TrianglePathDefineSystem : ISystem 
     {
         public World World { get; set;}
         private Filter _regularHexPathUsers;
@@ -27,7 +27,7 @@ namespace ZE.MechBattle.Ecs
 
         private readonly HexPathsLRUBuffer _hexPathsList;
        
-        public TrianglePathAssignSystem(HexPathsLRUBuffer hexPathsList) 
+        public TrianglePathDefineSystem(HexPathsLRUBuffer hexPathsList) 
         {
             _hexPathsList = hexPathsList;
         }
@@ -38,7 +38,7 @@ namespace ZE.MechBattle.Ecs
             _regularHexPathUsers = World.Filter
                 .With<HexPathDefinedTag>()
                 .With<RegularHexPathComponent>()
-                .Without<CalculatingHexPathComponent>()
+                .Without<HexPathSelectRequestComponent>()
                 .Without<TrianglePathDefinedTag>()                
                 .Build();
 

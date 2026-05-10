@@ -3,22 +3,52 @@ using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle
 {
-
-    public class HexPathSearcher
+    public enum HexPathSearchResult : byte
     {
-        private readonly INavigationMap _map;
-        private readonly HexPathsLRUBuffer _hexPathsList;
+        NoPathFound,
+        PointsAreInSameHex,
+        PathFound,
+        SingleEdgePass
+    }
+    // add "Best path found" if all paths are presented?
 
-        public HexPathSearcher(INavigationMap map, HexPathsLRUBuffer hexPathsList)
+    public struct HexPathSearchResultData
+    {
+        public HexPathSearchResult Result;
+
+        public int PathId;
+        public int2 StartHex;
+        public HexEdgesMask StartEdgesMask;
+        public int2 EndHex;
+        public HexEdgesMask EndEdgesMask;
+        public int ListVersion;
+        public int PathNodesCount;
+        public HexEdge ExitEdge;
+    }
+
+    public static class FindShortestHexPathCommand
+    {
+        public struct ExecutionProtocol
         {
-            _map = map;
-            _hexPathsList = hexPathsList;
+            public readonly INavigationMap Map;
+            public readonly HexPathsLRUBuffer HexPathsBuffer;
+            public float3 StartPos;
+            public float3 EndPos;
+            public bool RequestPathBuilding
+
+            public ExecutionProtocol(INavigationMap map, HexPathsLRUBuffer hexPathsBuffer)
+            {
+                Map = map;
+                HexPathsBuffer = hexPathsBuffer;
+            }
+
         }
 
-        public HexPathSearchResult TryGetShortestPath(
+        public HexPathSearchResultData TryGetShortestPath(
+            INavigationMap map,
+            HexPathsLRUBuffer hexPathsBuffer,
             float3 startPos,
             float3 endPos,
-            out HexPathSearchResultData resultData,
             bool requestPathBuilding = true)
         {
             var startHex = HexMath.DefineHex(startPos.xz, _map.HexEdgeLength);
@@ -40,7 +70,7 @@ namespace ZE.MechBattle
 
             if (HexMath.AreNeighbours(startHex, endHex))
             {
-                var offsetEdge = HexMath.HexOffsetVectorToEdge(math.sign(endHex - startHex));                
+                var offsetEdge = HexMath.HexOffsetVectorToEdge(math.sign(endHex - startHex));
                 if (startEdgesMask.IsEdgePresented(offsetEdge) && endEdgesMask.IsEdgePresented(offsetEdge.ToOpposite()))
                 {
                     // hexes are neighbours and there is direct edge passage

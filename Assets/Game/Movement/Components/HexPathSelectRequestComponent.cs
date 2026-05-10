@@ -10,30 +10,27 @@ namespace ZE.MechBattle.Ecs
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public readonly struct CalculatingHexPathComponent : IComponent 
+    public readonly struct HexPathSelectRequestComponent : IComponent 
     {
         public readonly int2 StartHex;
         public readonly int2 EndHex;
         public readonly HexEdgesMask StartEdgesMask;
         public readonly HexEdgesMask EndEdgesMask;
-        public readonly int UsedPathListVersion;
 
-        public CalculatingHexPathComponent(int2 startHex, HexEdgesMask startMask, int2 endHex, HexEdgesMask endMask, int pathListVersion)
+        public HexPathSelectRequestComponent(int2 startHex, HexEdgesMask startMask, int2 endHex, HexEdgesMask endMask)
         {
             StartHex = startHex;
             EndHex = endHex;
             StartEdgesMask = startMask;
             EndEdgesMask = endMask;
-            UsedPathListVersion = pathListVersion;
         }
 
-        public CalculatingHexPathComponent(in HexPathSearchResultData data)
+        public HexPathSelectRequestComponent(in HexPathSearchResultData data)
         {
             StartHex = data.StartHex;
             EndHex = data.EndHex;
             StartEdgesMask = data.StartEdgesMask;
             EndEdgesMask = data.EndEdgesMask;
-            UsedPathListVersion = data.ListVersion;
         }
     }
 }

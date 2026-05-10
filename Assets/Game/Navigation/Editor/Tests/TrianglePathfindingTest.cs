@@ -33,7 +33,8 @@ namespace ZE.MechBattle.Navigation.Tests
                 CalculationData = collections.CalculationData,
                 OpenedList = collections.OpenedList,
                 PassabilityData = collections.PassabilityData,
-                ResultList = collections.ResultList
+                ResultList = collections.ResultList,
+                PathCost = collections.PathCostReference
             };
 
             ChangeTrianglePathJobSetupDataCommand.Execute(ref job, collections, start, map);

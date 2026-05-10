@@ -39,9 +39,8 @@ namespace ZE.MechBattle.Navigation
         void OnInitialized();
         bool ContainsHex(int2 hexCoord);
         bool TryGetHex(int2 hexCoord, out INavigationHex protectedHex);
-        NavigationHexPosition GetHexData(int2 hexCoord);
+        NavigationHexPosition ToHexPosition(int2 hexCoord);
         INavigationHex GetOrCreateHex(int2 hexCoord);
-
        
 
         float3 GetWorldPos(int3 pos);
@@ -89,7 +88,7 @@ namespace ZE.MechBattle.Navigation
 
         public IUpdatableNavigationHex AddHex(int2 hexCoord) 
         { 
-            var hex = new NavigationHex(GetHexData(hexCoord));
+            var hex = new NavigationHex(ToHexPosition(hexCoord));
             _hexes.Add(hexCoord, hex);
             return hex;
         }        
@@ -124,7 +123,7 @@ namespace ZE.MechBattle.Navigation
             return navHex;
         }
 
-        public NavigationHexPosition GetHexData(int2 hexCoord) => new(hexCoord.x, hexCoord.y, HexEdgeLength, TriangleHeight);
+        public NavigationHexPosition ToHexPosition(int2 hexCoord) => new(hexCoord.x, hexCoord.y, HexEdgeLength, TriangleHeight);
 
         public void Dispose()
         {

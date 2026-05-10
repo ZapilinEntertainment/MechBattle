@@ -108,7 +108,7 @@ namespace ZE.MechBattle.Develop
         private Stash<TransitionHexPathComponent> _transitionHexPaths;
         private Stash<HexPathDefinedTag> _hexPathDefinedTags;
         private Stash<ClearHexPathTag> _clearHexPathTags;
-        private Stash<CalculatingHexPathComponent> _calculatingHexPathComponents;
+        private Stash<HexPathSelectRequestComponent> _calculatingHexPathComponents;
 
         private Stash<TrianglePathDefinedTag> _trianglePathDefined;
         private Stash<RegularTrianglePathComponent> _regularTrianglePaths;
@@ -140,7 +140,7 @@ namespace ZE.MechBattle.Develop
             _regularHexPaths = _world.GetStash<RegularHexPathComponent>();
             _transitionHexPaths = world.GetStash<TransitionHexPathComponent>();            
             _clearHexPathTags = _world.GetStash<ClearHexPathTag>();
-            _calculatingHexPathComponents = _world.GetStash<CalculatingHexPathComponent>();
+            _calculatingHexPathComponents = _world.GetStash<HexPathSelectRequestComponent>();
 
             _trianglePathDefined = world.GetStash<TrianglePathDefinedTag>();
             _regularTrianglePaths = world.GetStash<RegularTrianglePathComponent>();

@@ -15,10 +15,10 @@ namespace ZE.MechBattle.Ecs
             RegisterSystem<TriangularPosUpdateSystem>();
             RegisterSystem<NoTargetPathsClearingSystem>();
 
-            RegisterSystem<HexPathAssignSystem>();
+            RegisterSystem<HexPathDefineSystem>();
             RegisterSystem<HexPathCalculationSystem>();
 
-            RegisterSystem<TrianglePathAssignSystem>();
+            RegisterSystem<TrianglePathDefineSystem>();
             RegisterSystem<TrianglePathCalculationSystem>();
             RegisterSystem<PathsAccountingSystem>();
 
@@ -34,9 +34,6 @@ namespace ZE.MechBattle.Ecs
             builder.Register<TrianglePathsLRUBuffer>(_ => new(), Lifetime.Scoped);
 
             builder.Register<NavigationMapInitializer>(Lifetime.Transient);
-
-            builder.Register<HexPathSearcher>(Lifetime.Scoped);
-
         }
 
         // TODO: add triangle path systems
@@ -46,10 +43,10 @@ namespace ZE.MechBattle.Ecs
 
             resolver.AddSystem<NoTargetPathsClearingSystem>(SystemGroupOrder.RegularUpdate);
 
-            resolver.AddSystem<HexPathAssignSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<HexPathDefineSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<HexPathCalculationSystem>(SystemGroupOrder.RegularUpdate);
 
-            resolver.AddSystem<TrianglePathAssignSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<TrianglePathDefineSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<TrianglePathCalculationSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<PathsAccountingSystem>(SystemGroupOrder.RegularUpdate);
 

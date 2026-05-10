@@ -12,15 +12,15 @@ namespace ZE.MechBattle.Ecs
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public struct RegularHexPathComponent : IComponent 
     {
-        public int PathId;
-        public int StepIndex;    
-        public int StepsCount;
+        public readonly int PathId;
+        public readonly int StepsCount;
+        public int StepIndex;   
 
-        public RegularHexPathComponent(HexPathSearchResultData searchData)
+        public RegularHexPathComponent(int pathId,  int stepsCount)
         {
-            PathId = searchData.PathId;
+            PathId = pathId;
             StepIndex = 0;
-            StepsCount = searchData.PathNodesCount;
+            StepsCount = stepsCount;
         }
     }
 }

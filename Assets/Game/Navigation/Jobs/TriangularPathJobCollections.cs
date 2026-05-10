@@ -12,6 +12,7 @@ namespace ZE.MechBattle.Navigation
         public NativeArray<AstarPathNodeData<IntTriangularPos>> CalculationData { get; private set; }
         public NativeList<IntTriangularPos> ResultList { get; private set; }
         public NativeHashSet<int> OpenedList { get; private set; }
+        public NativeReference<float> PathCostReference { get; private set; }
         public ref FlattenedHexList<CellPassabilityData> PassabilityData => ref _setupData;
 
         private FlattenedHexList<CellPassabilityData> _setupData;
@@ -26,6 +27,7 @@ namespace ZE.MechBattle.Navigation
             var trisCount = TriangularMath.GetTrianglesCountInHex(hexRadius);            
             ResultList = new(trisCount, _allocator);
             OpenedList = new(trisCount-1, _allocator);
+            PathCostReference = new(_allocator);
 
             _rowIndicesArray = FlattenedHexCoordsConverter.CreateCoordsConverter(_allocator, hexPos.TriangularCenterPos, mapSettings, out var coordsConverter);
             _setupDataArray = new NativeArray<CellPassabilityData>(TriangularMath.GetTrianglesCountInHex(hexRadius), _allocator);
@@ -60,6 +62,7 @@ namespace ZE.MechBattle.Navigation
             ResultList.Dispose();
             OpenedList.Dispose();
             _rowIndicesArray.Dispose();
+            PathCostReference.Dispose();
         }
 
         #region IReadonlyList of IntTriangularPos

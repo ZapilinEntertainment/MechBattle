@@ -17,11 +17,13 @@ namespace ZE.MechBattle.Navigation
         [NoAlias] public NativeArray<AstarPathNodeData<IntTriangularPos>> CalculationData;
         [NoAlias] public NativeList<IntTriangularPos> ResultList;
         [NoAlias] public NativeHashSet<int> OpenedList;
+        public NativeReference<float> PathCost;
 
         public void Execute()
         {
             OpenedList.Clear();
             ResultList.Clear();
+            PathCost.Value = 0f;
 
             // passability and recalculation data are prepared outside job
 
@@ -95,11 +97,13 @@ namespace ZE.MechBattle.Navigation
 
         private void BuildPath(IntTriangularPos finalPos)
         {
-            var index = PassabilityData.TriangularToIndex(finalPos);
-            var finalNodeData = CalculationData[index];
+            var finalIndex = PassabilityData.TriangularToIndex(finalPos);
+            var finalNodeData = CalculationData[finalIndex];
             var stepsCount = finalNodeData.StepsCount;
             //PathCost.Value = finalNodeData.PathCost;
             ResultList.Resize(stepsCount + 1, NativeArrayOptions.UninitializedMemory);
+
+            PathCost.Value = CalculationData[finalIndex].CostFromStart;
 
             var currentPos = finalPos;
             var i = stepsCount;

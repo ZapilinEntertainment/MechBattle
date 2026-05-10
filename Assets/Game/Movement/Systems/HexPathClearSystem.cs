@@ -15,6 +15,7 @@ namespace ZE.MechBattle.Ecs {
         private Stash<TransitionHexPathComponent> _transitionHexPaths;
         private Stash<ClearTrianglePathTag> _triangleClearTags;
         private Stash<HexPathDefinedTag> _hexPathDefinedTags;
+        private Stash<EmptyHexPathTag> _emptyHexPaths;
 
         public void OnAwake() 
         {
@@ -25,6 +26,7 @@ namespace ZE.MechBattle.Ecs {
             _triangleClearTags = World.GetStash<ClearTrianglePathTag>();
             _hexPathDefinedTags = World.GetStash<HexPathDefinedTag>();
             _transitionHexPaths = World.GetStash<TransitionHexPathComponent>();
+            _emptyHexPaths = World.GetStash<EmptyHexPathTag>();
         }
 
         public void OnUpdate(float deltaTime) 
@@ -35,11 +37,12 @@ namespace ZE.MechBattle.Ecs {
                 _regularHexPaths.Remove(entity);
                 _hexPathDefinedTags.Remove(entity);
                 _transitionHexPaths.Remove(entity);
+                _emptyHexPaths.Remove(entity);
 
                 _triangleClearTags.Set(entity);
 
 #if UNITY_EDITOR
-                var calculatingHexPath = entity.Has<CalculatingHexPathComponent>();
+                var calculatingHexPath = entity.Has<HexPathSelectRequestComponent>();
                 var calculatingTrianglePath = entity.Has<CalculatingTrianglePathComponent>();
                 if ( calculatingHexPath | calculatingTrianglePath) 
                     UnityEngine.Debug.LogError($"calculating hex path: {calculatingHexPath}, calculating tris path: {calculatingTrianglePath}");
@@ -49,9 +52,6 @@ namespace ZE.MechBattle.Ecs {
             }
         }
 
-        public void Dispose()
-        {
-
-        }
+        public void Dispose() { }
     }
 }

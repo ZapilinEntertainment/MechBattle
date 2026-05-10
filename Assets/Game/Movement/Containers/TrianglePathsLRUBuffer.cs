@@ -8,7 +8,7 @@ using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle.Ecs
 {
-    public class TrianglePathsLRUBuffer : ClearableLRUPathsBuffer<Entity, IntTriangularPos>
+    public class TrianglePathsLRUBuffer : UserCountDependentLRUPathsBuffer<Entity, IntTriangularPos>
     {
 
         protected override bool TryFormPathData(in NativeArray<IntTriangularPos> positions, out PathData<IntTriangularPos> pathData)

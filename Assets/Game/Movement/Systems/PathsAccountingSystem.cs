@@ -29,7 +29,7 @@ namespace ZE.MechBattle.Ecs {
         {
             _activePathUsersFilter = World.Filter
                 .With<FlowTrianglePathComponent>()
-                .Without<CalculatingHexPathComponent>()
+                .Without<HexPathSelectRequestComponent>()
                 .Build();
 
             _trianglePaths = World.GetStash<RegularTrianglePathComponent>();

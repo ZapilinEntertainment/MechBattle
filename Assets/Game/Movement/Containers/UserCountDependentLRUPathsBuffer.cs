@@ -8,14 +8,14 @@ using UnityEngine;
 namespace ZE.MechBattle
 {
     // stores path while they are in use, trim by TrimController external calls (without losing active data)
-    public abstract class ClearableLRUPathsBuffer<UserKey, NodeKey>  where NodeKey : unmanaged
+    public abstract class UserCountDependentLRUPathsBuffer<UserKey, NodeKey> : IPathsList<NodeKey>  where NodeKey : unmanaged
     {
         public class TrimController
         {
             private readonly Dictionary<int, int> _usersCount = new();
-            private readonly ClearableLRUPathsBuffer<UserKey, NodeKey> _buffer;
+            private readonly UserCountDependentLRUPathsBuffer<UserKey, NodeKey> _buffer;
 
-            public TrimController(ClearableLRUPathsBuffer<UserKey, NodeKey> buffer)
+            public TrimController(UserCountDependentLRUPathsBuffer<UserKey, NodeKey> buffer)
             {
                 _buffer = buffer;
             }
@@ -66,9 +66,9 @@ namespace ZE.MechBattle
         public TrimController CreateClearController() => new(this);
         public bool IsPathExists(int pathId) => _paths.ContainsKey(pathId);
         public bool TryGetPath(int pathId, out PathData<NodeKey> data) => _paths.TryGetValue(pathId, out data);
-        public bool TryGetPathByEndpoints(NodeKey start, NodeKey end, out PathData<NodeKey> pathData)
+        public bool TryGetPathByEndpoints(NodeKey start, NodeKey end, out int pathId, out PathData<NodeKey> pathData)
         {
-            if (!DestinationsToPathId.TryGetValue(new(start, end), out var pathId))
+            if (!DestinationsToPathId.TryGetValue(new(start, end), out pathId))
             {
                 pathData = default;
                 return false;
@@ -94,28 +94,28 @@ namespace ZE.MechBattle
 
         public void OnPathUserLeft(UserKey user) => _userToPathId.Remove(user);
 
-        public int RegisterNewPath(in NativeArray<NodeKey> positions)
+        public int RegisterNewPath(CalculatedPathData<NodeKey> calculatedData)
         {
             var pathId = _nextPathId++;
-            FulfillReservedPath(pathId, positions);
+            FulfillReservedPath(pathId, calculatedData);
             return pathId;
         }
 
         public int ReservePathId() => _nextPathId++;
-        public void FulfillReservedPath(int pathId, in NativeArray<NodeKey> positions)
+        public void FulfillReservedPath(int pathId, CalculatedPathData<NodeKey> calculatedData)
         {
 #if UNITY_EDITOR
             if (_paths.ContainsKey(pathId))
-                Debug.LogError("reserved path place is already occupied");
+                Debug.LogError("reserved path index is already occupied");
 #endif
 
-            if (!TryFormPathData(positions, out var pathData))
+            if (!TryFormPathData(calculatedData, out var pathData))
                 return;
 
             _paths[pathId] = pathData;
             _endpointsToPathId[pathData.GetDestinationKey()] = pathId;
         }
-        abstract protected bool TryFormPathData(in NativeArray<NodeKey> positions, out PathData<NodeKey> pathData);
+        abstract protected bool TryFormPathData(CalculatedPathData<NodeKey> calculatedData, out PathData<NodeKey> pathData);
 
         private void RemovePath(int pathId)
         {
@@ -126,5 +126,7 @@ namespace ZE.MechBattle
             _endpointsToPathId.Remove(destinationKey);
         }
 
+        void IPathsList<NodeKey>.AddCalculatedPath(int pathKey, CalculatedPathData<NodeKey> calculatedData) => 
+            FulfillReservedPath(pathKey, calculatedData);
     }
 }

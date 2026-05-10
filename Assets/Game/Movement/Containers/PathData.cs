@@ -5,21 +5,23 @@ namespace ZE.MechBattle
 {
     public class PathData<NodeKey> where NodeKey : unmanaged
     {
+        public readonly float PathCost;
         public readonly NodeKey[] Points;
-        public int Length => Points.Length;
+        public int NodesCount => Points.Length;
         public float LastUseTime { get; private set; }
 
-        public (NodeKey, NodeKey) GetDestinationKey() => new(Points[0], Points[Length - 1]);
+        public (NodeKey, NodeKey) GetDestinationKey() => new(Points[0], Points[NodesCount - 1]);
 
-        public PathData(in NativeArray<NodeKey> readList)
+        public PathData(NativeArray<NodeKey>.ReadOnly readList, float pathCost)
         {
             Points = readList.ToArray();
+            PathCost = pathCost;
             LastUseTime = Time.time;
         }
 
         public bool TryGetTriangle(int stepIndex, out NodeKey pos)
         {
-            if (stepIndex < 0 || stepIndex >= Length)
+            if (stepIndex < 0 || stepIndex >= NodesCount)
             {
                 pos = default;
                 return false;
@@ -33,7 +35,7 @@ namespace ZE.MechBattle
 
         public bool TryGetNode(int index, out NodeKey node)
         {
-            if (index < 0 || index >= Length)
+            if (index < 0 || index >= NodesCount)
             {
                 node = default;
                 return false;
