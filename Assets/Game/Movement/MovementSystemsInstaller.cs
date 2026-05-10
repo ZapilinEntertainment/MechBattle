@@ -15,12 +15,12 @@ namespace ZE.MechBattle.Ecs
             RegisterSystem<TriangularPosUpdateSystem>();
             RegisterSystem<NoTargetPathsClearingSystem>();
 
-            RegisterSystem<HexPathUpdateSystem>();
+            RegisterSystem<HexPathAssignSystem>();
             RegisterSystem<HexPathCalculationSystem>();
 
             RegisterSystem<TrianglePathAssignSystem>();
             RegisterSystem<TrianglePathCalculationSystem>();
-            RegisterSystem<TrianglePathsAccountingSystem>();
+            RegisterSystem<PathsAccountingSystem>();
 
             RegisterSystem<TrianglePathWaypointSetSystem>();
             RegisterSystem<WaypointsMovementSystem>();
@@ -30,8 +30,8 @@ namespace ZE.MechBattle.Ecs
             RegisterSystem<HexPathClearSystem>();
             RegisterSystem<TrianglePathClearSystem>();
 
-            builder.Register<NavigationHexPathsList>(_ => new(), Lifetime.Scoped);
-            builder.Register<NavigationTrianglePathsBuffer>(_ => new(), Lifetime.Scoped);
+            builder.Register<HexPathsLRUBuffer>(_ => new(), Lifetime.Scoped);
+            builder.Register<TrianglePathsLRUBuffer>(_ => new(), Lifetime.Scoped);
 
             builder.Register<NavigationMapInitializer>(Lifetime.Transient);
 
@@ -46,12 +46,12 @@ namespace ZE.MechBattle.Ecs
 
             resolver.AddSystem<NoTargetPathsClearingSystem>(SystemGroupOrder.RegularUpdate);
 
-            resolver.AddSystem<HexPathUpdateSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<HexPathAssignSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<HexPathCalculationSystem>(SystemGroupOrder.RegularUpdate);
 
             resolver.AddSystem<TrianglePathAssignSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<TrianglePathCalculationSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<TrianglePathsAccountingSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<PathsAccountingSystem>(SystemGroupOrder.RegularUpdate);
 
             resolver.AddSystem<TrianglePathWaypointSetSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<WaypointsMovementSystem>(SystemGroupOrder.RegularUpdate);

@@ -23,10 +23,10 @@ namespace ZE.MechBattle.Ecs
 
         private readonly float _triangleHeight;
         private readonly INavigationMap _map;
-        private readonly NavigationTrianglePathsBuffer _trianglePathsBuffer;
+        private readonly TrianglePathsLRUBuffer _trianglePathsBuffer;
 
         [Inject]
-        public TrianglePathWaypointSetSystem(INavigationMap map, NavigationTrianglePathsBuffer trianglePathsBuffer)
+        public TrianglePathWaypointSetSystem(INavigationMap map, TrianglePathsLRUBuffer trianglePathsBuffer)
         {
             _map = map;
             _trianglePathsBuffer = trianglePathsBuffer;

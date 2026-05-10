@@ -31,6 +31,17 @@ namespace ZE.MechBattle.Navigation.Tests
                 Assert.AreEqual((mask & (1 << i)) == 0, true);
             }
         }
+
+        [TestCase(-1,1,  1,0)]
+        public void PathTest(
+            int startCoordX, int startCoordY, 
+            int endCoordX, int endCoordY)
+        {
+            var startCoord = new int2(startCoordX, startCoordY);
+            var endCoord = new int2(endCoordX, endCoordY);
+
+            
+        }
     }
 }
 

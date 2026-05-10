@@ -28,13 +28,13 @@ namespace ZE.MechBattle
     {
         private readonly HexPathShortData[] _cacheArray = new HexPathShortData[MAX_PATHS_COUNT];
         private readonly INavigationMap _map;
-        private readonly NavigationHexPathsList _hexPathsList;
+        private readonly HexPathsLRUBuffer _hexPathsList;
 
         private const int MAX_PATHS_COUNT = 36;
 
         
 
-        public HexPathSearcher(INavigationMap map, NavigationHexPathsList hexPathsList)
+        public HexPathSearcher(INavigationMap map, HexPathsLRUBuffer hexPathsList)
         {
             _map = map;
             _hexPathsList = hexPathsList;
@@ -75,6 +75,7 @@ namespace ZE.MechBattle
                 }
             }
 
+            // todo: rework it
             var pathsCount = 0;
             for (var startEdge = 0; startEdge < 6; startEdge++)
             {

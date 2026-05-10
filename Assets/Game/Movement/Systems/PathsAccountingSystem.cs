@@ -7,19 +7,19 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public sealed class TrianglePathsAccountingSystem : ISystem 
+    public sealed class PathsAccountingSystem : ISystem 
     {
         public World World { get; set;}
         private Filter _activePathUsersFilter;
         private HashSet<Entity> _activePathUsers = new();
         private List<Entity> _clearUsersList = new();
         private Stash<RegularTrianglePathComponent> _trianglePaths;
-        private readonly NavigationTrianglePathsBuffer _pathsBuffer;
-        private readonly NavigationTrianglePathsBuffer.BufferClearController _bufferClearController;
+        private readonly TrianglePathsLRUBuffer _pathsBuffer;
+        private readonly TrianglePathsLRUBuffer.Tim _bufferClearController;
         private const int MIN_CACHED_PATHS = 32;
 
         [Inject]
-        public TrianglePathsAccountingSystem(NavigationTrianglePathsBuffer navigationTrianglePathsBuffer)
+        public PathsAccountingSystem(TrianglePathsLRUBuffer navigationTrianglePathsBuffer)
         {
             _pathsBuffer = navigationTrianglePathsBuffer;
             _bufferClearController = _pathsBuffer.CreateClearController();

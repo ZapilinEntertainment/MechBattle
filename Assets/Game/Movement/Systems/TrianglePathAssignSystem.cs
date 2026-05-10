@@ -25,9 +25,9 @@ namespace ZE.MechBattle.Ecs
         private Stash<TrianglePathDefinedTag> _trianglePathDefined;
         private Stash<TransitionHexPathComponent> _transitionHexPathComponents;
 
-        private readonly NavigationHexPathsList _hexPathsList;
+        private readonly HexPathsLRUBuffer _hexPathsList;
        
-        public TrianglePathAssignSystem(NavigationHexPathsList hexPathsList) 
+        public TrianglePathAssignSystem(HexPathsLRUBuffer hexPathsList) 
         {
             _hexPathsList = hexPathsList;
         }
@@ -139,6 +139,7 @@ namespace ZE.MechBattle.Ecs
 
         private void SetupFlowMapMovement(Entity entity, HexEdge exitEdge, int2 nextHexCoord)
         {
+            //UnityEngine.Debug.Log($"flow movement to {nextHexCoord}:{exitEdge}");
             _flowPaths.Set(entity, new(exitEdge, nextHexCoord));
             _trianglePathDefined.Add(entity);
         }

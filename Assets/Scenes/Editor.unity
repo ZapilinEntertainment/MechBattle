@@ -4086,7 +4086,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ZE.MechBattle.DEV_UnitsMoveCommandScript
   _center: {x: 0, y: 0, z: 0}
   _radius: 250
-  _manualDefinedTarget: {x: -130, y: 0, z: 206}
+  _manualDefinedTarget: {x: 187.9, y: 0, z: 142.5}
 --- !u!4 &1259888753
 Transform:
   m_ObjectHideFlags: 0
@@ -4096,7 +4096,7 @@ Transform:
   m_GameObject: {fileID: 1259888751}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -130.2, y: 0, z: 142.5}
+  m_LocalPosition: {x: 187.9, y: 0, z: 142.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

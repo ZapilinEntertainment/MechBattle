@@ -97,8 +97,8 @@ namespace ZE.MechBattle.Develop
 
         private World _world;
         private Filter _filter;
-        private NavigationHexPathsList _hexPathsList;
-        private NavigationTrianglePathsBuffer _trianglePathsBuffer;
+        private HexPathsLRUBuffer _hexPathsList;
+        private TrianglePathsLRUBuffer _trianglePathsBuffer;
         private INavigationMap _map;
 
         private Stash<MoveTargetComponent> _moveTargets;
@@ -123,8 +123,8 @@ namespace ZE.MechBattle.Develop
         [Inject]
         public void Inject(
             World world, 
-            NavigationHexPathsList hexPathsList, 
-            NavigationTrianglePathsBuffer trianglePathsBuffer,
+            HexPathsLRUBuffer hexPathsList, 
+            TrianglePathsLRUBuffer trianglePathsBuffer,
             INavigationMap map)
         {
             _world = world;

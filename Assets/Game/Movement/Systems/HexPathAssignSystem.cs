@@ -7,15 +7,11 @@ using ZE.MechBattle.Movement;
 
 namespace ZE.MechBattle.Ecs
 {
-    // TODO: divide into 3 systems, which one of different group
-    // 1) remove components of invalidized paths - clear group
-    // 2) sets path keys for existing paths - fixed update
-    // 3) check if paths are calculated for awaiting paths - after calculation system
-    public class HexPathUpdateSystem : ISystem
+    public class HexPathAssignSystem : ISystem
     {
         public World World { get; set; }
 
-        private readonly NavigationHexPathsList _pathsList;
+        private readonly HexPathsLRUBuffer _pathsList;
         private readonly INavigationMap _map;
         private readonly HexPathSearcher _hexPathSearcher;
 
@@ -29,7 +25,7 @@ namespace ZE.MechBattle.Ecs
         private Stash<CalculatingHexPathComponent> _calculatingComponents;
         private Stash<HexPathDefinedTag> _definedTags;
 
-        public HexPathUpdateSystem(NavigationHexPathsList pathsList, INavigationMap map, HexPathSearcher hexPathSearcher)
+        public HexPathAssignSystem(HexPathsLRUBuffer pathsList, INavigationMap map, HexPathSearcher hexPathSearcher)
         {
             _pathsList = pathsList;
             _map = map;
@@ -82,6 +78,7 @@ namespace ZE.MechBattle.Ecs
                     case HexPathSearchResult.NoPathFound:
                         {
                             // no path found, wait until being calculated                           
+                            Debug.Log("hex path calculation");
                             _calculatingComponents.Set(entity, new(searchResultData));
                             break;
                         }

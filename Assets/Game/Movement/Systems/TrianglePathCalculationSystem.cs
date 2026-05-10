@@ -23,7 +23,7 @@ namespace ZE.MechBattle.Ecs
         private Stash<TrianglePathProcessingComponent> _processingComponents;
 
         private readonly INavigationMap _map;
-        private readonly NavigationTrianglePathsBuffer _pathsBuffer;
+        private readonly TrianglePathsLRUBuffer _pathsBuffer;
         private readonly TrianglePathCalculationProcess[] _calculationProcesses;
         private readonly HashSet<int> _processingPaths = new();
 
@@ -31,7 +31,7 @@ namespace ZE.MechBattle.Ecs
         private const int MAX_PARALLEL_CALCULATIONS = 4;        
 
         [Inject]
-        public TrianglePathCalculationSystem(INavigationMap map, NavigationTrianglePathsBuffer pathsBuffer)
+        public TrianglePathCalculationSystem(INavigationMap map, TrianglePathsLRUBuffer pathsBuffer)
         {
             _map = map;
             _calculationProcesses = new TrianglePathCalculationProcess[MAX_PARALLEL_CALCULATIONS];
