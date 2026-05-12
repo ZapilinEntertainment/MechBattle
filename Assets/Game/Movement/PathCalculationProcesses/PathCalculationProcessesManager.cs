@@ -1,24 +1,9 @@
 using System;
+using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle
 {
-    public readonly struct PathCalculationProcessToken
-    {
-        public readonly bool IsValid;
-        public readonly int PathId;
-        public readonly int ProcessIndex;
-        public readonly int ProcessIteration;
-
-        public PathCalculationProcessToken(int pathId, int processIndex, int processIteration)
-        {
-            PathId = pathId;
-            ProcessIndex = processIndex;
-            ProcessIteration = processIteration;
-            IsValid = true;
-        }
-    }
-
-    public class PathCalculationProcessesManager<NodeKey> : IDisposable where NodeKey : unmanaged
+    public abstract class PathCalculationProcessesManager<NodeKey> : IDisposable where NodeKey : unmanaged
     {
         private readonly PathCalculationProcess<NodeKey>[] _processes;
         private readonly IPathsList<NodeKey> _pathsList;
@@ -73,6 +58,12 @@ namespace ZE.MechBattle
             for (var i = 0; i < _processes.Length; i++)
             {
                 var process = _processes[i];
+                if (process == null)
+                {
+                    process = CreateNewProcess();
+                    _processes[i] = process;
+                }
+
                 if (process.Stage == CalculationProcessStage.Idle)
                 {
                     var reservedPathId = _pathsList.ReservePathId();
@@ -86,5 +77,7 @@ namespace ZE.MechBattle
         public bool IsProcessCompleted(PathCalculationProcessToken token) => 
             !token.IsValid 
             || _processes[token.ProcessIndex].ProcessIteration != token.ProcessIteration;
+
+        public abstract PathCalculationProcess<NodeKey> CreateNewProcess();
     }
 }

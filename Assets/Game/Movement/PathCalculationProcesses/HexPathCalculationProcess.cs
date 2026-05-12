@@ -10,7 +10,7 @@ namespace ZE.MechBattle
         private readonly HexPathJobCollections _collections;
         private ConstructHexPathJob _job;
 
-        public HexPathCalculationProcess(Allocator allocator, INavigationMap map) : base(map)
+        public HexPathCalculationProcess(Allocator allocator, INavigationMap map)
         {
             _collections = new(allocator, map.Hexes.Count);
             _job = new()

@@ -4,10 +4,10 @@ using UnityEngine;
 using Unity.Mathematics;
 using Scellecs.Morpeh;
 using Unity.Collections;
+using ZE.MechBattle.Navigation;
 
-namespace ZE.MechBattle.Navigation
+namespace ZE.MechBattle
 {
-
     public class HexPathsLRUBuffer : UserCountDependentLRUPathsBuffer<Entity, HexPathNodeKey>
     {
 

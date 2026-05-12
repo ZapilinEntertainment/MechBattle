@@ -14,7 +14,7 @@ namespace ZE.MechBattle.Develop
         [SerializeField] private float _radius = 100f;
         [SerializeField] private Vector3 _manualDefinedTarget;
         private Filter _filter;
-        private Stash<MoveTargetComponent> _moveTargets;
+        private Stash<ChangeMoveTargetRequestComponent> _moveTargets;
         private Vector3? _targetPos;
         private float _triangleHeight;
 
@@ -22,7 +22,7 @@ namespace ZE.MechBattle.Develop
         public void Inject(World world, INavigationMap map)
         {
             _filter = world.Filter.With<NavigationAgentComponent>().Build();
-            _moveTargets = world.GetStash<MoveTargetComponent>();
+            _moveTargets = world.GetStash<ChangeMoveTargetRequestComponent>();
             _triangleHeight = map.TriangleHeight;
         }
 

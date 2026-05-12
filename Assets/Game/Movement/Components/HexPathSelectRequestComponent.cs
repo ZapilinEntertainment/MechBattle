@@ -24,13 +24,5 @@ namespace ZE.MechBattle.Ecs
             StartEdgesMask = startMask;
             EndEdgesMask = endMask;
         }
-
-        public HexPathSelectRequestComponent(in HexPathSearchResultData data)
-        {
-            StartHex = data.StartHex;
-            EndHex = data.EndHex;
-            StartEdgesMask = data.StartEdgesMask;
-            EndEdgesMask = data.EndEdgesMask;
-        }
     }
 }

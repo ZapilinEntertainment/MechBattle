@@ -23,14 +23,8 @@ namespace ZE.MechBattle
         public int PathId { get; private set; }
         public int ProcessIteration { get; private set; }
 
-        protected readonly INavigationMap Map;
         private JobHandle _activeHandle;
         private bool _isLaunched;
-
-        public PathCalculationProcess(INavigationMap map)
-        {
-            Map = map;
-        }
 
         public virtual void Launch(int pathId, NodeKey start, NodeKey end)
         {

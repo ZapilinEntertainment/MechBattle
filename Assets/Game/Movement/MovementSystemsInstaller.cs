@@ -17,16 +17,18 @@ namespace ZE.MechBattle.Ecs
 
             RegisterSystem<HexPathDefineSystem>();
             RegisterSystem<HexPathCalculationSystem>();
+            RegisterSystem<HexPathAccountingSystem>();
 
             RegisterSystem<TrianglePathDefineSystem>();
             RegisterSystem<TrianglePathCalculationSystem>();
-            RegisterSystem<PathsAccountingSystem>();
+            RegisterSystem<TrianglePathsAccountingSystem>();
 
             RegisterSystem<TrianglePathWaypointSetSystem>();
             RegisterSystem<WaypointsMovementSystem>();
             RegisterSystem<TrianglePathProgressionUpdateSystem>();
             RegisterSystem<HexPathProgressionUpdateSystem>();
 
+            RegisterSystem<ChangeMovementTargetSystem>();
             RegisterSystem<HexPathClearSystem>();
             RegisterSystem<TrianglePathClearSystem>();
 
@@ -45,16 +47,18 @@ namespace ZE.MechBattle.Ecs
 
             resolver.AddSystem<HexPathDefineSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<HexPathCalculationSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<HexPathAccountingSystem>(SystemGroupOrder.RegularUpdate);
 
             resolver.AddSystem<TrianglePathDefineSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<TrianglePathCalculationSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<PathsAccountingSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<TrianglePathsAccountingSystem>(SystemGroupOrder.RegularUpdate);
 
             resolver.AddSystem<TrianglePathWaypointSetSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<WaypointsMovementSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<TrianglePathProgressionUpdateSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<HexPathProgressionUpdateSystem>(SystemGroupOrder.RegularUpdate);
 
+            resolver.AddSystem<ChangeMovementTargetSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<HexPathClearSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<TrianglePathClearSystem>(SystemGroupOrder.RegularUpdate);
 

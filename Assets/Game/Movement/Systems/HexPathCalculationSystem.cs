@@ -47,7 +47,7 @@ namespace ZE.MechBattle.Ecs
         public World World { get; set;}
         private readonly HexPathsLRUBuffer _pathsList;
         private readonly INavigationMap _map;  
-        private readonly PathCalculationProcessesManager<HexPathNodeKey> _processesManager;
+        private readonly HexPathCalculationProcessManager _processesManager;
         private readonly HashSet<HexPathKey> _awaitingCalculations = new();
 
         private readonly LRUDictionaryCache<CachedOperationKey, CachedSearchResult> _cachedResults;
@@ -65,7 +65,7 @@ namespace ZE.MechBattle.Ecs
         {
             _pathsList = list;
             _map = map;
-            _processesManager = new(MAX_PARALLEL_CALCULATIONS, _pathsList);
+            _processesManager = new(Allocator.Persistent, _map,  MAX_PARALLEL_CALCULATIONS, _pathsList);
             _lastAppliedMapVersion = map.Version;
             _cachedResults = new (CACHE_LIMIT);
         }

@@ -6,21 +6,22 @@ using Unity.Collections;
 using UnityEngine;
 using ZE.MechBattle.Navigation;
 
-namespace ZE.MechBattle.Ecs
+namespace ZE.MechBattle
 {
     public class TrianglePathsLRUBuffer : UserCountDependentLRUPathsBuffer<Entity, IntTriangularPos>
     {
 
-        protected override bool TryFormPathData(in NativeArray<IntTriangularPos> positions, out PathData<IntTriangularPos> pathData)
+        protected override bool TryFormPathData(CalculatedPathData<IntTriangularPos> positions, out PathData<IntTriangularPos> pathData)
         {
-            if (positions.Length < 2)
+            var length = positions.Points.Length;
+            if (length == 0)
             {
-                Debug.LogError($"invalid path with {positions.Length} nodes");
+                Debug.LogError("invalid path with zero nodes");
                 pathData = null;
                 return false;
             }
 
-            pathData = new PathData<IntTriangularPos>(positions);
+            pathData = new PathData<IntTriangularPos>(positions.Points, positions.PathCost);
             return true;
         }
     }

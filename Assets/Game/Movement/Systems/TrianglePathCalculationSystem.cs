@@ -23,10 +23,9 @@ namespace ZE.MechBattle.Ecs
         private Stash<ClearHexPathTag> _clearHexPathTag;
 
         private readonly INavigationMap _map;
-        private readonly PathCalculationProcessesManager<IntTriangularPos> _processesManager;
+        private readonly TrianglePathCalculationProcessManager _processesManager;
         private readonly TrianglePathsLRUBuffer _pathsList;
 
-        private readonly Allocator _processAllocator = Allocator.Persistent;
         private const int MAX_PARALLEL_CALCULATIONS = 8;        
 
         [Inject]
@@ -34,7 +33,7 @@ namespace ZE.MechBattle.Ecs
         {
             _map = map;
             _pathsList = trianglePathsBuffer;
-            _processesManager = new PathCalculationProcessesManager<IntTriangularPos>(MAX_PARALLEL_CALCULATIONS, _pathsList);
+            _processesManager = new TrianglePathCalculationProcessManager(Allocator.Persistent, _map, MAX_PARALLEL_CALCULATIONS, _pathsList);
         }
 
         public void OnAwake() 
