@@ -10,6 +10,7 @@ namespace ZE.MechBattle.Navigation.Tests
 {
     public class HexEdgesTest
     {
+
         [Test]
         public void OppositesTest()
         {

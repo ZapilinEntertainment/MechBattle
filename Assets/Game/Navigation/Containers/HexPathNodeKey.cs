@@ -15,6 +15,11 @@ namespace ZE.MechBattle.Navigation
 
         private readonly int3 _value;
 
+        public HexPathNodeKey(int hexCoordX, int hexCoordY, HexEdge edge)
+        {
+            _value = new int3(hexCoordX, hexCoordY, (int)edge);
+        }
+
         public HexPathNodeKey(int2 hexPos, HexEdge edge)
         {
             _value = new int3(hexPos, (int)edge);

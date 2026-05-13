@@ -26,8 +26,7 @@ namespace ZE.MechBattle.Navigation.Tests
             using var map = new NavigationMap(settings, Allocator.TempJob);
             SetAllTrisInHexPassable(startHexCoord, map);
 
-            using var collections = new TriangularPathJobCollections(Allocator.TempJob, default, settings);
-            collections.ChangeCenter(new(startHexCoord, hexEdgeLength, trianglesPerEdge));
+            using var collections = PrepareTriangularPathJobCollectionsCommand.Execute(Allocator.TempJob, new(startHexCoord, hexEdgeLength, trianglesPerEdge), map);
             var job = new ConstructTriangularPathJob()
             {
                 CalculationData = collections.CalculationData,

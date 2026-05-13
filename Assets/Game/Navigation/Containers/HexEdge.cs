@@ -12,6 +12,25 @@ namespace ZE.MechBattle.Navigation
     public static class HexEdgeExtension
     {
         [BurstCompile]
+        public static float GetInHexTransitionCost(this HexEdge edge, HexEdge otherEdge) 
+        { 
+            var delta = math.abs((int)edge - (int)otherEdge);
+            if (delta > 3) 
+                delta = 6 - delta;
+
+            // note: hex coords orth length is a *sqrt(3) = (2 x inscribed radius).
+            // So method returns inscribed radius coefficient, instead of edge length part 
+            switch (delta)
+            {
+                case 1: return 0.5f; // a*sqrt(3) / 2
+                case 2: return NavigationConstants.SQRT_OF_THREE_HALVED; // 3*a / 2, 
+                case 3: return 1f;
+                default: return 0f;
+            }
+        }
+
+
+        [BurstCompile]
         public static int2 ToHexOffsetVector(this HexEdge edge)
         {
             const int HEX_OFFSET_DATA_MASK = 0b_11_01_11_00_00_11_01_11_01_00_00_01;

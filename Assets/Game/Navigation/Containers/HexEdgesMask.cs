@@ -31,6 +31,10 @@ namespace ZE.MechBattle.Navigation
 
         public override string ToString()
         {
+            const int ALL_EDGES_MASK = 0b_111111;
+            if ((_value.Value & ALL_EDGES_MASK) == ALL_EDGES_MASK)
+                return "All";
+
             var stringBuilder = new System.Text.StringBuilder();
             var stringsCount = 0;
             for (var i = 0; i < 6; i++)

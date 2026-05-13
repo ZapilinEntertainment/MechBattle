@@ -8,7 +8,7 @@ using Unity.Jobs;
 
 namespace ZE.MechBattle.Navigation
 {
-    // IMPORTANT: this is a debug search command, game systems use HexPathSearcher. 
+    // IMPORTANT: this is a debug search command 
     // TODO: Merge logics
     public static class GetShortestHexPathCommand
     {
@@ -55,7 +55,7 @@ namespace ZE.MechBattle.Navigation
                 StartHexCoord = TriangularMath.TriangularToHex(start, map.TriangleHeight, map.HexEdgeLength);
                 EndHexCoord = TriangularMath.TriangularToHex(end, map.TriangleHeight, map.HexEdgeLength);
                 
-                DirectHexDistance = HexMath.CalculateDistance(StartHexCoord, EndHexCoord);
+                DirectHexDistance = HexMath.CalculateHexPosDistance(StartHexCoord, EndHexCoord);
                 var dir = math.sign(EndHexCoord - StartHexCoord);
                 DirectPathStartEdge = HexMath.HexOffsetVectorToEdge(dir);
 

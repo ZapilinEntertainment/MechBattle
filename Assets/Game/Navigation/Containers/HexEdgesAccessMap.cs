@@ -30,7 +30,7 @@ namespace ZE.MechBattle.Navigation
 
         public bool AreEdgesConnected(HexEdge a, HexEdge b)
         {
-            if (a == b) return true;
+            if (a == b) return false;
             return _data.IsSet(GetConnectionIndex(a, b));
         }
 

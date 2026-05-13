@@ -12,7 +12,7 @@ namespace ZE.MechBattle
 
         public HexPathCalculationProcess(Allocator allocator, INavigationMap map)
         {
-            _collections = new(allocator, map.Hexes.Count);
+            _collections = PrepareHexPathJobCollectionsCommand.Execute(allocator, map);
             _job = new()
             {
                 PathCost = _collections.PathCost,

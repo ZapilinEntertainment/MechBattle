@@ -35,7 +35,7 @@ namespace ZE.MechBattle.Navigation.Tests
 
             foreach (var hex in enumerator)
             {
-                int distance = HexMath.CalculateDistance(center, hex);
+                int distance = HexMath.CalculateHexPosDistance(center, hex);
                 Assert.LessOrEqual(distance, radius, $"Hex {hex} is out of radius {radius}. Distance: {distance}");
             }
         }

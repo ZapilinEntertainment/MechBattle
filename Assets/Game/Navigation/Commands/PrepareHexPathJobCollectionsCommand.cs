@@ -11,6 +11,8 @@ namespace ZE.MechBattle.Navigation
         public static HexPathJobCollections Execute(Allocator allocator, INavigationMap map)
         {
             var data = new HexPathJobCollections(allocator, map.Hexes.Count);
+
+            var transitionableNodes = GetHexTransitionableNodesCommand.Execute(map, checkEdgesPassability: true);
             var indicesDictionary = new Dictionary<HexPathNodeKey, int>();
             var currentHexEdgeDataIndices = new int[6];
             var nextIndex = 0;
@@ -23,8 +25,15 @@ namespace ZE.MechBattle.Navigation
                 for (var edgeIndex = 0; edgeIndex < 6; edgeIndex++)
                 {
                     var key = new HexPathNodeKey(hexPos, edgeIndex);
+                    var oppositeKey = key.ToOpposite();
 
-                    if (indicesDictionary.TryGetValue(key.ToOpposite(), out var alreadyAddedIndex))
+                    if (!transitionableNodes.Contains(key) && !transitionableNodes.Contains(oppositeKey))
+                    {
+                        currentHexEdgeDataIndices[edgeIndex] = HexEdgeNodesData.INVALID_INDEX;
+                        continue;
+                    }
+
+                    if (indicesDictionary.TryGetValue(oppositeKey, out var alreadyAddedIndex))
                     {
                         // already presented by opposite edge
                         currentHexEdgeDataIndices[edgeIndex] = alreadyAddedIndex;
@@ -40,7 +49,7 @@ namespace ZE.MechBattle.Navigation
                     var index = nextIndex++;
                     indicesDictionary.Add(key, index);
                     currentHexEdgeDataIndices[edgeIndex] = index;
-                    //Debug.Log($"{index} : {hexPos} : {edgeIndex}");
+                    //Debug.Log($"{index} : {hexPos} : {(HexEdge)edgeIndex}");
 
                     data.NavigationData[index] = new(new(hexPos, edgeIndex));
                 }

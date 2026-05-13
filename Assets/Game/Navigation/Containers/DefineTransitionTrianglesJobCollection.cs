@@ -19,6 +19,7 @@ namespace ZE.MechBattle.Navigation
 
         public void Update(IReadOnlyCollection<HexPathNodeKey> nodes, int trianglesPerEdge)
         {
+            var nodesLength = nodes.Count;
             if (!CalculatingNodes.IsCreated || CalculatingNodes.Length != nodes.Count)
             {
                 CalculatingNodes.Dispose();

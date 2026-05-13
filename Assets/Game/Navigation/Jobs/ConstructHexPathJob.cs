@@ -47,24 +47,31 @@ namespace ZE.MechBattle.Navigation
             for (var i = 0; i < NavigationData.Length; i++)
             {
                 var data = NavigationData[i];
-                data.HeuristicCost = HexMath.CalculateDistance(data.NodeKey.HexCoord,End.HexCoord);
+                data.HeuristicCost = HexMath.CalculateDistance(data.NodeKey, End);
                 NavigationData[i] = data;
+                //UnityEngine.Debug.Log($"[{i}]: {data.HeuristicCost}");
             }
+
+            var endIndex = HexData[End.HexCoord].GetNodeIndex(End.EdgeIndex);
+            //UnityEngine.Debug.Log($"target node [{endIndex}] cost: {NavigationData[ endIndex].TotalPathCost}");
 
             // start
             var startDataIndex = startData.GetNodeIndex(Start.EdgeIndex);
+            #if UNITY_EDITOR
+            if (startDataIndex == -1)
+                throw new System.Exception($"{Start}->{End} hex path search job: invalid start index");
+            #endif
             AstarLogic.SetupStartCell(startDataIndex, NavigationData);
             HandleNeighbours(Start);
 
             //UnityEngine.Debug.Log($"search for {Start} -> {End}");
+            var endOpposite = End.ToOpposite();
             do
             {
                 var nextNode = AstarLogic.FindNextNode(OpenedList, NavigationData);
-                //UnityEngine.Debug.Log($"next {nextNode}");
-                if (nextNode.value == End)
+                if (nextNode.value == End | nextNode.value == endOpposite)
                 {
-                    //UnityEngine.Debug.Log($"exit found: {nextNode}");
-                    closestNode = End;
+                    closestNode = End;                   
                     break;          
                 }
                 else
@@ -86,8 +93,9 @@ namespace ZE.MechBattle.Navigation
 
         private void BuildPath(HexPathNodeKey finalPos)
         {
-            var index = GetNodeIndex(finalPos);
-            var finalNodeData = NavigationData[index];
+            var finalNodeIndex = GetNodeIndex(finalPos);
+            var finalNodeData = NavigationData[finalNodeIndex];
+
             var stepsCount = finalNodeData.StepsCount;
             PathCost.Value = finalNodeData.CostFromStart;
             ResultingData.Resize(stepsCount+1, NativeArrayOptions.UninitializedMemory);
@@ -100,42 +108,61 @@ namespace ZE.MechBattle.Navigation
 
                 var data = GetNavData(currentPos);
                 currentPos = data.ParentNodeKey;
+
+                //UnityEngine.Debug.Log($"{i}:{data.CostFromStart}");
             }
         }
 
-        private void HandleNeighbours(HexPathNodeKey activeNodePos)
-        {
-            //own hex nodes:
-            var hexData = HexData[activeNodePos.HexCoord];
-            var activeNodeData = NavigationData[hexData.GetNodeIndex(activeNodePos.EdgeIndex)];
 
-            //Debug.Log($"updating {activeNodePos} neighbours:");
+        private void HandleNeighbours(HexPathNodeKey activeNode)
+        {
+            /*
+             *  Example: active node is (a,b) BottomRight / (a+1, b-1) Top
+             *  so we check firstly own hex nodes (O-marked)
+             *  and then neighbour hex nodes (N-marked)
+             * 
+                           TopO
+              TopLeftO           TopRightO                             
+              BottomLeftO       -> ACTIVE NODE<-         
+                    BottomO(TopLeftN)            TopRightN
+                       BottomLeftN                  BottomRightN
+                                     BottomN
+            */
+            //own hex nodes:
+            var hexData = HexData[activeNode.HexCoord];
+            var activeNodeData = NavigationData[hexData.GetNodeIndex(activeNode.EdgeIndex)];
+
+            //UnityEngine.Debug.Log($"active node: {activeNode}, cost: {activeNodeData.TotalPathCost} ");
 
             for (var i = 0; i < 6; i++)
             {
+                var edge = (HexEdge)i;
                 if (!hexData.TryGetNodeIndex(i, out var neighbourIndex)
-                    || !hexData.AccessMap.AreEdgesConnected(activeNodePos.Edge, (HexEdge)(i)))
+                    || !hexData.AccessMap.AreEdgesConnected(activeNode.Edge, edge))
                     continue;
 
                 AstarLogic.HandleNeighbour(activeNodeData,
                     neighbourIndex,
                     OpenedList,
                     NavigationData,
-                    DEFAULT_PATH_COST);
+                    activeNode.Edge.GetInHexTransitionCost(edge));
+
+
+                //UnityEngine.Debug.Log($"{activeNode} ->  {new HexPathNodeKey(activeNode.HexCoord, i)} ( [{neighbourIndex}] cost: {NavigationData[neighbourIndex].CostFromStart} / {NavigationData[neighbourIndex].TotalPathCost})");
             }
 
-            // neighboured hex:
-            var neighbouredHexPos = activeNodePos.ToOppositeHexCoord();
-            if (!hexData.IsEdgePassable(activeNodePos.Edge) 
-                || !HexData.TryGetValue(neighbouredHexPos, out var neighbouredHexData)
-                || !neighbouredHexData.IsEdgePassable(activeNodePos.Edge.ToOpposite()))
+            // neighboured hex nodes:
+            var neighbourHexNode = activeNode.ToOpposite();
+            if (!hexData.IsEdgePassable(activeNode.Edge) 
+                || !HexData.TryGetValue(neighbourHexNode.HexCoord, out var neighbouredHexData)
+                || !neighbouredHexData.IsEdgePassable(neighbourHexNode.Edge))
                 return;
 
-            var edgeInNeighbouredHex = activeNodePos.Edge.ToOpposite();
             for (var i = 0; i < 6; i++)
             {
+                var edge = (HexEdge)i;
                 if (!neighbouredHexData.TryGetNodeIndex(i, out var neighbourIndex)
-                    ||!neighbouredHexData.AccessMap.AreEdgesConnected(edgeInNeighbouredHex, (HexEdge)i))
+                    ||!neighbouredHexData.AccessMap.AreEdgesConnected(neighbourHexNode.Edge, edge))
                     continue;
 
                 AstarLogic.HandleNeighbour(
@@ -143,7 +170,9 @@ namespace ZE.MechBattle.Navigation
                     neighbourIndex,
                     OpenedList,
                     NavigationData,
-                    DEFAULT_PATH_COST);
+                    neighbourHexNode.Edge.GetInHexTransitionCost(edge));
+
+                //UnityEngine.Debug.Log($"{activeNode} ->  {new HexPathNodeKey(neighbourHexNode.HexCoord, i)}  ( [{neighbourIndex}] cost:{NavigationData[neighbourIndex].CostFromStart} / {NavigationData[neighbourIndex].TotalPathCost})");
             }
 
         }

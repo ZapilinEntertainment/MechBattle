@@ -25,19 +25,8 @@ namespace ZE.MechBattle.Navigation
 
         private static EdgePositionsDefineJob PrepareTransitionTrianglesJob(INavigationMap map, DefineTransitionTrianglesJobCollection collection)
         {
-            //1. get mirrored nodes
-            var nodesList = new HashSet<HexPathNodeKey>();
-            foreach (var hexCoord in map.HexCoords)
-            {
-                for (var edgeIndex = 0; edgeIndex < 6; edgeIndex++)
-                {
-                    var edge = (HexEdge)edgeIndex;
-                    var node = new HexPathNodeKey(hexCoord, edge);
-                    var oppositeNode = node.ToOpposite();
-                    if (map.ContainsHex(oppositeNode.HexCoord) && !nodesList.Contains(oppositeNode))
-                        nodesList.Add(node);
-                }
-            }
+            //1. get mirrored nodes (note: don't check edges passability - it will be recalculated)
+            var nodesList = GetHexTransitionableNodesCommand.Execute(map, checkEdgesPassability: false);
 
             // 2.form triangles list for each edge (both sides of node)
 

@@ -12,7 +12,7 @@ namespace ZE.MechBattle.Navigation
         public static void SetupStartCell<T>(int startDataIndex, NativeArray<AstarPathNodeData<T>> NavigationData) where T : unmanaged
         {
             var navData = NavigationData[startDataIndex];
-            navData.CostFromStart = navData.HeuristicCost;
+            navData.CostFromStart = 0;
             navData.StepsCount = 0;
             navData.Status = NavigationNodeStatus.Closed;
             NavigationData[startDataIndex] = navData;            
@@ -24,13 +24,13 @@ namespace ZE.MechBattle.Navigation
            int neighbourIndex,
            NativeHashSet<int> OpenedList,
            NativeArray<AstarPathNodeData<T>> NavigationData,
-           float pathCost) where T: unmanaged
+           float transitionCost) where T: unmanaged
         {
             var neighbourData = NavigationData[neighbourIndex];
             if (neighbourData.Status == NavigationNodeStatus.Closed)
                 return;
 
-            var newNeighbourPathCost = activeNodeData.CostFromStart + pathCost;
+            var newNeighbourPathCost = activeNodeData.CostFromStart + transitionCost;
             var updateData = true;
             if (neighbourData.Status == NavigationNodeStatus.Opened)
             {
@@ -48,8 +48,6 @@ namespace ZE.MechBattle.Navigation
                 neighbourData.ParentNodeKey = activeNodeData.NodeKey;
                 neighbourData.StepsCount = activeNodeData.StepsCount + 1;
                 NavigationData[neighbourIndex] = neighbourData;
-
-                //UnityEngine.Debug.Log($"updated {neighbourData.NodeKey}, new cost: {neighbourData.PathCost}, new parent {neighbourData.ParentNodeKey}");
             }
         }
 
