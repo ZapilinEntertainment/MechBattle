@@ -30,8 +30,20 @@ namespace ZE.MechBattle
             return _job.ScheduleByRef();
         }
 
-        protected override CalculatedPathData<HexPathNodeKey> GetJobResults() =>
-            new(_collections.ResultingData.AsArray(), _collections.PathCost.Value);
+        protected override PathCalculationResult<HexPathNodeKey> FormResults()
+        {
+            var rawResultsData = _collections.ResultingData;
+            var resultsLength = rawResultsData.Length;
+            var lastNode = resultsLength == 0 ? default : rawResultsData[resultsLength - 1];
+            var hasReachedTarget = lastNode == _job.End;
+
+            return new PathCalculationResult<HexPathNodeKey>(
+                requestedDestination: (_job.Start, _job.End),
+                points: HexPathLogic.RefineHexPath(_job.Start.HexCoord, rawResultsData), 
+                pathCost: _collections.PathCost.Value, 
+                hasReachedTarget: hasReachedTarget);
+        }
+            
 
         protected override void DisposeResources()
         {

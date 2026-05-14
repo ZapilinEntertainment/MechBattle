@@ -3,14 +3,19 @@ using Unity.Mathematics;
 using Unity.Burst;
 using Unity.Collections;
 using System.Runtime.CompilerServices;
+using TriInspector;
 
 namespace ZE.MechBattle.Navigation
 {
+    [Serializable]
     public struct HexPathNodeKey : IEquatable<HexPathNodeKey>
     {
+        [ShowInInspector] private string SerializedOutput => ToString();
+
+        public int2 HexCoord => _value.xy;
         public HexEdge Edge => (HexEdge)_value.z;
         public int EdgeIndex => _value.z;
-        public int2 HexCoord => _value.xy;
+        
         public float2 EdgeCenterHexCoord => _value.xy + Edge.ToEdgePosOffsetVector();
 
         private readonly int3 _value;

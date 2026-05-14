@@ -17,6 +17,7 @@ namespace ZE.MechBattle.Ecs
 
             RegisterSystem<HexPathDefineSystem>();
             RegisterSystem<HexPathCalculationSystem>();
+            RegisterSystem<RegularHexPathSelectionSystem>();
             RegisterSystem<HexPathAccountingSystem>();
 
             RegisterSystem<TrianglePathDefineSystem>();
@@ -35,6 +36,8 @@ namespace ZE.MechBattle.Ecs
             builder.Register<HexPathsLRUBuffer>(_ => new(), Lifetime.Scoped);
             builder.Register<TrianglePathsLRUBuffer>(_ => new(), Lifetime.Scoped);
 
+            builder.Register<RequestedHexPathsList>(Lifetime.Scoped);
+
             builder.Register<NavigationMapInitializer>(Lifetime.Transient);
         }
 
@@ -47,6 +50,7 @@ namespace ZE.MechBattle.Ecs
 
             resolver.AddSystem<HexPathDefineSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<HexPathCalculationSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<RegularHexPathSelectionSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<HexPathAccountingSystem>(SystemGroupOrder.RegularUpdate);
 
             resolver.AddSystem<TrianglePathDefineSystem>(SystemGroupOrder.RegularUpdate);

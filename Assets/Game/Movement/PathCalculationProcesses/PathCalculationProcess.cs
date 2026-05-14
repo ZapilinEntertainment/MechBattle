@@ -35,12 +35,12 @@ namespace ZE.MechBattle
             ProcessIteration++;
         }
 
-        public CalculatedPathData<NodeKey> StopAndGetResult()
+        public PathCalculationResult<NodeKey> StopAndGetResults()
         {
             _activeHandle.Complete();
             _isLaunched = false;
             ProcessIteration++;
-            return GetJobResults();
+            return FormResults();
         }
 
         public async void Dispose()
@@ -54,8 +54,8 @@ namespace ZE.MechBattle
             DisposeResources();
         }
 
-        protected abstract JobHandle LaunchJob(NodeKey start, NodeKey end);
-        protected abstract CalculatedPathData<NodeKey> GetJobResults();
+        protected abstract PathCalculationResult<NodeKey> FormResults();
+        protected abstract JobHandle LaunchJob(NodeKey start, NodeKey end);        
         protected abstract void DisposeResources();
     }
 }

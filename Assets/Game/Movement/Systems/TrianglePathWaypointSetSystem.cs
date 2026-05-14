@@ -77,7 +77,6 @@ namespace ZE.MechBattle.Ecs
             {
                 var triangularPath = _flowPaths.Get(entity);
                 var tripos = _triangularPositions.Get(entity).Value;
-
                 var exitDirection = _map.GetFlowData(tripos)[triangularPath.ExitEdge].Direction;
                 var nextTripos = TriangularMath.GetNeighbourByDirection(tripos, exitDirection);
                 var nextWorldPos = TriangularMath.TriangularToWorld(nextTripos, _triangleHeight);

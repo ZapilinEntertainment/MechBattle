@@ -26,7 +26,7 @@ namespace ZE.MechBattle.Develop
             _triangleHeight = map.TriangleHeight;
         }
 
-        [Button("Set new random target")]
+        [EnableInPlayMode, Button("Set new random target")]
         private void SetNewRandomTarget()
         {
             var random = UnityEngine.Random.insideUnitCircle;
@@ -37,10 +37,10 @@ namespace ZE.MechBattle.Develop
             SetEntitiesTarget(pos);
         }
 
-        [Button("Set manual target")]
+        [EnableInPlayMode, Button("Set manual target")]
         private void SetManualTarget() => SetEntitiesTarget(_manualDefinedTarget);
 
-        [Button("Stop all movement")]
+        [EnableInPlayMode, Button("Stop all movement")]
         private void StopAllMovement()
         {
             foreach (var entity in _filter)
@@ -49,7 +49,7 @@ namespace ZE.MechBattle.Develop
             }
         }
 
-        [Button("Move to object")]
+        [EnableInPlayMode, Button("Move to object")]
         private void MoveToObject() => SetEntitiesTarget(transform.position);
 
         private void SetEntitiesTarget(float3 pos)

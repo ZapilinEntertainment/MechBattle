@@ -192,7 +192,10 @@ namespace ZE.MechBattle.Navigation
                     index++;
                 }
 
+                var accessMap = FormHexAccessMapCommand.Execute(_flowCalculationCollections, hexPos, _hexRadius);
+
                 var hex = _map.GetHex(hexCoord);
+                hex.UpdateAccessMap(accessMap);
                 hex.OnFlowMapCalculated();
                 hex.UpdateVersion();
             }

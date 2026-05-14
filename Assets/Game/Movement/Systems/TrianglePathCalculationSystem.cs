@@ -68,9 +68,9 @@ namespace ZE.MechBattle.Ecs
             foreach (var entity in _startProcessFilter)
             {
                 var endpoints = _endpoints.Get(entity);
-                if (_pathsList.TryGetPathByEndpoints(endpoints.Start, endpoints.End, out var pathId, out var pathData))
+                if (_pathsList.TryGetPathByEndpoints(endpoints.Start, endpoints.End, out var path))
                 {
-                    AssignPath(entity,pathId, pathData);
+                    AssignPath(entity, path);
                     continue;
                 }
 
@@ -84,7 +84,7 @@ namespace ZE.MechBattle.Ecs
                 }
                 
                 idleProcessCounts--;
-                _processingComponents.Set(entity, new(processToken));
+                _processingComponents.Set(entity, new(processToken.PathId));
 
                 if (idleProcessCounts == 0)
                     return;
@@ -95,20 +95,19 @@ namespace ZE.MechBattle.Ecs
         {
             foreach (var entity in _processingEntitiesFilter)
             {
-                var processToken = _processingComponents.Get(entity).Token;
-                if (!_processesManager.IsProcessCompleted(processToken))
-                    continue;
+                var pathId = _processingComponents.Get(entity).PathId;
 
-                var pathId = processToken.PathId;
-                if (!_pathsList.TryGetPath(pathId, out var pathData))
+                if (!_pathsList.TryGetPath(pathId, out var path))
                 {
-                    // invalid path
                     _clearHexPathTag.Set(entity);
                     continue;
                 }
 
-                _processingComponents.Remove(entity);
-                AssignPath(entity, pathId, pathData);
+                if (path.IsCalculated)
+                {
+                    _processingComponents.Remove(entity);
+                    AssignCalculatedPath(entity, path);
+                }
             }
         }
 
@@ -117,10 +116,19 @@ namespace ZE.MechBattle.Ecs
             _processesManager.Dispose();
         }
 
-        private void AssignPath(Entity entity, int pathId, PathData<IntTriangularPos> pathData)
+        private void AssignPath(Entity entity, PathData<IntTriangularPos> path)
         {
-            _regularPaths.Set(entity, new(pathId: pathId, pathData.NodesCount));
+            if (path.IsCalculated)
+                AssignCalculatedPath(entity, path);
+            else
+                _processingComponents.Set(entity, new(path.Id));
+
             _endpoints.Remove(entity);
+        }
+
+        private void AssignCalculatedPath(Entity entity, PathData<IntTriangularPos> path)
+        {
+            _regularPaths.Set(entity, new(pathId: path.Id, path.NodesCount));
         }
     }
 }

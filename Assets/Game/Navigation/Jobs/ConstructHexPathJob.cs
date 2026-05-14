@@ -61,10 +61,12 @@ namespace ZE.MechBattle.Navigation
             if (startDataIndex == -1)
                 throw new System.Exception($"{Start}->{End} hex path search job: invalid start index");
             #endif
-            AstarLogic.SetupStartCell(startDataIndex, NavigationData);
+            AstarLogic.SetupStartCell(startDataIndex, NavigationData);            
             HandleNeighbours(Start);
 
             //UnityEngine.Debug.Log($"search for {Start} -> {End}");
+
+
             var endOpposite = End.ToOpposite();
             do
             {
@@ -102,6 +104,7 @@ namespace ZE.MechBattle.Navigation
 
             var currentPos = finalPos;
             var i = stepsCount;
+
             while (i >= 0)
             {
                 ResultingData[i--] = currentPos;
@@ -161,8 +164,11 @@ namespace ZE.MechBattle.Navigation
             for (var i = 0; i < 6; i++)
             {
                 var edge = (HexEdge)i;
+
+                //UnityEngine.Debug.Log($"{neighbourHexNode} -> {edge} = {neighbouredHexData.TryGetNodeIndex(i, out var ni)} {ni} = connected: {neighbouredHexData.AccessMap.AreEdgesConnected(neighbourHexNode.Edge, edge)}");
+
                 if (!neighbouredHexData.TryGetNodeIndex(i, out var neighbourIndex)
-                    ||!neighbouredHexData.AccessMap.AreEdgesConnected(neighbourHexNode.Edge, edge))
+                    || !neighbouredHexData.AccessMap.AreEdgesConnected(neighbourHexNode.Edge, edge))
                     continue;
 
                 AstarLogic.HandleNeighbour(

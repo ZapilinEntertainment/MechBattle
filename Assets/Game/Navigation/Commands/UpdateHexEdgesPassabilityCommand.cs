@@ -62,7 +62,7 @@ namespace ZE.MechBattle.Navigation
                 if (TrianglesTransitionLogic.IsCloseTransitionPossible(map, pos, neighbourPos))
                     neighboursMask |= (1 << i);
             }
-            TrianglesTransitionLogic.CheckMaskForJumpNeighbours(neighboursMask, pos.IsPeak);
+            neighboursMask = TrianglesTransitionLogic.CheckMaskForJumpNeighbours(neighboursMask, pos.IsPeak);
             map.UpdateCellPassability(pos, new(passability.IsPassable, neighboursMask, passability.EntranceCost)); 
         }
 

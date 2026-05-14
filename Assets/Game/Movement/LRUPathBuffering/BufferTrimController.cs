@@ -33,7 +33,7 @@ namespace ZE.MechBattle
             }
 
             var candidatesToRemove = _buffer.Paths
-                .Where(p => !_usersCount.ContainsKey(p.Key))
+                .Where(p => (!_usersCount.ContainsKey(p.Key) && p.Value.IsCalculated))
                 .OrderByDescending(p => p.Value.LastUseTime)
                 .Select(p => p.Key);
 

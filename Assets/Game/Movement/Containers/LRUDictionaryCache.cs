@@ -1,8 +1,10 @@
+using System.Collections;
 using System.Collections.Generic;
 
 namespace ZE.MechBattle
 {
-    public class LRUDictionaryCache<Key, Value>
+
+    public class LRUDictionaryCache<Key, Value> : IEnumerable<KeyValuePair<Key,Value>>
     {
         private readonly struct CacheElement
         {
@@ -16,6 +18,8 @@ namespace ZE.MechBattle
             }
         }
 
+
+        public int Length => _cache.Count;
         private readonly Dictionary<Key, CacheElement> _cache;
         private readonly LinkedList<Key> _keyUseHistory;
         private readonly int _limit;
@@ -64,6 +68,28 @@ namespace ZE.MechBattle
             _cache.Clear();
             _keyUseHistory.Clear();
         }
-    
+
+        public void Remove(Key key) 
+        {
+            if (!_cache.TryGetValue(key, out var cacheElement)) 
+                return;
+
+            _keyUseHistory.Remove(cacheElement.HistoryListNode);
+            _cache.Remove(key);
+        }
+
+        #region IEnumerator
+
+        // deepseek generated
+        public IEnumerator<KeyValuePair<Key, Value>> GetEnumerator()
+        {
+            foreach (var kvp in _cache)
+            {
+                yield return new KeyValuePair<Key, Value>(kvp.Key, kvp.Value.Value);
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        #endregion
     }
 }

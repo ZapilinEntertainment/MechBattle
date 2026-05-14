@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Collections;
@@ -20,9 +21,11 @@ namespace ZE.MechBattle
     // stores path while they are in use, trim by TrimController external calls (without losing active data)
     public abstract class UserCountDependentLRUPathsBuffer<UserKey, NodeKey> 
         : IUserCountDependentLRUPathsBuffer<UserKey>,IPathsList<NodeKey> ,
-          ITrimmableBuffer<UserKey,NodeKey>
+          ITrimmableBuffer<UserKey,NodeKey>,
+          IEnumerable<PathData<NodeKey>>
         where NodeKey : unmanaged
     {
+        public int PathDataVersion { get; private set; }
         public int PathsCount => _paths.Count;
         public IReadOnlyDictionary<UserKey, int> UserToPathId => _userToPathId;
         public IReadOnlyDictionary<int, PathData<NodeKey>> Paths => _paths;
@@ -44,9 +47,9 @@ namespace ZE.MechBattle
         public IBufferTrimController CreateTrimController() => new BufferTrimController<UserKey, NodeKey>(this);
         public bool IsPathExists(int pathId) => _paths.ContainsKey(pathId);
         public bool TryGetPath(int pathId, out PathData<NodeKey> data) => _paths.TryGetValue(pathId, out data);
-        public bool TryGetPathByEndpoints(NodeKey start, NodeKey end, out int pathId, out PathData<NodeKey> pathData)
+        public bool TryGetPathByEndpoints(NodeKey start, NodeKey end, out PathData<NodeKey> pathData)
         {
-            if (!DestinationsToPathId.TryGetValue(new(start, end), out pathId))
+            if (!DestinationsToPathId.TryGetValue(new(start, end), out var pathId))
             {
                 pathData = default;
                 return false;
@@ -72,40 +75,46 @@ namespace ZE.MechBattle
 
         public void OnPathUserLeft(UserKey user) => _userToPathId.Remove(user);
 
-        public int RegisterNewPath(CalculatedPathData<NodeKey> calculatedData)
+        public PathData<NodeKey> ReservePath((NodeKey, NodeKey) destinationKey)
         {
             var pathId = _nextPathId++;
-            FulfillReservedPath(pathId, calculatedData);
-            return pathId;
-        }
-
-        public int ReservePathId() => _nextPathId++;
-        public void FulfillReservedPath(int pathId, CalculatedPathData<NodeKey> calculatedData)
-        {
-#if UNITY_EDITOR
-            if (_paths.ContainsKey(pathId))
-                Debug.LogError("reserved path index is already occupied");
-#endif
-
-            if (!TryFormPathData(calculatedData, out var pathData))
-                return;
-
-            _paths[pathId] = pathData;
-            _endpointsToPathId[pathData.GetDestinationKey()] = pathId;
+            var path = new PathData<NodeKey>(pathId, destinationKey);
+            _paths.Add(pathId, path);
+            _endpointsToPathId.Add(destinationKey, pathId);
+            PathDataVersion++;
+            return path;
         }
 
         public void RemovePath(int pathId)
         {
-            var path = _paths[pathId];
-            var destinationKey = path.GetDestinationKey();
+            if (!_paths.TryGetValue(pathId, out var path))
+                return;
 
             _paths.Remove(pathId);
-            _endpointsToPathId.Remove(destinationKey);
+            _endpointsToPathId.Remove(path.DestinationKey);
+
+            PathDataVersion++;
+        } 
+
+        void IPathsList<NodeKey>.AddCalculatedPath(int pathId, PathCalculationResult<NodeKey> calculatedData)
+        {
+            if (!_paths.TryGetValue(pathId, out var path))
+                path = ReservePath(calculatedData.RequestedDestination);
+
+            path.OnCalculationFinished(calculatedData);      
+            PathDataVersion++;
         }
 
-        abstract protected bool TryFormPathData(CalculatedPathData<NodeKey> calculatedData, out PathData<NodeKey> pathData);        
+        #region IEnumerable
+        public IEnumerator<PathData<NodeKey>> GetEnumerator()
+        {
+            foreach (var path in _paths.Values)
+            {
+                yield return path;
+            }
+        }
 
-        void IPathsList<NodeKey>.AddCalculatedPath(int pathKey, CalculatedPathData<NodeKey> calculatedData) => 
-            FulfillReservedPath(pathKey, calculatedData);
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        #endregion
     }
 }

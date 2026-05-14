@@ -38,7 +38,8 @@ namespace ZE.MechBattle
                 {
                     case CalculationProcessStage.Complete:
                         {
-                            _pathsList.AddCalculatedPath(calculationProcess.PathId, calculationProcess.StopAndGetResult());
+                            var results = calculationProcess.StopAndGetResults();
+                            _pathsList.AddCalculatedPath(calculationProcess.PathId, results);
                             idleProcesses++;
                             break;
                         }
@@ -66,9 +67,10 @@ namespace ZE.MechBattle
 
                 if (process.Stage == CalculationProcessStage.Idle)
                 {
-                    var reservedPathId = _pathsList.ReservePathId();
-                    process.Launch(reservedPathId, start, end);
-                    return new (reservedPathId, i, process.ProcessIteration);
+                    var reservedPath = _pathsList.ReservePath((start, end));
+                    process.Launch(reservedPath.Id, start, end);
+                    //UnityEngine.Debug.Log($"start calculation: {start} -> {end}");
+                    return new (reservedPath.Id, i, process.ProcessIteration);
                 }
             }
             return default;

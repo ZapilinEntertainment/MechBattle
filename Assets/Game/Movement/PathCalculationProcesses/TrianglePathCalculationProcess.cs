@@ -39,8 +39,18 @@ namespace ZE.MechBattle
             return _job.ScheduleByRef();
         }
 
-        protected override CalculatedPathData<IntTriangularPos> GetJobResults() =>
-            new(_collections.ResultList.AsArray(), _collections.PathCostReference.Value);
+        protected override PathCalculationResult<IntTriangularPos> FormResults()
+        {
+            var rawResultsData = _collections.ResultList;
+            var resultsLength = rawResultsData.Length;
+            var lastNode = resultsLength == 0 ? default : rawResultsData[resultsLength - 1];
+            var hasReachedTarget = lastNode == _job.End;
+            return new PathCalculationResult<IntTriangularPos>(
+                requestedDestination: (_job.Start, _job.End), 
+                points: rawResultsData.AsArray(), 
+                pathCost: _collections.PathCostReference.Value, 
+                hasReachedTarget: hasReachedTarget);
+        }
 
         protected override void DisposeResources()
         {

@@ -1,6 +1,7 @@
 using Scellecs.Morpeh;
 using UnityEngine;
 using Unity.IL2CPP.CompilerServices;
+using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle.Ecs {
     [System.Serializable]
@@ -9,11 +10,11 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public readonly struct TrianglePathProcessingComponent : IComponent 
     {
-        public readonly PathCalculationProcessToken Token;
+        public readonly int PathId;
 
-        public TrianglePathProcessingComponent(PathCalculationProcessToken processToken) 
+        public TrianglePathProcessingComponent(int pathId) 
         {
-            Token = processToken;
+            PathId = pathId;
         }
     }
 }

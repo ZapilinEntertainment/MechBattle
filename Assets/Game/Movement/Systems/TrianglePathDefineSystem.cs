@@ -49,10 +49,8 @@ namespace ZE.MechBattle.Ecs
                 .Build();
 
             _noHexPathUsers = World.Filter
-                .With<HexPathDefinedTag>()
+                .With<EmptyHexPathTag>()
                 .Without<TrianglePathDefinedTag>()
-                .Without<RegularHexPathComponent>()
-                .Without<TransitionHexPathComponent>()
                 .Build();
 
             _regularPaths = World.GetStash<RegularHexPathComponent>();
@@ -79,6 +77,7 @@ namespace ZE.MechBattle.Ecs
             // move inside hex
             foreach (var entity in _noHexPathUsers)
             {
+                UnityEngine.Debug.Log("no path");
                 RequestTrianglePathCalculationToFinalTarget(entity);
             }
 
@@ -87,16 +86,15 @@ namespace ZE.MechBattle.Ecs
             {
                 var hexCoord = _hexCoord.Get(entity).Value;
                 var transitionComponent = _transitionHexPathComponents.Get(entity);
+                UnityEngine.Debug.Log("single transition");
                 if (math.all(hexCoord == transitionComponent.TargetHex))
                 {
                     // already in target hex
-                    UnityEngine.Debug.Log("single transition: path to final target");
                     RequestTrianglePathCalculationToFinalTarget(entity);
                 }
                 else
                 {
                     // still in start hex
-                    UnityEngine.Debug.Log("single transition: flow map");
                    SetupFlowMapMovement(entity, transitionComponent.TransitionEdge, transitionComponent.TargetHex);
                 }
             }
@@ -105,9 +103,12 @@ namespace ZE.MechBattle.Ecs
             foreach (var entity in _regularHexPathUsers)
             {
                 var hexPathComponent = _regularPaths.Get(entity);
-                if (hexPathComponent.StepIndex == hexPathComponent.StepsCount)
+                UnityEngine.Debug.Log($"hex step index: {hexPathComponent.StepIndex} / {hexPathComponent.StepsCount}");
+
+                if (hexPathComponent.StepIndex == hexPathComponent.StepsCount-1)
                 {
                     // last hex node -> target
+                    UnityEngine.Debug.Log($"moving to final target");
                     RequestTrianglePathCalculationToFinalTarget(entity);
                 }
                 else
@@ -115,13 +116,17 @@ namespace ZE.MechBattle.Ecs
                     // start pos -> first node
                     // or node X -> node X+1
                     if (!_hexPathsList.TryGetPath(hexPathComponent.PathId, out var path) 
-                        || !path.TryGetNode(hexPathComponent.StepIndex, out var nextNode))
+                        || !path.TryGetNode(hexPathComponent.StepIndex, out var currentNode))
                     {
                         _invalidHexPaths.Set(entity);
                         continue;
                     }
 
-                    SetupFlowMapMovement(entity, nextNode.Edge, nextNode.HexCoord);
+                    var currentHexCoord = _hexCoord.Get(entity).Value;
+                    var nextHexCoord = currentHexCoord + currentNode.Edge.ToHexOffsetVector();
+
+                    SetupFlowMapMovement(entity, currentNode.Edge, nextHexCoord);
+                    UnityEngine.Debug.Log($"use flow map: {currentNode.Edge} of {currentNode.HexCoord}");
                     // note: step index will be increased by HexPathProgressionSystem when reach target
                 }
             }
