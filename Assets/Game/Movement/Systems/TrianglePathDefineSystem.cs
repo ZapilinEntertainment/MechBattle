@@ -105,7 +105,7 @@ namespace ZE.MechBattle.Ecs
                 var hexPathComponent = _regularPaths.Get(entity);
                 UnityEngine.Debug.Log($"hex step index: {hexPathComponent.StepIndex} / {hexPathComponent.StepsCount}");
 
-                if (hexPathComponent.StepIndex == hexPathComponent.StepsCount-1)
+                if (hexPathComponent.StepIndex == hexPathComponent.StepsCount)
                 {
                     // last hex node -> target
                     UnityEngine.Debug.Log($"moving to final target");

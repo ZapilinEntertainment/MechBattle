@@ -38,11 +38,11 @@ namespace ZE.MechBattle
             }
         }
 
+        private readonly float _edgesCostDivideCf;
         private readonly INavigationMap _map;
         private readonly RequestedHexPathsList _requestedPathsList;
         private readonly HexPathsLRUBuffer _pathsList;
-        private readonly LRUDictionaryCache<CachedHexPathSearchKey, HexPathSearchResultData> _cachedResults;
-        private HashSet<HexPathNodeKey> _transitionableNodes;
+        private HexTransitionableNodes _transitionableNodes;
 
         public HexPathSearcher(
             INavigationMap map, 
@@ -51,56 +51,37 @@ namespace ZE.MechBattle
             int cacheLimit)
         {
             _map = map;
+            _edgesCostDivideCf = 1f / (_map.TrianglesPerHexEdge  * 2f);
             _requestedPathsList = requestedPathsList;
             _pathsList = hexPaths;
-            _cachedResults = new(cacheLimit);
         }
 
         public void OnMapVersionChanged()
         {
             _transitionableNodes = GetHexTransitionableNodesCommand.Execute(_map, checkEdgesPassability: true);
-            _cachedResults.Clear();
         }
 
-        public void LeaveOnlyCalculatedPathsInCache()
+        public HexPathSearchResultData GetHexPathData(
+            in HexPathSearchRequest request,
+            bool requestMissedPathsCalculation = true)
         {
-            var length = _cachedResults.Length;
-            if (length == 0)
-                return;
-
-            // remove not fully calculated cached results, because they may be calculated on next frame
-            var removeKeys = new List<CachedHexPathSearchKey>(capacity: length);
-            foreach (var kvp in _cachedResults)
-            {
-                if (kvp.Value.Result == HexPathSearchResult.NotAllOptionsCalculated)
-                    removeKeys.Add(kvp.Key);
-            }
-
-            foreach (var key in removeKeys)
-            {
-                _cachedResults.Remove(key);
-            }
-        }
-
-        public HexPathSearchResultData GetHexPathData(int2 startHexCoord, HexEdgesMask startEdgesMask, int2 endHexCoord, HexEdgesMask endEdgesMask,  bool requestMissedPathsCalculation = true)
-        {
-            var operationKey = new CachedHexPathSearchKey(startHexCoord, startEdgesMask, endHexCoord, endEdgesMask);
-            if (_cachedResults.TryGetCachedValue(operationKey, out var cachedResult))
-                return cachedResult;
-
 
             HexPathOption shortestPathOption = HexPathOption.Default;
             HexPathOption shortestPathReachedOption = HexPathOption.Default;            
             var allOptionsCalculated = true;
+            CalculateExitCosts(request, out var startEdgesCost, out var endEdgesCost);
+
+            var startHexCoord = request.StartHexCoord;
+            var endHexCoord = request.EndHexCoord;
 
             for (var startEdge = 0; startEdge < 6; startEdge++)
             {
-                if (!startEdgesMask.IsEdgePresented(startEdge) || !_transitionableNodes.Contains(new(startHexCoord, startEdge)))
+                if (!request.StartEdgesMask.IsEdgePresented(startEdge) || !_transitionableNodes.IsNodeTransitionable(startHexCoord, startEdge))
                     continue;
 
                 for (var endEdge = 0; endEdge < 6; endEdge++)
                 {
-                    if (!endEdgesMask.IsEdgePresented(endEdge) || !_transitionableNodes.Contains(new(endHexCoord, endEdge)))
+                    if (!request.EndEdgesMask.IsEdgePresented(endEdge) || !_transitionableNodes.IsNodeTransitionable(endHexCoord, endEdge))
                         continue;
 
                     var startNode = new HexPathNodeKey(startHexCoord, startEdge);
@@ -113,14 +94,16 @@ namespace ZE.MechBattle
                             continue;
                         }
 
-                        var newPathCost = path.PathCost;
+                        var startEdgeCost = startEdgesCost[startEdge];
+                        var endEdgeCost = endEdgesCost[endEdge];
+                        var newPathCost = path.PathCost + startEdgeCost + endEdgeCost;
 
                         if (path.HasReachedTarget
-                            && newPathCost < shortestPathReachedOption.PathCost)
-                                shortestPathReachedOption = new(path.Id, path);
+                            && newPathCost < shortestPathReachedOption.FullPathCost)
+                                shortestPathReachedOption = new(path.Id, path, startEdgeCost, endEdgeCost);
 
-                        if (newPathCost < shortestPathOption.PathCost)
-                            shortestPathOption = new(path.Id, path);
+                        if (newPathCost < shortestPathOption.FullPathCost)
+                            shortestPathOption = new(path.Id, path, startEdgeCost, endEdgeCost);
 
                     }
                     else
@@ -130,6 +113,9 @@ namespace ZE.MechBattle
                         //UnityEngine.Debug.Log($"not found: {startNode}->{endNode}");
                     }                    
                 }
+
+                if (!allOptionsCalculated)
+                    break;
             }
 
             HexPathSearchResultData resultData;
@@ -141,7 +127,7 @@ namespace ZE.MechBattle
             {
                 if (shortestPathReachedOption.IsValid)
                 {
-                    resultData = new(HexPathSearchResult.PathFound, shortestPathReachedOption);
+                    resultData = new(HexPathSearchResult.PathFound, shortestPathReachedOption);               
                 }
                 else
                 {
@@ -156,10 +142,23 @@ namespace ZE.MechBattle
             }
 
             //UnityEngine.Debug.Log($"{shortestPathOption.IsValid} : {resultData.Result}");
-
-            _cachedResults.AddCachedValue(operationKey, resultData);
             return resultData;
         }
     
+        private void CalculateExitCosts(in HexPathSearchRequest request, out float6 startEdgesCost, out float6 endEdgesCost)
+        {
+            startEdgesCost = new();
+            endEdgesCost = new();
+            var directionsCf = HexTransitionLogic.GetDirectionCostCoefficients(request.StartHexCoord, request.EndHexCoord);
+
+            for (var i = 0; i < 6; i++)
+            {
+                var edge = (HexEdge)i;
+                startEdgesCost[i] = request.StartPosEdgeDistances[edge] * _edgesCostDivideCf * (1 - directionsCf[edge]);
+                endEdgesCost[i] = request.EndPosEdgeDistances[edge] * _edgesCostDivideCf * (1 + directionsCf[edge]);
+            }
+
+           
+        }
     }
 }

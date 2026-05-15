@@ -11,6 +11,18 @@ namespace ZE.MechBattle.Navigation
 
     public static class HexEdgeExtension
     {
+        private const int NEXT_EDGE_MASK = 0b_000_101_100_011_010_001;
+        private const int PREV_EDGE_MASK = 0b_100_011_010_001_000_101;
+
+        [BurstCompile]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static HexEdge Next(this HexEdge edge) => (HexEdge)((NEXT_EDGE_MASK >> ((int)edge * 3)) & 0b_111);
+
+
+        [BurstCompile]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static HexEdge Previous(this HexEdge edge) => (HexEdge)((PREV_EDGE_MASK >> ((int)edge * 3)) & 0b_111);
+
         [BurstCompile]
         public static float GetInHexTransitionCost(this HexEdge edge, HexEdge otherEdge) 
         { 

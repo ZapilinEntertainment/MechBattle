@@ -37,10 +37,22 @@ namespace ZE.MechBattle.Navigation
                : map.DefaultPassability;
 
 
-        public static HexEdgesMask GetAccessibleEdgesMaskAtPosition(IntTriangularPos pos, INavigationMap map)
+        public static CellHexAccessData GetAccessibleEdgesMaskAtPosition(IntTriangularPos pos, INavigationMap map)
         {
             var flowData = map.GetFlowData(pos);
-            return flowData.GetCombinedEdgeAccessMask();
+            return new(flowData.GetCombinedEdgeAccessMask(), new CombinedExitDistances(flowData));
+        }
+
+        public static float6 GetDirectionCostCoefficients(int2 startHexCoord, int2 endHexCoord)
+        {
+            var cf = new float6();
+            var dir = math.normalize(endHexCoord - startHexCoord);
+            for (var i = 0; i < 6; i++)
+            {
+                var edge = (HexEdge)i;
+                cf[edge] = 0.2f * math.dot(dir, math.normalize(edge.ToHexOffsetVector()));
+            }
+            return cf;
         }
     }
 }

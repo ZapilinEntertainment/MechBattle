@@ -8,7 +8,7 @@ namespace ZE.MechBattle.Navigation
         /// return hex nodes that have hexes on both side ((0,0):Top - (0,1):Bottom)
         /// check edge passability if needed
         /// </summary>
-        public static HashSet<HexPathNodeKey> Execute(INavigationMap map, bool checkEdgesPassability)
+        public static HexTransitionableNodes Execute(INavigationMap map, bool checkEdgesPassability)
         {
             var nodesList = new HashSet<HexPathNodeKey>();
             foreach (var hexCoord in map.HexCoords)
@@ -26,7 +26,7 @@ namespace ZE.MechBattle.Navigation
                     }
                 }
             }
-            return nodesList;
+            return new(nodesList);
         }
     }
 }

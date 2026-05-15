@@ -23,7 +23,7 @@ namespace ZE.MechBattle
                     refinedResults[i] = hexPathNodeKey;
                 }
 
-                startHexCoord = hexPathNodeKey.ToOppositeHexCoord();
+                startHexCoord = refinedResults[i].ToOppositeHexCoord();
             }
             return refinedResults;
         }

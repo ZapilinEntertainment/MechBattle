@@ -10,6 +10,21 @@ namespace ZE.MechBattle.Navigation.Tests
 {
     public class HexEdgesTest
     {
+        [Test]
+        public void NextAndPreviousEdgesTest()
+        {
+            for (var i = 0; i < 6; i++)
+            {
+                var edge = (HexEdge)i;
+                var next = (i+1) % 6;
+
+                Assert.AreEqual(next, (int)edge.Next(), $"next edge transition incorrect: {edge} -> {next}");
+
+                var prev = i > 0 ? i-1 : 5;
+                Assert.AreEqual(prev, (int)edge.Previous(), $"prev edge transition incorrect: {edge} -> {prev}");
+            }
+        }
+
 
         [Test]
         public void OppositesTest()

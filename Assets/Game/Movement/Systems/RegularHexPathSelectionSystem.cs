@@ -61,24 +61,17 @@ namespace ZE.MechBattle.Ecs
 
         private void HandleRequestingEntities()
         {
-            if (!UpdateMapVersion())
-                _hexPathSearcher.LeaveOnlyCalculatedPathsInCache();
+            UpdateMapVersion();
 
             foreach (var entity in _requestsFilter)
             {
-                var requestComponent = _selectComponentsStash.Get(entity);
-                var startEdgesMask = requestComponent.StartEdgesMask;
-                var endEdgesMask = requestComponent.EndEdgesMask;
-                var startHexCoord = requestComponent.StartHex;
-                var endHexCoord = requestComponent.EndHex;
-
-               var resultData = _hexPathSearcher.GetHexPathData(startHexCoord, startEdgesMask, endHexCoord, endEdgesMask, requestMissedPathsCalculation: true);
+                var request = _selectComponentsStash.Get(entity).Value;
+                var resultData = _hexPathSearcher.GetHexPathData(request, requestMissedPathsCalculation: true);
                 if (resultData.Result == HexPathSearcher.HexPathSearchResult.PathFound)
                 {
-                    UnityEngine.Debug.Log($"hex path set, target: {resultData.EndNode}, nodes count: {resultData.NodesCount}");
+                    //UnityEngine.Debug.Log($"hex path set, target: {resultData.EndNode}, nodes count: {resultData.NodesCount}");
                     SetEntityHexPath(entity, resultData.PathId, resultData.NodesCount);
-                }
-                    
+                }                    
             }
         }
 

@@ -60,33 +60,33 @@ namespace ZE.MechBattle.Ecs
 
             foreach (var entity in _noPathEntitiesFilter)
             {
-                var startHex = _hexCoords.Get(entity).Value;
+                var startHexCoord = _hexCoords.Get(entity).Value;
                 var startPos = _positions.Get(entity).Value;
 
                 var moveTargetComponent = _moveTargets.Get(entity);
                 var endPos = moveTargetComponent.WorldPos;
-                var endHex = HexMath.DefineHex(endPos.xz, _hexEdgeLength);
+                var endHexCoord = HexMath.DefineHex(endPos.xz, _hexEdgeLength);
 
-                if (math.all(startHex == endHex))
+                if (math.all(startHexCoord == endHexCoord))
                 {
                     // inside same hex
                     _emptyHexPathTags.Add(entity);
                 }
                 else
                 {
-                    if (HexTransitionLogic.IsEdgeTransitionPossible(startHex, endHex, _map, out var transitionEdge))
+                    if (HexTransitionLogic.IsEdgeTransitionPossible(startHexCoord, endHexCoord, _map, out var transitionEdge))
                     {
                         // just transite into neighbour hex through edge
-                        _transitionHexPaths.Add(entity, new(endHex, transitionEdge));
+                        _transitionHexPaths.Add(entity, new(endHexCoord, transitionEdge));
                     }
                     else
                     {
                         // request to make path from/to any accessible edge
                         var startTripos = _triangularPosComponents.Get(entity).Value;
-                        var startHexEdgesMask = HexTransitionLogic.GetAccessibleEdgesMaskAtPosition(startTripos, _map);
-                        var endHexEdgesMask = HexTransitionLogic.GetAccessibleEdgesMaskAtPosition(moveTargetComponent.TriangularPos, _map);
-
-                        _hexPathSelectionComponents.Add(entity, new(startHex, startHexEdgesMask, endHex, endHexEdgesMask));
+                        var startPosAccessData = HexTransitionLogic.GetAccessibleEdgesMaskAtPosition(startTripos, _map);
+                        var endPosAccessData = HexTransitionLogic.GetAccessibleEdgesMaskAtPosition(moveTargetComponent.TriangularPos, _map);
+                        var request = new HexPathSearchRequest(startHexCoord, endHexCoord, startPosAccessData, endPosAccessData);
+                        _hexPathSelectionComponents.Add(entity, new(request));
                     }
                 }
 

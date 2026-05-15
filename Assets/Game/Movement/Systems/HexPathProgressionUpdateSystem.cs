@@ -61,7 +61,7 @@ namespace ZE.MechBattle.Ecs {
             {
                 ref var hexPathComponent = ref _regularHexPaths.Get(entity);
                 var currentStep = hexPathComponent.StepIndex;
-                if (currentStep + 1 == hexPathComponent.StepsCount)
+                if (currentStep + 1 > hexPathComponent.StepsCount)
                 {
                     DoTargetCheck(entity);
                 }

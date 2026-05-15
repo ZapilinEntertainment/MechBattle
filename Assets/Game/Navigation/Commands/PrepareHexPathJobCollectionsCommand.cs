@@ -27,7 +27,7 @@ namespace ZE.MechBattle.Navigation
                     var key = new HexPathNodeKey(hexPos, edgeIndex);
                     var oppositeKey = key.ToOpposite();
 
-                    if (!transitionableNodes.Contains(key) && !transitionableNodes.Contains(oppositeKey))
+                    if (!transitionableNodes.IsNodeTransitionable(key) )
                     {
                         currentHexEdgeDataIndices[edgeIndex] = HexEdgeNodesData.INVALID_INDEX;
                         continue;

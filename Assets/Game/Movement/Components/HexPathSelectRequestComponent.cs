@@ -12,17 +12,11 @@ namespace ZE.MechBattle.Ecs
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public readonly struct HexPathSelectRequestComponent : IComponent 
     {
-        public readonly int2 StartHex;
-        public readonly int2 EndHex;
-        public readonly HexEdgesMask StartEdgesMask;
-        public readonly HexEdgesMask EndEdgesMask;
+        public readonly HexPathSearchRequest Value;
 
-        public HexPathSelectRequestComponent(int2 startHex, HexEdgesMask startMask, int2 endHex, HexEdgesMask endMask)
+        public HexPathSelectRequestComponent(in HexPathSearchRequest request)
         {
-            StartHex = startHex;
-            EndHex = endHex;
-            StartEdgesMask = startMask;
-            EndEdgesMask = endMask;
+            Value = request;
         }
     }
 }
