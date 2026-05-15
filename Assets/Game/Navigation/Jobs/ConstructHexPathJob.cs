@@ -78,6 +78,9 @@ namespace ZE.MechBattle.Navigation
                 }
                 else
                 {
+                    if (math.all(nextNode.value.HexCoord == NavigationData[nextNode.index].ParentNodeKey.HexCoord))
+                        nextNode = (nextNode.value.ToOpposite(), nextNode.index);
+
                     var dist = HexMath.CalculateDistance(nextNode.value, End);
                     if (dist < closestDistance)
                     {
@@ -119,40 +122,9 @@ namespace ZE.MechBattle.Navigation
 
         private void HandleNeighbours(HexPathNodeKey activeNode)
         {
-            /*
-             *  Example: active node is (a,b) BottomRight / (a+1, b-1) Top
-             *  so we check firstly own hex nodes (O-marked)
-             *  and then neighbour hex nodes (N-marked)
-             * 
-                           TopO
-              TopLeftO           TopRightO                             
-              BottomLeftO       -> ACTIVE NODE<-         
-                    BottomO(TopLeftN)            TopRightN
-                       BottomLeftN                  BottomRightN
-                                     BottomN
-            */
-            //own hex nodes:
             var hexData = HexData[activeNode.HexCoord];
             var activeNodeData = NavigationData[hexData.GetNodeIndex(activeNode.EdgeIndex)];
 
-            //UnityEngine.Debug.Log($"active node: {activeNode}, cost: {activeNodeData.TotalPathCost} ");
-
-            for (var i = 0; i < 6; i++)
-            {
-                var edge = (HexEdge)i;
-                if (!hexData.TryGetNodeIndex(i, out var neighbourIndex)
-                    || !hexData.AccessMap.AreEdgesConnected(activeNode.Edge, edge))
-                    continue;
-
-                AstarLogic.HandleNeighbour(activeNodeData,
-                    neighbourIndex,
-                    OpenedList,
-                    NavigationData,
-                    activeNode.Edge.GetInHexTransitionCost(edge));
-
-
-                //UnityEngine.Debug.Log($"{activeNode} ->  {new HexPathNodeKey(activeNode.HexCoord, i)} ( [{neighbourIndex}] cost: {NavigationData[neighbourIndex].CostFromStart} / {NavigationData[neighbourIndex].TotalPathCost})");
-            }
 
             // neighboured hex nodes:
             var neighbourHexNode = activeNode.ToOpposite();

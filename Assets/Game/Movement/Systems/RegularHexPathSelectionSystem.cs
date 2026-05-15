@@ -71,7 +71,14 @@ namespace ZE.MechBattle.Ecs
                 {
                     //UnityEngine.Debug.Log($"hex path set, target: {resultData.EndNode}, nodes count: {resultData.NodesCount}");
                     SetEntityHexPath(entity, resultData.PathId, resultData.NodesCount);
-                }                    
+                }             
+                else
+                {
+                    if (resultData.Result == HexPathSearcher.HexPathSearchResult.OnlyIncompletePathPossible)
+                    {
+                        UnityEngine.Debug.Log("only incomplete paths possible");
+                    }
+                }
             }
         }
 

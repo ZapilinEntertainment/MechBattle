@@ -4067,6 +4067,7 @@ GameObject:
   - component: {fileID: 1259888754}
   - component: {fileID: 1259888755}
   - component: {fileID: 1259888756}
+  - component: {fileID: 1259888757}
   m_Layer: 0
   m_Name: DEVELOP
   m_TagString: Untagged
@@ -4152,6 +4153,26 @@ MonoBehaviour:
     y: 0
   _endEdge: 5
   _checkResult: 
+--- !u!114 &1259888757
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259888751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdc92e2a0beb35140ba7af3150712f13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.NavigationCellDisplay
+  _displayData:
+    TopExitDistance: 0
+    TopRightDistance: 0
+    BottomRightDistance: 0
+    BottomDistance: 0
+    BottomLeftDistance: 0
+    TopLeftDistance: 0
+    AccessMask: 
 --- !u!1 &1324568865
 GameObject:
   m_ObjectHideFlags: 0

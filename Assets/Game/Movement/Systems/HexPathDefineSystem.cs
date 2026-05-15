@@ -74,7 +74,8 @@ namespace ZE.MechBattle.Ecs
                 }
                 else
                 {
-                    if (HexTransitionLogic.IsEdgeTransitionPossible(startHexCoord, endHexCoord, _map, out var transitionEdge))
+                    if (HexTransitionLogic.IsEdgeTransitionPossible(startHexCoord, endHexCoord, _map, out var transitionEdge) 
+                        && _map.GetFlowData(moveTargetComponent.TriangularPos).GetCombinedEdgeAccessMask().IsEdgePresented(transitionEdge.ToOpposite()))
                     {
                         // just transite into neighbour hex through edge
                         _transitionHexPaths.Add(entity, new(endHexCoord, transitionEdge));

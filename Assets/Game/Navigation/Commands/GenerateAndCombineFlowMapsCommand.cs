@@ -56,7 +56,10 @@ namespace ZE.MechBattle.Navigation
                 for (var i = 0; i < _trianglesInHex; i++)
                 {
                     var calculatedData = _calculationData[i];
-                    var cellData = new FlowMapCellData(direction: calculatedData.FlowDirection, exitDistance: (ushort)calculatedData.IntegrationValue);
+                    var integrationValue = calculatedData.IntegrationValue;
+                    var cellData = new FlowMapCellData(
+                        direction: calculatedData.FlowDirection, 
+                        exitDistance: integrationValue == GenerateFlowFieldJob.DEFAULT_INTEGRATION_VALUE ? FlowMapCellData.INVALID_EXIT_DISTANCE : (ushort)integrationValue);
                     _compositeMap.SetValue(edge, i, cellData);
                 }
             }

@@ -15,7 +15,7 @@ namespace ZE.MechBattle.Navigation
         private const int BYTE_MASK = 0xFF;
 
         public const int DISTANCE_MASK = 0xFFFF;
-        public const int INVALID_EXIT_DISTANCE = ushort.MaxValue;
+        public const ushort INVALID_EXIT_DISTANCE = ushort.MaxValue;
         public const int STRUCTURE_SIZE = sizeof(int);
 
         public FlowMapCellData(int value) => Value = value;

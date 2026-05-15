@@ -28,6 +28,7 @@ namespace ZE.MechBattle.Navigation
         public int TrianglesPerEdge;
         public HexEdge ExitEdge;    
 
+        public const float DEFAULT_INTEGRATION_VALUE = float.MaxValue;
         private const int NEIGHBOURS_COUNT = NavigationConstants.TRIANGLE_DIRECTIONS_COUNT;
         private int _exitFlowDirectionPeak;
         private int _exitFlowDirectionValley;
@@ -43,7 +44,7 @@ namespace ZE.MechBattle.Navigation
             for (var i = 0; i < CalculationData.Length; i++)
             {
                 var cellData = CalculationData[i];
-                cellData.IntegrationValue = float.MaxValue;
+                cellData.IntegrationValue = DEFAULT_INTEGRATION_VALUE;
                 cellData.IsCalculated = false;
 
                 var pos = PassabilityData.IndexToTriangular(i);
