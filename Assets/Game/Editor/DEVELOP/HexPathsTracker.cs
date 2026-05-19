@@ -12,15 +12,17 @@ namespace ZE.MechBattle.Develop
         [Serializable]
         public struct SerializedHexPathData
         {
-            public int PathId;
+            [PropertyOrder(0)]public int PathId;
             public bool IsCalculated;
+            public bool ReachesTarget;
             public HexPathNodeKey[] Points;
 
             [HideInInspector] public (HexPathNodeKey, HexPathNodeKey) Destinations;
-            [ShowInInspector]private string DestinationsString => $"{Destinations.Item1} -> {Destinations.Item2}";
+            [ShowInInspector, PropertyOrder(1)]private string DestinationsString => $"{Destinations.Item1} -> {Destinations.Item2}";
         }
 
 
+        [ShowInInspector, PropertyOrder(0)] private int Version => _lastDrawnVersion;
         [ReadOnly, SerializeField] private List<SerializedHexPathData> _data;
         private HexPathsLRUBuffer _hexPaths;
         private int _lastDrawnVersion = -1;
@@ -51,7 +53,8 @@ namespace ZE.MechBattle.Develop
                         IsCalculated = hexPath.IsCalculated,
                         PathId = hexPath.Id,
                         Destinations = hexPath.DestinationKey,
-                        Points = hexPath.Points
+                        Points = hexPath.Points,
+                        ReachesTarget = hexPath.HasReachedTarget
                     });
                 }
             }

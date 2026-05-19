@@ -24,12 +24,15 @@ namespace ZE.MechBattle.Ecs
         private Stash<HexCoordComponent> _hexCoord;
         private Stash<TrianglePathDefinedTag> _trianglePathDefined;
         private Stash<TransitionHexPathComponent> _transitionHexPathComponents;
+        private Stash<HexPathFailPointComponent> _failPoints;
 
         private readonly HexPathsLRUBuffer _hexPathsList;
+        private readonly INavigationMap _map;
        
-        public TrianglePathDefineSystem(HexPathsLRUBuffer hexPathsList) 
+        public TrianglePathDefineSystem(HexPathsLRUBuffer hexPathsList, INavigationMap map) 
         {
             _hexPathsList = hexPathsList;
+            _map = map;
         }
 
         public void OnAwake() 
@@ -60,6 +63,7 @@ namespace ZE.MechBattle.Ecs
             _invalidHexPaths = World.GetStash<ClearHexPathTag>();
             _endpoints = World.GetStash<CalculatingTrianglePathComponent>();
             _hexCoord = World.GetStash<HexCoordComponent>();
+            _failPoints = World.GetStash<HexPathFailPointComponent>();
 
             _trianglePathDefined = World.GetStash<TrianglePathDefinedTag>();
             _transitionHexPathComponents = World.GetStash<TransitionHexPathComponent>();
@@ -103,9 +107,10 @@ namespace ZE.MechBattle.Ecs
             foreach (var entity in _regularHexPathUsers)
             {
                 var hexPathComponent = _regularPaths.Get(entity);
-                UnityEngine.Debug.Log($"hex step index: {hexPathComponent.StepIndex} / {hexPathComponent.StepsCount}");
+                var stepIndex = hexPathComponent.StepIndex;
+                UnityEngine.Debug.Log($"hex step index: {stepIndex} / {hexPathComponent.StepsCount}");
 
-                if (hexPathComponent.StepIndex == hexPathComponent.StepsCount)
+                if (stepIndex == hexPathComponent.StepsCount)
                 {
                     // last hex node -> target
                     UnityEngine.Debug.Log($"moving to final target");
@@ -116,11 +121,13 @@ namespace ZE.MechBattle.Ecs
                     // start pos -> first node
                     // or node X -> node X+1
                     if (!_hexPathsList.TryGetPath(hexPathComponent.PathId, out var path) 
-                        || !path.TryGetNode(hexPathComponent.StepIndex, out var currentNode))
+                        || !path.TryGetNode(stepIndex, out var currentNode)
+                        || !IfPathIsCorrect(entity, currentNode.Edge, stepIndex))
                     {
                         _invalidHexPaths.Set(entity);
                         continue;
                     }
+                    
 
                     var currentHexCoord = _hexCoord.Get(entity).Value;
                     var nextHexCoord = currentHexCoord + currentNode.Edge.ToHexOffsetVector();
@@ -147,6 +154,21 @@ namespace ZE.MechBattle.Ecs
             //UnityEngine.Debug.Log($"flow movement to {nextHexCoord}:{exitEdge}");
             _flowPaths.Set(entity, new(exitEdge, nextHexCoord));
             _trianglePathDefined.Add(entity);
+        }
+
+        private bool IfPathIsCorrect(Entity entity, HexEdge exitEdge, int stepIndex)
+        {
+            // check if next node is really accessible
+            var tripos = _triangularPos.Get(entity).Value;
+            var cellEdgesAccessMask = _map.GetFlowData(tripos).GetCombinedEdgeAccessMask();
+            if (!cellEdgesAccessMask.IsEdgePresented(exitEdge))
+            {
+                UnityEngine.Debug.Log($"hex path {_regularPaths.Get(entity).PathId} was incorrect: edge is not accessible");
+                _failPoints.Set(entity, new(stepIndex));
+                return false;
+            }
+
+            return true;
         }
     }
 }

@@ -19,6 +19,9 @@ namespace ZE.MechBattle.Navigation
 
         public HexEdgesAccessMap SetConnectionStatus(HexEdge a, HexEdge b, bool isAccessible)
         {
+            if (a == b)
+                return this;
+
             int index = GetConnectionIndex(a, b);
             var dataCopy = _data;
             if (isAccessible) 

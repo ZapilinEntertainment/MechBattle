@@ -24,6 +24,19 @@ namespace ZE.MechBattle
             IsCalculated = false;
         }
 
+        public void TrimPath(int lastStepIndex)
+        {
+            var newPoints = new NodeKey[lastStepIndex +1];
+            for (var i = 0; i < newPoints.Length ; i++)
+            {
+                newPoints[i] = Points[i];
+            }
+
+            Points = newPoints;
+            HasReachedTarget = false;
+            LastUseTime = Time.time;
+        }
+
         public void OnCalculationFinished(PathCalculationResult<NodeKey> calculationResult)
         {
             IsCalculated = true;

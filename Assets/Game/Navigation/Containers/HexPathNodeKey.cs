@@ -42,10 +42,10 @@ namespace ZE.MechBattle.Navigation
         public override int GetHashCode() => (int)math.hash(_value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int2 ToOppositeHexCoord() => _value.xy + Edge.ToHexOffsetVector();
+        public int2 ToNextHexCoord() => _value.xy + Edge.ToHexOffsetVector();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public HexPathNodeKey ToOpposite() => new(ToOppositeHexCoord(), Edge.ToOpposite());
+        public HexPathNodeKey ToOpposite() => new(ToNextHexCoord(), Edge.ToOpposite());
 
 
         public static bool operator ==(HexPathNodeKey left, HexPathNodeKey right) => left.Equals(right);

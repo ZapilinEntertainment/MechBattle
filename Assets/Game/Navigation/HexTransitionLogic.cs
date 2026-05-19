@@ -36,13 +36,6 @@ namespace ZE.MechBattle.Navigation
                ? hexA.EdgesPassability.IsEdgePresented(transitionEdgeA) && hexB.EdgesPassability.IsEdgePresented(transitionEdgeB)
                : map.DefaultPassability;
 
-
-        public static CellHexAccessData GetAccessibleEdgesMaskAtPosition(IntTriangularPos pos, INavigationMap map)
-        {
-            var flowData = map.GetFlowData(pos);
-            return new(flowData.GetCombinedEdgeAccessMask(), new CombinedExitDistances(flowData));
-        }
-
         public static float6 GetDirectionCostCoefficients(int2 startHexCoord, int2 endHexCoord)
         {
             var cf = new float6();

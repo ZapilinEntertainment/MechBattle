@@ -76,7 +76,8 @@ namespace ZE.MechBattle.Ecs
                 {
                     if (resultData.Result == HexPathSearcher.HexPathSearchResult.OnlyIncompletePathPossible)
                     {
-                        UnityEngine.Debug.Log("only incomplete paths possible");
+                        UnityEngine.Debug.LogError($"{request.StartHexCoord} -> {request.EndHexCoord} only incomplete paths possible; start edges mask: {request.StartEdgesMask}, end edges mask: {request.EndEdgesMask}");
+
                     }
                 }
             }

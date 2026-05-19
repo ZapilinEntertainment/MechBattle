@@ -43,6 +43,7 @@ namespace ZE.MechBattle
 
         private int _nextPathId = 1;
 
+        public void UpdatePathDataVersion() => PathDataVersion++;
 
         public IBufferTrimController CreateTrimController() => new BufferTrimController<UserKey, NodeKey>(this);
         public bool IsPathExists(int pathId) => _paths.ContainsKey(pathId);

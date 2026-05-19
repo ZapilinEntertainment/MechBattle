@@ -1,3 +1,4 @@
+using VContainer;
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
 
@@ -8,7 +9,11 @@ namespace ZE.MechBattle.Ecs {
     public sealed class HexPathClearSystem : ICleanupSystem 
     {
         public World World { get; set;}
+
+        private readonly HexPathsLRUBuffer _hexPaths;
+
         private Filter _clearFilter;
+        private Filter _failedPathsFilter;
 
         private Stash<ClearHexPathTag> _hexClearTags;
         private Stash<RegularHexPathComponent> _regularHexPaths;
@@ -16,10 +21,23 @@ namespace ZE.MechBattle.Ecs {
         private Stash<ClearTrianglePathTag> _triangleClearTags;
         private Stash<HexPathDefinedTag> _hexPathDefinedTags;
         private Stash<EmptyHexPathTag> _emptyHexPaths;
+        private Stash<HexPathFailPointComponent> _hexPathFailPoints;
+
+        [Inject]
+        public HexPathClearSystem(HexPathsLRUBuffer hexPaths)
+        {
+            _hexPaths = hexPaths;
+        }
 
         public void OnAwake() 
         {
-            _clearFilter = World.Filter.With<ClearHexPathTag>().Build();
+            _clearFilter = World.Filter
+                .With<ClearHexPathTag>()
+                .Build();
+
+            _failedPathsFilter = World.Filter
+                .With<HexPathFailPointComponent>()
+                .Build();
 
             _hexClearTags = World.GetStash<ClearHexPathTag>();
             _regularHexPaths = World.GetStash<RegularHexPathComponent>();
@@ -27,31 +45,42 @@ namespace ZE.MechBattle.Ecs {
             _hexPathDefinedTags = World.GetStash<HexPathDefinedTag>();
             _transitionHexPaths = World.GetStash<TransitionHexPathComponent>();
             _emptyHexPaths = World.GetStash<EmptyHexPathTag>();
+            _hexPathFailPoints = World.GetStash<HexPathFailPointComponent>();
         }
 
         public void OnUpdate(float deltaTime) 
         {
+            foreach (var entity in _failedPathsFilter)
+            {
+                var pathId = _regularHexPaths.Get(entity).PathId;
+                if (_hexPaths.TryGetPath(pathId, out var path))
+                {
+                    var failedStep = _hexPathFailPoints.Get(entity).StepIndex;
+                    path.TrimPath(failedStep);
+                    UnityEngine.Debug.Log($"path {path.DestinationKey} was trimmed due to error");
+                    _hexPaths.UpdatePathDataVersion();
+
+                    _hexPathFailPoints.Remove(entity);
+                }
+            }
+
             foreach (var entity in _clearFilter)
             {
-                _hexClearTags.Remove(entity);                
-                _regularHexPaths.Remove(entity);
-                _hexPathDefinedTags.Remove(entity);
-                _transitionHexPaths.Remove(entity);
-                _emptyHexPaths.Remove(entity);
-
-                _triangleClearTags.Set(entity);
-
-#if UNITY_EDITOR
-                var calculatingHexPath = entity.Has<HexPathSelectRequestComponent>();
-                var calculatingTrianglePath = entity.Has<CalculatingTrianglePathComponent>();
-                if ( calculatingHexPath | calculatingTrianglePath) 
-                    UnityEngine.Debug.LogError($"calculating hex path: {calculatingHexPath}, calculating tris path: {calculatingTrianglePath}");
-                #endif
-
-                //UnityEngine.Debug.Log($"removed hex path for {entity}");
+                ClearHexPathComponents(entity);
             }
         }
 
         public void Dispose() { }
+
+        private void ClearHexPathComponents(Entity entity)
+        {
+            _hexClearTags.Remove(entity);
+            _regularHexPaths.Remove(entity);
+            _hexPathDefinedTags.Remove(entity);
+            _transitionHexPaths.Remove(entity);
+            _emptyHexPaths.Remove(entity);
+
+            _triangleClearTags.Set(entity);
+        }
     }
 }

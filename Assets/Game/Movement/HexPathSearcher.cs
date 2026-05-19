@@ -111,10 +111,10 @@ namespace ZE.MechBattle
                         allOptionsCalculated = false;
                         _requestedPathsList.Add(new(startNode, endNode));
                         //UnityEngine.Debug.Log($"not found: {startNode}->{endNode}");
-                    }                    
+                    }
                 }
 
-                if (!allOptionsCalculated)
+               if (!allOptionsCalculated)
                     break;
             }
 
@@ -156,9 +156,7 @@ namespace ZE.MechBattle
                 var edge = (HexEdge)i;
                 startEdgesCost[i] = request.StartPosEdgeDistances[edge] * _edgesCostDivideCf * (1 - directionsCf[edge]);
                 endEdgesCost[i] = request.EndPosEdgeDistances[edge] * _edgesCostDivideCf * (1 + directionsCf[edge]);
-            }
-
-           
+            }           
         }
     }
 }

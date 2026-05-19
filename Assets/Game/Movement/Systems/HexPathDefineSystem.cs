@@ -74,8 +74,18 @@ namespace ZE.MechBattle.Ecs
                 }
                 else
                 {
-                    if (HexTransitionLogic.IsEdgeTransitionPossible(startHexCoord, endHexCoord, _map, out var transitionEdge) 
-                        && _map.GetFlowData(moveTargetComponent.TriangularPos).GetCombinedEdgeAccessMask().IsEdgePresented(transitionEdge.ToOpposite()))
+                    var startTripos = _triangularPosComponents.Get(entity).Value;
+                    var endTripos = moveTargetComponent.TriangularPos;
+
+                    var startPosFlowData = _map.GetFlowData(startTripos);
+                    var endPosFlowData = _map.GetFlowData(endTripos);
+
+                    var startPosEdgesAccessData = startPosFlowData.GetCombinedEdgeAccessMask();
+                    var endPosEdgesAccessData = endPosFlowData.GetCombinedEdgeAccessMask();
+
+                    if (HexTransitionLogic.IsEdgeTransitionPossible(startHexCoord, endHexCoord, _map, out var transitionEdge)
+                        && startPosEdgesAccessData.IsEdgePresented(transitionEdge) 
+                        && endPosEdgesAccessData.IsEdgePresented(transitionEdge.ToOpposite()))
                     {
                         // just transite into neighbour hex through edge
                         _transitionHexPaths.Add(entity, new(endHexCoord, transitionEdge));
@@ -83,9 +93,10 @@ namespace ZE.MechBattle.Ecs
                     else
                     {
                         // request to make path from/to any accessible edge
-                        var startTripos = _triangularPosComponents.Get(entity).Value;
-                        var startPosAccessData = HexTransitionLogic.GetAccessibleEdgesMaskAtPosition(startTripos, _map);
-                        var endPosAccessData = HexTransitionLogic.GetAccessibleEdgesMaskAtPosition(moveTargetComponent.TriangularPos, _map);
+
+                        var startPosAccessData = new CellHexAccessData(startPosEdgesAccessData, new (startPosFlowData));
+                        var endPosAccessData = new CellHexAccessData(endPosEdgesAccessData, new(endPosFlowData));
+
                         var request = new HexPathSearchRequest(startHexCoord, endHexCoord, startPosAccessData, endPosAccessData);
                         _hexPathSelectionComponents.Add(entity, new(request));
                     }

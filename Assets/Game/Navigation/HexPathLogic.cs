@@ -1,8 +1,7 @@
 using Unity.Collections;
 using Unity.Mathematics;
-using ZE.MechBattle.Navigation;
 
-namespace ZE.MechBattle
+namespace ZE.MechBattle.Navigation
 {
     public static class HexPathLogic
     {
@@ -23,7 +22,8 @@ namespace ZE.MechBattle
                     refinedResults[i] = hexPathNodeKey;
                 }
 
-                startHexCoord = refinedResults[i].ToOppositeHexCoord();
+                UnityEngine.Debug.Log($"{hexPathNodeKey} -> {refinedResults[i]}");
+                startHexCoord = refinedResults[i].ToNextHexCoord();
             }
             return refinedResults;
         }

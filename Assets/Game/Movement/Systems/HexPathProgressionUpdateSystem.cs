@@ -14,7 +14,6 @@ namespace ZE.MechBattle.Ecs {
 
         private Stash<CompletedTrianglePathTag> _completedTags;
         private Stash<RegularHexPathComponent> _regularHexPaths;
-        private Stash<TransitionHexPathComponent> _transitionHexPaths;
 
         private Stash<MoveTargetComponent> _moveTargets;
         private Stash<TriangularPosComponent> _triangularPosComponents;
@@ -37,7 +36,6 @@ namespace ZE.MechBattle.Ecs {
 
             _completedTags = World.GetStash<CompletedTrianglePathTag>(); 
             _regularHexPaths = World.GetStash<RegularHexPathComponent>();
-            _transitionHexPaths = World.GetStash<TransitionHexPathComponent>();
 
             _moveTargets = World.GetStash<MoveTargetComponent>();
             _triangularPosComponents = World.GetStash<TriangularPosComponent>();
