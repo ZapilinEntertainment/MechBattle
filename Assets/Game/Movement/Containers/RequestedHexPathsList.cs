@@ -3,7 +3,7 @@ using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle
 {
-    public class RequestedHexPathsList : HashSet<HexPathKey>
+    public class RequestedHexPathsList : HashSet<HexPathSearchRequest>
     {
     
     }

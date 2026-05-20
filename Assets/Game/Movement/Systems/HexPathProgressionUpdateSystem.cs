@@ -13,7 +13,7 @@ namespace ZE.MechBattle.Ecs {
         private Filter _otherHexPathUsersWithCompletedStage;
 
         private Stash<CompletedTrianglePathTag> _completedTags;
-        private Stash<RegularHexPathComponent> _regularHexPaths;
+        private Stash<HexPathComponent> _regularHexPaths;
 
         private Stash<MoveTargetComponent> _moveTargets;
         private Stash<TriangularPosComponent> _triangularPosComponents;
@@ -26,16 +26,16 @@ namespace ZE.MechBattle.Ecs {
         {
             _regularHexPathWithCompletedStage = World.Filter
                 .With<CompletedTrianglePathTag>()
-                .With<RegularHexPathComponent>()
+                .With<HexPathComponent>()
                 .Build();
 
             _otherHexPathUsersWithCompletedStage = World.Filter
                 .With<CompletedTrianglePathTag>()
-                .Without<RegularHexPathComponent>()
+                .Without<HexPathComponent>()
                 .Build();
 
             _completedTags = World.GetStash<CompletedTrianglePathTag>(); 
-            _regularHexPaths = World.GetStash<RegularHexPathComponent>();
+            _regularHexPaths = World.GetStash<HexPathComponent>();
 
             _moveTargets = World.GetStash<MoveTargetComponent>();
             _triangularPosComponents = World.GetStash<TriangularPosComponent>();

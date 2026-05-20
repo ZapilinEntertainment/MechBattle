@@ -6,19 +6,25 @@ namespace ZE.MechBattle.Navigation
     {
         public readonly int2 StartHexCoord;
         public readonly int2 EndHexCoord;
-        public readonly HexEdgesMask StartEdgesMask;
-        public readonly HexEdgesMask EndEdgesMask;
-        public readonly CombinedExitDistances StartPosEdgeDistances;
-        public readonly CombinedExitDistances EndPosEdgeDistances;
+        public readonly IntTriangularPos StartTripos;
+        public readonly IntTriangularPos EndTripos;
+        public readonly int StartHexZoneIndex;
+        public readonly int EndHexZoneIndex;
 
-        public HexPathSearchRequest(int2 startHexCoord, int2 endHexCoord, CellHexAccessData startPosAccessData, CellHexAccessData endPosAccessData)
+        public HexPathSearchRequest(
+            IntTriangularPos startTripos, 
+            IntTriangularPos endTripos, 
+            int2 startHexCoord, 
+            int2 endHexCoord,
+            int startHexZoneIndex,
+            int endHexZoneIndex)
         {
             StartHexCoord = startHexCoord;
             EndHexCoord = endHexCoord;
-            StartEdgesMask = startPosAccessData.EdgesAccessMask;
-            EndEdgesMask = endPosAccessData.EdgesAccessMask;
-            StartPosEdgeDistances = startPosAccessData.EdgeDistances;
-            EndPosEdgeDistances = endPosAccessData.EdgeDistances;
+            StartTripos = startTripos;
+            EndTripos = endTripos;
+            StartHexZoneIndex = startHexZoneIndex;
+            EndHexZoneIndex = endHexZoneIndex;
         }
     
     }

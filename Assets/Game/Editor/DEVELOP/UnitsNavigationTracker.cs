@@ -104,7 +104,7 @@ namespace ZE.MechBattle.Develop
         private Stash<MoveTargetComponent> _moveTargets;
         private Stash<WaypointMoveTarget> _waypoints;
 
-        private Stash<RegularHexPathComponent> _regularHexPaths;
+        private Stash<HexPathComponent> _regularHexPaths;
         private Stash<TransitionHexPathComponent> _transitionHexPaths;
         private Stash<HexPathDefinedTag> _hexPathDefinedTags;
         private Stash<ClearHexPathTag> _clearHexPathTags;
@@ -137,7 +137,7 @@ namespace ZE.MechBattle.Develop
             _waypoints = _world.GetStash<WaypointMoveTarget>();
 
             _hexPathDefinedTags = world.GetStash<HexPathDefinedTag>();
-            _regularHexPaths = _world.GetStash<RegularHexPathComponent>();
+            _regularHexPaths = _world.GetStash<HexPathComponent>();
             _transitionHexPaths = world.GetStash<TransitionHexPathComponent>();            
             _clearHexPathTags = _world.GetStash<ClearHexPathTag>();
             _calculatingHexPathComponents = _world.GetStash<HexPathSelectRequestComponent>();

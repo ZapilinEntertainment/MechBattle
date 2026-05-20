@@ -14,7 +14,6 @@ namespace ZE.MechBattle.Navigation
         public readonly NativeHashSet<int> QueuedPositions;
         public readonly NativeArray<IntTriangularPos> Positions;
 
-        public readonly NativeArray<CombinedFlowData> FlowData;
         public readonly NativeArray<CellPassabilityData> PassabilityDataInnerArray;
         private readonly int _hexRadius;
         private readonly NativeArray<byte> _rowIndices;
@@ -41,9 +40,7 @@ namespace ZE.MechBattle.Navigation
             CalculationQueue = new NativeQueue<int>(allocator);
             var hexTrianglesCount = TriangularMath.GetTrianglesCountInHex(_hexRadius);
             QueuedPositions = new NativeHashSet<int>(hexTrianglesCount / 2, allocator);
-            CalculationData = new NativeArray<FlowFieldCellCalculationData>(_passabilityData.Length, allocator, NativeArrayOptions.UninitializedMemory);
-        
-            FlowData = new NativeArray<CombinedFlowData>(hexTrianglesCount, allocator, NativeArrayOptions.UninitializedMemory);        
+            CalculationData = new NativeArray<FlowFieldCellCalculationData>(_passabilityData.Length, allocator, NativeArrayOptions.UninitializedMemory);  
         }
 
         public void ChangeHexPosAndReset(IntTriangularPos newHexCenter)
@@ -72,13 +69,10 @@ namespace ZE.MechBattle.Navigation
             CalculationQueue.Dispose();
             QueuedPositions.Dispose();
             _rowIndices.Dispose();
-            FlowData.Dispose();
         }
 
 
         public IntTriangularPos IndexToPos(int index) => PassabilityData.IndexToTriangular(index);
         public int PosToIndex(IntTriangularPos pos) => PassabilityData.TriangularToIndex(pos);
-
-        public CombinedFlowData GetFlowData(IntTriangularPos pos) => FlowData[PosToIndex(pos)];
     }
 }

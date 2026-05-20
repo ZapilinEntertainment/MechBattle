@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
 using Unity.Collections;
+using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle.Navigation
 {
@@ -13,7 +14,9 @@ namespace ZE.MechBattle.Navigation
         int2 HexCoordinate { get; }
         HexEdgesAccessMap AccessMap { get; }
         HexEdgesMask EdgesPassability { get;}
-        public NavigationHexPosition Pos { get; }
+        NavigationHexPosition Pos { get; }
+        HexEdgeStatus GetEdgeStatus(HexEdge edge);
+        IReadOnlyList<NavigationPortal> PortalsList { get; }
     }
 
     public interface IUpdatableNavigationHex : INavigationHex
@@ -38,7 +41,12 @@ namespace ZE.MechBattle.Navigation
         public NavigationHexPosition Pos => _pos;
         public HexEdgesAccessMap AccessMap { get;private set;}
         public HexEdgesMask EdgesPassability { get;private set;}
+        public IReadOnlyList<NavigationPortal> PortalsList => _portals;
+
         private readonly NavigationHexPosition _pos;
+        private readonly HexEdgeStatus[] _edgeStatuses = new HexEdgeStatus[6];
+        private readonly List<NavigationPortal> _portals = new();
+
 
 
         public NavigationHex(in NavigationHexPosition pos)
@@ -50,5 +58,6 @@ namespace ZE.MechBattle.Navigation
         public void UpdateAccessMap(HexEdgesAccessMap accessMap) => AccessMap = accessMap;
         public void OnFlowMapCalculated() => IsFlowMapCalculated = true;    
         public void UpdateVersion() => Version++;
+        public HexEdgeStatus GetEdgeStatus(HexEdge edge) => _edgeStatuses[(int)edge];
     }
 }

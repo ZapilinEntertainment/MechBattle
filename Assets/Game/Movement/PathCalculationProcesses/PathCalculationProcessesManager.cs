@@ -5,13 +5,13 @@ namespace ZE.MechBattle
 {
     public abstract class PathCalculationProcessesManager<NodeKey> : IDisposable where NodeKey : unmanaged
     {
-        private readonly PathCalculationProcess<NodeKey>[] _processes;
-        private readonly IPathsList<NodeKey> _pathsList;
+        protected readonly IPathsList<NodeKey> PathsList;
+        private readonly PathCalculationProcess<NodeKey>[] _processes;        
 
         public PathCalculationProcessesManager(int maxProcessesCount, IPathsList<NodeKey> pathsList)
         {
             _processes = new PathCalculationProcess<NodeKey>[maxProcessesCount];
-            _pathsList = pathsList;
+            PathsList = pathsList;
         }
 
         public void Dispose()
@@ -39,7 +39,7 @@ namespace ZE.MechBattle
                     case CalculationProcessStage.Complete:
                         {
                             var results = calculationProcess.StopAndGetResults();
-                            _pathsList.AddCalculatedPath(calculationProcess.PathId, results);
+                            PathsList.AddCalculatedPath(calculationProcess.PathId, results);
                             idleProcesses++;
                             break;
                         }
@@ -66,12 +66,7 @@ namespace ZE.MechBattle
                 }
 
                 if (process.Stage == CalculationProcessStage.Idle)
-                {
-                    var reservedPath = _pathsList.ReservePath((start, end));
-                    process.Launch(reservedPath.Id, start, end);
-                    //UnityEngine.Debug.Log($"start calculation: {start} -> {end}");
-                    return new (reservedPath.Id, i, process.ProcessIteration);
-                }
+                    return LaunchProcessJob(start,end, process, i);
             }
             return default;
         }
@@ -81,5 +76,13 @@ namespace ZE.MechBattle
             || _processes[token.ProcessIndex].ProcessIteration != token.ProcessIteration;
 
         public abstract PathCalculationProcess<NodeKey> CreateNewProcess();
+
+        virtual protected PathCalculationProcessToken LaunchProcessJob(NodeKey start, NodeKey end, PathCalculationProcess<NodeKey> process, int index)
+        {
+            var reservedPath = PathsList.ReservePath((start, end));
+            process.Launch(reservedPath.Id, start, end);
+            //UnityEngine.Debug.Log($"start calculation: {start} -> {end}");
+            return new(reservedPath.Id, index, process.ProcessIteration);
+        }
     }
 }

@@ -32,7 +32,6 @@ namespace ZE.MechBattle.Navigation
         MapSettings Settings { get; }
         Allocator ResourcesAllocator { get; }
 
-        CombinedFlowData GetFlowData(IntTriangularPos pos);
         CellPassabilityData GetPassabilityData(IntTriangularPos pos);
         CellHeightData GetHeightData(IntTriangularPos pos);
 
@@ -76,9 +75,6 @@ namespace ZE.MechBattle.Navigation
         }
 
         public void OnInitialized() => IsInitialized = true;
-
-        public CombinedFlowData GetFlowData(IntTriangularPos pos) => 
-            _cells.TryGetValue(pos, out var cell) ? cell.FlowData : _virtualHex.GetCombinedCellData(pos);
 
         public CellPassabilityData GetPassabilityData(IntTriangularPos pos) =>
              _cells.TryGetValue(pos, out var cell) ? cell.Passability : NavigationLogic.GetDefaultPassability(this);

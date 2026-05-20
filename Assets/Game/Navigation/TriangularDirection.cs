@@ -41,6 +41,40 @@ namespace ZE.MechBattle.Navigation
     public static class NeighbourDirectionExtension
     {
         [BurstCompile]
+        public static int3 ToTriangularOffsetVector(this PeakNeighbour peakNeighbour) => peakNeighbour switch
+        {
+            PeakNeighbour.VertexUpRight => new(- 1, 1, 0),
+            PeakNeighbour.EdgeUpRight => new(0, 1, 1),
+            PeakNeighbour.VertexRight => new( - 1, 0, 1),
+            PeakNeighbour.VertexDownRightValley => new(0, 0, 2),
+            PeakNeighbour.VertexDownRightPeak => new(0, - 1,  1),
+            PeakNeighbour.EdgeDown => new(1, 0,  1),
+            PeakNeighbour.VertexDownLeftPeak => new(1, - 1, 0),
+            PeakNeighbour.VertexDownLeftValley => new( 2, 0, 0),
+            PeakNeighbour.VertexLeft => new( 1, 0, - 1),
+            PeakNeighbour.EdgeUpLeft => new(  1,  1, 0),
+            PeakNeighbour.VertexUpLeft => new(0,  1, - 1),
+            _ => new(0, 2, 0)
+        };
+
+        [BurstCompile]
+        public static int3 ToTriangularOffsetVector(this ValleyNeighbour valleyNeighbour) => valleyNeighbour switch
+        {
+            ValleyNeighbour.VertexUpRightValley => new( - 1,  1, 0),
+            ValleyNeighbour.VertexUpRightPeak => new(- 2, 0, 0),
+            ValleyNeighbour.VertexRight => new(- 1, 0,  1),
+            ValleyNeighbour.EdgeDownRight => new( - 1,  - 1, 0),
+            ValleyNeighbour.VertexDownRight => new(0, - 1,  1),
+            ValleyNeighbour.VertexDown => new(0,  - 2, 0),
+            ValleyNeighbour.VertexDownLeft => new( 1,  - 1, 0),
+            ValleyNeighbour.EdgeDownLeft => new(0,  - 1,  - 1),
+            ValleyNeighbour.VertexLeft => new( 1, 0,  - 1),
+            ValleyNeighbour.VertexUpLeftPeak => new(0, 0,  - 2),
+            ValleyNeighbour.VertexUpLeftValley => new(0, 1,  - 1),
+            _ => new( - 1, 0,  - 1)
+        };
+
+        [BurstCompile]
         public static TransitionMeasurePoints GetTransitionMeasurePoints(this PeakNeighbour neighbour)
         {
             switch (neighbour)

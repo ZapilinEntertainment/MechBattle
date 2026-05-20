@@ -97,13 +97,14 @@ namespace ZE.MechBattle
             PathDataVersion++;
         } 
 
-        void IPathsList<NodeKey>.AddCalculatedPath(int pathId, PathCalculationResult<NodeKey> calculatedData)
+        public PathData<NodeKey> AddCalculatedPath(int pathId, PathCalculationResult<NodeKey> calculatedData)
         {
             if (!_paths.TryGetValue(pathId, out var path))
                 path = ReservePath(calculatedData.RequestedDestination);
 
             path.OnCalculationFinished(calculatedData);      
             PathDataVersion++;
+            return path;
         }
 
         #region IEnumerable

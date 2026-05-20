@@ -11,25 +11,31 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public sealed class HexPathCalculationSystem : ISystem 
     {
+
         public World World { get; set;}
 
         private readonly INavigationMap _map;
-        private readonly HexPathsLRUBuffer _hexPaths;
         private readonly RequestedHexPathsList _requestedHexPathsList;
-        private readonly HexPathCalculationProcessManager _processesManager;
-        private readonly HexPathKey[] _calculationRequests;
-        private const int MAX_PARALLEL_CALCULATIONS = 1;
+        private readonly PortalsPathCalculationProcessesManager _processesManager;
+        private readonly AwaitingTokensList _awaitingTokensList;
+        private readonly HexDataAccessHandler _hexDataAccessHandler;
+        private readonly List<HexPathSearchRequest> _clearList;
+        private readonly Dictionary<HexPathSearchRequest, PathCalculationProcessToken> _calculatingTokens = new();
 
 
         [Inject]
-        public HexPathCalculationSystem(HexPathsLRUBuffer hexPaths, RequestedHexPathsList requestedHexPathsList, INavigationMap map)
+        public HexPathCalculationSystem(
+            RequestedHexPathsList requestedHexPathsList, 
+            INavigationMap map, 
+            AwaitingTokensList awaitingTokensList,
+            HexDataAccessHandler hexDataAccessHandler)
         {
-            _hexPaths = hexPaths;
             _requestedHexPathsList = requestedHexPathsList;
+            _awaitingTokensList = awaitingTokensList;
+            _hexDataAccessHandler = hexDataAccessHandler;
 
             _map = map;
-            _processesManager = new(Allocator.Persistent, _map, MAX_PARALLEL_CALCULATIONS, hexPaths);
-            _calculationRequests = new HexPathKey[MAX_PARALLEL_CALCULATIONS];
+            _processesManager = new(MAX_PARALLEL_CALCULATIONS, _hexPaths);
         }
 
         public void OnAwake() { }
@@ -39,36 +45,63 @@ namespace ZE.MechBattle.Ecs {
             if (!_map.IsInitialized)
                 return;
 
-
+            CheckCalculatingProcesses();
             var idleProcessesCount = _processesManager.UpdateAndGetIdleProcessesCount();
-            var scheduledCount = 0;
-            foreach (var request in _requestedHexPathsList)
-            {
-                var token = _processesManager.TryLaunchProcess(request.Start, request.End);
-                if (!token.IsValid)
-                    break;
+            if (idleProcessesCount == 0)
+                return;
 
-                idleProcessesCount--;
-                _calculationRequests[scheduledCount++] = request;
-
-                if (idleProcessesCount == 0)
-                    break;
-            }
-
-            if (scheduledCount != 0)
-            {
-                for (var i = 0; i < scheduledCount; i++)
-                {
-                    var pathKey = _calculationRequests[i];
-                    _requestedHexPathsList.Remove(pathKey);
-                    //UnityEngine.Debug.Log($"scheduled {pathKey.Start}->{pathKey.End}");
-                }
-            }
+            HandleReceivedRequests(idleProcessesCount);
         }
 
         public void Dispose()
         {
             _processesManager.Dispose();
+        }
+
+        private void CheckCalculatingProcesses()
+        {
+            foreach (var kvp in _calculatingTokens)
+            {
+                if (_processesManager.IsProcessCompleted(kvp.Value))
+                {
+                    _clearList.Add(kvp.Key);
+                    _requestedHexPathsList.Remove(kvp.Key);
+                }
+            }
+
+            var count = _clearList.Count;
+            if (count != 0)
+            {
+                for (var i = 0; i < count; i++)
+                {
+                    _calculatingTokens.Remove(_clearList[i]);
+                }
+                _clearList.Clear();
+            }
+        }
+
+        private void HandleReceivedRequests(int idleProcessesCount)
+        {
+            foreach (var request in _requestedHexPathsList)
+            {
+                if (_calculatingTokens.ContainsKey(request))
+                    continue;
+
+                var calculationToken = _processesManager
+                    .TryLaunchProcess(
+                    new(request.StartHexCoord, request.StartHexZoneIndex),
+                    new(request.EndHexCoord, request.EndHexZoneIndex));
+                if (!calculationToken.IsValid)
+                    return;
+
+                _calculatingTokens.Add(request, calculationToken);
+
+                idleProcessesCount--;
+                _clearList.Add(request);
+
+                if (idleProcessesCount == 0)
+                    break;
+            }
         }
     }
 }

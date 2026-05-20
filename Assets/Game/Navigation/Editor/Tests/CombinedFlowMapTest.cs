@@ -68,7 +68,7 @@ namespace ZE.MechBattle.Navigation.Tests
             for (var e = 0; e < 6; e++)
             {
                 var edge = (HexEdge)e;
-                var job = new GenerateFlowFieldJob()
+                var job = new GenerateExitEdgeFlowFieldJob()
                 {
                     PassabilityData = setupData,
                     CalculationData = calculationData,

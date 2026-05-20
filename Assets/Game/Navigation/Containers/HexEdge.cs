@@ -15,6 +15,29 @@ namespace ZE.MechBattle.Navigation
         private const int PREV_EDGE_MASK = 0b_100_011_010_001_000_101;
 
         [BurstCompile]
+        public static PeakNeighbour ToAlongsidePeakDirection(this HexEdge edge) => edge switch
+        {
+            HexEdge.TopRight => TopRightEdgeEnumerationLogic.PeakDirection,
+            HexEdge.BottomRight => BottomRightEdgeEnumerationLogic.PeakDirection,
+            HexEdge.Bottom => BottomEdgeEnumerationLogic.PeakDirection,
+            HexEdge.BottomLeft => BottomLeftEdgeEnumerationLogic.PeakDirection,
+            HexEdge.TopLeft => TopLeftEdgeEnumerationLogic.PeakDirection,
+            _ => TopEdgeEnumerationLogic.PeakDirection
+        };
+
+        [BurstCompile]
+        public static ValleyNeighbour ToAlongsideValleyDirection(this HexEdge edge) => edge switch
+        {
+            HexEdge.TopRight => TopRightEdgeEnumerationLogic.ValleyDirection,
+            HexEdge.BottomRight => BottomRightEdgeEnumerationLogic.ValleyDirection,
+            HexEdge.Bottom => BottomEdgeEnumerationLogic.ValleyDirection,
+            HexEdge.BottomLeft => BottomLeftEdgeEnumerationLogic.ValleyDirection,
+            HexEdge.TopLeft => TopLeftEdgeEnumerationLogic.ValleyDirection,
+            _ => TopEdgeEnumerationLogic.ValleyDirection
+        };
+
+
+        [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static HexEdge Next(this HexEdge edge) => (HexEdge)((NEXT_EDGE_MASK >> ((int)edge * 3)) & 0b_111);
 
@@ -174,6 +197,20 @@ namespace ZE.MechBattle.Navigation
                 case HexEdge.BottomLeft: return new EdgeEnumerator<BottomLeftEdgeEnumerationLogic>(trianglesPerEdge, hexPos);
                 case HexEdge.TopLeft: return new EdgeEnumerator<TopLeftEdgeEnumerationLogic>(trianglesPerEdge, hexPos);
                 default: return new EdgeEnumerator<TopEdgeEnumerationLogic>(trianglesPerEdge, hexPos);
+            }
+        }
+
+        [BurstDiscard]
+        public static IEnumerable<IntTriangularPos> GetEdgeEnumerable(this HexEdge edge, int trianglesPerEdge, IntTriangularPos startPos)
+        {
+            switch (edge)
+            {
+                case HexEdge.TopRight: return new EdgeEnumerator<TopRightEdgeEnumerationLogic>(trianglesPerEdge, startPos);
+                case HexEdge.BottomRight: return new EdgeEnumerator<BottomRightEdgeEnumerationLogic>(trianglesPerEdge, startPos);
+                case HexEdge.Bottom: return new EdgeEnumerator<BottomEdgeEnumerationLogic>(trianglesPerEdge, startPos);
+                case HexEdge.BottomLeft: return new EdgeEnumerator<BottomLeftEdgeEnumerationLogic>(trianglesPerEdge, startPos);
+                case HexEdge.TopLeft: return new EdgeEnumerator<TopLeftEdgeEnumerationLogic>(trianglesPerEdge, startPos);
+                default: return new EdgeEnumerator<TopEdgeEnumerationLogic>(trianglesPerEdge, startPos);
             }
         }
 

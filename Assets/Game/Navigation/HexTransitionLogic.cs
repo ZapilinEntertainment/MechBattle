@@ -6,7 +6,7 @@ namespace ZE.MechBattle.Navigation
 {
     public static class HexTransitionLogic
     {
-        public static bool IsEdgeTransitionPossible(int2 hexCoordA, int2 hexCoordB, INavigationMap map, out HexEdge transitionEdge)
+        public static bool IsEdgeTransitionPossible(INavigationHex hexA, INavigationHex hexB, INavigationMap map, out HexEdge transitionEdge)
         {
             if (!HexMath.AreNeighbours(hexCoordA, hexCoordB))
             {

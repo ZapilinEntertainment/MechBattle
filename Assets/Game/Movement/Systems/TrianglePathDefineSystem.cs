@@ -15,7 +15,7 @@ namespace ZE.MechBattle.Ecs
         private Filter _singleTransitionHexPathUsers;
         private Filter _noHexPathUsers;
 
-        private Stash<RegularHexPathComponent> _regularPaths;
+        private Stash<HexPathComponent> _regularPaths;
         private Stash<FlowTrianglePathComponent> _flowPaths;
         private Stash<TriangularPosComponent> _triangularPos;
         private Stash<MoveTargetComponent> _moveTargets;
@@ -40,7 +40,7 @@ namespace ZE.MechBattle.Ecs
 
             _regularHexPathUsers = World.Filter
                 .With<HexPathDefinedTag>()
-                .With<RegularHexPathComponent>()
+                .With<HexPathComponent>()
                 .Without<HexPathSelectRequestComponent>()
                 .Without<TrianglePathDefinedTag>()                
                 .Build();
@@ -56,7 +56,7 @@ namespace ZE.MechBattle.Ecs
                 .Without<TrianglePathDefinedTag>()
                 .Build();
 
-            _regularPaths = World.GetStash<RegularHexPathComponent>();
+            _regularPaths = World.GetStash<HexPathComponent>();
             _flowPaths = World.GetStash<FlowTrianglePathComponent>();
             _triangularPos = World.GetStash<TriangularPosComponent>();
             _moveTargets = World.GetStash<MoveTargetComponent>();

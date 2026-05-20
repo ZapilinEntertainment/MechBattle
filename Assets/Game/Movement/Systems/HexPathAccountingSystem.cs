@@ -15,7 +15,7 @@ namespace ZE.MechBattle.Ecs {
         private Filter _activePathUsersFilter;
         private HashSet<Entity> _activePathUsers = new();
         private List<Entity> _clearUsersList = new();
-        private Stash<RegularHexPathComponent> _hexPaths;
+        private Stash<HexPathComponent> _hexPaths;
 
         [Inject]
         public HexPathAccountingSystem(TrianglePathsLRUBuffer navigationTrianglePathsBuffer)
@@ -24,10 +24,10 @@ namespace ZE.MechBattle.Ecs {
         public override void OnAwake()
         {
             _activePathUsersFilter = World.Filter
-                .With<RegularHexPathComponent>()
+                .With<HexPathComponent>()
                 .Build();
 
-            _hexPaths = World.GetStash<RegularHexPathComponent>();
+            _hexPaths = World.GetStash<HexPathComponent>();
         }
 
         protected override bool HasPathComponent(Entity entity) => _hexPaths.Has(entity);

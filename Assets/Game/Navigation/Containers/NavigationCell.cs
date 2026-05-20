@@ -4,6 +4,5 @@ namespace ZE.MechBattle.Navigation
     {
         public CellPassabilityData Passability;
         public CellHeightData HeightData;
-        public CombinedFlowData FlowData;
     }
 }

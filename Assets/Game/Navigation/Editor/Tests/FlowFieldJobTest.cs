@@ -25,7 +25,7 @@ namespace ZE.MechBattle.Navigation.Tests
             }
 
             var exitEdge = (HexEdge)edgeIndex;
-            var job = new GenerateFlowFieldJob()
+            var job = new GenerateExitEdgeFlowFieldJob()
             {
                 CalculationData = collectionData.CalculationData,
                 HexData = hexPos,
@@ -127,7 +127,7 @@ namespace ZE.MechBattle.Navigation.Tests
             }
         }
     
-        private (IntTriangularPos,float) GetTargetIntegrationValue(IntTriangularPos pos, in GenerateFlowFieldJob job)
+        private (IntTriangularPos,float) GetTargetIntegrationValue(IntTriangularPos pos, in GenerateExitEdgeFlowFieldJob job)
         {
             var index = job.PassabilityData.TriangularToIndex(pos);
 

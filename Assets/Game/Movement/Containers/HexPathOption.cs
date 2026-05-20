@@ -10,11 +10,11 @@ namespace ZE.MechBattle
         public readonly float FullPathCost => RawPathCost + StartEdgeCost + EndEdgeCost;
         public readonly float StartEdgeCost;
         public readonly float EndEdgeCost;
-        public readonly PathData<HexPathNodeKey> PathData;
-        public HexPathNodeKey LastNode => PathData.LastNode;
+        public readonly PathData<int> PathData;
+        public int LastNode => PathData.LastNode;
         public int NodesCount => PathData.NodesCount;
 
-        public HexPathOption(int pathId, PathData<HexPathNodeKey> pathData, float startEdgeCost, float endEdgeCost)
+        public HexPathOption(int pathId, PathData<int> pathData, float startEdgeCost, float endEdgeCost)
         {
             IsValid = true;
             PathId = pathId;

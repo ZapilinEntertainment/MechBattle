@@ -16,7 +16,7 @@ namespace ZE.MechBattle.Ecs {
         public void OnAwake() 
         {
             _regularPathsFilter = World.Filter
-                .With<RegularHexPathComponent>()
+                .With<HexPathComponent>()
                 .Without<MoveTargetComponent>()
                 .Build();
 
@@ -27,7 +27,7 @@ namespace ZE.MechBattle.Ecs {
 
             _noPathFilter = World.Filter
                 .With<HexPathDefinedTag>()
-                .Without<RegularHexPathComponent>()
+                .Without<HexPathComponent>()
                 .Without<TransitionHexPathComponent>()
                 .Without<MoveTargetComponent>()
                 .Build();

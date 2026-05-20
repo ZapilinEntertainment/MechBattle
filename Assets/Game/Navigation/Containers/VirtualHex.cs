@@ -19,9 +19,6 @@ namespace ZE.MechBattle.Navigation
         public bool IsCellPassable(IntTriangularPos pos) => DefaultPassability;
         public HexEdgesAccessMap GetAccessMap() => _accessMap;
 
-        public virtual CombinedFlowData GetCombinedCellData(IntTriangularPos pos) =>
-            CombinedFlowData.CreateDefaultCell(pos, _map);
-
         public static VirtualHex CreateFullPassableMap(INavigationMap map) => new(map, HexEdgesAccessMap.FullAccessMap, true);
         public static VirtualHex CreateFullBlockedMap(INavigationMap map) => new(map, HexEdgesAccessMap.NoWayMap, false);
 

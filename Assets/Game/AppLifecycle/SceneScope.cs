@@ -24,7 +24,9 @@ namespace ZE.MechBattle
             builder.Register<UnitsFactory>(Lifetime.Scoped);
             builder.Register<SceneFlagsManager>(Lifetime.Scoped);
 
-            builder.Register<LoadingProcessesTable>(Lifetime.Scoped);
+            builder.Register<EcsTasksFactory>(Lifetime.Scoped);
+            builder.Register<AwaitingTokensList>(Lifetime.Scoped);
+
             builder.Register<RestorablesList>(Lifetime.Scoped);
             builder.Register<ViewReceiversList>(Lifetime.Scoped);
             builder.Register<CollidersTable>(Lifetime.Scoped);           

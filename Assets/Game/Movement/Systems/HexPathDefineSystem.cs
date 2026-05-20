@@ -14,6 +14,8 @@ namespace ZE.MechBattle.Ecs
         private readonly HexPathsLRUBuffer _hexPathsList;
         private readonly INavigationMap _map;
         private readonly float _hexEdgeLength;
+        private readonly HexDataAccessHandler _hexDataAccessHandler;
+        private readonly HexPathSearcher _hexPathSearcher;
 
         private Filter _noPathEntitiesFilter;
 
@@ -21,15 +23,20 @@ namespace ZE.MechBattle.Ecs
         private Stash<HexCoordComponent> _hexCoords;
         private Stash<PositionComponent> _positions;
         private Stash<HexPathDefinedTag> _hexPathDefinedTag;
-        private Stash<EmptyHexPathTag> _emptyHexPathTags;
-        private Stash<TransitionHexPathComponent> _transitionHexPaths;
-        private Stash<HexPathSelectRequestComponent> _hexPathSelectionComponents;
+        private Stash<HexPathComponent> _hexPathComponents;
         private Stash<TriangularPosComponent> _triangularPosComponents;
+        private Stash<MovementAwaitingComponent> _awaitingComponents;
 
-        public HexPathDefineSystem(HexPathsLRUBuffer pathsList, INavigationMap map)
+        public HexPathDefineSystem(
+            HexPathsLRUBuffer pathsList, 
+            INavigationMap map, 
+            HexPathSearcher hexPathsSearcher,
+            HexDataAccessHandler hexDataAccessHandler)
         {
             _hexPathsList = pathsList;
             _map = map;
+            _hexPathSearcher = hexPathsSearcher;
+            _hexDataAccessHandler = hexDataAccessHandler;
 
             _hexEdgeLength = _map.HexEdgeLength;
         }
@@ -41,15 +48,16 @@ namespace ZE.MechBattle.Ecs
             _positions = World.GetStash<PositionComponent>();
 
             _hexPathDefinedTag = World.GetStash<HexPathDefinedTag>();
-            _emptyHexPathTags = World.GetStash<EmptyHexPathTag>();
-            _transitionHexPaths = World.GetStash<TransitionHexPathComponent>();
-            _hexPathSelectionComponents = World.GetStash<HexPathSelectRequestComponent>();
+            _hexPathComponents = World.GetStash<HexPathComponent>();
             _triangularPosComponents = World.GetStash<TriangularPosComponent>();
+
+            _awaitingComponents = World.GetStash<MovementAwaitingComponent>();
 
             _noPathEntitiesFilter = World.Filter
                 .With<NavigationAgentComponent>()
                 .With<MoveTargetComponent>()
                 .Without<HexPathDefinedTag>()
+                .Without<MovementAwaitingComponent>()
                 .Build();
         }
 
@@ -67,38 +75,46 @@ namespace ZE.MechBattle.Ecs
                 var endPos = moveTargetComponent.WorldPos;
                 var endHexCoord = HexMath.DefineHex(endPos.xz, _hexEdgeLength);
 
-                if (math.all(startHexCoord == endHexCoord))
+                if (!math.all(startHexCoord == endHexCoord))
                 {
-                    // inside same hex
-                    _emptyHexPathTags.Add(entity);
-                }
-                else
-                {
+                    // requests hexes data calculation, setting the awaiting component, that will be cleared when hexes are ready (look at filter)
+                    if (!CheckHexDataAndRequestIfMissing(entity, startHexCoord, endHexCoord, out var startHex, out var endHex))
+                        continue;
+                    
                     var startTripos = _triangularPosComponents.Get(entity).Value;
-                    var endTripos = moveTargetComponent.TriangularPos;
+                    var startZoneIndex = _map.GetPassabilityData(startTripos).ZoneIndex;
+                    var endTripos = _moveTargets.Get(entity).TriangularPos;
+                    var endZoneIndex = _map.GetPassabilityData(endTripos).ZoneIndex;
 
-                    var startPosFlowData = _map.GetFlowData(startTripos);
-                    var endPosFlowData = _map.GetFlowData(endTripos);
+                    var request = new HexPathSearchRequest(
+                        startHexCoord: startHexCoord, 
+                        endHexCoord: endHexCoord, 
+                        startTripos: startTripos,
+                        endTripos: endTripos,
+                        startHexZoneIndex: startZoneIndex,
+                        endHexZoneIndex: endZoneIndex);
 
-                    var startPosEdgesAccessData = startPosFlowData.GetCombinedEdgeAccessMask();
-                    var endPosEdgesAccessData = endPosFlowData.GetCombinedEdgeAccessMask();
-
-                    if (HexTransitionLogic.IsEdgeTransitionPossible(startHexCoord, endHexCoord, _map, out var transitionEdge)
-                        && startPosEdgesAccessData.IsEdgePresented(transitionEdge) 
-                        && endPosEdgesAccessData.IsEdgePresented(transitionEdge.ToOpposite()))
+                    var searchResultData = _hexPathSearcher.TryGetHexPath(request);
+                    switch (searchResultData.Result)
                     {
-                        // just transite into neighbour hex through edge
-                        _transitionHexPaths.Add(entity, new(endHexCoord, transitionEdge));
-                    }
-                    else
-                    {
-                        // request to make path from/to any accessible edge
-
-                        var startPosAccessData = new CellHexAccessData(startPosEdgesAccessData, new (startPosFlowData));
-                        var endPosAccessData = new CellHexAccessData(endPosEdgesAccessData, new(endPosFlowData));
-
-                        var request = new HexPathSearchRequest(startHexCoord, endHexCoord, startPosAccessData, endPosAccessData);
-                        _hexPathSelectionComponents.Add(entity, new(request));
+                        case HexPathSearchResult.PathFound:
+                            {
+                                _hexPathComponents.Set(entity, new(searchResultData.PathId, searchResultData.NodesCount)); 
+                                break;
+                            }
+                        case HexPathSearchResult.CalculationNotFinished:
+                            {
+                                _awaitingComponents.Add(entity, new(searchResultData.ConstructionAwaitingToken));
+                                break;
+                            }
+                        case HexPathSearchResult.OnlyIncompletePathPossible:
+                            {
+                                throw new System.NotImplementedException("incomplete path handling not implemented");
+                            }
+                        case HexPathSearchResult.PathImpossible:
+                            {
+                                throw new System.NotImplementedException("impossible paths handling not implemented");
+                            }
                     }
                 }
 
@@ -107,5 +123,19 @@ namespace ZE.MechBattle.Ecs
         }
 
         public void Dispose() { }
+
+        private bool CheckHexDataAndRequestIfMissing(
+            Entity entity, 
+            int2 startHexCoord, 
+            int2 endHexCoord, 
+            out INavigationHex startHex, 
+            out INavigationHex endHex)
+        {
+            if (_hexDataAccessHandler.TryGetHexData(startHexCoord, endHexCoord, out startHex, out endHex, out AwaitingToken awaitingToken))
+                return true;
+
+            _awaitingComponents.Add(entity, new(awaitingToken));
+            return false;
+        }
     }
 }

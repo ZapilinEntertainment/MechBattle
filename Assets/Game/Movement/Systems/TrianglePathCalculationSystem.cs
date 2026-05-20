@@ -24,9 +24,7 @@ namespace ZE.MechBattle.Ecs
 
         private readonly INavigationMap _map;
         private readonly TrianglePathCalculationProcessManager _processesManager;
-        private readonly TrianglePathsLRUBuffer _pathsList;
-
-        private const int MAX_PARALLEL_CALCULATIONS = 8;        
+        private readonly TrianglePathsLRUBuffer _pathsList;    
 
         [Inject]
         public TrianglePathCalculationSystem(INavigationMap map, TrianglePathsLRUBuffer trianglePathsBuffer)
