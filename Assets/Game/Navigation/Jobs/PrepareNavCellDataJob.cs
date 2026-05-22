@@ -6,9 +6,9 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
-    public struct PrepareFlowMapSetupDataJob : IJobParallelFor
+    public struct PrepareNavCellDataJob : IJobParallelFor
     {
-        [ReadOnly] public NativeArray<RefinedTriangleRaycastData> RefinedRaycastData;
+        [ReadOnly] public NativeArray<RefinedTriangleRaycastData>.ReadOnly RefinedRaycastData;
         [WriteOnly] public NativeArray<CellPassabilityData> SetupData;
         [WriteOnly] public NativeArray<CellHeightData> HeightData;
 

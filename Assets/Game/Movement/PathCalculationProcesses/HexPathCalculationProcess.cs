@@ -23,10 +23,10 @@ namespace ZE.MechBattle
             };
         }
 
-        protected override JobHandle LaunchJob(HexPathNodeKey start, HexPathNodeKey end)
+        protected override JobHandle LaunchJob(PathInput<HexPathNodeKey> input)
         {
-            _job.Start = start;
-            _job.End = end;
+            _job.Start = input.Start;
+            _job.End = input.End;
             return _job.ScheduleByRef();
         }
 
@@ -39,7 +39,7 @@ namespace ZE.MechBattle
 
             return new PathCalculationResult<HexPathNodeKey>(
                 requestedDestination: (_job.Start, _job.End),
-                points: HexPathLogic.RefineHexPath(_job.Start.HexCoord, rawResultsData), 
+                points: HexUpdateLogic.RefineHexPath(_job.Start.HexCoord, rawResultsData), 
                 pathCost: _collections.PathCost.Value, 
                 hasReachedTarget: hasReachedTarget);
         }

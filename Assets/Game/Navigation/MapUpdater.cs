@@ -18,22 +18,19 @@ namespace ZE.MechBattle.Navigation
         private readonly NavigationCaster _obstaclesCaster;
         private readonly MapSettings _mapSettings;
         private readonly IUpdatableMap _map;
-        
+        private readonly RefineNavRaycastDataProcess _refineProcess;
+        private readonly PrepareNavCellDataProcess _prepareNavCellDataProcess;
+        private readonly DefineTransitionTrianglesJobCollection _transitionCalculationCollections;
+
         private readonly int _trianglesPerHex;
         private readonly int _hexRadius;
         private readonly int _raycastsPerTriangle;
-
-        private readonly NativeArray<RefinedTriangleRaycastData> _refinedData;
+        
         private readonly NativeBitArray _isPeakData;
-        private readonly NativeArray<CellHeightData> _cellHeightData;
+        
 
         private bool _disposeRequested = false;
         private bool _resourcesDisposed = false;
-
-        private RefineNavRaycastDataJob _refineNavRaycastDataJob;
-        private PrepareFlowMapSetupDataJob _flowMapSetupDataJob;
-        private FlowFieldCalculationCollections _flowCalculationCollections;
-        private DefineTransitionTrianglesJobCollection _transitionCalculationCollections;
 
         private bool _isCalculating = false;
 
@@ -48,53 +45,13 @@ namespace ZE.MechBattle.Navigation
 
             _hexRadius = _mapSettings.TrianglesPerHexEdge;
             _trianglesPerHex = TriangularMath.GetTrianglesCountInHex(_hexRadius);
-            _refinedData = new NativeArray<RefinedTriangleRaycastData>(_trianglesPerHex, allocator, NativeArrayOptions.UninitializedMemory);
-            _isPeakData = new NativeBitArray(_trianglesPerHex, allocator, NativeArrayOptions.UninitializedMemory);
-            _cellHeightData = new NativeArray<CellHeightData>(_trianglesPerHex, allocator, NativeArrayOptions.UninitializedMemory); 
+            
+            _isPeakData = new NativeBitArray(_trianglesPerHex, allocator, NativeArrayOptions.UninitializedMemory);            
 
-            var subdivisions = _mapSettings.RaycastSubdivisionsPerEdge;
-            var peakLeftBasisIndex = TrianglesToIndexFlattenedConverter.GetSubdivisionBasisIndex(false, true, subdivisions);
-            var peakRightBasisIndex = TrianglesToIndexFlattenedConverter.GetSubdivisionBasisIndex(true, true, subdivisions);
-            var valleyLeftBasisIndex = TrianglesToIndexFlattenedConverter.GetSubdivisionBasisIndex(false, false, subdivisions);
-            var valleyRightBasisIndex = TrianglesToIndexFlattenedConverter.GetSubdivisionBasisIndex(true, false, subdivisions);
+             _refineProcess = new(allocator, _mapSettings, _isPeakData.AsReadOnly(), _walkableSurfaceCaster.Results, _obstaclesCaster.Results); 
+            _prepareNavCellDataProcess = new(allocator, _mapSettings, _refineProcess.RefinedData, _refineProcess.RaycastsPerTriangle);
 
-            _raycastsPerTriangle = subdivisions * subdivisions;           
-            //UnityEngine.Debug.Log($"raycast per triangle: {raycastsPerTriangle} peak left: {peakLeftBasisIndex} peak right: {peakRightBasisIndex} valley left: {valleyLeftBasisIndex} valley right: {valleyRightBasisIndex}");
-
-            _refineNavRaycastDataJob = new RefineNavRaycastDataJob()
-            {
-                HexRadius = _hexRadius,
-                RefinedData = _refinedData,
-                RaycastsPerTriangle = _raycastsPerTriangle,
-                IsPeakData = _isPeakData,
-
-                PeakLeftBasisIndex = peakLeftBasisIndex,
-                PeakRightBasisIndex = peakRightBasisIndex,
-                ValleyLeftBasisIndex = valleyLeftBasisIndex,
-                ValleyRightBasisIndex = valleyRightBasisIndex,
-
-                WalkableHits = _walkableSurfaceCaster.Results,
-                ObstacleHits = _obstaclesCaster.Results,        
-                
-                MaxHeightDifference = _mapSettings.MaxElevationDifference,
-                RansacIterationsCount = NavigationConstants.GetRansacIterationsCount(_raycastsPerTriangle),
-                RansacThreshold = NavigationConstants.RANSAC_THRESHOLD
-            };
-
-
-            _flowCalculationCollections = FlowFieldCalculationCollections.CreateCollection(allocator, default, _mapSettings);
-            _flowMapSetupDataJob = new PrepareFlowMapSetupDataJob()
-            {
-                DefaultEntranceCost = NavigationConstants.DEFAULT_TRIANGLE_ENTRANCE_COST,
-                SetupData = _flowCalculationCollections.PassabilityDataInnerArray,
-                RefinedRaycastData = _refinedData,
-                IntersectionPercentForLock = _mapSettings.IntersectionPercentForLock,
-                SubdividedTrianglesCount = subdivisions * subdivisions,
-                HeightData = _cellHeightData,
-                MaxElevationDifference = _mapSettings.MaxElevationDifference,
-            };
-
-            _transitionCalculationCollections = new(_allocator);
+            _transitionCalculationCollections = new(allocator);
         }
 
         public void TEST_FillRaycastsArray(IList<Vector3> refinedPoints, IList<Vector3> oldPoints)
@@ -102,16 +59,17 @@ namespace ZE.MechBattle.Navigation
             Span<float> heights = stackalloc float[_raycastsPerTriangle];
             for (var i = 0; i < _trianglesPerHex; i++)
             {
+                var job = _refineProcess.TEST_Job;
                 for (var j = 0; j < _raycastsPerTriangle; j++)
                 {
-                    var hit = _refineNavRaycastDataJob.WalkableHits[i * _raycastsPerTriangle + j];
+                    var hit = job.WalkableHits[i * _raycastsPerTriangle + j];
                     heights[j] = hit.colliderInstanceID == 0 ? NavigationConstants.DEFAULT_HEIGHT : hit.point.y;
                 }
-                _refineNavRaycastDataJob.RansacWithNormals(i * _raycastsPerTriangle, heights);
+                job.RansacWithNormals(i * _raycastsPerTriangle, heights);
                 for (var j = 0; j < _raycastsPerTriangle; j++)
                 {
                     var index = i * _raycastsPerTriangle + j;
-                    var pos = _refineNavRaycastDataJob.WalkableHits[index].point;
+                    var pos = job.WalkableHits[index].point;
                     var refinedHeight = heights[j];
                     oldPoints[index] = pos;
                     refinedPoints[index] = new(pos.x, refinedHeight, pos.z);
@@ -125,8 +83,6 @@ namespace ZE.MechBattle.Navigation
                 throw new System.Exception("cannot create multiple flow maps simultaneously!");
 
             var radius = _map.TrianglesPerHexEdge;
-            var subdividedTrisCount = _flowMapSetupDataJob.SubdividedTrianglesCount;
-            var intersectionPercentForLock = _flowMapSetupDataJob.IntersectionPercentForLock;
 
             foreach (var hexCoord in _map.HexCoords)
             {
@@ -135,23 +91,13 @@ namespace ZE.MechBattle.Navigation
                 PrepareCalculationData(hexPos);
 
                 // 2. refine raw raycast data into readable containers
-                var handle = ScheduleRefineJob(hexPos);
+                var handle = _refineProcess.ScheduleJob(hexPos);
                 handle.Complete();
 
-                // 3. define passability nad height completely
-                RunFlowMapSetupDataJob();
+                // 3. define passability and height for each nav cell
+                _prepareNavCellDataProcess.Run(hexPos.TriangularCenterPos);
 
-                var index = 0;
-                foreach (var tripos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, radius))
-                {
-                    // 2. update height & passability of every cell into map
-
-                    var navCell = _map.GetNavigationCell(tripos);
-                    navCell.HeightData = _cellHeightData[index];
-                    navCell.Passability = _flowCalculationCollections.PassabilityDataInnerArray[index];
-                    _map.UpdateNavigationCell(tripos, navCell);
-                    index++;
-                }
+                HexUpdateLogic.ApplyPreparedCellDataOntoMap(_prepareNavCellDataProcess, _map);
             }
 
             // 3. check all edge triangles for between-hex passability connections
@@ -212,7 +158,7 @@ namespace ZE.MechBattle.Navigation
             var hexPos = new NavigationHexPosition(hexCoord, _mapSettings.HexEdgeSize, _mapSettings.TrianglesPerHexEdge);
             PrepareCalculationData(hexPos);
 
-            var handle = ScheduleRefineJob(hexPos);
+            var handle = _refineProcess.ScheduleJob(hexPos);
             handle.Complete();
 
              ApplyJobResults(hexPos);
@@ -228,7 +174,7 @@ namespace ZE.MechBattle.Navigation
             var hexPos = new NavigationHexPosition(hexCoord, _mapSettings.HexEdgeSize, _mapSettings.TrianglesPerHexEdge);
             PrepareCalculationData(hexPos);
 
-            var handle = ScheduleRefineJob(hexPos);
+            var handle = refineProcess.ScheduleJob(hexPos);
             while (!handle.IsCompleted)
                 await Task.Delay(100);
             handle.Complete();
@@ -265,11 +211,9 @@ namespace ZE.MechBattle.Navigation
             _walkableSurfaceCaster.Dispose();
             _obstaclesCaster.Dispose();
 
-            _refinedData.Dispose();
+            _refineProcess.Dispose();
             _isPeakData.Dispose();
-
-            _flowCalculationCollections.Dispose();
-            _cellHeightData.Dispose();
+            _prepareNavCellDataProcess.Dispose();
 
             _transitionCalculationCollections.Dispose();
 
@@ -278,33 +222,13 @@ namespace ZE.MechBattle.Navigation
 
         private void PrepareCalculationData(NavigationHexPosition hexPos)
         {
-            var walkableDataHandle = _walkableSurfaceCaster.PrepareCastJob(hexPos);
+            var walkableDataHandle = _walkableSurfaceCaster.ScheduleCastJob(hexPos);
             walkableDataHandle.Complete();
 
-            var obstacleDataHandle = _obstaclesCaster.PrepareCastJob(hexPos);
+            var obstacleDataHandle = _obstaclesCaster.ScheduleCastJob(hexPos);
             obstacleDataHandle.Complete();
 
-            var hexRadius = _mapSettings.TrianglesPerHexEdge;
-
-            _flowCalculationCollections.ChangeHexPosAndReset(hexPos.TriangularCenterPos);
-            for (var j = 0; j < _trianglesPerHex; j++)
-            {
-                var pos = _flowCalculationCollections.IndexToPos(j);
-                _isPeakData.Set(j, pos.IsPeak);
-            }
-        }
-
-        private JobHandle ScheduleRefineJob(NavigationHexPosition hexPos)
-        {
-            _refineNavRaycastDataJob.HexPos = hexPos;
-            return _refineNavRaycastDataJob.ScheduleByRef(_trianglesPerHex, 32);
-        }
-
-        private void RunFlowMapSetupDataJob()
-        {
-            // too easy to schedule
-            _flowMapSetupDataJob.CoordsConverter = _flowCalculationCollections.PassabilityData.GetCoordsConverter();
-            _flowMapSetupDataJob.Run(_trianglesPerHex);
+            HexDataLogic.FulfilPeakDataArray(_isPeakData, hexPos.TriangularCenterPos, _hexRadius);
         }
 
         private void ApplyJobResults(NavigationHexPosition hexPos)

@@ -31,11 +31,11 @@ namespace ZE.MechBattle
             };
         }
 
-        protected override JobHandle LaunchJob(IntTriangularPos start, IntTriangularPos end)
+        protected override JobHandle LaunchJob(PathInput<IntTriangularPos> input)
         {
-            ChangeTrianglePathJobSetupDataCommand.Execute(ref _job, _collections, start, _map);
-            _job.Start = start;
-            _job.End = end;
+            ChangeTrianglePathJobSetupDataCommand.Execute(ref _job, _collections, input.Start, _map);
+            _job.Start = input.Start;
+            _job.End = input.End;
             return _job.ScheduleByRef();
         }
 

@@ -6,6 +6,5 @@ namespace ZE.MechBattle
     {
         PathData<NodeKey> AddCalculatedPath(int pathKey, PathCalculationResult<NodeKey> calculatedData);
         PathData<NodeKey> ReservePath((NodeKey, NodeKey) destinationKey);
-    
     }
 }

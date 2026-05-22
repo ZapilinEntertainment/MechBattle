@@ -14,6 +14,6 @@ namespace ZE.MechBattle
             _map = map;
         }
 
-        public override PathCalculationProcess<HexPathNodeKey> CreateNewProcess() => new HexPathCalculationProcess(_allocator, _map);
+        protected override PathCalculationProcess<HexPathNodeKey> CreateNewProcess() => new HexPathCalculationProcess(_allocator, _map);
     }
 }

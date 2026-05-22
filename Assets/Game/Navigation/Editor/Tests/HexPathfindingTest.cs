@@ -150,7 +150,7 @@ namespace ZE.MechBattle.Navigation.Tests
             }
 
             TestContext.WriteLine($"start hex coord: {hexCoord}");
-            var refinedPath = HexPathLogic.RefineHexPath(hexCoord, points);  
+            var refinedPath = HexUpdateLogic.RefineHexPath(hexCoord, points);  
 
             for (var i = 0; i < ptsCount; i++)
             {

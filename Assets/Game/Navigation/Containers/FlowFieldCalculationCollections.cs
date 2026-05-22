@@ -5,7 +5,13 @@ using Unity.Collections;
 
 namespace ZE.MechBattle.Navigation
 {
-    public class FlowFieldCalculationCollections : IDisposable
+    public interface IPassabilityDataSource
+    {
+        CellPassabilityData GetPassabilityData(int index);
+        CellPassabilityData GetPassabilityData(IntTriangularPos pos);
+    }
+
+    public class FlowFieldCalculationCollections : IDisposable, IPassabilityDataSource
     {
         public ref FlattenedHexList<CellPassabilityData> PassabilityData => ref _passabilityData;
         public NativeArray<FlowFieldCellCalculationData> CalculationData;
@@ -18,6 +24,9 @@ namespace ZE.MechBattle.Navigation
         private readonly int _hexRadius;
         private readonly NativeArray<byte> _rowIndices;
         private FlattenedHexList<CellPassabilityData> _passabilityData;
+
+        public CellPassabilityData GetPassabilityData(int index) => PassabilityDataInnerArray[index];
+        public CellPassabilityData GetPassabilityData(IntTriangularPos pos) => _passabilityData[pos];
 
         public static FlowFieldCalculationCollections CreateCollection(
             Allocator allocator,

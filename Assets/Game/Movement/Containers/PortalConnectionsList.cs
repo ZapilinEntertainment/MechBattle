@@ -4,26 +4,33 @@ namespace ZE.MechBattle
 {
     public class PortalConnectionsList
     {
-        private readonly struct ConnectedPortalData
-        {
-            public readonly int PortalId;
-            public readonly int ZoneIndex;
-
-            public ConnectedPortalData(int portalId, int zoneIndex)
-            {
-                PortalId = portalId;
-                ZoneIndex = zoneIndex;
-            }
-        }
-
         public int Version { get; private set; }
-        private Dictionary<int, ConnectedPortalData> _connections = new();
+        private Dictionary<int, Dictionary<int, float>> _connections = new();
 
-        public void AddConnection(int portalIdA, int portalIdB, int portalBZoneIndex) 
+        public void AddConnection(int portalIdA, int portalIdB, float distance) 
         {
-            _connections.Add(portalIdA, new(portalIdB, portalBZoneIndex));
+            if (!_connections.TryGetValue(portalIdA, out var connectionsList) || connectionsList == null)
+            {
+                connectionsList = new();
+                _connections[portalIdA] = connectionsList;
+            }
+
+            connectionsList[portalIdB] = distance;
             Version++;
         }
+
+        public bool TryGetPortalConnections(int portalId, out IReadOnlyDictionary<int, float> connections)
+        {
+            if (_connections.TryGetValue(portalId, out var rawConnections) && (rawConnections != null) && (rawConnections.Count != 0))
+            {
+                connections = rawConnections;
+                return true;
+            }
+
+            connections = null; 
+            return false;
+        }
+            
 
     }
 }

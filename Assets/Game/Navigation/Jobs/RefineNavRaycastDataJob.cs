@@ -42,7 +42,7 @@ namespace ZE.MechBattle.Navigation
         [ReadOnly] public NativeArray<RaycastHit>.ReadOnly ObstacleHits;
 
         // length: hex radius * hex radius * 6 (triangles)
-        [ReadOnly] public NativeBitArray IsPeakData;
+        [ReadOnly] public NativeBitArray.ReadOnly IsPeakData;
         public NativeArray<RefinedTriangleRaycastData> RefinedData;
 
         public NavigationHexPosition HexPos;

@@ -3,8 +3,14 @@ using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle
 {
-    public class HexPathsLRUBuffer : UserCountDependentLRUPathsBuffer<Entity, int>
+    public interface IHexPathsList
     {
+        bool TryGetPath(int pathId, out PathData<int> data);
+    }
+
+    public class HexPathsLRUBuffer : UserCountDependentLRUPathsBuffer<Entity, int>, IHexPathsList
+    {
+        
 
     }
 }

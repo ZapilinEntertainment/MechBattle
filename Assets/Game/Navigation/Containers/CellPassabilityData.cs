@@ -3,11 +3,18 @@ using System.Runtime.CompilerServices;
 
 namespace ZE.MechBattle.Navigation
 {
-    public struct CellPassabilityData
+    public readonly struct CellPassabilityData
     {
-        public bool IsPassable;
-        public int NeighboursMask;
-        public int ZoneIndex;
+        public readonly bool IsPassable;
+        public readonly int NeighboursMask;
+        public readonly int ZoneIndex;
+
+        public CellPassabilityData(bool isPassable, int neighboursMask, int zoneIndex)
+        {
+            IsPassable = isPassable;
+            NeighboursMask = neighboursMask;
+            ZoneIndex = zoneIndex;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsNeighbourAccessible(int neighbourIndex)

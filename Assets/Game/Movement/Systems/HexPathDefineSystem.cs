@@ -14,7 +14,6 @@ namespace ZE.MechBattle.Ecs
         private readonly HexPathsLRUBuffer _hexPathsList;
         private readonly INavigationMap _map;
         private readonly float _hexEdgeLength;
-        private readonly HexDataAccessHandler _hexDataAccessHandler;
         private readonly HexPathSearcher _hexPathSearcher;
 
         private Filter _noPathEntitiesFilter;

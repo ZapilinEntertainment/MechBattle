@@ -11,31 +11,38 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public sealed class HexPathCalculationSystem : ISystem 
     {
+        private enum CalculationStatus : byte
+        {
+            Idle, Calculating, Completed
+        }
+
+        private struct CalculationProcess
+        {
+            public CalculationStatus Status;
+            public HexPathSearchRequest Request;
+        }
 
         public World World { get; set;}
 
         private readonly INavigationMap _map;
         private readonly RequestedHexPathsList _requestedHexPathsList;
-        private readonly PortalsPathCalculationProcessesManager _processesManager;
-        private readonly AwaitingTokensList _awaitingTokensList;
-        private readonly HexDataAccessHandler _hexDataAccessHandler;
+        private readonly HexPathsSearchHistory _searchHistory;
+        private readonly HexPathsLRUBuffer _hexPaths;
         private readonly List<HexPathSearchRequest> _clearList;
-        private readonly Dictionary<HexPathSearchRequest, PathCalculationProcessToken> _calculatingTokens = new();
 
+        private CalculationProcess _calculationProcess;
 
         [Inject]
         public HexPathCalculationSystem(
             RequestedHexPathsList requestedHexPathsList, 
-            INavigationMap map, 
-            AwaitingTokensList awaitingTokensList,
-            HexDataAccessHandler hexDataAccessHandler)
+            HexPathsSearchHistory searchHistory,
+            HexPathsLRUBuffer hexPaths,
+            INavigationMap map)
         {
             _requestedHexPathsList = requestedHexPathsList;
-            _awaitingTokensList = awaitingTokensList;
-            _hexDataAccessHandler = hexDataAccessHandler;
-
             _map = map;
-            _processesManager = new(MAX_PARALLEL_CALCULATIONS, _hexPaths);
+            _searchHistory = searchHistory;
+            _hexPaths = hexPaths;
         }
 
         public void OnAwake() { }
@@ -45,38 +52,18 @@ namespace ZE.MechBattle.Ecs {
             if (!_map.IsInitialized)
                 return;
 
-            CheckCalculatingProcesses();
-            var idleProcessesCount = _processesManager.UpdateAndGetIdleProcessesCount();
-            if (idleProcessesCount == 0)
-                return;
-
-            HandleReceivedRequests(idleProcessesCount);
+            CheckCalculatingProcess();
+            HandleReceivedRequests();
         }
 
-        public void Dispose()
-        {
-            _processesManager.Dispose();
-        }
+        public void Dispose() { }
 
-        private void CheckCalculatingProcesses()
+        private void CheckCalculatingProcess()
         {
-            foreach (var kvp in _calculatingTokens)
+            if (_calculationProcess.Status == CalculationStatus.Completed)
             {
-                if (_processesManager.IsProcessCompleted(kvp.Value))
-                {
-                    _clearList.Add(kvp.Key);
-                    _requestedHexPathsList.Remove(kvp.Key);
-                }
-            }
-
-            var count = _clearList.Count;
-            if (count != 0)
-            {
-                for (var i = 0; i < count; i++)
-                {
-                    _calculatingTokens.Remove(_clearList[i]);
-                }
-                _clearList.Clear();
+                _requestedHexPathsList.Remove(_calculationProcess.Request);
+                _hexPaths.AddCalculatedPath()
             }
         }
 

@@ -41,11 +41,11 @@ namespace ZE.MechBattle.Navigation
         public NavigationHexPosition Pos => _pos;
         public HexEdgesAccessMap AccessMap { get;private set;}
         public HexEdgesMask EdgesPassability { get;private set;}
-        public IReadOnlyList<NavigationPortal> PortalsList => _portals;
+        public IReadOnlyList<NavigationPortalExit> PortalsList => _portals;
 
         private readonly NavigationHexPosition _pos;
         private readonly HexEdgeStatus[] _edgeStatuses = new HexEdgeStatus[6];
-        private readonly List<NavigationPortal> _portals = new();
+        private readonly List<NavigationPortalExit> _portals = new();
 
 
 

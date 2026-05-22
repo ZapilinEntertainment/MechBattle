@@ -14,7 +14,7 @@ namespace ZE.MechBattle
             _allocator = allocator;
         }
 
-        public override PathCalculationProcess<IntTriangularPos> CreateNewProcess() =>
+        protected override PathCalculationProcess<IntTriangularPos> CreateNewProcess() =>
             new TrianglePathCalculationProcess(_allocator, _map);
     }
 }

@@ -31,14 +31,16 @@ namespace ZE.MechBattle.Ecs
             RegisterSystem<ChangeMovementTargetSystem>();
             RegisterSystem<HexPathClearSystem>();
             RegisterSystem<TrianglePathClearSystem>();
+
+            builder.Register<HexRaycastRequestsList>(Lifetime.Scoped);
             
             builder.Register<TrianglePathsLRUBuffer>(_ => new(), Lifetime.Scoped);
             builder.Register<HexPathsSearchHistory>(Lifetime.Scoped);
             builder.Register<RequestedHexPathsList>(Lifetime.Scoped);
             builder.Register<HexPathsLRUBuffer>(Lifetime.Scoped);
 
-            builder.Register<MovementTasksFactory>(Lifetime.Scoped);
-            builder.Register<HexDataAccessHandler>(Lifetime.Scoped);
+            builder.Register<PortalsList>(Lifetime.Scoped);
+            builder.Register<PortalConnectionsList>(Lifetime.Scoped);
 
             builder.Register<NavigationMapInitializer>(Lifetime.Transient);
         }

@@ -95,7 +95,7 @@ namespace ZE.MechBattle.Navigation
             if (_isDisposed)
                 throw new Exception("Caster disposed");
 
-            var castJobHandle = PrepareCastJob(hexPos);
+            var castJobHandle = ScheduleCastJob(hexPos);
 
             var ownToken = _casterLifetimeCts.Token;
             while (!castJobHandle.IsCompleted)
@@ -115,11 +115,11 @@ namespace ZE.MechBattle.Navigation
             if (_isDisposed)
                 throw new Exception("Caster disposed");
 
-            var castJobHandle = PrepareCastJob(hexPos);
+            var castJobHandle = ScheduleCastJob(hexPos);
             castJobHandle.Complete();
         }
 
-        public JobHandle PrepareCastJob(NavigationHexPosition hexPos)
+        public JobHandle ScheduleCastJob(NavigationHexPosition hexPos)
         {
             var positionsJob = ConstructPositionsJob(hexPos, _trianglesPerHexEdge);           
             var preparePositionsHandle = positionsJob.ScheduleByRef();

@@ -3,84 +3,43 @@ using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle
 {
-    public abstract class PathCalculationProcessesManager<NodeKey> : IDisposable where NodeKey : unmanaged
+    public readonly struct PathProcessLaunchData<NodeKey> : IProcessLaunchData where NodeKey : unmanaged
     {
-        protected readonly IPathsList<NodeKey> PathsList;
-        private readonly PathCalculationProcess<NodeKey>[] _processes;        
+        public readonly NodeKey Start;
+        public readonly NodeKey End;
 
-        public PathCalculationProcessesManager(int maxProcessesCount, IPathsList<NodeKey> pathsList)
+        public PathProcessLaunchData(NodeKey start, NodeKey end)
         {
-            _processes = new PathCalculationProcess<NodeKey>[maxProcessesCount];
+            Start = start;
+            End = end;
+        }
+    }
+
+    public abstract class PathCalculationProcessesManager<NodeKey> : ProcessManagerBase<
+        PathInput<NodeKey>, 
+        PathCalculationResult<NodeKey>,
+        PathCalculationProcess<NodeKey>,
+        PathProcessLaunchData<NodeKey>,
+        PathCalculationProcessToken> 
+        where NodeKey : unmanaged
+    {
+        protected readonly IPathsList<NodeKey> PathsList;   
+
+        public PathCalculationProcessesManager(int maxProcessesCount, IPathsList<NodeKey> pathsList) : base(maxProcessesCount) 
+        {
             PathsList = pathsList;
         }
 
-        public void Dispose()
+        protected override void HandleResults(PathCalculationProcess<NodeKey> process)
         {
-            foreach (var process in _processes)
-            {
-                process?.Dispose();
-            }
+            var results = process.StopAndGetResults();
+            PathsList.AddCalculatedPath(process.PathId, results);
         }
 
-        public int UpdateAndGetIdleProcessesCount()
+        protected override PathCalculationProcessToken LaunchProcess(PathProcessLaunchData<NodeKey> launchData, PathCalculationProcess<NodeKey> process, int index)
         {
-            var idleProcesses = 0;
-            for (var i = 0; i < _processes.Length; i++)
-            {
-                var calculationProcess = _processes[i];
-                if (calculationProcess == null)
-                {
-                    idleProcesses++;
-                    continue;
-                }
-
-                switch (calculationProcess.Stage)
-                {
-                    case CalculationProcessStage.Complete:
-                        {
-                            var results = calculationProcess.StopAndGetResults();
-                            PathsList.AddCalculatedPath(calculationProcess.PathId, results);
-                            idleProcesses++;
-                            break;
-                        }
-                    case CalculationProcessStage.Idle:
-                        {
-                            idleProcesses++;
-                            break;
-                        }
-                }
-            }
-            return idleProcesses;
-        }
-
-
-        public PathCalculationProcessToken TryLaunchProcess(NodeKey start, NodeKey end)
-        {
-            for (var i = 0; i < _processes.Length; i++)
-            {
-                var process = _processes[i];
-                if (process == null)
-                {
-                    process = CreateNewProcess();
-                    _processes[i] = process;
-                }
-
-                if (process.Stage == CalculationProcessStage.Idle)
-                    return LaunchProcessJob(start,end, process, i);
-            }
-            return default;
-        }
-
-        public bool IsProcessCompleted(PathCalculationProcessToken token) => 
-            !token.IsValid 
-            || _processes[token.ProcessIndex].ProcessIteration != token.ProcessIteration;
-
-        public abstract PathCalculationProcess<NodeKey> CreateNewProcess();
-
-        virtual protected PathCalculationProcessToken LaunchProcessJob(NodeKey start, NodeKey end, PathCalculationProcess<NodeKey> process, int index)
-        {
-            var reservedPath = PathsList.ReservePath((start, end));
-            process.Launch(reservedPath.Id, start, end);
+            var reservedPath = PathsList.ReservePath((launchData.Start, launchData.End));
+            process.Launch(new(reservedPath.Id, launchData.Start, launchData.End));
             //UnityEngine.Debug.Log($"start calculation: {start} -> {end}");
             return new(reservedPath.Id, index, process.ProcessIteration);
         }

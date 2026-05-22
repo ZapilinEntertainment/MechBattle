@@ -11,51 +11,28 @@ using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle
 {
-    public enum CalculationProcessStage : byte { Idle, Calculating, Complete }
-
-    public abstract class PathCalculationProcess<NodeKey> : IDisposable where NodeKey : unmanaged
+    public readonly struct PathInput<NodeKey> where NodeKey : unmanaged
     {
-        public CalculationProcessStage Stage => _isLaunched
-               ? (_activeHandle.IsCompleted ? CalculationProcessStage.Complete : CalculationProcessStage.Calculating)
-               : CalculationProcessStage.Idle;
+        public readonly int PathId;
+        public readonly NodeKey Start;
+        public readonly NodeKey End;
 
-
-        public int PathId { get; private set; }
-        public int ProcessIteration { get; private set; }
-
-        private JobHandle _activeHandle;
-        private bool _isLaunched;
-
-        public virtual void Launch(int pathId, NodeKey start, NodeKey end)
+        public PathInput(int pathId, NodeKey start, NodeKey end)
         {
             PathId = pathId;
-
-            _activeHandle = LaunchJob(start, end);
-            _isLaunched = true;
-            ProcessIteration++;
+            Start = start;
+            End = end;
         }
+    }
 
-        public PathCalculationResult<NodeKey> StopAndGetResults()
+    public abstract class PathCalculationProcess<NodeKey> : ProcessBase<PathInput<NodeKey>, PathCalculationResult<NodeKey>> where NodeKey : unmanaged
+    {
+        public int PathId { get; private set; }
+
+        public override void Launch(PathInput<NodeKey> input)
         {
-            _activeHandle.Complete();
-            _isLaunched = false;
-            ProcessIteration++;
-            return FormResults();
+            PathId = input.PathId;
+            base.Launch(input);
         }
-
-        public async void Dispose()
-        {
-            if (_isLaunched)
-            {
-                while (!_activeHandle.IsCompleted)
-                    await Task.Delay(100);
-            }
-            _activeHandle = default;
-            DisposeResources();
-        }
-
-        protected abstract PathCalculationResult<NodeKey> FormResults();
-        protected abstract JobHandle LaunchJob(NodeKey start, NodeKey end);        
-        protected abstract void DisposeResources();
     }
 }

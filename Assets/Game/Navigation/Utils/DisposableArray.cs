@@ -3,13 +3,21 @@ using System.Buffers;
 
 namespace ZE.MechBattle.Navigation
 {
-    public class DisposableArray<T> : IDisposable
+    public struct DisposableArray<T> : IDisposable
     {
         public readonly T[] Values;
+        public readonly int Length;
 
         public DisposableArray(int length)
         {
-            Values = ArrayPool<T>.Shared.Rent(length);
+            Length = length;
+            Values = ArrayPool<T>.Shared.Rent(Length);
+        }
+
+        public DisposableArray(T[] array, int length)
+        {
+            Values = array; 
+            Length = length;
         }
 
         public void Dispose()
