@@ -21,7 +21,8 @@ namespace ZE.MechBattle.Navigation
        // public const int PEAK_LONG_VERTEX_MASK = (1 << (int)PeakNeighbour.EdgeUpRight) + (1 << (int)PeakNeighbour.VertexRight) + (1 << (int)PeakNeighbour.VertexDownRightPeak) + ()
        // public const int VALLEY_EDGES_MASK = (1 << (int)ValleyNeighbour.EdgeDownLeft) + (1 << (int)ValleyNeighbour.EdgeDownRight) + (1 << (int)ValleyNeighbour.EdgeUp);
 
-        public const sbyte DEFAULT_TRIANGLE_ENTRANCE_COST = 1;
+        public const float DEFAULT_TRIANGLE_ENTRANCE_COST = 1f;
+        public const int DEFAULT_CELL_ZONE = 0;
 
 
         public const float SQRT_OF_THREE = 1.73205f;

@@ -26,6 +26,22 @@ namespace ZE.MechBattle.Navigation
             StartHexZoneIndex = startHexZoneIndex;
             EndHexZoneIndex = endHexZoneIndex;
         }
+
+        public HexPathSearchRequest(
+            IntTriangularPos startTripos, 
+            IntTriangularPos endTripos,
+            PortalPathDestinationKey startPortalKey,
+            PortalPathDestinationKey endPortalKey)
+        {
+            StartTripos = startTripos;
+            EndTripos = endTripos;
+            StartHexCoord = startPortalKey.HexCoord;
+            EndHexCoord = endPortalKey.HexCoord;
+            StartHexZoneIndex = startPortalKey.ZoneIndex;
+            EndHexZoneIndex = endPortalKey.ZoneIndex;
+        }
+
+        public (PortalPathDestinationKey start, PortalPathDestinationKey end) ToDestinationsKey() => (new(StartHexCoord, StartHexZoneIndex), new(EndHexCoord, EndHexZoneIndex));
     
     }
 }

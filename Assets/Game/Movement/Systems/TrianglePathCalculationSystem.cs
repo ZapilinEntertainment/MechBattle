@@ -26,12 +26,14 @@ namespace ZE.MechBattle.Ecs
         private readonly TrianglePathCalculationProcessManager _processesManager;
         private readonly TrianglePathsLRUBuffer _pathsList;    
 
+        private const int MAX_PROCESSES_COUNT = 4;
+
         [Inject]
         public TrianglePathCalculationSystem(INavigationMap map, TrianglePathsLRUBuffer trianglePathsBuffer)
         {
             _map = map;
             _pathsList = trianglePathsBuffer;
-            _processesManager = new TrianglePathCalculationProcessManager(Allocator.Persistent, _map, MAX_PARALLEL_CALCULATIONS, _pathsList);
+            _processesManager = new TrianglePathCalculationProcessManager(Allocator.Persistent, _map, MAX_PROCESSES_COUNT, _pathsList);
         }
 
         public void OnAwake() 
@@ -72,7 +74,7 @@ namespace ZE.MechBattle.Ecs
                     continue;
                 }
 
-                var processToken = _processesManager.TryLaunchProcess(endpoints.Start, endpoints.End);
+                var processToken = _processesManager.TryLaunchProcess(new(endpoints.Start, endpoints.End));
                 if (!processToken.IsValid)
                 {
                     #if UNITY_EDITOR
@@ -114,7 +116,7 @@ namespace ZE.MechBattle.Ecs
             _processesManager.Dispose();
         }
 
-        private void AssignPath(Entity entity, PathData<IntTriangularPos> path)
+        private void AssignPath(Entity entity, PathData<IntTriangularPos, IntTriangularPos> path)
         {
             if (path.IsCalculated)
                 AssignCalculatedPath(entity, path);
@@ -124,7 +126,7 @@ namespace ZE.MechBattle.Ecs
             _endpoints.Remove(entity);
         }
 
-        private void AssignCalculatedPath(Entity entity, PathData<IntTriangularPos> path)
+        private void AssignCalculatedPath(Entity entity, PathData<IntTriangularPos, IntTriangularPos> path)
         {
             _regularPaths.Set(entity, new(pathId: path.Id, path.NodesCount));
         }

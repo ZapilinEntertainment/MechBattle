@@ -32,14 +32,14 @@ namespace ZE.MechBattle.Navigation
             _subStep = 0;
         }
 
-        public EdgeEnumerator(int trianglesPerEdge, IntTriangularPos startTripos)
+        public EdgeEnumerator(NavigationPortalExit exit)
         {
             _logic = default;
-            _limit = trianglesPerEdge;
-            _pos = startTripos;
+            _limit = exit.Length;
+            _pos = exit.StartTriangle;
 
             _step = 0;
-            _subStep = _logic.StartsWithPeak == startTripos.IsPeak ? 0 : 1;            
+            _subStep = _logic.StartsWithPeak == _pos.IsPeak ? 0 : 1;            
         }
 
         public bool MoveNext()

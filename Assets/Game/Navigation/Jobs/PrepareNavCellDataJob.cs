@@ -15,7 +15,6 @@ namespace ZE.MechBattle.Navigation
         public FlattenedHexCoordsConverter CoordsConverter;
         public float IntersectionPercentForLock;
         public float SubdividedTrianglesCount;
-        public sbyte DefaultEntranceCost;
         public float MaxElevationDifference;
         private const int NEIGHBOURS_COUNT = NavigationConstants.TRIANGLE_DIRECTIONS_COUNT;
 
@@ -73,7 +72,7 @@ namespace ZE.MechBattle.Navigation
             neighboursAccessMask = TrianglesTransitionLogic.CheckMaskForJumpNeighbours(neighboursAccessMask, isPeak);
 
 
-            SetupData[index] = new CellPassabilityData(isPassable, neighboursAccessMask, DefaultEntranceCost);
+            SetupData[index] = new CellPassabilityData(isPassable, neighboursAccessMask);
             HeightData[index] = new CellHeightData(refinedData);
         }
     

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ZE.MechBattle
 {
-
+    // stores a fixed amount of objects (cuts excess)
     public class LRUDictionaryCache<Key, Value> : IEnumerable<KeyValuePair<Key,Value>>
     {
         private readonly struct CacheElement

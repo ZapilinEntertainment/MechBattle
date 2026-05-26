@@ -11,15 +11,17 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public readonly struct FlowTrianglePathComponent : IComponent 
+    public readonly struct FlowTrianglePathComponent : IPathUserComponent<int> 
     {
-        public readonly HexEdge ExitEdge;
-        public readonly int2 NextHexCoord;
+        public readonly int FlowMapId;
+        public readonly int2 MapHexCoord;
 
-        public FlowTrianglePathComponent(HexEdge flowMapExitEdge, int2 nextHexCoord)
+        public int PathKey => FlowMapId;
+
+        public FlowTrianglePathComponent(int id, int2 hexCoord)
         {
-            ExitEdge = flowMapExitEdge;
-            NextHexCoord = nextHexCoord;
+            FlowMapId = id;
+            MapHexCoord = hexCoord;
         }
     }
 }

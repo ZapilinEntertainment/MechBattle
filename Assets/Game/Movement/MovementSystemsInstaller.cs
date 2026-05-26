@@ -16,12 +16,17 @@ namespace ZE.MechBattle.Ecs
             RegisterSystem<NoTargetPathsClearingSystem>();
 
             RegisterSystem<HexPathDefineSystem>();
-            RegisterSystem<HexPathCalculationSystem>();
-            RegisterSystem<HexPathAccountingSystem>();
-
+            RegisterSystem<HexPathSearchSystem>();
+            RegisterSystem<HexPortalPathCalculationSystem>();
+            RegisterSystem<HexPortalPathAccountingSystem>();           
+            
             RegisterSystem<TrianglePathDefineSystem>();
-            RegisterSystem<TrianglePathCalculationSystem>();
+            RegisterSystem<FlowPathSearchSystem>();
+
             RegisterSystem<TrianglePathsAccountingSystem>();
+            RegisterSystem<FlowMapsAccountingSystem>();
+            RegisterSystem<TrianglePathCalculationSystem>();
+            
 
             RegisterSystem<TrianglePathWaypointSetSystem>();
             RegisterSystem<WaypointsMovementSystem>();
@@ -29,18 +34,21 @@ namespace ZE.MechBattle.Ecs
             RegisterSystem<HexPathProgressionUpdateSystem>();
 
             RegisterSystem<ChangeMovementTargetSystem>();
-            RegisterSystem<HexPathClearSystem>();
+            RegisterSystem<HexPortalPathClearSystem>();
             RegisterSystem<TrianglePathClearSystem>();
 
             builder.Register<HexRaycastRequestsList>(Lifetime.Scoped);
             
             builder.Register<TrianglePathsLRUBuffer>(_ => new(), Lifetime.Scoped);
-            builder.Register<HexPathsSearchHistory>(Lifetime.Scoped);
-            builder.Register<RequestedHexPathsList>(Lifetime.Scoped);
-            builder.Register<HexPathsLRUBuffer>(Lifetime.Scoped);
 
-            builder.Register<PortalsList>(Lifetime.Scoped);
+            builder.Register<HexPortalsList>(Lifetime.Scoped);
             builder.Register<PortalConnectionsList>(Lifetime.Scoped);
+            builder.Register<HexPortalPathsLRUBuffer>(Lifetime.Scoped);
+           
+            builder.Register<FlowMapsCoordinator>(Lifetime.Scoped);
+            builder.Register<FlowMapsFactory>(Lifetime.Scoped);
+            builder.Register<PortalFlowMapsList>(Lifetime.Scoped);
+            builder.Register<FlowMapAssignmentList>(Lifetime.Scoped);
 
             builder.Register<NavigationMapInitializer>(Lifetime.Transient);
         }
@@ -53,10 +61,13 @@ namespace ZE.MechBattle.Ecs
             resolver.AddSystem<NoTargetPathsClearingSystem>(SystemGroupOrder.RegularUpdate);
 
             resolver.AddSystem<HexPathDefineSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<HexPathCalculationSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<HexPathAccountingSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<HexPathSearchSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<HexPortalPathCalculationSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<HexPortalPathAccountingSystem>(SystemGroupOrder.RegularUpdate);
 
             resolver.AddSystem<TrianglePathDefineSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<FlowPathSearchSystem>(SystemGroupOrder.RegularUpdate);
+
             resolver.AddSystem<TrianglePathCalculationSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<TrianglePathsAccountingSystem>(SystemGroupOrder.RegularUpdate);
 
@@ -66,7 +77,7 @@ namespace ZE.MechBattle.Ecs
             resolver.AddSystem<HexPathProgressionUpdateSystem>(SystemGroupOrder.RegularUpdate);
 
             resolver.AddSystem<ChangeMovementTargetSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<HexPathClearSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<HexPortalPathClearSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<TrianglePathClearSystem>(SystemGroupOrder.RegularUpdate);
 
             resolver.AddInitializer<NavigationMapInitializer>(SystemGroupOrder.Initialization);

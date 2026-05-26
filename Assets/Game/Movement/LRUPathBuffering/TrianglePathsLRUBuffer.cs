@@ -3,7 +3,7 @@ using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle
 {
-    public class TrianglePathsLRUBuffer : UserCountDependentLRUPathsBuffer<Entity, IntTriangularPos>
+    public class TrianglePathsLRUBuffer : UserCountDependentLRUPathsBuffer<IntTriangularPos, IntTriangularPos>
     {
     }
 }

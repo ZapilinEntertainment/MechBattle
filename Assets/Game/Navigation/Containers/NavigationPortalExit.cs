@@ -1,5 +1,6 @@
 using ZE.MechBattle.Navigation;
 using Unity.Mathematics;
+using System.Collections.Generic;
 
 namespace ZE.MechBattle
 {
@@ -21,6 +22,5 @@ namespace ZE.MechBattle
             Length = length;
             ZoneIndex = zoneIndex;
         }
-    
     }
 }

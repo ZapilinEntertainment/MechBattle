@@ -32,7 +32,6 @@ namespace ZE.MechBattle.Navigation
 
             _job = new PrepareNavCellDataJob()
             {
-                DefaultEntranceCost = NavigationConstants.DEFAULT_TRIANGLE_ENTRANCE_COST,
                 SetupData = _flowCalculationCollections.PassabilityDataInnerArray,
                 RefinedRaycastData = refinedData,
                 IntersectionPercentForLock = mapSettings.IntersectionPercentForLock,

@@ -1,73 +1,148 @@
+using System;
+using System.Linq;
 using System.Collections.Generic;
+using UnityEngine;
+using Unity.Mathematics;
 using Scellecs.Morpeh;
 using VContainer;
 using Unity.IL2CPP.CompilerServices;
+using ZE.Utils;
 
 namespace ZE.MechBattle.Ecs {
+
+    public interface IPathUserComponent<Key> : IComponent
+    {
+        Key PathKey { get;}
+    }
+
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public abstract class PathsAccountingSystemBase<UserKey> : ISystem where UserKey : IUserCountDependentLRUPathsBuffer<Entity>
+    public abstract class PathsAccountingSystemBase<ComponentType, PathKey,PathType> : ISystem
+        where ComponentType : struct, IPathUserComponent<PathKey>
+        where PathType : ILRUBufferElement
     {
+        private sealed class ClearLogic
+        {
+            private readonly struct ElementData
+            {
+                public readonly PathKey Key;
+                public readonly float LastUsed;
+
+                public ElementData(PathKey key, float lastUsed)
+                {
+                    Key = key;
+                    LastUsed = lastUsed;
+                }
+            }
+
+            public IReadOnlyList<PathKey> ClearList => _clearList;
+
+            private readonly int _bufferLimit;
+            private readonly Dictionary<PathKey, int>  _activePathUsers = new ();
+            private readonly IItemsBuffer<PathKey, PathType> _originalList;
+            
+
+            private readonly Func<KeyValuePair<PathKey, int>, bool> unusedPredicate;
+            private readonly Func<KeyValuePair<PathKey, int>, ElementData> selector;
+            private readonly Func<ElementData, float> lastUsedComparator;
+            private readonly List<PathKey> _clearList = new();
+
+            public ClearLogic(int bufferLimit)
+            {
+                _bufferLimit = bufferLimit;
+
+                unusedPredicate = kvp => kvp.Value == 0;
+                selector = kvp => new ElementData(kvp.Key, _originalList[kvp.Key].LastUseTime);
+                lastUsedComparator = x => x.LastUsed;
+            }
+
+            public void ResetActiveUsers() => _activePathUsers.Clear(); 
+            public void AddActiveUser(PathKey pathKey)
+            {
+                if (_activePathUsers.TryGetValue(pathKey, out var usersCount))
+                    _activePathUsers[pathKey] = usersCount + 1;
+                else
+                    _activePathUsers.Add(pathKey, 1);
+            }
+
+            public void PrepareClearList()
+            {
+                var clearCount = math.max(0, _originalList.Count - _bufferLimit);
+                var clearEnumerator = _activePathUsers
+                    .Where(unusedPredicate)
+                    .Select(selector)
+                    .OrderBy(lastUsedComparator)
+                    .Take(clearCount);
+
+                _clearList.Clear();
+                foreach (var element in clearEnumerator)
+                {
+                    _clearList.Add(element.Key);
+                }
+            }
+        } 
+
+
         public World World { get; set; }
 
         abstract protected int BufferLimit { get; }
-        abstract protected Filter ActivePathUsersFilter { get; }
+        abstract protected float ClearInterval { get;}
 
-        private HashSet<Entity> _activePathUsers = new();
-        private List<Entity> _clearUsersList = new();
-        private readonly IUserCountDependentLRUPathsBuffer<Entity> _buffer;
-        private readonly IBufferTrimController _bufferClearController;
+        private float _lastClearTime = 0f;
+        private Filter _usersFilter;
+        private Stash<ComponentType> _usersStash;
+        
+        private readonly ClearLogic _logic;
+        private readonly UseTimeStoringDictionary<PathKey, PathType> _list;
 
-
+       
 
         [Inject]
-        public PathsAccountingSystemBase(IUserCountDependentLRUPathsBuffer<Entity> buffer)
+        public PathsAccountingSystemBase(UseTimeStoringDictionary<PathKey, PathType> list)
         {
-            _buffer = buffer;
-            _bufferClearController = _buffer.CreateTrimController();
+            _list = list;
+            _logic = new(BufferLimit);
+        }
+
+        public void OnAwake()
+        {
+            _usersStash = World.GetStash<ComponentType>();
+            _usersFilter = CreateFilter();
         }
 
         public void OnUpdate(float deltaTime)
         {
-            _activePathUsers.Clear();
-            _clearUsersList.Clear();
+            if (_list.Count < BufferLimit ||  (Time.time - _lastClearTime) < ClearInterval)
+                return;
 
-            // users with no valid paths
-            foreach (var u2pKvp in _buffer.UserToPathId)
+            
+            _logic.ResetActiveUsers();
+            foreach (var user in _usersFilter)
             {
-                var entity = u2pKvp.Key;
-                if (HasPathComponent(entity))
-                    _activePathUsers.Add(entity);
-                else 
-                    _clearUsersList.Add(entity);                    
+                var pathKey = _usersStash.Get(user).PathKey;
+                _logic.AddActiveUser(pathKey);
             }
 
-            foreach (var entity in _clearUsersList)
+            _logic.PrepareClearList();
+            _lastClearTime = Time.time;
+            
+            var clearList = _logic.ClearList;
+            if (clearList.Count != 0)
             {
-                _buffer.OnPathUserLeft(entity);
-            }
+                foreach (var clearKey in clearList)
+                    _list.Remove(clearKey);
 
-            // users that just started use path
-            foreach (var entity in _activePathUsers)
+                Debug.Log($"{GetType().ToString()} removed {clearList.Count} excess elements");
+            }
+            else
             {
-                if (_activePathUsers.Add(entity))
-                {
-                    _buffer.OnPathStartUse(entity, GetPathId(entity));
-                }
+                Debug.Log($"{GetType().ToString()} overflow");
             }
-
-            // clear buffer of obsolete paths
-            var pathsCount = _buffer.PathsCount;
-            if (pathsCount > BufferLimit)
-                _bufferClearController.Trim(BufferLimit);
         }
 
         public void Dispose() { }
 
-        abstract public void OnAwake();
-
-        abstract protected bool HasPathComponent(Entity entity);
-        abstract protected int GetPathId(Entity entity);
+       protected abstract Filter CreateFilter();
     }
 }

@@ -20,16 +20,19 @@ namespace ZE.MechBattle.Ecs
         private Stash<TriangularPosComponent> _triangularPositions;
         private Stash<MoveSpeedComponent> _moveSpeedComponents;
         private Stash<ClearTrianglePathTag> _invalidTrianglePaths;
+        private Stash<HexCoordComponent> _hexCoordComponents;
 
         private readonly float _triangleHeight;
         private readonly INavigationMap _map;
         private readonly TrianglePathsLRUBuffer _trianglePathsBuffer;
+        private readonly PortalFlowMapsList _flowMaps;
 
         [Inject]
-        public TrianglePathWaypointSetSystem(INavigationMap map, TrianglePathsLRUBuffer trianglePathsBuffer)
+        public TrianglePathWaypointSetSystem(INavigationMap map, TrianglePathsLRUBuffer trianglePathsBuffer, PortalFlowMapsList flowMaps)
         {
             _map = map;
             _trianglePathsBuffer = trianglePathsBuffer;
+            _flowMaps = flowMaps;
 
             _triangleHeight = _map.TriangleHeight;
         }
@@ -52,6 +55,7 @@ namespace ZE.MechBattle.Ecs
             _waypoints = World.GetStash<WaypointMoveTarget>();
             _triangularPositions = World.GetStash<TriangularPosComponent>();
             _moveSpeedComponents = World.GetStash<MoveSpeedComponent>();
+            _hexCoordComponents = World.GetStash<HexCoordComponent>();
         }
 
         public void OnUpdate(float deltaTime) 
@@ -62,7 +66,7 @@ namespace ZE.MechBattle.Ecs
                 var pathId = pathComponent.PathId;
                 var pathStepIndex = pathComponent.StepIndex;
 
-                if (!_trianglePathsBuffer.TryGetPath(pathId, out var pathData)
+                if (!_trianglePathsBuffer.TryGetValue(pathId, out var pathData, updateUsingTime: true)
                     || !pathData.TryGetTriangle(pathStepIndex, out var nextTripos))
                 {
                     _invalidTrianglePaths.Set(entity);
@@ -75,9 +79,19 @@ namespace ZE.MechBattle.Ecs
 
             foreach (var entity in _flowPathsFilter)
             {
-                var triangularPath = _flowPaths.Get(entity);
+                var flowMapComponent = _flowPaths.Get(entity);
+                var flowMapId = flowMapComponent.FlowMapId;
+                var hexCoord = _hexCoordComponents.Get(entity).Value;
+
+                if (!_flowMaps.TryGetCachedValue(flowMapId, out var flowMap)
+                    || math.any(hexCoord != flowMap.HexCoord))
+                {
+                    _invalidTrianglePaths.Set(entity);
+                    continue;
+                }
+
                 var tripos = _triangularPositions.Get(entity).Value;
-                var exitDirection = _map.GetFlowData(tripos)[triangularPath.ExitEdge].Direction;
+                var exitDirection = flowMap.GetDirectionUnsafe(tripos);
                 var nextTripos = TriangularMath.GetNeighbourByDirection(tripos, exitDirection);
                 var nextWorldPos = TriangularMath.TriangularToWorld(nextTripos, _triangleHeight);
                 _waypoints.Set(entity, new(worldPos: nextWorldPos, tripos: nextTripos));

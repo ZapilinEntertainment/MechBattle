@@ -201,16 +201,16 @@ namespace ZE.MechBattle.Navigation
         }
 
         [BurstDiscard]
-        public static IEnumerable<IntTriangularPos> GetEdgeEnumerable(this HexEdge edge, int trianglesPerEdge, IntTriangularPos startPos)
+        public static IEnumerable<IntTriangularPos> GetEdgeEnumerable(this HexEdge edge, NavigationPortalExit portalExit)
         {
             switch (edge)
             {
-                case HexEdge.TopRight: return new EdgeEnumerator<TopRightEdgeEnumerationLogic>(trianglesPerEdge, startPos);
-                case HexEdge.BottomRight: return new EdgeEnumerator<BottomRightEdgeEnumerationLogic>(trianglesPerEdge, startPos);
-                case HexEdge.Bottom: return new EdgeEnumerator<BottomEdgeEnumerationLogic>(trianglesPerEdge, startPos);
-                case HexEdge.BottomLeft: return new EdgeEnumerator<BottomLeftEdgeEnumerationLogic>(trianglesPerEdge, startPos);
-                case HexEdge.TopLeft: return new EdgeEnumerator<TopLeftEdgeEnumerationLogic>(trianglesPerEdge, startPos);
-                default: return new EdgeEnumerator<TopEdgeEnumerationLogic>(trianglesPerEdge, startPos);
+                case HexEdge.TopRight: return new EdgeEnumerator<TopRightEdgeEnumerationLogic>(portalExit);
+                case HexEdge.BottomRight: return new EdgeEnumerator<BottomRightEdgeEnumerationLogic>(portalExit);
+                case HexEdge.Bottom: return new EdgeEnumerator<BottomEdgeEnumerationLogic>(portalExit);
+                case HexEdge.BottomLeft: return new EdgeEnumerator<BottomLeftEdgeEnumerationLogic>(portalExit);
+                case HexEdge.TopLeft: return new EdgeEnumerator<TopLeftEdgeEnumerationLogic>(portalExit);
+                default: return new EdgeEnumerator<TopEdgeEnumerationLogic>(portalExit);
             }
         }
 

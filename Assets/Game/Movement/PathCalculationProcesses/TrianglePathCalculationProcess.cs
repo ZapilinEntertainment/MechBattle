@@ -11,7 +11,7 @@ using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle
 {
-    public class TrianglePathCalculationProcess : PathCalculationProcess<IntTriangularPos>
+    public class TrianglePathCalculationProcess : PathCalculationProcess<IntTriangularPos, IntTriangularPos>
     {
         private readonly INavigationMap _map;
         private readonly TriangularPathJobCollections _collections;
@@ -39,15 +39,16 @@ namespace ZE.MechBattle
             return _job.ScheduleByRef();
         }
 
-        protected override PathCalculationResult<IntTriangularPos> FormResults()
+        protected override PathCalculationResult<IntTriangularPos, IntTriangularPos> FormResults()
         {
             var rawResultsData = _collections.ResultList;
             var resultsLength = rawResultsData.Length;
             var lastNode = resultsLength == 0 ? default : rawResultsData[resultsLength - 1];
             var hasReachedTarget = lastNode == _job.End;
-            return new PathCalculationResult<IntTriangularPos>(
-                requestedDestination: (_job.Start, _job.End), 
-                points: rawResultsData.AsArray(), 
+            return new PathCalculationResult<IntTriangularPos, IntTriangularPos>(
+                start: _job.Start,
+                end: _job.End,
+                readOnlyPoints: rawResultsData.AsArray().AsReadOnly(), 
                 pathCost: _collections.PathCostReference.Value, 
                 hasReachedTarget: hasReachedTarget);
         }

@@ -62,11 +62,11 @@ namespace ZE.MechBattle.Ecs
 
             foreach (var entity in _flowPathsFilter)
             {
-                var flowMapHexCoord = _flowPaths.Get(entity).NextHexCoord;
+                var flowMapHexCoord = _flowPaths.Get(entity).MapHexCoord;
                 var entityHexCoord = _hexCoordComponents.Get(entity).Value;
 
                 // if is out of flow map
-                if (math.all(flowMapHexCoord == entityHexCoord))
+                if (math.any(flowMapHexCoord != entityHexCoord))
                 {
                     _completedPathTags.Add(entity);
                    _flowPaths.Remove(entity);

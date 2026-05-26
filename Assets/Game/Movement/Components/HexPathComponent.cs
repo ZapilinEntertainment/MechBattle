@@ -10,17 +10,15 @@ namespace ZE.MechBattle.Ecs
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public struct HexPathComponent : IComponent 
+    public struct HexPathComponent : IPathUserComponent<int> 
     {
         public readonly int PathId;
-        public readonly int StepsCount;
-        public int StepIndex;   
+        public int PathKey => PathId;
 
-        public HexPathComponent(int pathId,  int stepsCount)
+
+        public HexPathComponent(int pathId)
         {
             PathId = pathId;
-            StepIndex = 0;
-            StepsCount = stepsCount;
         }
     }
 }
