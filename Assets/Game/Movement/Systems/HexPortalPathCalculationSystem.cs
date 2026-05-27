@@ -5,35 +5,36 @@ using Unity.IL2CPP.CompilerServices;
 using VContainer;
 using Unity.Collections;
 using ZE.MechBattle.Navigation;
+using ZE.Utils;
+
 
 namespace ZE.MechBattle.Ecs {
+
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public sealed class HexPortalPathCalculationSystem : ISystem 
+    public sealed class HexPortalPathCalculationSystem : PathCalculationSystemBase<HexPortalsPath>
     {
-        private enum PathCalculationStatus : byte
-        {
-            Undefined, Calculating, Completed
-        }
+        protected override int MAX_CACHED_STATUSES_COUNT => 64;
+        protected override Filter Filter => _filter;
+        protected override IProcessManager<PathCalculationProcessToken> ProcessManager => _processesManager;
 
-        public World World { get; set;}
+        protected override IEntityPathValidator<HexPortalsPath> PathValidator => _validator;
+
         private Filter _filter;
+
         private Stash<HexPathCalculationRequestTag> _calculationTags;
-        private Stash<HexPathComponent> _pathComponents;
-        private Stash<ClearHexPathTag> _pathClearTags;
         private Stash<HexPathProgressionComponent> _progressionComponents;
         private Stash<TriangularPosComponent> _triangularPosComponents;
         private Stash<MoveTargetComponent> _moveTargets;
 
+        private EntityPathValidator<HexPortalsPath, HexPathComponent, ClearHexPathTag> _validator;
+
         private readonly INavigationMap _map;
         private readonly HexPortalPathsLRUBuffer _portalPaths;
         private readonly PortalPathConstructionProcessManager _processesManager;
-        private readonly LRUDictionaryCache<int, PathCalculationStatus> _pathStatusesLRU = new(MAX_CACHED_STATUSES_COUNT);
-        private readonly Dictionary<int, PathCalculationProcessToken> _calculationProcessTokens = new();
-        private readonly ArrayPool<int> _pool;
-        private const int MAX_PORTAL_PROCESSES = 4;
-        private const int MAX_CACHED_STATUSES_COUNT = 64;
+
+        private const int MAX_PROCESSES = 4;
 
 
         [Inject]
@@ -44,114 +45,47 @@ namespace ZE.MechBattle.Ecs {
         {
             _map = map;
             _portalPaths = portalPaths;
-            _processesManager = new PortalPathConstructionProcessManager(Allocator.Persistent, _map, portalConnectionsList, MAX_PORTAL_PROCESSES, portalPaths);
-        
-            _pool = ArrayPool<int>.Shared;
+            _processesManager = new PortalPathConstructionProcessManager(Allocator.Persistent, _map, portalConnectionsList, MAX_PROCESSES, portalPaths);
         }
 
-        public void OnAwake() 
+        public override void OnAwake() 
         { 
             _filter = World.Filter.With<HexPathCalculationRequestTag>().Build();
 
             _calculationTags = World.GetStash<HexPathCalculationRequestTag>();
-            _pathComponents = World.GetStash<HexPathComponent>();
-            _pathClearTags = World.GetStash<ClearHexPathTag>();
             _progressionComponents = World.GetStash<HexPathProgressionComponent>();
 
             _triangularPosComponents = World.GetStash<TriangularPosComponent>();
             _moveTargets = World.GetStash<MoveTargetComponent>();
+
+            _validator = new EntityPathValidator<HexPortalsPath, HexPathComponent, ClearHexPathTag>(World, PathStatusesLRU, _portalPaths);
         }
 
-        public void OnUpdate(float deltaTime) 
+        public override void Dispose()
         {
-            HandleActiveProcesses();
-            var idleProcessesCount = _processesManager.UpdateAndGetIdleProcessesCount();
-            HandleReceivedRequests(idleProcessesCount);
+            _processesManager.Dispose();
         }
 
-        public void Dispose() { }
-
-        private void HandleActiveProcesses()
+        protected override void OnPathCompleted(Entity entity, HexPortalsPath path)
         {
-            if (_calculationProcessTokens.Count == 0)
-                return;
-
-             
-            var clearPositions = 0;
-            var clearArray = _pool.Rent(_calculationProcessTokens.Count);
-            foreach (var processTokensKvp in _calculationProcessTokens)
-            {
-                if (_processesManager.IsProcessCompleted(processTokensKvp.Value))
-                {
-                    clearArray[clearPositions++] = processTokensKvp.Key;
-                }
-            }
-
-            for (var i = 0; i < clearPositions; i++)
-            {
-                var pathId = clearArray[i];
-                _calculationProcessTokens.Remove(pathId);
-                _pathStatusesLRU.AddCachedValue(pathId, PathCalculationStatus.Completed);
-            }
-
-            _pool.Return(clearArray);
+            _progressionComponents.Add(entity, new(path.NodesCount));
+            _calculationTags.Remove(entity);
         }
 
-
-        private void HandleReceivedRequests(int idleProcessesCount)
+        protected override bool TryStartCalculation(Entity entity, HexPortalsPath path, out PathCalculationProcessToken token)
         {
-            foreach (var entity in _filter)
-            {
-                var pathId = _pathComponents.Get(entity).PathId;
-                var currentPathStatus = _pathStatusesLRU.TryGetCachedValue(pathId, out var status) ? status : PathCalculationStatus.Undefined;
-                if (!_portalPaths.TryGetValue(pathId, out var path, updateUsingTime: true))
-                {
-                    _pathClearTags.Add(entity);
-                    continue;
-                }
+            var startTripos = _triangularPosComponents.Get(entity).Value;
+            var endTripos = _moveTargets.Get(entity).TriangularPos;
+            var endpoints = path.DestinationKeys;
 
-                switch (currentPathStatus)
-                {
-                    case PathCalculationStatus.Completed:
-                        {
-                            _progressionComponents.Add(entity, new(path.NodesCount));
-                            _calculationTags.Remove(entity);
-                            break;
-                        }
-                    case PathCalculationStatus.Calculating:
-                        {
-                            continue;
-                        }
-                    default:
-                        {
-                            // path status undefined
-                            if (idleProcessesCount == 0)
-                                continue;
+            var request = new HexPathSearchRequest(
+                startTripos,
+                endTripos,
+                endpoints.start,
+                endpoints.end);
 
-                            var startTripos = _triangularPosComponents.Get(entity).Value;
-                            var endTripos = _moveTargets.Get(entity).TriangularPos;
-                            var endpoints = path.DestinationKeys;
-
-                            var request = new HexPathSearchRequest(
-                                startTripos,
-                                endTripos,
-                                endpoints.start,
-                                endpoints.end);
-
-                            var token = _processesManager.TryLaunchProcess(request);
-                            if (!token.IsValid)
-                            {
-                                idleProcessesCount = 0;
-                                continue;
-                            }
-
-                            _calculationProcessTokens.Add(pathId, token);  
-                            _pathStatusesLRU.AddCachedValue(pathId, PathCalculationStatus.Calculating);
-                            idleProcessesCount--;
-                            break;
-                        }
-                }
-            }
+            token = _processesManager.TryLaunchProcess(request);
+            return token.IsValid;
         }
     }
 }

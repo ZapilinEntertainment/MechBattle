@@ -4,9 +4,10 @@ using ZE.Utils;
 
 namespace ZE.MechBattle.Navigation
 {
-    public abstract class UserCountDependentLRUPathsBuffer<DestinationKey, NodeKey> 
-        : UseTimeStoringDictionary<int, PathData<DestinationKey, NodeKey>>,
+    public abstract class UserCountDependentLRUPathsBuffer<DestinationKey, NodeKey, PathType> 
+        : UseTimeStoringDictionary<int, PathType>,
           IPathsList<DestinationKey, NodeKey>         
+        where PathType : PathData<DestinationKey, NodeKey>
         where NodeKey : unmanaged
         where DestinationKey : unmanaged
     {
@@ -15,7 +16,7 @@ namespace ZE.MechBattle.Navigation
         private readonly Dictionary<(DestinationKey, DestinationKey), int> _endpointsToPathId = new();
 
         private int _nextPathId = 1;
-        public bool TryGetPathByEndpoints(DestinationKey start, DestinationKey end, out PathData<DestinationKey, NodeKey> pathData, bool updateUsingTime)
+        public bool TryGetPathByEndpoints(DestinationKey start, DestinationKey end, out PathType pathData, bool updateUsingTime)
         {
             if (!DestinationsToPathId.TryGetValue(new(start, end), out var pathId))
             {
@@ -35,18 +36,17 @@ namespace ZE.MechBattle.Navigation
         }
       
 
-        public PathData<DestinationKey, NodeKey> ReservePath(DestinationKey start, DestinationKey end)
+        public PathType ReservePath(DestinationKey start, DestinationKey end)
         {
             var pathId = _nextPathId++;
-            var destinationKey = (start, end);
-            var path = new PathData<DestinationKey, NodeKey>(pathId, (start, end));
-            _endpointsToPathId.Add(destinationKey, pathId);
+            var path = CreateNewPath(pathId, start, end);
+            _endpointsToPathId.Add((start,end), pathId);
             Add(pathId, path);
             return path;
         }
        
 
-        public PathData<DestinationKey, NodeKey> AddCalculatedPath(int pathId, PathCalculationResult<DestinationKey, NodeKey> calculatedData)
+        public PathType AddCalculatedPath(int pathId, PathCalculationResult<DestinationKey, NodeKey> calculatedData)
         {
             if (!TryGetValue(pathId, out var path, true))
                 path = ReservePath(calculatedData.Start, calculatedData.End);
@@ -56,9 +56,17 @@ namespace ZE.MechBattle.Navigation
             return path;
         }
 
-        protected override void OnElementRemoved(PathData<DestinationKey, NodeKey> path)
+        protected override void OnElementRemoved(PathType path)
         {
             _endpointsToPathId.Remove(path.DestinationKeys);
-        }       
+        }      
+
+        protected abstract PathType CreateNewPath(int pathId, DestinationKey start, DestinationKey end);
+
+        void IPathsList<DestinationKey, NodeKey>.AddCalculatedPath(int pathKey, PathCalculationResult<DestinationKey, NodeKey> calculatedData) =>
+            AddCalculatedPath(pathKey, calculatedData);
+
+        int IPathsList<DestinationKey, NodeKey>.ReservePath(DestinationKey start, DestinationKey end) =>
+            ReservePath(start, end).Id;
     }
 }

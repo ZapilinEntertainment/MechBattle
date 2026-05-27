@@ -14,7 +14,6 @@ namespace ZE.MechBattle.Navigation
             Allocator allocator,
             INavigationMap map,
             PortalConnectionsList portalConnectionsList,
-
             int maxProcessesCount, 
             IPathsList<PortalPathDestinationKey, int> pathsBuffer) : 
             base(maxProcessesCount)
@@ -35,7 +34,7 @@ namespace ZE.MechBattle.Navigation
         protected override PathCalculationProcessToken LaunchProcess(HexPathSearchRequest launchData, PortalsPathConstructionProcess process, int index)
         {
             var destinations = launchData.ToDestinationsKey();
-            var reservedId = _pathsBuffer.ReservePath(destinations.start, destinations.end).Id;
+            var reservedId = _pathsBuffer.ReservePath(destinations.start, destinations.end);
             process.LaunchAsync(new() { Request = launchData, ReservedPathId = reservedId });
             return new PathCalculationProcessToken(reservedId, index, process.ProcessIteration);
         }

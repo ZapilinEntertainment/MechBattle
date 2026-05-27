@@ -61,12 +61,13 @@ namespace ZE.MechBattle.Navigation
         public PortalsPathConstructionProcess(
             Allocator allocator, 
             INavigationMap map, 
-            IPathsList<PortalPathDestinationKey, int> _pathsBuffer,
+            IPathsList<PortalPathDestinationKey, int> pathsBuffer,
             PortalConnectionsList portalConnections)
         {
             _map = map;
             _portalConnections = portalConnections;
             _generatePointDistancesProcess = new(allocator, _map);
+            _pathsBuffer = pathsBuffer;
 
             _resultingPath = new(allocator);
         }

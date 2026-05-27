@@ -7,15 +7,16 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public struct RegularTrianglePathComponent : IPathUserComponent<int> 
+    public struct RegularTrianglePathProgressionComponent : IComponent 
     {
-        public readonly int PathId;
-        public int PathKey => PathId;
-        
-    
-        public RegularTrianglePathComponent(int pathId)
+        public readonly int TotalStepsCount;
+        public int StepIndex;
+
+        public RegularTrianglePathProgressionComponent(int stepsCount)
         {
-            PathId = pathId;
+            TotalStepsCount = stepsCount;
+            StepIndex = 0;
         }
+
     }
 }

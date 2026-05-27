@@ -1,4 +1,5 @@
 using Scellecs.Morpeh;
+using VContainer;
 using Unity.IL2CPP.CompilerServices;
 using Unity.Mathematics;
 
@@ -9,76 +10,65 @@ namespace ZE.MechBattle.Ecs {
     public sealed class HexPathProgressionUpdateSystem : ISystem 
     {
         public World World { get; set;}
-        private Filter _regularHexPathWithCompletedStage;
-        private Filter _otherHexPathUsersWithCompletedStage;
+        private Filter _filter;
 
-        private Stash<CompletedTrianglePathTag> _completedTags;
-        private Stash<HexPathComponent> _regularHexPaths;
+        private Stash<HexPathComponent> _hexPaths;
+        private Stash<HexPathProgressionComponent> _hexProgression;
+        private Stash<ClearHexPathTag> _clearHexPathTags;
+        private Stash<ClearTrianglePathTag> _clearTrianglePathTags;
+        private Stash<TriangularPosComponent> _triangularPos;
+        private Stash<MoveTargetComponent> _moveTarget;
 
-        private Stash<MoveTargetComponent> _moveTargets;
-        private Stash<TriangularPosComponent> _triangularPosComponents;
-        private Stash<HexCoordComponent> _hexCoordComponents;
+        private readonly HexPortalsList _portalsList;
 
-        private Stash<ClearHexPathTag> _hexPathClearTags;
-        private Stash<ClearTrianglePathTag> _trianglePathClearTags;
+        [Inject]
+        public HexPathProgressionUpdateSystem(HexPortalsList portalsList)
+        {
+            _portalsList = portalsList;
+        }
 
         public void OnAwake() 
         {
-            _regularHexPathWithCompletedStage = World.Filter
+            _filter = World.Filter
                 .With<CompletedTrianglePathTag>()
-                .With<HexPathComponent>()
+                .With<HexPathProgressionComponent>()
                 .Build();
 
-            _otherHexPathUsersWithCompletedStage = World.Filter
-                .With<CompletedTrianglePathTag>()
-                .Without<HexPathComponent>()
-                .Build();
-
-            _completedTags = World.GetStash<CompletedTrianglePathTag>(); 
-            _regularHexPaths = World.GetStash<HexPathComponent>();
-
-            _moveTargets = World.GetStash<MoveTargetComponent>();
-            _triangularPosComponents = World.GetStash<TriangularPosComponent>();
-            _hexCoordComponents = World.GetStash<HexCoordComponent>();
-
-            _hexPathClearTags = World.GetStash<ClearHexPathTag>();
-            _trianglePathClearTags = World.GetStash<ClearTrianglePathTag>();
+            _hexPaths = World.GetStash<HexPathComponent>();
+            _hexProgression = World.GetStash<HexPathProgressionComponent>();
+            _clearHexPathTags = World.GetStash<ClearHexPathTag>();
+            _clearTrianglePathTags = World.GetStash<ClearTrianglePathTag>();
+            _triangularPos = World.GetStash<TriangularPosComponent>();
+            _moveTarget = World.GetStash<MoveTargetComponent>();
         }
 
         public void OnUpdate(float deltaTime) 
         {
-            CheckRegularHexPathUsers();
-            CheckOtherUsers();
-        }
-
-        public void Dispose() { }
-
-        private void CheckRegularHexPathUsers()
-        {
-            foreach (var entity in _regularHexPathWithCompletedStage)
+            foreach (var entity in _filter)
             {
-                ref var hexPathComponent = ref _regularHexPaths.Get(entity);
-                var currentStep = hexPathComponent.StepIndex;
-                if (currentStep + 1 > hexPathComponent.StepsCount)
+                var pathId = _hexPaths.Get(entity).PathId;
+                if (!_portalsList.ContainsKey(pathId))
+                {
+                    _clearHexPathTags.Add(entity);
+                    continue;
+                }
+
+                ref var progression = ref _hexProgression.Get(entity);
+                var currentStep = progression.StepIndex;
+                if (currentStep + 1 > progression.StepsCount)
                 {
                     DoTargetCheck(entity);
                 }
                 else
                 {
-                    hexPathComponent.StepIndex = currentStep + 1;
+                    progression.StepIndex = currentStep + 1;
                 }
 
                 ClearTrianglePathData(entity);
             }
         }
 
-        private void CheckOtherUsers()
-        {
-            foreach (var entity in _otherHexPathUsersWithCompletedStage)
-            {
-                DoTargetCheck(entity);              
-            }
-        }
+        public void Dispose() { }
 
         private void DoTargetCheck(Entity entity)
         {
@@ -94,21 +84,20 @@ namespace ZE.MechBattle.Ecs {
 
         private bool IsEntityReachedTarget(Entity entity)
         {
-            var target = _moveTargets.Get(entity).TriangularPos;
-            var tripos = _triangularPosComponents.Get(entity).Value;
+            var target = _moveTarget.Get(entity).TriangularPos;
+            var tripos = _triangularPos.Get(entity).Value;
             return tripos == target;
         }
 
         private void ClearTrianglePathData(Entity entity)
         {
-            _trianglePathClearTags.Set(entity);
-            _completedTags.Remove(entity);
+            _clearTrianglePathTags.Set(entity);
         }
 
         private void ClearHexPathData(Entity entity)
         {
-            _moveTargets.Remove(entity);
-            _hexPathClearTags.Add(entity);
+            _moveTarget.Remove(entity);
+            _clearHexPathTags.Add(entity);
             ClearTrianglePathData(entity);
         }
     }

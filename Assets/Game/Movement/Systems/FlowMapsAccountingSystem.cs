@@ -9,7 +9,7 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public sealed class FlowMapsAccountingSystem : PathsAccountingSystemBase<FlowTrianglePathComponent, int, FlowMap>
+    public sealed class FlowMapsAccountingSystem : PathsAccountingSystemBase<FlowTrianglePathComponent, PortalExitFlowMap>
     {
         public FlowMapsAccountingSystem(PortalFlowMapsList flowMapsList) : base(flowMapsList)
         {
@@ -17,5 +17,10 @@ namespace ZE.MechBattle.Ecs {
 
         protected override int BufferLimit => 64;
         protected override float ClearInterval => 20f;
+
+        protected override Filter CreateFilter() => World.Filter
+            .With<FlowTrianglePathComponent>()
+            .With<TrianglePathReadyTag>()
+            .Build();
     }
 }

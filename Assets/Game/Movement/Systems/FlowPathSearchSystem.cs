@@ -14,9 +14,12 @@ namespace ZE.MechBattle.Ecs {
         private readonly HexPortalsList _portalsList;
         private readonly FlowMapsCoordinator _flowMapsCoordinator;
         private Filter _filter;
+
         private Stash<FlowMapSearchRequestComponent> _searchRequests;
         private Stash<HexCoordComponent> _hexCoords;
         private Stash<ClearTrianglePathTag> _clearTags;
+        private Stash<FlowTrianglePathComponent> _flowPaths;
+        private Stash<FlowMapCalculationTag> _flowMapCalculationTags;
 
         [Inject]
         public FlowPathSearchSystem(HexPortalsList portalsList, FlowMapsCoordinator flowMapsCoordinator)
@@ -28,15 +31,20 @@ namespace ZE.MechBattle.Ecs {
         public void OnAwake() 
         {
             _filter = World.Filter.With<FlowMapSearchRequestComponent>().Build();
+
             _searchRequests = World.GetStash<FlowMapSearchRequestComponent>();
             _hexCoords = World.GetStash<HexCoordComponent>();
             _clearTags = World.GetStash<ClearTrianglePathTag>();
+            _flowPaths = World.GetStash<FlowTrianglePathComponent>();
+            _flowMapCalculationTags = World.GetStash<FlowMapCalculationTag>();
         }
 
         public void OnUpdate(float deltaTime) 
         {
             foreach (var entity in _filter)
             {
+                _searchRequests.Remove(entity);
+
                 var portalId = _searchRequests.Get(entity).PortalId;
                 var hexCoord = _hexCoords.Get(entity).Value;
                 if (!_portalsList.TryGetPortalExit(hexCoord, portalId, out var portalExit, out var isExitA))
@@ -46,8 +54,13 @@ namespace ZE.MechBattle.Ecs {
                 }
 
                 var portalExitKey = new PortalExitFlowMapKey(portalId, isExitA);
-                if (!_flowMapAssignmentList.TryGetExitFlowMap(portalExitKey, out var flowMapId))
-                    flowMapId = 
+                if (!_flowMapsCoordinator.TryGetAssignedFlowMapId(portalExitKey, out var flowMapId))
+                {
+                    var reservedFlowMap = _flowMapsCoordinator.ReserveFlowMap(portalExitKey, hexCoord);
+                    flowMapId = reservedFlowMap.Id;
+                    _flowMapCalculationTags.Add(entity);
+                }
+                _flowPaths.Set(entity, new(flowMapId, hexCoord));
             }
         }
 

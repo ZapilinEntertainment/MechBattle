@@ -16,6 +16,7 @@ namespace ZE.MechBattle.Ecs
         private Filter _regularPathsFilter;
         private Filter _flowPathsFilter;
         private Stash<RegularTrianglePathComponent> _regularPaths;
+        private Stash<RegularTrianglePathProgressionComponent> _progression;
         private Stash<FlowTrianglePathComponent> _flowPaths;
         private Stash<CompletedTrianglePathTag> _completedPathTags;
         private Stash<HexCoordComponent> _hexCoordComponents;
@@ -25,16 +26,18 @@ namespace ZE.MechBattle.Ecs
         public override void OnAwake()
         {
             _regularPathsFilter = World.Filter
-                .With<RegularTrianglePathComponent>()
+                .With<RegularTrianglePathProgressionComponent>()
                 .Without<WaypointMoveTarget>()
                 .Build();
 
             _flowPathsFilter = World.Filter
                 .With<FlowTrianglePathComponent>()
+                .With<TrianglePathReadyTag>()
                 .Without<WaypointMoveTarget>()
                 .Build();
 
             _regularPaths = World.GetStash<RegularTrianglePathComponent>();
+            _progression = World.GetStash<RegularTrianglePathProgressionComponent>();
             _flowPaths = World.GetStash<FlowTrianglePathComponent>();
             _completedPathTags = World.GetStash<CompletedTrianglePathTag>();
             _hexCoordComponents = World.GetStash<HexCoordComponent>();
@@ -47,17 +50,18 @@ namespace ZE.MechBattle.Ecs
 
             foreach (var entity in _regularPathsFilter)
             {
-                ref var pathComponent = ref _regularPaths.Get(entity);
-                var currentStepIndex = pathComponent.StepIndex;
-                if (currentStepIndex + 1 == pathComponent.TotalStepsCount)
+                ref var progressionComponent = ref _progression.Get(entity);
+                var currentStepIndex = progressionComponent.StepIndex;
+                if (currentStepIndex + 1 == progressionComponent.TotalStepsCount)
                 {
                     _regularPaths.Remove(entity);
+                    _progression.Remove(entity);
                     _completedPathTags.Add(entity);
                     UnityEngine.Debug.Log("triangle path completed");
                     continue;
                 }
 
-                pathComponent.StepIndex = currentStepIndex+1;
+                progressionComponent.StepIndex = currentStepIndex+1;
             }
 
             foreach (var entity in _flowPathsFilter)

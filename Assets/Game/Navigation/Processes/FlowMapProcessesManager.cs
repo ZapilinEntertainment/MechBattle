@@ -6,20 +6,20 @@ namespace ZE.MechBattle.Navigation
     public struct FlowMapProcessLaunchProtocol
     {
         public int PortalId;
+        public int FlowMapId;
         public NavigationPortalExit ExitData;
-        public bool IsExitA;
     }
 
     public class FlowMapProcessesManager : ProcessManagerBase<FlowMapCalculationProcess, FlowMapProcessLaunchProtocol, PathCalculationProcessToken>
     {
         private readonly Allocator _allocator;
         private readonly INavigationMap _map;
-        private readonly FlowMapsCoordinator _mapsCoordinator;
+        private readonly IFlowMapsCoordinator _mapsCoordinator;
 
         public FlowMapProcessesManager(
             Allocator allocator, 
             INavigationMap map,
-            FlowMapsCoordinator mapsCoordinator,
+            IFlowMapsCoordinator mapsCoordinator,
             int maxProcessesCount) : base(maxProcessesCount)
         {
             _allocator = allocator;
@@ -31,23 +31,14 @@ namespace ZE.MechBattle.Navigation
 
         protected override PathCalculationProcessToken LaunchProcess(FlowMapProcessLaunchProtocol launchData, FlowMapCalculationProcess process, int processIndex)
         {
-            var id = _mapsCoordinator.ReserveId(new(launchData.PortalId, launchData.IsExitA));
             process.Launch(launchData);
-            return new PathCalculationProcessToken(id, processIndex, process.ProcessIteration);
+            return new PathCalculationProcessToken(launchData.FlowMapId, processIndex, process.ProcessIteration);
         }
 
         protected override void HandleResults(FlowMapCalculationProcess process)
         {
             var results = process.StopAndGetResults();
-            var flowMap = _mapsCoordinator.CreateEmptyFlowMap(process.ActiveProtocol.ExitData.HexCoord);
-            for (var i = 0; i < results.Length; i++)
-            {
-                flowMap[i] = results[i];
-            }
-
-
+            _mapsCoordinator.OnFlowMapCalculated(process.ActiveProtocol.FlowMapId, results);
         }
-
-        
     }
 }

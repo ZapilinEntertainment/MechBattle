@@ -2,8 +2,13 @@ using System;
 
 namespace ZE.Utils
 {
+    public interface IProcessManager<Token> where Token : IProcessToken
+    {
+        int UpdateAndGetIdleProcessesCount();
+        bool IsProcessCompleted(Token token);
+    }
 
-    public abstract class ProcessManagerBase<Process, ProcessLaunchData, Token> : IDisposable 
+    public abstract class ProcessManagerBase<Process, ProcessLaunchData, Token> : IDisposable, IProcessManager<Token> 
         where Process: IProcess 
         where Token : IProcessToken
     {

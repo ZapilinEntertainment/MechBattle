@@ -17,7 +17,8 @@ namespace ZE.MechBattle.Ecs
         private Stash<TrianglePathSearchRequestComponent> _regularPathSearchRequests;
         private Stash<TriangularPosComponent> _triangularPos;
         private Stash<MoveTargetComponent> _moveTargets;
-        private Stash<TrianglePathProcessingTag> _processingTags;
+        private Stash<RegularTrianglePathProcessingTag> _regularProcessingTags;
+        private Stash<FlowTrianglePathProcessingTag> _flowProcessingTags;
 
         private Stash<HexPathComponent> _hexPathComponents;
         private Stash<HexPathProgressionComponent> _hexPathProgressionComponents;
@@ -35,15 +36,13 @@ namespace ZE.MechBattle.Ecs
         public void OnAwake() 
         {
             _regularHexPathUsers = World.Filter
-                .With<HexPathDefinedTag>()
-                .With<HexPathComponent>()
+                .With<HexPathReadyTag>()
+                .With<HexPathProgressionComponent>()
                 .Without<TrianglePathDefinedTag>()
-                .Without<ClearHexPathTag>()
                 .Build();
 
             _noHexPathUsers = World.Filter
-                .With<HexPathDefinedTag>()
-                .Without<ClearHexPathTag>()
+                .With<HexPathReadyTag>()
                 .Without<HexPathComponent>()
                 .Without<TrianglePathDefinedTag>()
                 .Build();
@@ -51,7 +50,8 @@ namespace ZE.MechBattle.Ecs
             _regularPathSearchRequests = World.GetStash<TrianglePathSearchRequestComponent>();
             _triangularPos = World.GetStash<TriangularPosComponent>();
             _moveTargets = World.GetStash<MoveTargetComponent>();
-            _processingTags = World.GetStash<TrianglePathProcessingTag>();
+            _regularProcessingTags = World.GetStash<RegularTrianglePathProcessingTag>();
+            _flowProcessingTags = World.GetStash<FlowTrianglePathProcessingTag>();
 
             _hexPathComponents = World.GetStash<HexPathComponent>();
             _hexPathProgressionComponents = World.GetStash<HexPathProgressionComponent>();
@@ -72,11 +72,7 @@ namespace ZE.MechBattle.Ecs
             // a. move inside hex
             foreach (var entity in _noHexPathUsers)
             {
-                var startTripos = _triangularPos.Get(entity).Value;
-                var endTripos = _moveTargets.Get(entity).TriangularPos;
-
-                _regularPathSearchRequests.Set(entity, new(startTripos, endTripos));
-                _processingTags.Add(entity);
+                SetupPathToFinalTarget(entity);
             }
 
             // b. move through hex portals
@@ -89,7 +85,15 @@ namespace ZE.MechBattle.Ecs
                     continue;
                 }
 
-                var stepIndex = _hexPathProgressionComponents.Get(entity).StepIndex; 
+                var progressionComponent = _hexPathProgressionComponents.Get(entity);
+                var stepIndex = progressionComponent.StepIndex; 
+                if (stepIndex >= progressionComponent.StepsCount)
+                {
+                    // all portals passed, move to final target
+                    SetupPathToFinalTarget(entity);
+                    continue;
+                }
+
                 if (!path.TryGetNode(stepIndex, out var portalId))
                 {
                     _invalidHexPaths.Add(entity);
@@ -97,10 +101,19 @@ namespace ZE.MechBattle.Ecs
                 }
 
                 _flowMapSearchRequests.Add(entity, new(portalId));
-                _processingTags.Add(entity);
+                _flowProcessingTags.Add(entity);
             }
         }
 
         public void Dispose() { }
+
+        private void SetupPathToFinalTarget(Entity entity)
+        {
+            var startTripos = _triangularPos.Get(entity).Value;
+            var endTripos = _moveTargets.Get(entity).TriangularPos;
+
+            _regularPathSearchRequests.Set(entity, new(startTripos, endTripos));
+            _regularProcessingTags.Add(entity);
+        }
     }
 }

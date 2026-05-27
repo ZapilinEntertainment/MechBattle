@@ -9,14 +9,19 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public sealed class TrianglePathsAccountingSystem : PathsAccountingSystemBase<RegularTrianglePathComponent, int, PathData<IntTriangularPos, IntTriangularPos>>
+    public sealed class RegularTrianglePathsAccountingSystem : PathsAccountingSystemBase<RegularTrianglePathComponent, TrianglesPath>
     {
-        public TrianglePathsAccountingSystem(TrianglePathsLRUBuffer list) : base(list)
+        public RegularTrianglePathsAccountingSystem(TrianglePathsLRUBuffer list) : base(list)
         {
         }
 
         protected override int BufferLimit => 64;
 
         protected override float ClearInterval => 10f;
+
+        protected override Filter CreateFilter() => World.Filter
+            .With<RegularTrianglePathComponent>()
+            .With<TrianglePathReadyTag>()
+            .Build();
     }
 }

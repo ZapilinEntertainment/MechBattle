@@ -18,35 +18,35 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public abstract class PathsAccountingSystemBase<ComponentType, PathKey,PathType> : ISystem
-        where ComponentType : struct, IPathUserComponent<PathKey>
+    public abstract class PathsAccountingSystemBase<ComponentType, PathType> : ISystem
+        where ComponentType : struct, IPathUserComponent<int>
         where PathType : ILRUBufferElement
     {
         private sealed class ClearLogic
         {
             private readonly struct ElementData
             {
-                public readonly PathKey Key;
+                public readonly int Key;
                 public readonly float LastUsed;
 
-                public ElementData(PathKey key, float lastUsed)
+                public ElementData(int key, float lastUsed)
                 {
                     Key = key;
                     LastUsed = lastUsed;
                 }
             }
 
-            public IReadOnlyList<PathKey> ClearList => _clearList;
+            public IReadOnlyList<int> ClearList => _clearList;
 
             private readonly int _bufferLimit;
-            private readonly Dictionary<PathKey, int>  _activePathUsers = new ();
-            private readonly IItemsBuffer<PathKey, PathType> _originalList;
+            private readonly Dictionary<int, int>  _activePathUsers = new ();
+            private readonly IItemsBuffer<int, PathType> _originalList;
             
 
-            private readonly Func<KeyValuePair<PathKey, int>, bool> unusedPredicate;
-            private readonly Func<KeyValuePair<PathKey, int>, ElementData> selector;
+            private readonly Func<KeyValuePair<int, int>, bool> unusedPredicate;
+            private readonly Func<KeyValuePair<int, int>, ElementData> selector;
             private readonly Func<ElementData, float> lastUsedComparator;
-            private readonly List<PathKey> _clearList = new();
+            private readonly List<int> _clearList = new();
 
             public ClearLogic(int bufferLimit)
             {
@@ -58,7 +58,7 @@ namespace ZE.MechBattle.Ecs {
             }
 
             public void ResetActiveUsers() => _activePathUsers.Clear(); 
-            public void AddActiveUser(PathKey pathKey)
+            public void AddActiveUser(int pathKey)
             {
                 if (_activePathUsers.TryGetValue(pathKey, out var usersCount))
                     _activePathUsers[pathKey] = usersCount + 1;
@@ -94,12 +94,12 @@ namespace ZE.MechBattle.Ecs {
         private Stash<ComponentType> _usersStash;
         
         private readonly ClearLogic _logic;
-        private readonly UseTimeStoringDictionary<PathKey, PathType> _list;
+        private readonly IPathStorage<PathType> _list;
 
        
 
         [Inject]
-        public PathsAccountingSystemBase(UseTimeStoringDictionary<PathKey, PathType> list)
+        public PathsAccountingSystemBase(IPathStorage<PathType> list)
         {
             _list = list;
             _logic = new(BufferLimit);

@@ -10,6 +10,7 @@ namespace ZE.MechBattle
         private readonly NativeArray<byte> _rowsTable;
         private readonly INavigationMap _map;
         private readonly int _flattenedArrayLength;
+        private int _nextId = 1;
         
 
         public FlowMapsFactory(INavigationMap map)
@@ -24,10 +25,22 @@ namespace ZE.MechBattle
             _rowsTable.Dispose();
         }
 
-        public FlowMap CreateEmptyFlowMap(int2 hexCoord)
+        public PortalExitFlowMap CreateEmptyPortalExitFlowMap(int2 hexCoord)
         {
+            var id = _nextId++;
             var hexPos = new NavigationHexPosition(hexCoord, _map);
-            return new FlowMap(hexCoord, new( hexPos.TriangularCenterPos, _map.TrianglesPerHexEdge, _map.HexEdgeLength, _map.TriangleHeight, _rowsTable.AsReadOnly()), _flattenedArrayLength);
+            var coordsConverter = new FlattenedHexCoordsConverter(
+                hexPos.TriangularCenterPos, 
+                _map.TrianglesPerHexEdge, 
+                _map.HexEdgeLength, 
+                _map.TriangleHeight, 
+                _rowsTable.AsReadOnly());
+
+            return new PortalExitFlowMap(
+                id, 
+                hexCoord, 
+                coordsConverter, 
+                _flattenedArrayLength);
         }
     
     }

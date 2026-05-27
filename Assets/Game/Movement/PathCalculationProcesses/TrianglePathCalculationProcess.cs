@@ -41,6 +41,8 @@ namespace ZE.MechBattle
 
         protected override PathCalculationResult<IntTriangularPos, IntTriangularPos> FormResults()
         {
+            // todo: rework to storing directions only, instead of IntTriangular pos (byte vs 3 x int)
+
             var rawResultsData = _collections.ResultList;
             var resultsLength = rawResultsData.Length;
             var lastNode = resultsLength == 0 ? default : rawResultsData[resultsLength - 1];
