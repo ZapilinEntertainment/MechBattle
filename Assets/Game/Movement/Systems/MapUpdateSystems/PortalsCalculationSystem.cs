@@ -1,18 +1,27 @@
 using Scellecs.Morpeh;
-using UnityEngine;
 using Unity.IL2CPP.CompilerServices;
 
 namespace ZE.MechBattle.Ecs {
-    [System.Serializable]
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public readonly struct HexPathFailPointComponent : IComponent 
+    public sealed class PortalsCalculationSystem : ISystem 
     {
-        public readonly int StepIndex;    
-        public HexPathFailPointComponent(int stepIndex)
+        public World World { get; set;}
+
+        public void OnAwake() 
         {
-            StepIndex = stepIndex;
+
+        }
+
+        public void OnUpdate(float deltaTime) 
+        {
+
+        }
+
+        public void Dispose()
+        {
+
         }
     }
 }

@@ -116,7 +116,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             _triangleHeight = _mapSettings.TriangleHeight;
             _trianglesInHexCount = TriangularMath.GetTrianglesCountInHex(_mapSettings.TrianglesPerHexEdge);
 
-            using var hexList = GetHexesInRectangleCommand.Execute(_mapSettings, Allocator.TempJob);
+            using var hexList = GetHexCoordsInRectangleCommand.Execute(_mapSettings, Allocator.TempJob);
             using var trisArray = new NativeArray<IntTriangularPos>(_trianglesInHexCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
             foreach (var hexPos in hexList)
             {

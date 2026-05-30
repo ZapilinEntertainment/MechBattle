@@ -9,20 +9,17 @@ namespace ZE.MechBattle.Navigation
 {
     public interface INavigationHex
     {
+        int Version { get; }
         float2 CenterPosWorld { get; }
         int2 HexCoordinate { get; }
-        HexEdgesAccessMap AccessMap { get; }
-        HexEdgesMask EdgesPassability { get;}
         NavigationHexPosition Pos { get; }
-        IReadOnlyList<NavigationPortal> PortalsList { get; }
     }
 
     public interface IUpdatableNavigationHex : INavigationHex
     {
-        void UpdateAccessMap(HexEdgesAccessMap map);
-        void UpdateEdgesPassability(HexEdgesMask mask);
         void UpdateVersion();
     }
+
 
     public class NavigationHex : IUpdatableNavigationHex
     {
@@ -35,12 +32,8 @@ namespace ZE.MechBattle.Navigation
         public int2 HexCoordinate => _pos.HexCoordinate;
 
         public NavigationHexPosition Pos => _pos;
-        public HexEdgesAccessMap AccessMap { get;private set;}
-        public HexEdgesMask EdgesPassability { get;private set;}
-        public IReadOnlyList<NavigationPortal> PortalsList => _portals;
 
         private readonly NavigationHexPosition _pos;
-        private readonly List<NavigationPortal> _portals = new();
 
 
 
@@ -48,9 +41,6 @@ namespace ZE.MechBattle.Navigation
         {
             _pos = pos;
         }
-
-        public void UpdateEdgesPassability(HexEdgesMask mask) => EdgesPassability = mask;
-        public void UpdateAccessMap(HexEdgesAccessMap accessMap) => AccessMap = accessMap;  
         public void UpdateVersion() => Version++;
     }
 }

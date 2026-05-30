@@ -12,16 +12,16 @@ namespace ZE.Utils
         where Process: IProcess 
         where Token : IProcessToken
     {
-        private readonly Process[] _processes;
+        protected readonly Process[] Processes;
 
         public ProcessManagerBase(int maxProcessesCount)
         {
-            _processes = new Process[maxProcessesCount];
+            Processes = new Process[maxProcessesCount];
         }
 
         public void Dispose()
         {
-            foreach (var process in _processes)
+            foreach (var process in Processes)
             {
                 process?.Dispose();
             }
@@ -30,9 +30,9 @@ namespace ZE.Utils
         public int UpdateAndGetIdleProcessesCount()
         {
             var idleProcesses = 0;
-            for (var i = 0; i < _processes.Length; i++)
+            for (var i = 0; i < Processes.Length; i++)
             {
-                var calculationProcess = _processes[i];
+                var calculationProcess = Processes[i];
                 if (calculationProcess == null)
                 {
                     idleProcesses++;
@@ -60,13 +60,13 @@ namespace ZE.Utils
 
         public Token TryLaunchProcess(ProcessLaunchData launchData)
         {
-            for (var i = 0; i < _processes.Length; i++)
+            for (var i = 0; i < Processes.Length; i++)
             {
-                var process = _processes[i];
+                var process = Processes[i];
                 if (process == null)
                 {
                     process = CreateNewProcess();
-                    _processes[i] = process;
+                    Processes[i] = process;
                 }
 
                 if (process.Stage == CalculationProcessStage.Idle)
@@ -77,10 +77,10 @@ namespace ZE.Utils
 
         public bool IsProcessCompleted(Token token) =>
             !token.IsValid
-            || _processes[token.ProcessIndex].ProcessIteration != token.ProcessIteration;
+            || Processes[token.ProcessIndex].ProcessIteration != token.ProcessIteration;
 
 
-        protected abstract Token LaunchProcess(ProcessLaunchData launchData, Process process, int index);
+        protected abstract Token LaunchProcess(ProcessLaunchData launchData, Process process, int processIndex);
 
         protected abstract Process CreateNewProcess();
         protected abstract void HandleResults(Process process);

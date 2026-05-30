@@ -4,17 +4,17 @@ namespace ZE.MechBattle
 {
     public readonly struct NavigationPortal
     {
-        public readonly int Id;
-        public readonly NavigationPortalExit ExitA;
-        public readonly NavigationPortalExit ExitB;
+        public readonly int2 HexCoordA;
+        public readonly int2 HexCoordB;
+        public readonly int ExitIdA;
+        public readonly int ExitIdB;
     
-        public NavigationPortal(int id, NavigationPortalExit exitA, NavigationPortalExit exitB)
+        public NavigationPortal(int exitIdA, int2 hexCoordA, int exitIdB, int2 hexCoordB)
         {
-            Id = id; 
-            ExitA = exitA; 
-            ExitB = exitB;
+            ExitIdA = exitIdA;
+            ExitIdB = exitIdB;
+            HexCoordA = hexCoordA;
+            HexCoordB = hexCoordB;
         }
-
-        public NavigationPortalExit GetExit(int2 hexCoord) => math.all(hexCoord == ExitA.HexCoord) ? ExitA : ExitB;
     }
 }

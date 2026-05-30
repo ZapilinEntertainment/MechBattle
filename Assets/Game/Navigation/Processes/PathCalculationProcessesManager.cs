@@ -37,10 +37,10 @@ namespace ZE.MechBattle.Navigation
 
         protected override PathCalculationProcessToken LaunchProcess(PathProcessLaunchData<DestinationKey> launchData, PathCalculationProcess<DestinationKey, NodeKey> process, int index)
         {
-            var reservedPath = PathsList.ReservePath(launchData.Start, launchData.End);
-            process.Launch(new(reservedPath.Id, launchData.Start, launchData.End));
+            var reservedPathId = PathsList.ReservePath(launchData.Start, launchData.End);
+            process.Launch(new(reservedPathId, launchData.Start, launchData.End));
             //UnityEngine.Debug.Log($"start calculation: {start} -> {end}");
-            return new(reservedPath.Id, index, process.ProcessIteration);
+            return new(reservedPathId, index, process.ProcessIteration);
         }
     }
 }

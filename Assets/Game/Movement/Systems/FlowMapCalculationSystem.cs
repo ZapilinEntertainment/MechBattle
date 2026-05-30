@@ -20,11 +20,11 @@ namespace ZE.MechBattle.Ecs {
         private Stash<FlowMapCalculationTag> _calculationTag;
 
         private readonly FlowMapProcessesManager _processesManager;
-        private readonly FlowMapsCoordinator _flowMapsCoordinator;
+        private readonly HexPortalsCoordinator _flowMapsCoordinator;
 
         private const int MAX_PROCESSES = 4;
 
-        public FlowMapCalculationSystem(INavigationMap map, FlowMapsCoordinator flowMapsCoordinator)
+        public FlowMapCalculationSystem(INavigationMap map, HexPortalsCoordinator flowMapsCoordinator)
         {
             _flowMapsCoordinator = flowMapsCoordinator;
             _processesManager = new (Allocator.Persistent, map, _flowMapsCoordinator, MAX_PROCESSES);
@@ -48,13 +48,19 @@ namespace ZE.MechBattle.Ecs {
             _calculationTag.Remove(entity);
         }
 
-        protected override bool TryStartCalculation(Entity entity, PortalExitFlowMap path, out PathCalculationProcessToken token)
+        protected override bool TryStartCalculation(Entity entity, PortalExitFlowMap flowMap, out PathCalculationProcessToken token)
         {
+            if (!_flowMapsCoordinator.TryGetFlowMapPortalExit(flowMap.Id, out var exitData))
+            {
+                token = default;
+                return false;
+            }
+
             var protocol = new FlowMapProcessLaunchProtocol()
             {
-                FlowMapId = path.Id,
-                ExitData = path.PortalExit,
-                PortalId = path.Id
+                FlowMapId = flowMap.Id,
+                HexCoord = flowMap.HexCoord,
+                ExitData = exitData
             };
             token = _processesManager.TryLaunchProcess(protocol);
             return token.IsValid;

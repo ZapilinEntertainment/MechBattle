@@ -7,15 +7,13 @@ namespace ZE.MechBattle
     public class PortalExitFlowMap : FlowMap, ICalculationSystemPath
     {
         public int Id => _id;
-        public readonly NavigationPortalExit PortalExit;
 
         private readonly int _id;
         
 
-        public PortalExitFlowMap(int id, NavigationPortalExit exit, in FlattenedHexCoordsConverter converter, int length) : base(exit.HexCoord, converter, length)
+        public PortalExitFlowMap(int id, int2 hexCoord, in FlattenedHexCoordsConverter converter, int length) : base(hexCoord, converter, length)
         {
             _id = id;
-            PortalExit = exit;
         }
     }
 }

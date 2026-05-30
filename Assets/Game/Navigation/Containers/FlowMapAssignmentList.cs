@@ -2,35 +2,31 @@ using System.Collections.Generic;
 
 namespace ZE.MechBattle.Navigation
 {
-    public readonly struct PortalExitFlowMapKey
-    {
-        public readonly int PortalId;
-        public readonly bool AssignedToExitA;
-
-        public PortalExitFlowMapKey(int portalId, bool assignedToExitA)
-        {
-            PortalId = portalId;
-            AssignedToExitA = assignedToExitA;
-        }
-    }
-
     public class FlowMapAssignmentList
     {
-        private readonly Dictionary<PortalExitFlowMapKey, int> _exitToFlowMap = new();
-        private readonly Dictionary<int, PortalExitFlowMapKey> _flowMapToPortal = new();
+        private readonly Dictionary<int, int> _exitIdToFlowMapId = new();
+        private readonly Dictionary<int, int> _flowMapToPortalExitId = new();
 
-        public bool TryGetExitFlowMap(PortalExitFlowMapKey key, out int flowMapId) => _exitToFlowMap.TryGetValue(key, out flowMapId);
-        public bool TryGetFlowMapExit(int flowMapId, out PortalExitFlowMapKey portalKey) => _flowMapToPortal.TryGetValue(flowMapId, out portalKey);
-        public void RegisterBond(PortalExitFlowMapKey key, int flowMapId)
+        public bool TryGetFlowMap(int portalExitId, out int flowMapId) => _exitIdToFlowMapId.TryGetValue(portalExitId, out flowMapId);
+        public bool TryGetExit(int flowMapId, out int portalExitId) => _flowMapToPortalExitId.TryGetValue(flowMapId, out portalExitId);
+        public void RegisterBond(int portalExitId, int flowMapId)
         {
-            _exitToFlowMap.Add(key, flowMapId);
-            _flowMapToPortal.Add(flowMapId, key);
+            _exitIdToFlowMapId.Add(portalExitId, flowMapId);
+            _flowMapToPortalExitId.Add(flowMapId, portalExitId);
         }
 
-        public void RemoveBond(PortalExitFlowMapKey key, int flowMapId)
+        public void RemoveBond(int portalExitId, int flowMapId)
         {
-            _exitToFlowMap.Remove(key);
-            _flowMapToPortal.Remove(flowMapId);
+            _exitIdToFlowMapId.Remove(portalExitId);
+            _flowMapToPortalExitId.Remove(flowMapId);
+        }
+
+        public void RemoveBond(int portalExitId)
+        {
+            if (_exitIdToFlowMapId.TryGetValue(portalExitId, out var flowMapId))
+                _flowMapToPortalExitId.Remove(flowMapId);
+
+            _exitIdToFlowMapId.Remove(portalExitId);
         }
     
     }

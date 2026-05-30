@@ -25,7 +25,7 @@ namespace ZE.MechBattle
             _rowsTable.Dispose();
         }
 
-        public PortalExitFlowMap CreateEmptyPortalExitFlowMap(int2 hexCoord)
+        public PortalExitFlowMap CreateEmptyPortalExitFlowMap(int2 hexCoord, NavigationPortalExit portalExit)
         {
             var id = _nextId++;
             var hexPos = new NavigationHexPosition(hexCoord, _map);
@@ -37,7 +37,7 @@ namespace ZE.MechBattle
                 _rowsTable.AsReadOnly());
 
             return new PortalExitFlowMap(
-                id, 
+                id,
                 hexCoord, 
                 coordsConverter, 
                 _flattenedArrayLength);

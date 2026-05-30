@@ -56,10 +56,10 @@ namespace ZE.MechBattle.Navigation
             return path;
         }
 
-        protected override void OnElementRemoved(PathType path)
+        protected override void OnElementRemoved(int key, PathType value)
         {
-            _endpointsToPathId.Remove(path.DestinationKeys);
-        }      
+            _endpointsToPathId.Remove(value.DestinationKeys);
+        }  
 
         protected abstract PathType CreateNewPath(int pathId, DestinationKey start, DestinationKey end);
 

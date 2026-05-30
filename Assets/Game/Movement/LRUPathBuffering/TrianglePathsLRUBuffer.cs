@@ -8,7 +8,7 @@ namespace ZE.MechBattle
         UserCountDependentLRUPathsBuffer<IntTriangularPos, IntTriangularPos, TrianglesPath>, 
         IPathStorage<TrianglesPath>
     {
-        public bool TryGetValue(int pathId, out TrianglesPath path) => TryGetValue(pathId, out path, updateUsingTime: true);
+        public bool TryGetPathById(int pathId, out TrianglesPath path) => TryGetValue(pathId, out path, updateUsingTime: true);
 
         protected override TrianglesPath CreateNewPath(int pathId, IntTriangularPos start, IntTriangularPos end) =>
             new(pathId, (start, end));

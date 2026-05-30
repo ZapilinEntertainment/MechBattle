@@ -5,7 +5,7 @@ using Unity.Collections;
 
 namespace ZE.MechBattle.Navigation
 {
-    public static class GetHexesInRectangleCommand
+    public static class GetHexCoordsInRectangleCommand
     {
         public static NativeList<int2> Execute(in MapSettings mapSettings, Allocator allocator)
         {

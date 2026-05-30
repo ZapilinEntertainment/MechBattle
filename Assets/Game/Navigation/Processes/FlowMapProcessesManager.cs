@@ -1,12 +1,13 @@
 using Unity.Collections;
+using Unity.Mathematics;
 using ZE.Utils;
 
 namespace ZE.MechBattle.Navigation
 {
     public struct FlowMapProcessLaunchProtocol
     {
-        public int PortalId;
         public int FlowMapId;
+        public int2 HexCoord;
         public NavigationPortalExit ExitData;
     }
 
@@ -14,12 +15,12 @@ namespace ZE.MechBattle.Navigation
     {
         private readonly Allocator _allocator;
         private readonly INavigationMap _map;
-        private readonly IFlowMapsCoordinator _mapsCoordinator;
+        private readonly IHexPortalsCoordinator _mapsCoordinator;
 
         public FlowMapProcessesManager(
             Allocator allocator, 
             INavigationMap map,
-            IFlowMapsCoordinator mapsCoordinator,
+            IHexPortalsCoordinator mapsCoordinator,
             int maxProcessesCount) : base(maxProcessesCount)
         {
             _allocator = allocator;

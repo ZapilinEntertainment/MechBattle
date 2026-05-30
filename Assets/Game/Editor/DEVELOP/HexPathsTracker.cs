@@ -24,12 +24,12 @@ namespace ZE.MechBattle.Develop
 
         [ShowInInspector, PropertyOrder(0)] private int Version => _lastDrawnVersion;
         [ReadOnly, SerializeField] private List<SerializedHexPathData> _data;
-        private HexPathsLRUBuffer _hexPaths;
+        private HexPortalsList _hexPaths;
         private int _lastDrawnVersion = -1;
 
 
         [Inject]
-        public void Inject(HexPathsLRUBuffer hexPaths)
+        public void Inject(HexPortalsList hexPaths)
         {
             _hexPaths = hexPaths;
         }
@@ -42,22 +42,22 @@ namespace ZE.MechBattle.Develop
                 return;
             }
 
-            if (_lastDrawnVersion != _hexPaths.PathDataVersion)
-            {
-                _lastDrawnVersion =  _hexPaths.PathDataVersion;
-                _data.Clear();
-                foreach (var hexPath in _hexPaths)
-                {
-                    _data.Add(new()
-                    {
-                        IsCalculated = hexPath.IsCalculated,
-                        PathId = hexPath.Id,
-                        Destinations = hexPath.DestinationKey,
-                        Points = hexPath.Points,
-                        ReachesTarget = hexPath.HasReachedTarget
-                    });
-                }
-            }
+            //if (_lastDrawnVersion != _hexPaths.PathDataVersion)
+            //{
+            //    _lastDrawnVersion =  _hexPaths.PathDataVersion;
+            //    _data.Clear();
+            //    foreach (var hexPath in _hexPaths)
+            //    {
+            //        _data.Add(new()
+            //        {
+            //            IsCalculated = hexPath.IsCalculated,
+            //            PathId = hexPath.Id,
+            //            Destinations = hexPath.DestinationKey,
+            //            Points = hexPath.Points,
+            //            ReachesTarget = hexPath.HasReachedTarget
+            //        });
+            //    }
+            //}
         }
     }
 }

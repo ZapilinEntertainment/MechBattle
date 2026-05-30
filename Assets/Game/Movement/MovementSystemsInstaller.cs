@@ -12,6 +12,9 @@ namespace ZE.MechBattle.Ecs
         {
             void RegisterSystem<T>() where T : ISystem => builder.Register<T>(Lifetime.Scoped);
 
+            RegisterSystem<HexRaycastUpdateSystem>();
+            RegisterSystem<PortalsCalculationSystem>();
+
             RegisterSystem<TriangularPosUpdateSystem>();
             RegisterSystem<NoTargetPathsClearingSystem>();
 
@@ -44,14 +47,16 @@ namespace ZE.MechBattle.Ecs
             RegisterSystem<TrianglePathClearSystem>();
 
             builder.Register<HexRaycastRequestsList>(Lifetime.Scoped);
-            
-            builder.Register<TrianglePathsLRUBuffer>(_ => new(), Lifetime.Scoped);
+            builder.Register<PortalCalculationRequestsList>(Lifetime.Scoped);            
+            builder.Register<TrianglePathsLRUBuffer>(_ => new(), Lifetime.Scoped);            
+            builder.Register<HexPortalPathsLRUBuffer>(Lifetime.Scoped);
 
             builder.Register<HexPortalsList>(Lifetime.Scoped);
+            builder.Register<PortalExitsList>(Lifetime.Scoped);
             builder.Register<PortalConnectionsList>(Lifetime.Scoped);
-            builder.Register<HexPortalPathsLRUBuffer>(Lifetime.Scoped);
-           
-            builder.Register<FlowMapsCoordinator>(Lifetime.Scoped);
+            builder.Register<HexPortalsCoordinator>(Lifetime.Scoped);
+
+            builder.Register<HexPortalsCoordinator>(Lifetime.Scoped);
             builder.Register<FlowMapsFactory>(Lifetime.Scoped);
             builder.Register<PortalFlowMapsList>(Lifetime.Scoped);
             builder.Register<FlowMapAssignmentList>(Lifetime.Scoped);
@@ -62,6 +67,9 @@ namespace ZE.MechBattle.Ecs
         // TODO: add triangle path systems
         public static void Install(SystemsResolver resolver)
         {
+            resolver.AddSystem<HexRaycastUpdateSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<PortalsCalculationSystem>(SystemGroupOrder.RegularUpdate);
+
             resolver.AddSystem<TriangularPosUpdateSystem>(SystemGroupOrder.RegularUpdate);
 
             resolver.AddSystem<NoTargetPathsClearingSystem>(SystemGroupOrder.RegularUpdate);
@@ -87,6 +95,7 @@ namespace ZE.MechBattle.Ecs
             resolver.AddSystem<TrianglePathProgressionUpdateSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<HexPathProgressionUpdateSystem>(SystemGroupOrder.RegularUpdate);
 
+            resolver.AddSystem<PortalsPathInvalidationSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<ChangeMovementTargetSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<HexPortalPathClearSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<TrianglePathClearSystem>(SystemGroupOrder.RegularUpdate);

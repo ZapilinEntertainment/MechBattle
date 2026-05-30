@@ -7,7 +7,7 @@ namespace ZE.MechBattle
     public class HexPortalPathsLRUBuffer : UserCountDependentLRUPathsBuffer<PortalPathDestinationKey, int, HexPortalsPath>, IPathStorage<HexPortalsPath>
     {
 
-        public bool TryGetValue(int pathId, out HexPortalsPath path) => TryGetValue(pathId, out path, updateUsingTime: true);
+        public bool TryGetPathById(int pathId, out HexPortalsPath path) => TryGetValue(pathId, out path, updateUsingTime: true);
 
         protected override HexPortalsPath CreateNewPath(int pathId, PortalPathDestinationKey start, PortalPathDestinationKey end) =>
             new(pathId, (start,end));

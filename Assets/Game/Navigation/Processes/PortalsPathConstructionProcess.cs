@@ -19,15 +19,17 @@ namespace ZE.MechBattle.Navigation
         protected override bool IsDisposeAvailable => _isDisposeAvailable;
 
         private readonly INavigationMap _map;
-        private readonly PortalConnectionsList _portalConnections;
+        private readonly IHexPortalsCoordinator _portalsCoordinator;
         private readonly IPathsList<PortalPathDestinationKey, int> _pathsBuffer;
 
         private readonly GeneratePointDistancesProcess _generatePointDistancesProcess;
         private readonly List<PortalOption> _startPortals = new();
         private readonly List<PortalOption> _endPortals = new();
-        
+        private readonly List<HexExitOption> _hexPortalsList = new();
+
         private bool _isDisposeAvailable = true;
         private NativeList<int> _resultingPath;
+        
 
         private struct PortalOption
         {
@@ -60,14 +62,13 @@ namespace ZE.MechBattle.Navigation
 
         public PortalsPathConstructionProcess(
             Allocator allocator, 
-            INavigationMap map, 
-            IPathsList<PortalPathDestinationKey, int> pathsBuffer,
-            PortalConnectionsList portalConnections)
+            INavigationMap map,
+            IHexPortalsCoordinator portalsCoordinator)
         {
             _map = map;
-            _portalConnections = portalConnections;
+            _portalsCoordinator = portalsCoordinator;
             _generatePointDistancesProcess = new(allocator, _map);
-            _pathsBuffer = pathsBuffer;
+            _pathsBuffer = _portalsCoordinator.GetPathsList();
 
             _resultingPath = new(allocator);
         }
@@ -98,7 +99,7 @@ namespace ZE.MechBattle.Navigation
            int2 hexCoord,
            int2 targetHexCoord,
            IntTriangularPos pos,
-           List<PortalOption> portalsList)
+           List<PortalOption> portalOptions)
         {
             _isDisposeAvailable = false;
             // 1. calculate distances map through job
@@ -115,30 +116,32 @@ namespace ZE.MechBattle.Navigation
 
 
             // 2. get all accessible portals, write also shortest distance
-            portalsList.Clear();
+            portalOptions.Clear();
             var directionCoefficients = HexTransitionLogic.GetDirectionCostCoefficients(hexCoord, targetHexCoord);
 
-            var hex = _map.GetOrCreateHex(hexCoord);
-            foreach (var portal in hex.PortalsList)
+            _hexPortalsList.Clear();
+            _portalsCoordinator.GetHexPortalExits(hexCoord, _hexPortalsList);
+            foreach (var exitOption in _hexPortalsList)
             {
-                var portalExit = portal.GetExit(hexCoord);
-                var enumerator = portalExit.Edge.GetEdgeEnumerable(portalExit);
-
+                var exitData = exitOption.ExitData;
+                var edge = exitData.Edge;
+                
                 var minDist = float.MaxValue;
-                var portalCf = directionCoefficients[portalExit.Edge];
-                foreach (var portalTriangle in enumerator)
+                var portalCf = directionCoefficients[edge];
+                foreach (var portalTriangle in edge.GetEdgeEnumerable(exitData))
                 {
                     minDist = math.min(minDist, _generatePointDistancesProcess.GetDistance(portalTriangle) * portalCf);
                 }
-                if (minDist == float.MaxValue)
+
+            if (minDist == float.MaxValue)
                     continue;
 
-                portalsList.Add(new() { MinDist = minDist, PortalId = portal.Id, ZoneIndex = portalExit.ZoneIndex });
+                portalOptions.Add(new() { MinDist = minDist, PortalId = exitOption.PortalId, ZoneIndex = exitData.ZoneIndex });
             }
 
             //  sort portals from closest to farthest, (reversed)
-            portalsList.Sort((optionA, optionB) => optionB.MinDist.CompareTo(optionA.MinDist));
-            return portalsList;
+            portalOptions.Sort((optionA, optionB) => optionB.MinDist.CompareTo(optionA.MinDist));
+            return portalOptions;
         }
 
        
@@ -180,7 +183,7 @@ namespace ZE.MechBattle.Navigation
             // update selected node neighbours and add untouched ones into active nodes list
             void HandleConnectedPortals(PortalNode node)
             {
-                if (!_portalConnections.TryGetPortalConnections(node.PortalId, out var connections))
+                if (!_portalsCoordinator.TryGetPortalConnections(node.PortalId, out var connections))
                     return;
 
                 foreach (var connection in connections)

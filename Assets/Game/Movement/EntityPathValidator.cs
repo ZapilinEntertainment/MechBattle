@@ -12,7 +12,7 @@ namespace ZE.MechBattle.Ecs
     public interface IPathStorage<PathType>
     {
         int Count { get; }
-        bool TryGetValue(int pathId, out PathType path);
+        bool TryGetPathById(int pathId, out PathType path);
         void Remove(int key);
     }
 
@@ -40,7 +40,7 @@ namespace ZE.MechBattle.Ecs
         {
             var pathId = _pathComponents.Get(entity).PathKey;
             status = _pathStatuses.TryGetCachedValue(pathId, out status) ? status : PathCalculationStatus.Undefined;
-            if (!_pathsList.TryGetValue(pathId, out path))
+            if (!_pathsList.TryGetPathById(pathId, out path))
             {
                 _clearTags.Add(entity);
                 return false;

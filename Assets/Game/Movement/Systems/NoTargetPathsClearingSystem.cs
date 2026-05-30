@@ -9,7 +9,6 @@ namespace ZE.MechBattle.Ecs {
     {
         public World World { get; set;}
         private Filter _regularPathsFilter;
-        private Filter _transitionPathsFilter;
         private Filter _noPathFilter;
         private Stash<ClearHexPathTag> _clearHexPathTags;
 
@@ -20,15 +19,9 @@ namespace ZE.MechBattle.Ecs {
                 .Without<MoveTargetComponent>()
                 .Build();
 
-            _transitionPathsFilter = World.Filter
-                .With<TransitionHexPathComponent>()
-                .Without<MoveTargetComponent>()
-                .Build();
-
             _noPathFilter = World.Filter
-                .With<HexPathDefinedTag>()
+                .With<HexPathReadyTag>()
                 .Without<HexPathComponent>()
-                .Without<TransitionHexPathComponent>()
                 .Without<MoveTargetComponent>()
                 .Build();
 
@@ -38,11 +31,6 @@ namespace ZE.MechBattle.Ecs {
         public void OnUpdate(float deltaTime) 
         {
             foreach (var entity in _regularPathsFilter)
-            {
-                _clearHexPathTags.Set(entity);
-            }
-
-            foreach (var entity in _transitionPathsFilter)
             {
                 _clearHexPathTags.Set(entity);
             }

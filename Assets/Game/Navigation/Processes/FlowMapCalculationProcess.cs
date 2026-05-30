@@ -60,7 +60,7 @@ namespace ZE.MechBattle.Navigation
             ActiveProtocol = protocol;
             var exit = ActiveProtocol.ExitData;
 
-            var hexPos = new NavigationHexPosition(exit.HexCoord, _map);
+            var hexPos = new NavigationHexPosition(protocol.HexCoord, _map);
             _collections.ChangeHexPosAndReset(hexPos.TriangularCenterPos);
 
             PrepareExitCells();

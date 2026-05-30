@@ -55,7 +55,7 @@ namespace ZE.MechBattle.Ecs
                 var flowMapId = flowMapComponent.FlowMapId;
                 var hexCoord = _hexCoordComponents.Get(entity).Value;
 
-                if (!_flowMaps.TryGetValue(flowMapId, out var flowMap)
+                if (!_flowMaps.TryGetPathById(flowMapId, out var flowMap)
                     || math.any(hexCoord != flowMap.HexCoord))
                 {
                     _invalidTrianglePaths.Set(entity);

@@ -11,8 +11,7 @@ namespace ZE.MechBattle.Ecs {
     public sealed class FlowPathSearchSystem : ISystem 
     {
         public World World { get; set;}
-        private readonly HexPortalsList _portalsList;
-        private readonly FlowMapsCoordinator _flowMapsCoordinator;
+        private readonly HexPortalsCoordinator _flowMapsCoordinator;
         private Filter _filter;
 
         private Stash<FlowMapSearchRequestComponent> _searchRequests;
@@ -22,9 +21,8 @@ namespace ZE.MechBattle.Ecs {
         private Stash<FlowMapCalculationTag> _flowMapCalculationTags;
 
         [Inject]
-        public FlowPathSearchSystem(HexPortalsList portalsList, FlowMapsCoordinator flowMapsCoordinator)
+        public FlowPathSearchSystem(HexPortalsCoordinator flowMapsCoordinator)
         {
-            _portalsList = portalsList;
             _flowMapsCoordinator = flowMapsCoordinator;
         }
 
@@ -47,16 +45,16 @@ namespace ZE.MechBattle.Ecs {
 
                 var portalId = _searchRequests.Get(entity).PortalId;
                 var hexCoord = _hexCoords.Get(entity).Value;
-                if (!_portalsList.TryGetPortalExit(hexCoord, portalId, out var portalExit, out var isExitA))
+                if (!_flowMapsCoordinator.TryGetPortalExitId(hexCoord, portalId, out var exitId)
+                    || !_flowMapsCoordinator.TryGetExitDataWithValidation(exitId, out var exitData))
                 {
                     _clearTags.Set(entity);
                     continue;
                 }
 
-                var portalExitKey = new PortalExitFlowMapKey(portalId, isExitA);
-                if (!_flowMapsCoordinator.TryGetAssignedFlowMapId(portalExitKey, out var flowMapId))
+                if (!_flowMapsCoordinator.TryGetAssignedFlowMapId(exitId, out var flowMapId))
                 {
-                    var reservedFlowMap = _flowMapsCoordinator.ReserveFlowMap(portalExitKey, hexCoord);
+                    var reservedFlowMap = _flowMapsCoordinator.ReserveFlowMap(exitId, exitData, hexCoord);
                     flowMapId = reservedFlowMap.Id;
                     _flowMapCalculationTags.Add(entity);
                 }

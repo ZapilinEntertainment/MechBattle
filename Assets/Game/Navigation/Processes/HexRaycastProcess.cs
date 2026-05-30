@@ -9,6 +9,9 @@ namespace ZE.MechBattle
 {
     public class HexRaycastProcess : IProcess
     {
+        public NavigationHexPosition CurrentHexPosition { get;private set; }
+        public bool WasStopped { get; private set; } = false;
+
         private readonly NavigationCaster _walkableSurfaceCaster;
         private readonly NavigationCaster _obstaclesCaster;
         private readonly IUpdatableMap _map;
@@ -53,51 +56,46 @@ namespace ZE.MechBattle
             _defineCellZonesProcess.Dispose();
         }
 
-        private async void LaunchAsync(int2 hexCoord)
+        public async void LaunchAsync(int2 hexCoord)
         {
+            WasStopped = false;
             Stage = CalculationProcessStage.Calculating;
 
-            var hexPos = new NavigationHexPosition(hexCoord, _map);
+            CurrentHexPosition = new NavigationHexPosition(hexCoord, _map);
 
-            // 1. raycast walkable data
-            var walkableDataHandle = _walkableSurfaceCaster.ScheduleCastJob(hexPos);
-            await WaitForJobHandle(walkableDataHandle);          
+            // 1. raycast walkable & obstacle data
+            var walkableDataHandle = _walkableSurfaceCaster.ScheduleCastJob(CurrentHexPosition);
+            var obstacleDataHandle = _obstaclesCaster.ScheduleCastJob(CurrentHexPosition);
+            await WaitForJobHandle(walkableDataHandle);
 
-            if (_isDisposed)
-                return;
+            if (_isDisposed | WasStopped) goto FORCE_COMPLETION;
 
-            // 2. raycast obstacles data
-            var obstacleDataHandle = _obstaclesCaster.ScheduleCastJob(hexPos);
-            await WaitForJobHandle(obstacleDataHandle);
-
-            if (_isDisposed)
-                return;
-
-
-            // 3. refine raycasting data
-            var hexCenter = hexPos.TriangularCenterPos;
+            // 2. refine raycasting data
+            var hexCenter = CurrentHexPosition.TriangularCenterPos;
             HexDataLogic.FulfilPeakDataArray(_isPeakData, hexCenter, _hexRadius);
-            var refineJobHandle = _refineProcess.ScheduleJob(hexPos);
+            var refineJobHandle = _refineProcess.ScheduleJob(CurrentHexPosition);
             await WaitForJobHandle(refineJobHandle);
 
-            if (_isDisposed)
-                return;
+            if (_isDisposed | WasStopped) goto FORCE_COMPLETION;
 
             // 3. define passability and height for each nav cell
             var prepareCellJobHandle =  _prepareNavCellDataProcess.ScheduleParallel(hexCenter);
             await WaitForJobHandle(prepareCellJobHandle);
 
-            if (_isDisposed)
-                return;
+            if (_isDisposed | WasStopped) goto FORCE_COMPLETION;
 
             // 4. define cell zones
             var defineCellJobHandle = _defineCellZonesProcess.ScheduleJob(hexCenter, _prepareNavCellDataProcess.GetPassabilityDataSource());
             await WaitForJobHandle(defineCellJobHandle);
 
-            if (_isDisposed)
-                return;
+            FORCE_COMPLETION:
 
-            // 5. apply resulting data to map
+            Stage = CalculationProcessStage.Complete;
+            ProcessIteration++;            
+        }
+
+        public void ApplyCalculatedData(IntTriangularPos hexCenter)
+        {
             foreach (var tripos in new HexTrianglesEnumerator(hexCenter, _hexRadius))
             {
                 var cellData = _map.GetNavigationCell(tripos);
@@ -110,9 +108,11 @@ namespace ZE.MechBattle
                 _map.UpdateNavigationCell(tripos, cellData);
             }
             _map.UpdateVersion();
+        }
 
-            Stage = CalculationProcessStage.Complete;
-            ProcessIteration++;            
+        public void Stop()
+        {
+            WasStopped = true;
         }
 
         private async Awaitable WaitForJobHandle(JobHandle handle)

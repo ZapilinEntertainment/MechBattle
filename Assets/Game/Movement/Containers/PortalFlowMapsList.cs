@@ -8,6 +8,6 @@ namespace ZE.MechBattle.Navigation
 
     public class PortalFlowMapsList : UseTimeStoringDictionary<int, PortalExitFlowMap>, IPathStorage<PortalExitFlowMap>
     {
-        public bool TryGetValue(int pathId, out PortalExitFlowMap path) => TryGetValue(pathId, out path, updateUsingTime: true);
+        public bool TryGetPathById(int pathId, out PortalExitFlowMap path) => TryGetValue(pathId, out path, updateUsingTime: true);
     }
 }

@@ -11,10 +11,9 @@ namespace ZE.MechBattle.Navigation
         NavigationCell GetNavigationCell(IntTriangularPos pos);
         void UpdateNavigationCell(IntTriangularPos pos, NavigationCell cell);
         void UpdateCellPassability(IntTriangularPos pos, CellPassabilityData passability);
+        IUpdatableNavigationHex GetOrCreateUpdatableHex(int2 hexCoord);
 
         void UpdateVersion();
-        IUpdatableNavigationHex GetHex(int2 hexCoord);
-        IUpdatableNavigationHex AddHex(int2 hexCoord);
     }
 
     public interface INavigationMap
@@ -81,16 +80,7 @@ namespace ZE.MechBattle.Navigation
              _cells.TryGetValue(pos, out var cell) ? cell.Passability : NavigationLogic.GetDefaultPassability(this);
 
         public CellHeightData GetHeightData(IntTriangularPos pos) =>
-            _cells.TryGetValue(pos, out var cell) ? cell.HeightData : new(NavigationConstants.DEFAULT_HEIGHT);
-
-        public IUpdatableNavigationHex AddHex(int2 hexCoord) 
-        { 
-            var hex = new NavigationHex(ToHexPosition(hexCoord));
-            hex.UpdateAccessMap(_virtualHex.GetAccessMap());
-            hex.UpdateEdgesPassability(new(_virtualHex.DefaultPassability));
-            _hexes.Add(hexCoord, hex);
-            return hex;
-        }        
+            _cells.TryGetValue(pos, out var cell) ? cell.HeightData : new(NavigationConstants.DEFAULT_HEIGHT);     
 
         public bool ContainsHex(int2 hexCoord) => _hexes.ContainsKey(hexCoord);
         public bool TryGetHex(int2 hexCoord, out INavigationHex protectedHex) 
@@ -105,8 +95,18 @@ namespace ZE.MechBattle.Navigation
             return false;
         }
 
-        public INavigationHex GetOrCreateHex(int2 hexCoord) =>
-            _hexes.TryGetValue(hexCoord, out var hex) ? hex : AddHex(hexCoord);
+        public IUpdatableNavigationHex GetOrCreateUpdatableHex(int2 hexCoord)
+        {
+            if (!_hexes.TryGetValue(hexCoord, out var hex))
+            {
+                hex = new NavigationHex(ToHexPosition(hexCoord));
+                _hexes.Add(hexCoord, hex);
+            }
+
+            return hex;
+        }
+
+        public INavigationHex GetOrCreateHex(int2 hexCoord) => GetOrCreateUpdatableHex(hexCoord);
 
         public NavigationHexPosition ToHexPosition(int2 hexCoord) => new(hexCoord.x, hexCoord.y, HexEdgeLength, TriangleHeight);
 
@@ -150,7 +150,5 @@ namespace ZE.MechBattle.Navigation
         }
 
         public void UpdateVersion() => Version++;
-
-        public IUpdatableNavigationHex GetHex(int2 hexCoord) => _hexes[hexCoord];
     }
 }

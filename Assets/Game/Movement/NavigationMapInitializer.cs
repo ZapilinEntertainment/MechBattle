@@ -25,10 +25,11 @@ namespace ZE.MechBattle.Ecs
 
         public void OnAwake()
         {
-            using var hexes = GetHexesInRectangleCommand.Execute(_map.Settings, Allocator.Temp);
-            foreach (var hex in hexes)
+            using var hexes = GetHexCoordsInRectangleCommand.Execute(_map.Settings, Allocator.Temp);
+            foreach (var hexCoord in hexes)
             {
-                _hexRaycastRequests.Add(hex);
+                var hex = _map.GetOrCreateHex(hexCoord);
+                _hexRaycastRequests.AddRequest(hexCoord, hex.Version);
             }
         }
 

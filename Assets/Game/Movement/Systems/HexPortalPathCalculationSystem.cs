@@ -31,21 +31,20 @@ namespace ZE.MechBattle.Ecs {
         private EntityPathValidator<HexPortalsPath, HexPathComponent, ClearHexPathTag> _validator;
 
         private readonly INavigationMap _map;
-        private readonly HexPortalPathsLRUBuffer _portalPaths;
         private readonly PortalPathConstructionProcessManager _processesManager;
+        private readonly HexPortalsCoordinator _portalsCoordinator;
 
         private const int MAX_PROCESSES = 4;
 
 
         [Inject]
         public HexPortalPathCalculationSystem(
-            HexPortalPathsLRUBuffer portalPaths,
             INavigationMap map,
-            PortalConnectionsList portalConnectionsList)
+            HexPortalsCoordinator portalsCoordinator)
         {
             _map = map;
-            _portalPaths = portalPaths;
-            _processesManager = new PortalPathConstructionProcessManager(Allocator.Persistent, _map, portalConnectionsList, MAX_PROCESSES, portalPaths);
+            _portalsCoordinator = portalsCoordinator;
+            _processesManager = new PortalPathConstructionProcessManager(Allocator.Persistent, _map, MAX_PROCESSES, _portalsCoordinator);
         }
 
         public override void OnAwake() 
@@ -58,7 +57,7 @@ namespace ZE.MechBattle.Ecs {
             _triangularPosComponents = World.GetStash<TriangularPosComponent>();
             _moveTargets = World.GetStash<MoveTargetComponent>();
 
-            _validator = new EntityPathValidator<HexPortalsPath, HexPathComponent, ClearHexPathTag>(World, PathStatusesLRU, _portalPaths);
+            _validator = new EntityPathValidator<HexPortalsPath, HexPathComponent, ClearHexPathTag>(World, PathStatusesLRU, _portalsCoordinator.GetPortalPaths());
         }
 
         public override void Dispose()
