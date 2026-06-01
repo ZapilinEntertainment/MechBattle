@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Overlays;
@@ -15,10 +16,11 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         private readonly ReactiveProperty<MapSettingsSO> _settingsProperty = new();
         private readonly CompositeDisposable _compositeDisposable = new();
 
-        private bool _settingsAssetFound = false;
-        private bool _drawerPrepared = false;        
+        private bool _settingsAssetFound = false;       
         private NavigationMap _map;
-        private NavigationMapDrawer _drawer;
+        private HexBordersDrawer _hexBordersDrawer;
+        private List<(Vector3,Vector3)> _lines = new();
+        private Vector3[] _mapBorders = new Vector3[4];
 
         private const string SELECTED_SETTINGS_KEY = "DebugNavigationSettings";
 
@@ -62,7 +64,6 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             SceneView.duringSceneGui -= OnSceneGUI;
 
             ClearMap();
-            _drawer?.Dispose();
         }
 
         private void OnSettingsChanged(MapSettingsSO settings)
@@ -76,15 +77,21 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             EditorPrefs.SetString(SELECTED_SETTINGS_KEY, AssetDatabase.GetAssetPath(settings));
             NavigationDebugDataContainer.SetMapSettings(settings);
             UpdateMap(settings);
-            UpdateDrawer(settings);
         }
 
         private void OnSceneGUI(SceneView sceneView)
         {
-            if (!_drawerPrepared)
-                return;
+            Handles.color = Color.white;
+            foreach (var pointPair in _lines)
+            {
+                Handles.DrawLine(pointPair.Item1, pointPair.Item2);
+            }          
 
-            _drawer.OnSceneGUI();            
+            Handles.color = Color.yellow;
+            Handles.DrawLine(_mapBorders[0], _mapBorders[1]);
+            Handles.DrawLine(_mapBorders[1], _mapBorders[2]);
+            Handles.DrawLine(_mapBorders[2], _mapBorders[3]);
+            Handles.DrawLine(_mapBorders[0], _mapBorders[3]);
         }
 
         private void RedrawMap()
@@ -96,8 +103,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             }
 
             var settings = _settingsProperty.Value;
-            UpdateMap(settings);
-            UpdateDrawer(settings);            
+            UpdateMap(settings);         
         }
 
         private void ClearMap()
@@ -109,29 +115,35 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 NavigationDebugDataContainer.SetMap(null);  
             }    
             
-            if (_drawerPrepared) 
-                _drawer.ClearDrawData();
+            _lines.Clear();
         }
 
-        private void UpdateDrawer(MapSettingsSO settings)
-        {
-            if (!_drawerPrepared)
-            {
-                _drawer = new(_settingsProperty);
-                _drawerPrepared = true;
-            }
-            else
-            {
-                _drawer.RedrawMap(settings);
-            }
-        }
-
-        private void UpdateMap(MapSettingsSO settings)
+        private void UpdateMap(MapSettingsSO settingsSO)
         {
             if (_map == null)
             {
-                _map = new(settings.ToStruct(), Allocator.Persistent);
+                var settings = settingsSO.ToStruct();
+                _map = new(settings, Allocator.Persistent);
                 NavigationDebugDataContainer.SetMap(_map);
+
+                // hexes
+                _lines.Clear();
+                _hexBordersDrawer = new(settings);
+                using (var hexCoords =  GetHexCoordsInRectangleCommand.Execute(settings, Allocator.Temp))
+                {
+                    foreach (var hexCoord in hexCoords)
+                    {
+                        _hexBordersDrawer.WriteHexBorders(hexCoord, _lines);
+                    }                    
+                }
+
+                _mapBorders = new Vector3[4]
+                {
+                    new Vector3(settings.BottomLeftCorner.x, 0f, settings.BottomLeftCorner.y),
+                    new Vector3(settings.BottomLeftCorner.x, 0f, settings.TopRightCorner.y),
+                    new Vector3(settings.TopRightCorner.x, 0f, settings.TopRightCorner.y),
+                    new Vector3(settings.TopRightCorner.x, 0f, settings.BottomLeftCorner.y)
+                };
             }
         }
     }

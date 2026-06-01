@@ -34,7 +34,8 @@ namespace ZE.MechBattle.Navigation
             {
                 SetupData = _flowCalculationCollections.PassabilityDataInnerArray,
                 RefinedRaycastData = refinedData,
-                IntersectionPercentForLock = mapSettings.IntersectionPercentForLock,
+                ObstaclesPercentForLock = mapSettings.ObstaclesPercentForLock,
+                UnwalkableSurfacesPercentForLock = mapSettings.UnwalkableSurfacesPercentForLock,
                 SubdividedTrianglesCount = raycastsPerTriangle,
                 HeightData = _cellHeightData,
                 MaxElevationDifference = mapSettings.MaxElevationDifference,

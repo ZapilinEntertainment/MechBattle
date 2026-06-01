@@ -42,6 +42,7 @@ namespace ZE.MechBattle.Ecs
             RegisterSystem<TrianglePathProgressionUpdateSystem>();
             RegisterSystem<HexPathProgressionUpdateSystem>();
 
+            RegisterSystem<PortalsPathInvalidationSystem>();
             RegisterSystem<ChangeMovementTargetSystem>();
             RegisterSystem<HexPortalPathClearSystem>();
             RegisterSystem<TrianglePathClearSystem>();
@@ -68,37 +69,37 @@ namespace ZE.MechBattle.Ecs
         public static void Install(SystemsResolver resolver)
         {
             resolver.AddSystem<HexRaycastUpdateSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<PortalsCalculationSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<PortalsCalculationSystem>(SystemGroupOrder.RegularUpdate);
 
-            resolver.AddSystem<TriangularPosUpdateSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<TriangularPosUpdateSystem>(SystemGroupOrder.RegularUpdate);
 
-            resolver.AddSystem<NoTargetPathsClearingSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<NoTargetPathsClearingSystem>(SystemGroupOrder.RegularUpdate);
 
-            resolver.AddSystem<HexPathDefineSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<HexPathSearchSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<HexPortalPathCalculationSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<HexPortalPathAccountingSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<HexPathReadyCheckSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<HexPathDefineSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<HexPathSearchSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<HexPortalPathCalculationSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<HexPortalPathAccountingSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<HexPathReadyCheckSystem>(SystemGroupOrder.RegularUpdate);
 
-            resolver.AddSystem<TrianglePathDefineSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<FlowPathSearchSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<FlowMapCalculationSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<TrianglePathSearchSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<TrianglePathCalculationSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<RegularTrianglePathReadyCheckSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<FlowTrianglePathReadyCheckSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<RegularTrianglePathsAccountingSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<TrianglePathDefineSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<FlowPathSearchSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<FlowMapCalculationSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<TrianglePathSearchSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<TrianglePathCalculationSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<RegularTrianglePathReadyCheckSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<FlowTrianglePathReadyCheckSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<RegularTrianglePathsAccountingSystem>(SystemGroupOrder.RegularUpdate);
 
-            resolver.AddSystem<RegularTrianglePathWaypointSetSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<FlowTrianglePathWaypointSetSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<WaypointsMovementSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<TrianglePathProgressionUpdateSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<HexPathProgressionUpdateSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<RegularTrianglePathWaypointSetSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<FlowTrianglePathWaypointSetSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<WaypointsMovementSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<TrianglePathProgressionUpdateSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<HexPathProgressionUpdateSystem>(SystemGroupOrder.RegularUpdate);
 
-            resolver.AddSystem<PortalsPathInvalidationSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<ChangeMovementTargetSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<HexPortalPathClearSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<TrianglePathClearSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<PortalsPathInvalidationSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<ChangeMovementTargetSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<HexPortalPathClearSystem>(SystemGroupOrder.RegularUpdate);
+            //resolver.AddSystem<TrianglePathClearSystem>(SystemGroupOrder.RegularUpdate);
 
             resolver.AddInitializer<NavigationMapInitializer>(SystemGroupOrder.Initialization);
         }

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Unity.Collections;
-
+using Unity.Collections.LowLevel.Unsafe;
 
 namespace ZE.MechBattle.Navigation
 {
@@ -20,9 +20,11 @@ namespace ZE.MechBattle.Navigation
         public readonly NativeHashSet<int> QueuedPositions;
         public readonly NativeArray<IntTriangularPos> Positions;
 
+        private readonly Allocator _allocator;
         public readonly NativeArray<CellPassabilityData> PassabilityDataInnerArray;
         private readonly int _hexRadius;
         private readonly NativeArray<byte> _rowIndices;
+
         private FlattenedHexList<CellPassabilityData> _passabilityData;
 
         public CellPassabilityData GetPassabilityData(int index) => PassabilityDataInnerArray[index];
@@ -39,6 +41,7 @@ namespace ZE.MechBattle.Navigation
             IntTriangularPos hexCenter, 
             in MapSettings mapSettings)
         {
+            _allocator = allocator;
             _hexRadius = mapSettings.TrianglesPerHexEdge;
 
             _rowIndices = TrianglesToIndexFlattenedConverter.FulfilRowIndices(allocator, _hexRadius);
@@ -73,6 +76,11 @@ namespace ZE.MechBattle.Navigation
 
         public void Dispose()
         {
+#if UNITY_EDITOR
+            if (!UnsafeUtility.IsValidAllocator(_allocator))
+                return;
+#endif    
+
             PassabilityDataInnerArray.Dispose();
             CalculationData.Dispose();
             CalculationQueue.Dispose();

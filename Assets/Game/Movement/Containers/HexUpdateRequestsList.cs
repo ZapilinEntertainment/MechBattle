@@ -37,6 +37,8 @@ namespace ZE.MechBattle
             }
         }
 
+        public void RemoveActualRequest(int2 hexCoord) => _updateRequests.Remove(hexCoord);
+
         #region IEnumerable
         public IEnumerator<HexUpdateRequest> GetEnumerator()
         {

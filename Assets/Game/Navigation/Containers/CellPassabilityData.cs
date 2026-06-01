@@ -23,10 +23,10 @@ namespace ZE.MechBattle.Navigation
             EntranceCost = entranceCost;
         }
 
-        public CellPassabilityData ChangeZone(int newZoneIndex) => new(IsPassable, NeighboursMask, newZoneIndex, EntranceCost);
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsNeighbourAccessible(int neighbourIndex) => IsNeighbourAccessible(neighbourIndex, NeighboursMask);
+
+        public CellPassabilityData ChangeZoneIndex(int zoneIndex) => new(IsPassable, NeighboursMask, zoneIndex, EntranceCost);
 
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

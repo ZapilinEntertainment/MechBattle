@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using Unity.Jobs;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 
 namespace ZE.MechBattle.Navigation
 {
@@ -14,6 +15,7 @@ namespace ZE.MechBattle.Navigation
         public readonly int RaycastsPerTriangle;
         private readonly int _trianglesPerHex;
         private readonly NativeArray<RefinedTriangleRaycastData> _refinedData;
+        private readonly Allocator _allocator;
 
         private RefineNavRaycastDataJob _job;
 
@@ -24,10 +26,11 @@ namespace ZE.MechBattle.Navigation
             NativeArray<RaycastHit>.ReadOnly walkableHits,
             NativeArray<RaycastHit>.ReadOnly obstacleHits)
         {
+            _allocator = allocator;
             var hexRadius = mapSettings.TrianglesPerHexEdge;
             _trianglesPerHex = TriangularMath.GetTrianglesCountInHex(hexRadius);
 
-            _refinedData = new NativeArray<RefinedTriangleRaycastData>(_trianglesPerHex, allocator, NativeArrayOptions.UninitializedMemory);
+            _refinedData = new NativeArray<RefinedTriangleRaycastData>(_trianglesPerHex, _allocator, NativeArrayOptions.UninitializedMemory);
 
             Subdivisions = mapSettings.RaycastSubdivisionsPerEdge;
             var peakLeftBasisIndex = TrianglesToIndexFlattenedConverter.GetSubdivisionBasisIndex(false, true, Subdivisions);
@@ -66,6 +69,10 @@ namespace ZE.MechBattle.Navigation
     
         public void Dispose()
         {
+#if UNITY_EDITOR
+            if (!UnsafeUtility.IsValidAllocator(_allocator))
+                return;
+#endif    
             _refinedData.Dispose();
         }
     }

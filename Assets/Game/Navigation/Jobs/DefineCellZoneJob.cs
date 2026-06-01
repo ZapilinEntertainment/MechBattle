@@ -73,20 +73,22 @@ namespace ZE.MechBattle
         {
             var data = Cells[pos];
             var newData = new CellData(data, zoneIndex);
+            Cells[pos] = newData;
+
             for (var i = 0; i < NavigationConstants.TRIANGLE_DIRECTIONS_COUNT; i++)
             {
                 if (!CellPassabilityData.IsNeighbourAccessible(i, newData.NeighboursAccessMask))
                     continue;
 
-                ActiveCells.Enqueue(pos);
-
                 var neighbourPos = TriangularMath.GetNeighbourByDirection(pos, i);
                 var neighbourData = Cells[neighbourPos];
+                if (neighbourData.ZoneIndex != 0)
+                    continue;
+
                 neighbourData.ZoneIndex = zoneIndex;
                 Cells[neighbourPos] = neighbourData;
-            }
-
-            Cells[pos] = newData;
+                ActiveCells.Enqueue(neighbourPos);
+            }           
         }
     }
 }

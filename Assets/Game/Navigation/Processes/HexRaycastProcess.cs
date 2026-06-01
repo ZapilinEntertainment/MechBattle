@@ -2,6 +2,7 @@ using UnityEngine;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using ZE.MechBattle.Navigation;
 using ZE.Utils;
 
@@ -20,6 +21,7 @@ namespace ZE.MechBattle
         private readonly RefineNavRaycastDataProcess _refineProcess;
         private readonly PrepareNavCellDataProcess _prepareNavCellDataProcess;
         private readonly DefineCellZoneProcess _defineCellZonesProcess;
+        private readonly Allocator _allocator;
 
         private bool _isDisposed = false;
 
@@ -29,44 +31,66 @@ namespace ZE.MechBattle
 
         public HexRaycastProcess(Allocator allocator, IUpdatableMap map)
         {
+            _allocator = allocator;
             _map = map;
             var mapSettings = _map.Settings;
             _hexRadius = _map.Settings.TrianglesPerHexEdge;
 
-            _walkableSurfaceCaster = new(allocator, mapSettings, NavigationConstants.GetWalkableCastQueryParameters());
-            _obstaclesCaster = new (allocator, mapSettings, NavigationConstants.GetObstacleCastQueryParameters());
+            _walkableSurfaceCaster = new(_allocator, mapSettings, NavigationConstants.GetWalkableCastQueryParameters());
+            _obstaclesCaster = new (_allocator, mapSettings, NavigationConstants.GetObstacleCastQueryParameters());
 
             var trianglesPerHex = TriangularMath.GetTrianglesCountInHex(_hexRadius);
-            _isPeakData = new NativeBitArray(trianglesPerHex, allocator, NativeArrayOptions.UninitializedMemory);
+            _isPeakData = new NativeBitArray(trianglesPerHex, _allocator, NativeArrayOptions.UninitializedMemory);
 
-            _refineProcess = new(allocator, mapSettings, _isPeakData.AsReadOnly(), _walkableSurfaceCaster.Results, _obstaclesCaster.Results);
-            _prepareNavCellDataProcess = new(allocator, mapSettings, _refineProcess.RefinedData, _refineProcess.RaycastsPerTriangle);
-            _defineCellZonesProcess = new(allocator, _map);
+            _refineProcess = new(_allocator, mapSettings, _isPeakData.AsReadOnly(), _walkableSurfaceCaster.Results, _obstaclesCaster.Results);
+            _prepareNavCellDataProcess = new(_allocator, mapSettings, _refineProcess.RefinedData, _refineProcess.RaycastsPerTriangle);
+            _defineCellZonesProcess = new(_allocator, _map);
         }
 
-        public void Dispose()
+        public async void Dispose()
         {
             _isDisposed = true;
 
+            if (Stage == CalculationProcessStage.Calculating)
+            {
+                do
+                {
+                    await Awaitable.NextFrameAsync();
+                }
+                while (Stage == CalculationProcessStage.Calculating);
+            }
+
             _walkableSurfaceCaster.Dispose();
             _obstaclesCaster.Dispose();
-            _isPeakData.Dispose();
             _refineProcess.Dispose();
             _prepareNavCellDataProcess.Dispose();
             _defineCellZonesProcess.Dispose();
+
+#if UNITY_EDITOR
+            if (!UnsafeUtility.IsValidAllocator(_allocator))
+                return;
+#endif            
+            _isPeakData.Dispose();           
         }
 
         public async void LaunchAsync(int2 hexCoord)
         {
+            // NOTE: important to call handle.Complete() from here, not from other method
+
             WasStopped = false;
             Stage = CalculationProcessStage.Calculating;
-
             CurrentHexPosition = new NavigationHexPosition(hexCoord, _map);
 
             // 1. raycast walkable & obstacle data
             var walkableDataHandle = _walkableSurfaceCaster.ScheduleCastJob(CurrentHexPosition);
             var obstacleDataHandle = _obstaclesCaster.ScheduleCastJob(CurrentHexPosition);
-            await WaitForJobHandle(walkableDataHandle);
+            do
+            {
+                await Awaitable.NextFrameAsync();
+            }
+            while (!walkableDataHandle.IsCompleted | !obstacleDataHandle.IsCompleted);
+            walkableDataHandle.Complete();
+            obstacleDataHandle.Complete();
 
             if (_isDisposed | WasStopped) goto FORCE_COMPLETION;
 
@@ -75,21 +99,23 @@ namespace ZE.MechBattle
             HexDataLogic.FulfilPeakDataArray(_isPeakData, hexCenter, _hexRadius);
             var refineJobHandle = _refineProcess.ScheduleJob(CurrentHexPosition);
             await WaitForJobHandle(refineJobHandle);
+            refineJobHandle.Complete();
 
             if (_isDisposed | WasStopped) goto FORCE_COMPLETION;
 
             // 3. define passability and height for each nav cell
             var prepareCellJobHandle =  _prepareNavCellDataProcess.ScheduleParallel(hexCenter);
             await WaitForJobHandle(prepareCellJobHandle);
+            prepareCellJobHandle.Complete();
 
             if (_isDisposed | WasStopped) goto FORCE_COMPLETION;
 
             // 4. define cell zones
             var defineCellJobHandle = _defineCellZonesProcess.ScheduleJob(hexCenter, _prepareNavCellDataProcess.GetPassabilityDataSource());
             await WaitForJobHandle(defineCellJobHandle);
+            defineCellJobHandle.Complete();
 
             FORCE_COMPLETION:
-
             Stage = CalculationProcessStage.Complete;
             ProcessIteration++;            
         }
@@ -101,13 +127,20 @@ namespace ZE.MechBattle
                 var cellData = _map.GetNavigationCell(tripos);
                 cellData.HeightData = _prepareNavCellDataProcess.GetHeightData(tripos);
 
-                var passability = cellData.Passability;
-                var zoneIndex = _defineCellZonesProcess.GetZoneIndex(tripos);
-                cellData.Passability = passability.ChangeZone(zoneIndex);
+                var calculatedPassabilitySource = _prepareNavCellDataProcess.GetPassabilityDataSource();                
+                var passability = calculatedPassabilitySource.GetPassabilityData(tripos);
 
+                var zoneIndex = _defineCellZonesProcess.GetZoneIndex(tripos);
+                passability.ChangeZoneIndex(zoneIndex);
+
+                cellData.Passability = passability;
                 _map.UpdateNavigationCell(tripos, cellData);
             }
-            _map.UpdateVersion();
+
+            var hex = _map.GetOrCreateUpdatableHex(CurrentHexPosition.HexCoordinate);
+            hex.UpdateVersion();
+
+            Stage = CalculationProcessStage.Idle;
         }
 
         public void Stop()
@@ -122,7 +155,6 @@ namespace ZE.MechBattle
                 await Awaitable.NextFrameAsync();
             }
             while (!handle.IsCompleted);
-            handle.Complete();
         }
     }
 }

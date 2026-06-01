@@ -18,13 +18,18 @@ namespace ZE.MechBattle.Ecs {
         private readonly HexRaycastRequestsList _requestsList;
         private readonly Dictionary<int2,HexRaycastProcessToken> _calculatingProcesses = new();
         private readonly HexRaycastProcessesManager _processesManager;
+        private readonly IUpdatableMap _map;
+        private readonly ArrayPool<int2> _pool;
         private const int MAX_PROCESSES_COUNT = 4;
+        
 
         [Inject]
         public HexRaycastUpdateSystem(HexRaycastRequestsList requestsList, IUpdatableMap map)
         {
             _requestsList = requestsList;
-            _processesManager = new(Allocator.Persistent, map, MAX_PROCESSES_COUNT);
+            _map = map;
+            _processesManager = new(Allocator.Persistent, _map, MAX_PROCESSES_COUNT);      
+            _pool = ArrayPool<int2>.Shared;
         }
 
         public void OnAwake() { }
@@ -42,40 +47,65 @@ namespace ZE.MechBattle.Ecs {
 
         private void CheckActiveProcesses()
         {
-            var requestsCount = _requestsList.Count;
             var processesCount = _calculatingProcesses.Count;
-            var pool = ArrayPool<int2>.Shared;
-            var clearList = pool.Rent(math.max(requestsCount, processesCount));
+            var clearList = _pool.Rent(processesCount);
             var clearCount = 0;
 
             foreach (var calculatingProcessKvp in _calculatingProcesses)
             {
                 if (_processesManager.IsProcessCompleted(calculatingProcessKvp.Value))
+                {
                     clearList[clearCount++] = calculatingProcessKvp.Key;
+                }                    
             }
+
             if (clearCount != 0)
             {
                 for (var i = 0; i < clearCount; i++)
                 {
                     _calculatingProcesses.Remove(clearList[i]);
                 }
+                _map.UpdateVersion();
+                //UnityEngine.Debug.Log($"map update to version {_map.Version}");
             }
-            pool.Return(clearList);
+
+            _pool.Return(clearList);
         }
 
         private void HandleRequests()
         {
-            var idleProcesses = _processesManager.UpdateAndGetIdleProcessesCount();
+            var idleProcesses = _processesManager.UpdateAndGetIdleProcessesCount();   
+            
+            var requestsCount = _requestsList.Count;
+            if (requestsCount == 0)
+                return;
+
+            var clearList = _pool.Rent(requestsCount);
+            var clearCount = 0;
+
             foreach (var request in _requestsList)
             {
                 var hexCoord = request.HexCoord;
-                var hexVersion = request.HexVersion;
+                var requestHexVersion = request.HexVersion;
+                var currentHexVersion = _map.GetOrCreateHex(hexCoord).Version;
+
+                if (currentHexVersion > requestHexVersion)
+                {
+                    clearList[clearCount] = hexCoord;
+                    continue;
+                }
 
                 if (_calculatingProcesses.TryGetValue(hexCoord, out var token))
                 {
                     // if process trying to calculate outdated version - stop it
-                    if (token.HexVersion < hexVersion)
+                    if (token.HexVersion < requestHexVersion)
+                    {
                         _processesManager.StopProcess(token.ProcessIndex);
+                    }      
+                    else
+                    {
+                        clearList[clearCount++] = hexCoord;
+                    }
                 }
                 else
                 {
@@ -93,8 +123,18 @@ namespace ZE.MechBattle.Ecs {
                         _calculatingProcesses[hexCoord] = token;
                         idleProcesses--;
                     }
+                    clearList[clearCount++] = hexCoord;
                 }
             }
+
+            if (clearCount != 0)
+            {
+                for (var i = 0; i < clearCount; i++)
+                {
+                    _requestsList.RemoveActualRequest(clearList[i]);
+                }
+            }
+            _pool.Return(clearList);
         }
     }
 }

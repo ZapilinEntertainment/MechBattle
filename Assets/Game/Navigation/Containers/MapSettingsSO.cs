@@ -11,7 +11,8 @@ namespace ZE.MechBattle.Navigation
         [field:SerializeField] public float HexEdgeSize { get;private set;}
         [field: SerializeField] [Range(1, NavigationConstants.MAX_TRIANGLES_PER_EDGE)] public int TrianglesPerHexEdge { get; private set; }
         [field: SerializeField] public int RaycastSubdivisionsPerEdge { get; private set; }
-        [field: SerializeField][Range(0, 1)] public float IntersectionPercentForLock { get; private set; }
+        [field: SerializeField][Range(0, 1)] public float ObstaclesPercentForLock { get; private set; } = 0.5f;
+        [field: SerializeField][Range(0, 1)] public float UnwalkableSurfacePercentForLock { get; private set; } = 0.5f;
         [field: SerializeField] public float2 BottomLeftCorner { get; private set; }
         [field: SerializeField] public float2 TopRightCorner { get; private set; }
         [field: SerializeField] public bool UnscannedSurfacesArePassable { get; private set; }
@@ -28,7 +29,8 @@ namespace ZE.MechBattle.Navigation
     public readonly struct MapSettings
     {
         public readonly int TrianglesPerHexEdge;
-        public readonly float IntersectionPercentForLock;
+        public readonly float ObstaclesPercentForLock;
+        public readonly float UnwalkableSurfacesPercentForLock;
         public readonly float TriangleHeight;
         public readonly float MaxElevationDifference;
 
@@ -47,7 +49,9 @@ namespace ZE.MechBattle.Navigation
         public MapSettings(MapSettingsSO so)
         {
             TrianglesPerHexEdge = so.TrianglesPerHexEdge;
-            IntersectionPercentForLock = so.IntersectionPercentForLock;
+            ObstaclesPercentForLock = so.ObstaclesPercentForLock;
+            UnwalkableSurfacesPercentForLock = so.UnwalkableSurfacePercentForLock;
+
             HexEdgeSize = so.HexEdgeSize;
             RaycastSubdivisionsPerEdge = so.RaycastSubdivisionsPerEdge;
             BottomLeftCorner = so.BottomLeftCorner;
@@ -66,13 +70,16 @@ namespace ZE.MechBattle.Navigation
             float4 mapBorders,
             bool unscannedSurfacesArePassable = false,            
             float intersectionPercentForLock = 0.5f,
+            float unwalkableSurfacesPercentForLock = 0.5f,
             int raycastSubdivisionPerEdge = RAYCAST_SUBDIVISIONS_PER_EDGE,
             float maxElevationDifference = DEFAULT_MAX_ELEVATION_DIFFERENCE)
         {
             TrianglesPerHexEdge = trianglesPerEdge;
             HexEdgeSize = hexEdge;
 
-            IntersectionPercentForLock = intersectionPercentForLock;
+            ObstaclesPercentForLock = intersectionPercentForLock;
+            UnwalkableSurfacesPercentForLock = unwalkableSurfacesPercentForLock;
+
             RaycastSubdivisionsPerEdge = raycastSubdivisionPerEdge;
             BottomLeftCorner = mapBorders.xy;
             TopRightCorner = mapBorders.zw;

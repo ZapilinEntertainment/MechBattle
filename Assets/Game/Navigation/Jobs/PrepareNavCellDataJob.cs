@@ -13,7 +13,8 @@ namespace ZE.MechBattle.Navigation
         [WriteOnly] public NativeArray<CellHeightData> HeightData;
 
         public FlattenedHexCoordsConverter CoordsConverter;
-        public float IntersectionPercentForLock;
+        public float ObstaclesPercentForLock;
+        public float UnwalkableSurfacesPercentForLock;
         public float SubdividedTrianglesCount;
         public float MaxElevationDifference;
         private const int NEIGHBOURS_COUNT = NavigationConstants.TRIANGLE_DIRECTIONS_COUNT;
@@ -53,7 +54,8 @@ namespace ZE.MechBattle.Navigation
         public void Execute(int index)
         {
             var refinedData = RefinedRaycastData[index];
-            var isPassable = (refinedData.ObstacledCellsCount / SubdividedTrianglesCount) < IntersectionPercentForLock;
+            var isPassable = (refinedData.ObstacledCellsCount / SubdividedTrianglesCount) < ObstaclesPercentForLock;
+            isPassable &= (1f - refinedData.GroundCastsCount / SubdividedTrianglesCount) < UnwalkableSurfacesPercentForLock;
 
             var pos = CoordsConverter.IndexToTriangular(index);
             var neighboursAccessMask = 0;
