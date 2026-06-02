@@ -69,7 +69,7 @@ namespace ZE.MechBattle.Ecs
         public static void Install(SystemsResolver resolver)
         {
             resolver.AddSystem<HexRaycastUpdateSystem>(SystemGroupOrder.RegularUpdate);
-            //resolver.AddSystem<PortalsCalculationSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<PortalsCalculationSystem>(SystemGroupOrder.RegularUpdate);
 
             //resolver.AddSystem<TriangularPosUpdateSystem>(SystemGroupOrder.RegularUpdate);
 

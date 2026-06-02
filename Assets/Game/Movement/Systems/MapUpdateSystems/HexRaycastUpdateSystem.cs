@@ -18,18 +18,20 @@ namespace ZE.MechBattle.Ecs {
         private readonly HexRaycastRequestsList _requestsList;
         private readonly Dictionary<int2,HexRaycastProcessToken> _calculatingProcesses = new();
         private readonly HexRaycastProcessesManager _processesManager;
+        private readonly PortalCalculationRequestsList _portalCalculationRequests;
         private readonly IUpdatableMap _map;
         private readonly ArrayPool<int2> _pool;
         private const int MAX_PROCESSES_COUNT = 4;
         
 
         [Inject]
-        public HexRaycastUpdateSystem(HexRaycastRequestsList requestsList, IUpdatableMap map)
+        public HexRaycastUpdateSystem(HexRaycastRequestsList requestsList, IUpdatableMap map, PortalCalculationRequestsList portalRequestsList)
         {
             _requestsList = requestsList;
             _map = map;
             _processesManager = new(Allocator.Persistent, _map, MAX_PROCESSES_COUNT);      
             _pool = ArrayPool<int2>.Shared;
+            _portalCalculationRequests = portalRequestsList;
         }
 
         public void OnAwake() { }
@@ -53,9 +55,12 @@ namespace ZE.MechBattle.Ecs {
 
             foreach (var calculatingProcessKvp in _calculatingProcesses)
             {
-                if (_processesManager.IsProcessCompleted(calculatingProcessKvp.Value))
+                var token = calculatingProcessKvp.Value;
+                if (_processesManager.IsProcessCompleted(token))
                 {
-                    clearList[clearCount++] = calculatingProcessKvp.Key;
+                    var hexCoord = calculatingProcessKvp.Key;
+                    clearList[clearCount++] = hexCoord;
+                    _portalCalculationRequests.AddRequest(hexCoord, token.HexVersion);
                 }                    
             }
 
@@ -63,7 +68,7 @@ namespace ZE.MechBattle.Ecs {
             {
                 for (var i = 0; i < clearCount; i++)
                 {
-                    _calculatingProcesses.Remove(clearList[i]);
+                    _calculatingProcesses.Remove(clearList[i]);                    
                 }
                 _map.UpdateVersion();
                 //UnityEngine.Debug.Log($"map update to version {_map.Version}");

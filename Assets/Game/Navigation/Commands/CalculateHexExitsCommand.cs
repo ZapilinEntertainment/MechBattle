@@ -3,45 +3,46 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
-    public static class CalculateHexPortalsCommand
+    public static class CalculateHexExitsCommand
     {
         private struct EdgeEnumerationProtocol
         {
             public readonly INavigationMap Map;
             public readonly int TrianglesPerEdge;
             public readonly NavigationHexPosition HexPos;
+            public readonly List<NavigationPortalExit> ExitsList;
             public HexEdge Edge;
            
 
-            public EdgeEnumerationProtocol(INavigationMap map, int2 hexCoord)
+            public EdgeEnumerationProtocol(INavigationMap map, int2 hexCoord, List<NavigationPortalExit> exitsList)
             {
                 Map = map;
                 TrianglesPerEdge = map.TrianglesPerHexEdge;
                 HexPos = new NavigationHexPosition(hexCoord, map);
+                ExitsList = exitsList;
                 Edge = HexEdge.Top;
             }
         }
 
-        public static List<NavigationPortalExit> CalculateExitsList(INavigationMap map, int2 hexCoord, HexEdge edge)
+        public static void Execute(INavigationMap map, int2 hexCoord, HexEdge edge, List<NavigationPortalExit> exitsList)
         {        
-            var protocol = new EdgeEnumerationProtocol(map, hexCoord) { Edge = edge};
+            var protocol = new EdgeEnumerationProtocol(map, hexCoord, exitsList) { Edge = edge};
             switch (edge)
             {
-                case HexEdge.TopRight: return FindPortalExits<TopRightEdgeEnumerationLogic>(protocol);
-                case HexEdge.BottomRight: return FindPortalExits<BottomRightEdgeEnumerationLogic>(protocol);
-                case HexEdge.Bottom: return FindPortalExits<BottomEdgeEnumerationLogic>(protocol);
-                case HexEdge.BottomLeft: return FindPortalExits<BottomLeftEdgeEnumerationLogic>(protocol);
-                case HexEdge.TopLeft: return FindPortalExits<TopLeftEdgeEnumerationLogic>(protocol);
-                default: return FindPortalExits<TopEdgeEnumerationLogic>(protocol);
+                case HexEdge.TopRight: FindPortalExits<TopRightEdgeEnumerationLogic>(protocol); break;
+                case HexEdge.BottomRight: FindPortalExits<BottomRightEdgeEnumerationLogic>(protocol); break;
+                case HexEdge.Bottom: FindPortalExits<BottomEdgeEnumerationLogic>(protocol); break;
+                case HexEdge.BottomLeft: FindPortalExits<BottomLeftEdgeEnumerationLogic>(protocol); break;
+                case HexEdge.TopLeft: FindPortalExits<TopLeftEdgeEnumerationLogic>(protocol); break;
+                default: FindPortalExits<TopEdgeEnumerationLogic>(protocol); break;
             }
         }
 
-        private static List<NavigationPortalExit> FindPortalExits<T>(in EdgeEnumerationProtocol protocol) where T : struct, IEdgeEnumerationLogic
+        private static void FindPortalExits<T>(in EdgeEnumerationProtocol protocol) where T : struct, IEdgeEnumerationLogic
         {
             var enumerator = new EdgeEnumerator<T>(protocol.TrianglesPerEdge, protocol.HexPos);
             var startTripos = enumerator.Current;
             var hexCoord = protocol.HexPos.HexCoordinate;
-            var list = new List<NavigationPortalExit>();
 
             var edge = protocol.Edge;
             var peakDir = (int)edge.ToNeighbourDirectionFromPeak();
@@ -50,6 +51,7 @@ namespace ZE.MechBattle.Navigation
             var currentZoneIndex = 0;
             var currentNeighbourZoneIndex = 0;
             var sequenceStarted = false;
+            var list = protocol.ExitsList;
 
             void StartNewSequence(IntTriangularPos tripos, int zoneIndex, int neighbourZoneIndex)
             {
@@ -58,21 +60,24 @@ namespace ZE.MechBattle.Navigation
                 currentZoneIndex = zoneIndex;
                 currentNeighbourZoneIndex = neighbourZoneIndex;
                 sequenceStarted = true;
-            }
+            }          
 
             void FinishSequence()
             {
                 if (trianglesPassed == 0)
                     return;
                 list.Add(new(startTripos, edge, trianglesPassed, currentZoneIndex));
+                trianglesPassed = 0;
+                sequenceStarted = false;
             }
 
             var map = protocol.Map;
+            
             foreach (var tripos in enumerator)
             {
                 var passableData = map.GetPassabilityData(tripos);
                 if (!passableData.IsPassable)
-                {
+                {                    
                     FinishSequence();
                 }
                 else
@@ -85,26 +90,28 @@ namespace ZE.MechBattle.Navigation
                     else
                     {
                         var neighbourData = map.GetPassabilityData(TriangularMath.GetNeighbourByDirection(tripos, direction));
+                        var cellZone = passableData.ZoneIndex;
+                        var neighbourCellZone = neighbourData.ZoneIndex;
+
                         if (sequenceStarted)
                         {
-                            if (neighbourData.ZoneIndex != currentNeighbourZoneIndex)
+                            if (neighbourCellZone == currentNeighbourZoneIndex && cellZone == currentZoneIndex)
                             {
-                                FinishSequence();
+                                trianglesPassed++;
                             }
                             else
                             {
-                                trianglesPassed++;
+                                FinishSequence();
+                                StartNewSequence(tripos, cellZone, neighbourCellZone);
                             }
                         }
                         else
                         {
-                            StartNewSequence(tripos, passableData.ZoneIndex, neighbourData.ZoneIndex);
+                            StartNewSequence(tripos, cellZone, neighbourCellZone);                            
                         }
                     }
                 }
             }
-
-            return list;
         }
     
     }

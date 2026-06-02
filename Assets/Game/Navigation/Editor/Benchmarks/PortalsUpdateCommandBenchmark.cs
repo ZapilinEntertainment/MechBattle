@@ -25,9 +25,9 @@ namespace ZE.MechBattle.Navigation.Tests
         public void UpdatePortalsBenchmarkTest(int trianglesPerEdge)
         {
             using var map = PrepareTestingMap(Allocator.TempJob, trianglesPerEdge);
-            Measure.Method(() => CalculateHexPortalsCommand.CalculateExitsList(map, int2.zero, HexEdge.Top))
+            Measure.Method(() => CalculateHexExitsCommand.Execute(map, int2.zero, HexEdge.Top, new()))
                 .WarmupCount(3)
-                .MeasurementCount(10)
+                .MeasurementCount(12 * 5)                
                 .Run();
         }
     }

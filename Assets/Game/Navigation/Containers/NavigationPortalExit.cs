@@ -21,5 +21,7 @@ namespace ZE.MechBattle
             Length = length;
             ZoneIndex = zoneIndex;
         }
+
+        public override string ToString() => $"exit: from {StartTriangle} of {Edge} edge, {Length} tris length, zone: {ZoneIndex}";
     }
 }
