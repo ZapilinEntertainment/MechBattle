@@ -10,11 +10,11 @@ namespace ZE.MechBattle.Navigation
             public readonly INavigationMap Map;
             public readonly int TrianglesPerEdge;
             public readonly NavigationHexPosition HexPos;
-            public readonly List<NavigationPortalExit> ExitsList;
+            public readonly ICollection<NavigationPortalExit> ExitsList;
             public HexEdge Edge;
            
 
-            public EdgeEnumerationProtocol(INavigationMap map, int2 hexCoord, List<NavigationPortalExit> exitsList)
+            public EdgeEnumerationProtocol(INavigationMap map, int2 hexCoord, ICollection<NavigationPortalExit> exitsList)
             {
                 Map = map;
                 TrianglesPerEdge = map.TrianglesPerHexEdge;
@@ -24,7 +24,7 @@ namespace ZE.MechBattle.Navigation
             }
         }
 
-        public static void Execute(INavigationMap map, int2 hexCoord, HexEdge edge, List<NavigationPortalExit> exitsList)
+        public static void Execute(INavigationMap map, int2 hexCoord, HexEdge edge, ICollection<NavigationPortalExit> exitsList)
         {        
             var protocol = new EdgeEnumerationProtocol(map, hexCoord, exitsList) { Edge = edge};
             switch (edge)
@@ -42,7 +42,6 @@ namespace ZE.MechBattle.Navigation
         {
             var enumerator = new EdgeEnumerator<T>(protocol.TrianglesPerEdge, protocol.HexPos);
             var startTripos = enumerator.Current;
-            var hexCoord = protocol.HexPos.HexCoordinate;
 
             var edge = protocol.Edge;
             var peakDir = (int)edge.ToNeighbourDirectionFromPeak();
@@ -52,6 +51,8 @@ namespace ZE.MechBattle.Navigation
             var currentNeighbourZoneIndex = 0;
             var sequenceStarted = false;
             var list = protocol.ExitsList;
+            var startIndex = 0;
+            var index = 0;
 
             void StartNewSequence(IntTriangularPos tripos, int zoneIndex, int neighbourZoneIndex)
             {
@@ -60,13 +61,14 @@ namespace ZE.MechBattle.Navigation
                 currentZoneIndex = zoneIndex;
                 currentNeighbourZoneIndex = neighbourZoneIndex;
                 sequenceStarted = true;
+                startIndex = index;
             }          
 
             void FinishSequence()
             {
                 if (trianglesPassed == 0)
                     return;
-                list.Add(new(startTripos, edge, trianglesPassed, currentZoneIndex));
+                list.Add(new(startTripos, startIndex, edge, trianglesPassed, currentZoneIndex));
                 trianglesPassed = 0;
                 sequenceStarted = false;
             }
@@ -111,6 +113,7 @@ namespace ZE.MechBattle.Navigation
                         }
                     }
                 }
+                index++;
             }
         }
     

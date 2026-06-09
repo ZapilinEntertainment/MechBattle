@@ -15,9 +15,9 @@ namespace ZE.MechBattle.Develop
             [PropertyOrder(0)]public int PathId;
             public bool IsCalculated;
             public bool ReachesTarget;
-            public HexPathNodeKey[] Points;
+            public HexEdgeKey[] Points;
 
-            [HideInInspector] public (HexPathNodeKey, HexPathNodeKey) Destinations;
+            [HideInInspector] public (HexEdgeKey, HexEdgeKey) Destinations;
             [ShowInInspector, PropertyOrder(1)]private string DestinationsString => $"{Destinations.Item1} -> {Destinations.Item2}";
         }
 

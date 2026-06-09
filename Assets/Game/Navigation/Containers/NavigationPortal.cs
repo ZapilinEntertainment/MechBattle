@@ -1,6 +1,6 @@
 using Unity.Mathematics;
 
-namespace ZE.MechBattle
+namespace ZE.MechBattle.Navigation
 {
     public readonly struct NavigationPortal
     {

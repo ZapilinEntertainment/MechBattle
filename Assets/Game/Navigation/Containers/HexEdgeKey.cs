@@ -8,7 +8,7 @@ using TriInspector;
 namespace ZE.MechBattle.Navigation
 {
     [Serializable]
-    public struct HexPathNodeKey : IEquatable<HexPathNodeKey>
+    public struct HexEdgeKey : IEquatable<HexEdgeKey>
     {
         [ShowInInspector] private string SerializedOutput => ToString();
 
@@ -20,23 +20,23 @@ namespace ZE.MechBattle.Navigation
 
         private readonly int3 _value;
 
-        public HexPathNodeKey(int hexCoordX, int hexCoordY, HexEdge edge)
+        public HexEdgeKey(int hexCoordX, int hexCoordY, HexEdge edge)
         {
             _value = new int3(hexCoordX, hexCoordY, (int)edge);
         }
 
-        public HexPathNodeKey(int2 hexPos, HexEdge edge)
+        public HexEdgeKey(int2 hexPos, HexEdge edge)
         {
             _value = new int3(hexPos, (int)edge);
         }
 
-        public HexPathNodeKey(int2 hexPos, int edge)
+        public HexEdgeKey(int2 hexPos, int edge)
         {
             _value = new int3(hexPos, edge);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals(HexPathNodeKey other) => math.all(_value == other._value);
+        public bool Equals(HexEdgeKey other) => math.all(_value == other._value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode() => (int)math.hash(_value);
@@ -45,12 +45,12 @@ namespace ZE.MechBattle.Navigation
         public int2 ToNextHexCoord() => _value.xy + Edge.ToHexOffsetVector();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public HexPathNodeKey ToOpposite() => new(ToNextHexCoord(), Edge.ToOpposite());
+        public HexEdgeKey ToOpposite() => new(ToNextHexCoord(), Edge.ToOpposite());
 
 
-        public static bool operator ==(HexPathNodeKey left, HexPathNodeKey right) => left.Equals(right);
-        public static bool operator !=(HexPathNodeKey left, HexPathNodeKey right) => !left.Equals(right);
-        public override bool Equals(object obj) => obj is HexPathNodeKey other && Equals(other);
+        public static bool operator ==(HexEdgeKey left, HexEdgeKey right) => left.Equals(right);
+        public static bool operator !=(HexEdgeKey left, HexEdgeKey right) => !left.Equals(right);
+        public override bool Equals(object obj) => obj is HexEdgeKey other && Equals(other);
         public override string ToString() => $"{HexCoord}:{Edge}";
     }
 }

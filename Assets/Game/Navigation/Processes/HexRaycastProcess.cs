@@ -138,7 +138,7 @@ namespace ZE.MechBattle
             }
 
             var hex = _map.GetOrCreateUpdatableHex(CurrentHexPosition.HexCoordinate);
-            hex.UpdateVersion();
+            hex.UpdatePassabilityVersion();
 
             Stage = CalculationProcessStage.Idle;
         }

@@ -30,7 +30,7 @@ namespace ZE.MechBattle
             builder.Register<RestorablesList>(Lifetime.Scoped);
             builder.Register<ViewReceiversList>(Lifetime.Scoped);
             builder.Register<CollidersTable>(Lifetime.Scoped);           
-            
+
             var map = new NavigationMap(_mapSettings.ToStruct(), Unity.Collections.Allocator.Persistent);
             builder.RegisterInstance<INavigationMap, IUpdatableMap>(map);
             builder.Register(resolver => new NavigationMapController(map), Lifetime.Scoped);

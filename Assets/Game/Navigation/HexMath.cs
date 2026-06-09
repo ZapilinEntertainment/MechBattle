@@ -99,7 +99,7 @@ namespace ZE.MechBattle.Navigation
 
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float CalculateDistance(HexPathNodeKey A, HexPathNodeKey B) =>
+        public static float CalculateDistance(HexEdgeKey A, HexEdgeKey B) =>
             CalculateHexPosDistance(A.EdgeCenterHexCoord, B.EdgeCenterHexCoord);
 
         //chatgpt generated

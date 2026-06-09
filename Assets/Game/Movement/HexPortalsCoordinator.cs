@@ -1,6 +1,7 @@
 using System.Buffers;
 using System.Collections.Generic;
 using Unity.Mathematics;
+using VContainer;
 using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle.Navigation
@@ -16,8 +17,11 @@ namespace ZE.MechBattle.Navigation
         private readonly HexPortalsList _portalsList;
         private readonly HexPortalPathsLRUBuffer _pathsList;
         private readonly PortalConnectionsList _connectionsList;
+        private readonly OutdatedExitsList _outdatedExitsList;
+        private readonly OutdatedPortalsList _outdatedPortalsList;
         private readonly ArrayPool<int> _pool;
 
+        [Inject]
         public HexPortalsCoordinator(
             HexPortalPathsLRUBuffer pathsList,
             FlowMapAssignmentList assignmentList, 
@@ -25,7 +29,9 @@ namespace ZE.MechBattle.Navigation
             PortalFlowMapsList flowMapsList,
             PortalExitsList portalExitsList,
             HexPortalsList portalsList,
-            PortalConnectionsList connectionsList)
+            PortalConnectionsList connectionsList,
+            OutdatedExitsList outdatedExitsList,
+            OutdatedPortalsList outdatedPortalList)
         {
             _pathsList = pathsList;
             _assignmentList = assignmentList;
@@ -34,6 +40,8 @@ namespace ZE.MechBattle.Navigation
             _portalExitsList = portalExitsList;
             _portalsList = portalsList;
             _connectionsList = connectionsList;
+            _outdatedExitsList = outdatedExitsList;
+            _outdatedPortalsList = outdatedPortalList;
 
             _pool = ArrayPool<int>.Shared;
         }
@@ -59,27 +67,7 @@ namespace ZE.MechBattle.Navigation
 
             exit = default;
             return false;
-        }
-
-        public bool TryGetPortalExitId(int2 hexCoord, int portalId, out int exitId)
-        {
-            if (!_portalsList.TryGetValue(portalId, out var portal))
-            {
-                exitId = -1;
-                return false;
-            }
-
-            var match = new int4(hexCoord, hexCoord) == new int4(portal.HexCoordA, portal.HexCoordB);
-            var isExitA = match.x & match.y;
-            if (isExitA | (match.z & match.w) == false)
-            {
-                exitId = -1;
-                return false;
-            }
-
-            exitId = isExitA ? portal.ExitIdA : portal.ExitIdB;
-            return true;
-        }
+        }     
 
         public PortalExitFlowMap ReserveFlowMap(int exitPortalId, NavigationPortalExit exit, int2 hexCoord)
         {
@@ -100,16 +88,39 @@ namespace ZE.MechBattle.Navigation
             flowMap.OnCalculated(results);
         }
 
+        #region EXITS
+        public bool TryGetPortalExitId(int2 hexCoord, int portalId, out int exitId)
+        {
+            if (!_portalsList.TryGetValue(portalId, out var portal))
+            {
+                exitId = -1;
+                return false;
+            }
+
+            var match = new int4(hexCoord, hexCoord) == new int4(portal.HexCoordA, portal.HexCoordB);
+            var isExitA = match.x & match.y;
+            if (isExitA | (match.z & match.w) == false)
+            {
+                exitId = -1;
+                return false;
+            }
+
+            exitId = isExitA ? portal.ExitIdA : portal.ExitIdB;
+            return true;
+        }
+
         public bool TryGetExitDataWithValidation(int exitId, out NavigationPortalExit exitData)
         {
             if (_portalExitsList.TryGetValue(exitId, out exitData))
                 return true;
 
-            _assignmentList.RemoveBond(exitId);
+            OnExitOutdated(exitId);
             return false;
         }
 
-        public void GetHexPortalExits(int2 hexCoord, List<HexExitOption> exits)
+        public void OnExitOutdated(int exitId) => _outdatedExitsList.Add(exitId);
+
+        public void GetHexPortalExits(int2 hexCoord, ICollection<HexExitOption> exits)
         {
             var portalsCount = _portalsList.Count;
             if (portalsCount == 0) return;
@@ -130,8 +141,24 @@ namespace ZE.MechBattle.Navigation
             }
         }
 
+        public void GetEdgeExits(INavigationHex hex, HexEdge edge, List<(int id, NavigationPortalExit exitData)> exitsList)
+        {
+            foreach (var exitId in hex.PortalExitIds)
+            {
+                if (TryGetExitDataWithValidation(exitId, out var exitData) && exitData.Edge == edge)
+                {
+                    exitsList.Add((exitId, exitData));
+                }
+            }
+        }
+        #endregion
+
+        #region PORTALS
         public bool TryGetPortalConnections(int portalId, out IReadOnlyDictionary<int, float> connections) =>
-            _connectionsList.TryGetPortalConnections(portalId, out connections);
+           _connectionsList.TryGetPortalConnections(portalId, out connections);
+
+        public void OnPortalOutdated(int portalId) => _outdatedPortalsList.Add(portalId);
+        #endregion
 
         // navigation package interface
         public IPathsList<PortalPathDestinationKey, int> GetPathsList() => _pathsList;

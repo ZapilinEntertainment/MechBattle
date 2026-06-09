@@ -49,7 +49,7 @@ namespace ZE.MechBattle.Navigation
         /// 
         public static Result Execute(
             INavigationMap map,
-            HexPathNodeKey startNode,
+            HexEdgeKey startNode,
             IntTriangularPos startPos,
             IntTriangularPos farEndPos,
             Dictionary<IntTriangularPos, EdgeCellData> cellsDictionary)
@@ -126,7 +126,7 @@ namespace ZE.MechBattle.Navigation
         }
 
         private static void FulfillEdgesList(
-            HexPathNodeKey hexNode,
+            HexEdgeKey hexNode,
             Dictionary<IntTriangularPos, EdgeCellData> dict, 
             INavigationMap map,
             bool isExit)

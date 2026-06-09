@@ -2,6 +2,7 @@ using Scellecs.Morpeh;
 using VContainer;
 using Unity.IL2CPP.CompilerServices;
 using Unity.Mathematics;
+using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]

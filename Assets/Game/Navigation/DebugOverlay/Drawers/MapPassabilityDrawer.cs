@@ -16,7 +16,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             _drawData.Clear();
             foreach (var hex in map.Hexes)
             {
-                if (hex.Version == 0)
+                if (hex.PassabilityVersion == 0)
                     continue;
                 TrianglesDrawHelper.AddHexTrianglesData(hex.HexCoordinate, map, _drawData);
             }

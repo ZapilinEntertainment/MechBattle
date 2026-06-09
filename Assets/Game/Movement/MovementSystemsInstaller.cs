@@ -13,7 +13,9 @@ namespace ZE.MechBattle.Ecs
             void RegisterSystem<T>() where T : ISystem => builder.Register<T>(Lifetime.Scoped);
 
             RegisterSystem<HexRaycastUpdateSystem>();
-            RegisterSystem<PortalsCalculationSystem>();
+            RegisterSystem<ActualEdgeExitDataCalculationSystem>();
+            RegisterSystem<PortalEdgeExitsUpdateSystem>();
+            RegisterSystem<PortalsActualizationSystem>();
 
             RegisterSystem<TriangularPosUpdateSystem>();
             RegisterSystem<NoTargetPathsClearingSystem>();
@@ -48,16 +50,22 @@ namespace ZE.MechBattle.Ecs
             RegisterSystem<TrianglePathClearSystem>();
 
             builder.Register<HexRaycastRequestsList>(Lifetime.Scoped);
-            builder.Register<PortalCalculationRequestsList>(Lifetime.Scoped);            
+            builder.Register<UpdateEdgeExitsRequestsList>(Lifetime.Scoped);            
             builder.Register<TrianglePathsLRUBuffer>(_ => new(), Lifetime.Scoped);            
             builder.Register<HexPortalPathsLRUBuffer>(Lifetime.Scoped);
+
+            builder.Register<UpdatedPortalExitsList>(Lifetime.Scoped);
+            builder.Register<PortalExitsUpdateDataPool>(Lifetime.Scoped);
+            builder.Register<OutdatedExitsList>(Lifetime.Scoped);
+            builder.Register<UpdatePortalRequestsList>(Lifetime.Scoped);
+            builder.Register<OutdatedPortalsList>(Lifetime.Scoped);
 
             builder.Register<HexPortalsList>(Lifetime.Scoped);
             builder.Register<PortalExitsList>(Lifetime.Scoped);
             builder.Register<PortalConnectionsList>(Lifetime.Scoped);
             builder.Register<HexPortalsCoordinator>(Lifetime.Scoped);
 
-            builder.Register<HexPortalsCoordinator>(Lifetime.Scoped);
+            builder.Register<HexDataCoordinator>(Lifetime.Scoped);
             builder.Register<FlowMapsFactory>(Lifetime.Scoped);
             builder.Register<PortalFlowMapsList>(Lifetime.Scoped);
             builder.Register<FlowMapAssignmentList>(Lifetime.Scoped);
@@ -69,7 +77,9 @@ namespace ZE.MechBattle.Ecs
         public static void Install(SystemsResolver resolver)
         {
             resolver.AddSystem<HexRaycastUpdateSystem>(SystemGroupOrder.RegularUpdate);
-            resolver.AddSystem<PortalsCalculationSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<ActualEdgeExitDataCalculationSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<PortalEdgeExitsUpdateSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<PortalsActualizationSystem>(SystemGroupOrder.RegularUpdate);
 
             //resolver.AddSystem<TriangularPosUpdateSystem>(SystemGroupOrder.RegularUpdate);
 

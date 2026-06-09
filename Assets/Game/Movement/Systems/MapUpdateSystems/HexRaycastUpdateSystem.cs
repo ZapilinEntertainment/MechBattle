@@ -18,14 +18,14 @@ namespace ZE.MechBattle.Ecs {
         private readonly HexRaycastRequestsList _requestsList;
         private readonly Dictionary<int2,HexRaycastProcessToken> _calculatingProcesses = new();
         private readonly HexRaycastProcessesManager _processesManager;
-        private readonly PortalCalculationRequestsList _portalCalculationRequests;
+        private readonly UpdateEdgeExitsRequestsList _portalCalculationRequests;
         private readonly IUpdatableMap _map;
         private readonly ArrayPool<int2> _pool;
         private const int MAX_PROCESSES_COUNT = 4;
         
 
         [Inject]
-        public HexRaycastUpdateSystem(HexRaycastRequestsList requestsList, IUpdatableMap map, PortalCalculationRequestsList portalRequestsList)
+        public HexRaycastUpdateSystem(HexRaycastRequestsList requestsList, IUpdatableMap map, UpdateEdgeExitsRequestsList portalRequestsList)
         {
             _requestsList = requestsList;
             _map = map;
@@ -60,7 +60,7 @@ namespace ZE.MechBattle.Ecs {
                 {
                     var hexCoord = calculatingProcessKvp.Key;
                     clearList[clearCount++] = hexCoord;
-                    _portalCalculationRequests.AddRequest(hexCoord, token.HexVersion);
+                    _portalCalculationRequests.Add(hexCoord);
                 }                    
             }
 
@@ -91,8 +91,8 @@ namespace ZE.MechBattle.Ecs {
             foreach (var request in _requestsList)
             {
                 var hexCoord = request.HexCoord;
-                var requestHexVersion = request.HexVersion;
-                var currentHexVersion = _map.GetOrCreateHex(hexCoord).Version;
+                var requestHexVersion = request.HexPassabilityVersion;
+                var currentHexVersion = _map.GetOrCreateHex(hexCoord).PassabilityVersion;
 
                 if (currentHexVersion > requestHexVersion)
                 {

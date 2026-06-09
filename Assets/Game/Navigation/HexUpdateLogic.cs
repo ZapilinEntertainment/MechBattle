@@ -5,7 +5,7 @@ namespace ZE.MechBattle.Navigation
 {
     public static class HexUpdateLogic
     {
-        public static NativeArray<HexPathNodeKey> RefineHexPath(int2 startHexCoord, NativeList<HexPathNodeKey> rawResults)
+        public static NativeArray<HexEdgeKey> RefineHexPath(int2 startHexCoord, NativeList<HexEdgeKey> rawResults)
         {
             // note write into same array, no allocations
             var length = rawResults.Length;

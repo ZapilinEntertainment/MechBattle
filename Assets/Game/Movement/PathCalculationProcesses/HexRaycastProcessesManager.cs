@@ -26,7 +26,7 @@ namespace ZE.MechBattle
             _processIndex = processIndex;
             _processIteration = processIteration;
             HexCoord = request.HexCoord;
-            HexVersion = request.HexVersion;
+            HexVersion = request.HexPassabilityVersion;
         }
     }
 

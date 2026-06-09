@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Mathematics;
 using Unity.PerformanceTesting;
@@ -25,7 +26,7 @@ namespace ZE.MechBattle.Navigation.Tests
         public void UpdatePortalsBenchmarkTest(int trianglesPerEdge)
         {
             using var map = PrepareTestingMap(Allocator.TempJob, trianglesPerEdge);
-            Measure.Method(() => CalculateHexExitsCommand.Execute(map, int2.zero, HexEdge.Top, new()))
+            Measure.Method(() => CalculateHexExitsCommand.Execute(map, int2.zero, HexEdge.Top, new List<NavigationPortalExit>()))
                 .WarmupCount(3)
                 .MeasurementCount(12 * 5)                
                 .Run();

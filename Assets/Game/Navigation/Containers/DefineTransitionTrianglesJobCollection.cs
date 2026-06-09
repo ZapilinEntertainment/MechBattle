@@ -7,7 +7,7 @@ namespace ZE.MechBattle.Navigation
 {
     public class DefineTransitionTrianglesJobCollection : IDisposable
     {
-        public NativeArray<HexPathNodeKey> CalculatingNodes;
+        public NativeArray<HexEdgeKey> CalculatingNodes;
         public NativeArray<int4> Results;
         public int TrianglesPerNode { get; private set; }
         private readonly Allocator _allocator;
@@ -17,7 +17,7 @@ namespace ZE.MechBattle.Navigation
             _allocator = allocator;
         }
 
-        public void Update(IReadOnlyCollection<HexPathNodeKey> nodes, int trianglesPerEdge)
+        public void Update(IReadOnlyCollection<HexEdgeKey> nodes, int trianglesPerEdge)
         {
             var nodesLength = nodes.Count;
             if (!CalculatingNodes.IsCreated || CalculatingNodes.Length != nodes.Count)

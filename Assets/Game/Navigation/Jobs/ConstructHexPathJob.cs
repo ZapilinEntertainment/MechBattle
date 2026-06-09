@@ -16,15 +16,15 @@ namespace ZE.MechBattle.Navigation
     [BurstCompile]
     public struct ConstructHexPathJob : IJob
     {
-        [WriteOnly] public NativeList<HexPathNodeKey> ResultingData;
+        [WriteOnly] public NativeList<HexEdgeKey> ResultingData;
 
-        public HexPathNodeKey Start;
-        public HexPathNodeKey End;
+        public HexEdgeKey Start;
+        public HexEdgeKey End;
         public NativeReference<float> PathCost;
 
         [ReadOnly] public NativeHashMap<int2, HexEdgeNodesData> HexData;
         [NoAlias] public NativeHashSet<int> OpenedList;
-        [NoAlias] public NativeArray<AstarPathNodeData<HexPathNodeKey>> NavigationData;
+        [NoAlias] public NativeArray<AstarPathNodeData<HexEdgeKey>> NavigationData;
 
         private const int DEFAULT_PATH_COST = 1;
 
@@ -93,7 +93,7 @@ namespace ZE.MechBattle.Navigation
             BuildPath(closestNode);
         }
 
-        private void BuildPath(HexPathNodeKey finalPos)
+        private void BuildPath(HexEdgeKey finalPos)
         {
             var finalNodeIndex = GetNodeIndex(finalPos);
             var finalNodeData = NavigationData[finalNodeIndex];
@@ -127,7 +127,7 @@ namespace ZE.MechBattle.Navigation
         }
 
 
-        private void HandleNeighbours(HexPathNodeKey activeNode)
+        private void HandleNeighbours(HexEdgeKey activeNode)
         {
             /*
              *  Example: active node is (a,b) BottomRight / (a+1, b-1) Top
@@ -194,10 +194,10 @@ namespace ZE.MechBattle.Navigation
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private AstarPathNodeData<HexPathNodeKey> GetNavData(HexPathNodeKey key) => NavigationData[GetNodeIndex(key)];
+        private AstarPathNodeData<HexEdgeKey> GetNavData(HexEdgeKey key) => NavigationData[GetNodeIndex(key)];
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int GetNodeIndex(HexPathNodeKey key) => HexData[key.HexCoord].GetNodeIndex(key.EdgeIndex);
+        private int GetNodeIndex(HexEdgeKey key) => HexData[key.HexCoord].GetNodeIndex(key.EdgeIndex);
     }
 }

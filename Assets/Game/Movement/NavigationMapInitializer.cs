@@ -29,7 +29,7 @@ namespace ZE.MechBattle.Ecs
             foreach (var hexCoord in hexes)
             {
                 var hex = _map.GetOrCreateHex(hexCoord);
-                _hexRaycastRequests.AddRequest(hexCoord, hex.Version);
+                _hexRaycastRequests.AddRequest(hexCoord, hex.PassabilityVersion);
             }
         }
 

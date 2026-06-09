@@ -10,7 +10,7 @@ namespace ZE.MechBattle.Navigation
         public int TrianglesPerNode;
         public int HexRadius;
         public float HexEdgeSize;
-        [ReadOnly] public NativeArray<HexPathNodeKey> CalculatingNodes;
+        [ReadOnly] public NativeArray<HexEdgeKey> CalculatingNodes;
         [NativeDisableParallelForRestriction][WriteOnly] public NativeArray<int4> Results;
 
         public void Execute(int index)
@@ -24,7 +24,7 @@ namespace ZE.MechBattle.Navigation
             // opposite cells not needed - they will be taken by direction        
         }
 
-        private void AddEdgePositions(HexPathNodeKey node, NavigationHexPosition hexPos, int startIndex)
+        private void AddEdgePositions(HexEdgeKey node, NavigationHexPosition hexPos, int startIndex)
         {
             var peakDir = (int)node.Edge.ToNeighbourDirectionFromPeak();
             var valleyDir = (int)node.Edge.ToNeighbourDirectionFromValley();

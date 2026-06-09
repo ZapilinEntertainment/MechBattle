@@ -7,12 +7,12 @@ namespace ZE.MechBattle
     public readonly struct HexUpdateRequest
     {
         public readonly int2 HexCoord;
-        public readonly int HexVersion;
+        public readonly int HexPassabilityVersion;
 
         public HexUpdateRequest(int2 hexCoord, int hexVersion)
         {
             HexCoord = hexCoord;
-            HexVersion = hexVersion;
+            HexPassabilityVersion = hexVersion;
         }
     }
 
@@ -38,6 +38,10 @@ namespace ZE.MechBattle
         }
 
         public void RemoveActualRequest(int2 hexCoord) => _updateRequests.Remove(hexCoord);
+
+        public bool Contains(int2 hexCoord) => _updateRequests.ContainsKey(hexCoord);
+
+        protected void Clear() => _updateRequests.Clear();
 
         #region IEnumerable
         public IEnumerator<HexUpdateRequest> GetEnumerator()

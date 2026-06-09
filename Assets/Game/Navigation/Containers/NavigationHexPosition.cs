@@ -27,7 +27,7 @@ namespace ZE.MechBattle.Navigation
                 triangleHeight: map.TriangleHeight)
         { }
 
-        public NavigationHexPosition(HexPathNodeKey hexNode, INavigationMap map) :
+        public NavigationHexPosition(HexEdgeKey hexNode, INavigationMap map) :
             this(hexCoord: hexNode.HexCoord,
                 hexEdge: map.HexEdgeLength,
                 triangleHeight: map.TriangleHeight)
@@ -38,7 +38,7 @@ namespace ZE.MechBattle.Navigation
                triangleHeight: map.TriangleHeight)
         { }
 
-        public NavigationHexPosition(HexPathNodeKey hexNode, float hexEdgeSize, int hexRadius) :
+        public NavigationHexPosition(HexEdgeKey hexNode, float hexEdgeSize, int hexRadius) :
            this(hexCoord: hexNode.HexCoord,
                hexEdge: hexEdgeSize,
                trianglesPerEdge: hexRadius)

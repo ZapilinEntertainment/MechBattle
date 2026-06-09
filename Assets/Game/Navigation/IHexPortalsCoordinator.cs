@@ -19,9 +19,13 @@ namespace ZE.MechBattle.Navigation
 
     public interface IHexPortalsCoordinator
     {
+        void GetEdgeExits(INavigationHex hex, HexEdge edge, List<(int id, NavigationPortalExit exitData)> exitsList);
+        void OnExitOutdated(int exitId);
+
+        void OnPortalOutdated(int portalId);
         bool TryGetAssignedFlowMapId(int portalExitId, out int flowMapId);
         void OnFlowMapCalculated(int flowMapId, in FlowMapCalculationResults results);
-        void GetHexPortalExits(int2 hexCoord, List<HexExitOption> exits);
+        void GetHexPortalExits(int2 hexCoord, ICollection<HexExitOption> exits);
         bool TryGetPortalConnections(int portalId, out IReadOnlyDictionary<int, float> connections);
         IPathsList<PortalPathDestinationKey, int> GetPathsList();
     }

@@ -22,6 +22,16 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             }
         }
 
+        public static TriangleDrawData GetDrawData(IntTriangularPos tripos, INavigationMap map)
+        {
+            var cellHeights = map.GetHeightData(tripos);
+            var vertices = GetTriangleVerticesCommand.Execute(tripos, map.TriangleHeight, 0.01f);
+            vertices = vertices.ApplyHeights(cellHeights);
+
+            var isCellPassable = map.GetPassabilityData(tripos).IsPassable;
+            return new TriangleDrawData(vertices, isCellPassable);
+        }
+
         public static CompareFunction SwitchZTestAndSave()
         {
             var previousZTest = Handles.zTest;

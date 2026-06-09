@@ -8,8 +8,8 @@ namespace ZE.MechBattle.Navigation
     {
         public NativeHashMap<int2, HexEdgeNodesData> HexData;
         public NativeHashSet<int> OpenedList;
-        public NativeArray<AstarPathNodeData<HexPathNodeKey>> NavigationData;
-        public NativeList<HexPathNodeKey> ResultingData;
+        public NativeArray<AstarPathNodeData<HexEdgeKey>> NavigationData;
+        public NativeList<HexEdgeKey> ResultingData;
         public NativeReference<float> PathCost;
 
         public HexPathJobCollections(Allocator allocator, int hexesCount)

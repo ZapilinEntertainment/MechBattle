@@ -5,10 +5,10 @@ namespace ZE.MechBattle.Navigation
 {
     public readonly struct HexPathKey : IEquatable<HexPathKey>
     {
-        public readonly HexPathNodeKey Start;
-        public readonly HexPathNodeKey End;
+        public readonly HexEdgeKey Start;
+        public readonly HexEdgeKey End;
 
-        public HexPathKey(HexPathNodeKey start, HexPathNodeKey end)
+        public HexPathKey(HexEdgeKey start, HexEdgeKey end)
         {
             Start = start;
             End = end;

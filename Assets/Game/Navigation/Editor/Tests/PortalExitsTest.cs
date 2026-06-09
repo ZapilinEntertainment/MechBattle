@@ -49,9 +49,9 @@ namespace ZE.MechBattle.Navigation.Tests
 
                 var correctExitsList = new NavigationPortalExit[3]
                {
-                    new (triangles[2], edge, 1, 1),
-                    new (triangles[3], edge, 2, 2),
-                    new (triangles[7], edge, 3, 2)
+                    new (triangles[2], 2, edge, 1, 1),
+                    new (triangles[3], 3, edge, 2, 2),
+                    new (triangles[7], 7, edge, 3, 2)
                };
 
                 CalculateHexExitsCommand.Execute(map, hexCoord, edge, exitsList);
