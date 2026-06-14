@@ -4,7 +4,14 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
-    public class PortalExitsList : IEnumerable<int>
+    public interface IPortalExitsList : IEnumerable<int>
+    {
+        bool ContainsKey(int id);
+        bool TryGetValue(int key, out NavigationPortalExit exit);
+        int Version { get; }
+    }
+
+    public class PortalExitsList :IPortalExitsList
     {
         public int Version { get; private set; }
         public NavigationPortalExit this[int exitId] => _dictionary[exitId];

@@ -2,6 +2,24 @@ using Unity.Burst;
 
 namespace ZE.MechBattle.Navigation
 {
+    public readonly struct TriangleCellData<CellHeightData> where CellHeightData : unmanaged, ICellHeightData
+    {
+        public bool IsPassable => _isPassable;
+        public IntTriangularPos Tripos => _tripos;
+        public CellHeightData HeightData => _heightData;
+
+        private readonly bool _isPassable;
+        private readonly IntTriangularPos _tripos;
+        private readonly CellHeightData _heightData;
+
+        public TriangleCellData(IntTriangularPos tripos, bool isPassable, CellHeightData heightData)
+        {
+            _tripos = tripos;
+            _heightData = heightData;
+            _isPassable = isPassable;
+        }
+    }
+
     public static class TrianglesTransitionLogic
     {
         private const int NEIGHBOURS_COUNT = NavigationConstants.TRIANGLE_DIRECTIONS_COUNT;
@@ -44,15 +62,24 @@ namespace ZE.MechBattle.Navigation
         [BurstDiscard]
        public static bool IsCloseTransitionPossible(INavigationMap map, IntTriangularPos start, IntTriangularPos end)
         {
-            var neighbourPassabilityData = map.GetPassabilityData(end);
-            if (!neighbourPassabilityData.IsPassable)
+            var checkCellData = new TriangleCellData<CellHeightData>(start, true, map.GetHeightData(start));
+
+            var otherCellIsPassable = map.GetPassabilityData(end).IsPassable;
+            var otherCellHeight = otherCellIsPassable ? map.GetHeightData(end) : default;
+            var otherCellData = new TriangleCellData <CellHeightData>(end, otherCellIsPassable, otherCellHeight);
+
+            return IsCloseTransitionPossible(checkCellData, otherCellData, map.Settings.MaxElevationDifference);
+        }
+
+        [BurstCompile]
+        public static bool IsCloseTransitionPossible<HeightData>(TriangleCellData<HeightData> checkCell, TriangleCellData<HeightData> neighbourCell, float maxElevationDifference)
+          where HeightData : unmanaged, ICellHeightData
+        {
+            if (neighbourCell.IsPassable)
                 return false;
 
-            var startHeight = map.GetHeightData(start);
-            var endHeight = map.GetHeightData(end);
-            var transitionMeasurePoints = TriangularMath.GetTransitionMeasurePoints(start, end);
-
-            return HeightLogic.IsTransitionPossible(startHeight, endHeight, transitionMeasurePoints, map.Settings.MaxElevationDifference);
+            var transitionMeasurePoints = TriangularMath.GetTransitionMeasurePoints(checkCell.Tripos, neighbourCell.Tripos);
+            return HeightLogic.IsTransitionPossible(checkCell.HeightData, neighbourCell.HeightData, transitionMeasurePoints, maxElevationDifference);
         }
 
         [BurstCompile]

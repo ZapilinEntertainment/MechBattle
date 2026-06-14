@@ -2,13 +2,17 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
-    public readonly struct CellHeightData
+    public readonly struct CellHeightData : ICellHeightData
     {
         public readonly short AverageHeight;
         public int PinnacleHeight => AverageHeight + PinnacleHeightDelta;
         public int LeftBasisHeight => AverageHeight + LeftBasisHeightDelta;
         public int RightBasisHeight => AverageHeight + RightBasisHeightDelta;
 
+        float ICellHeightData.PinnacleHeight => PinnacleHeight;
+        float ICellHeightData.LeftBasisHeight => LeftBasisHeight;
+        float ICellHeightData.RightBasisHeight => RightBasisHeight;
+        float ICellHeightData.AverageHeight => AverageHeight;
 
         private readonly sbyte PinnacleHeightDelta;
         private readonly sbyte LeftBasisHeightDelta;
@@ -16,7 +20,7 @@ namespace ZE.MechBattle.Navigation
 
         public CellHeightData(RefinedTriangleRaycastData raycastData)
         {
-            var averageHeight = raycastData.AverageGroundHeight;
+            var averageHeight = raycastData.AverageHeight;
             AverageHeight = (short)averageHeight;
             PinnacleHeightDelta = GetDelta(raycastData.PinnacleHeight);
             LeftBasisHeightDelta = GetDelta(raycastData.LeftBasisHeight);

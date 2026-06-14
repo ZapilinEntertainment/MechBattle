@@ -81,8 +81,7 @@ namespace ZE.MechBattle
                     continue;
 
                 var neighbourPos = TriangularMath.GetNeighbourByDirection(pos, i);
-                var neighbourData = Cells[neighbourPos];
-                if (neighbourData.ZoneIndex != 0)
+                if (!Cells.TryGetValue(neighbourPos, out var neighbourData) || neighbourData.ZoneIndex != 0)
                     continue;
 
                 neighbourData.ZoneIndex = zoneIndex;

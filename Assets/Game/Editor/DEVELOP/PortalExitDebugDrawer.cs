@@ -2,6 +2,7 @@ using UnityEngine;
 using Unity.Mathematics;
 using System.Collections.Generic;
 using VContainer;
+using TriInspector;
 using ZE.MechBattle.Navigation;
 using ZE.MechBattle.Navigation.DebugOverlay;
 
@@ -9,66 +10,49 @@ namespace ZE.MechBattle.Develop
 {
     public class PortalExitDebugDrawer : MonoBehaviour
     {
-        private class HexDrawData
-        {
-            public List<TriangleDrawData> DrawData = new();
-            public int LastHexVersion;
-        }
-
-        private float _nextCheckTime = 0f;
-        private PortalExitsList _portalExits;
+        [SerializeField, ReadOnly] private int _currentExitListVersion = 0;
+        [SerializeField, ReadOnly] private int _exitsCount = 0;
+        private IPortalExitsList _exits;
         private INavigationMap _map;
-        private Dictionary<int2, HexDrawData> _hexDrawData = new();
+        private List<TriangleDrawData> _drawData = new();
         private List<IntTriangularPos> _trianglesList = new();
-        private const float CHECK_INTERVAL = 0.5f;
 
         [Inject]
-        public void Inject(PortalExitsList exitsList, INavigationMap map)
+        public void Inject(IPortalExitsList exitsList, INavigationMap map)
         {
-            _portalExits = exitsList;
+            _exits = exitsList;
             _map = map;
         }
 
         private void Update()
         {
-            if (Time.time < _nextCheckTime)
+            if (_exits.Version == _currentExitListVersion)
                 return;
-            _nextCheckTime = Time.time + CHECK_INTERVAL;
 
+            _drawData.Clear();
+            _exitsCount = 0;
             foreach (var hex in _map.Hexes)
             {
-                var hexCoord = hex.HexCoordinate;
-                if (!_hexDrawData.TryGetValue(hexCoord, out var hexDrawData))
-                {
-                    hexDrawData = new();
-                    _hexDrawData.Add(hexCoord, hexDrawData);
-                }
-
-                if (hexDrawData.LastHexVersion != hex.PassabilityVersion)
-                {
-                    RedrawHex(hexDrawData, hex);
-                    hexDrawData.LastHexVersion = hex.PassabilityVersion;
-
-
-                    Debug.Log($"redraw {hex.HexCoordinate} v.{hex.PassabilityVersion} : {hex.PortalExitIds.Count}");
-                }
+                RedrawHex(hex);
             }
+
+            _currentExitListVersion = _exits.Version;
         }
 
-        private void RedrawHex(HexDrawData drawData, INavigationHex hex)
+        private void RedrawHex(INavigationHex hex)
         {
-            drawData.DrawData.Clear();
             foreach (var exitId in hex.PortalExitIds)
             {
-                if (!_portalExits.TryGetValue(exitId, out var exitData))
+                if (!_exits.TryGetValue(exitId, out var exitData))
                 {
-                    Debug.LogWarning($"exit {exitId} of {hex.HexCoordinate} doesnt exists");
+                    Debug.LogWarning($"exit {exitId} of {hex.HexCoordinate} doesn't exists");
                     continue;
                 }
 
                 if (exitData.Length == 1)
                 {
-                    drawData.DrawData.Add(TrianglesDrawHelper.GetDrawData(exitData.StartTriangle, _map));
+                    _drawData.Add(TrianglesDrawHelper.GetDrawData(exitData.StartTriangle, _map));
+                    _exitsCount++;
                 }
                 else
                 {
@@ -76,7 +60,7 @@ namespace ZE.MechBattle.Develop
                     var valleyDir = exitData.Edge.ToAlongsideValleyDirection();
 
                     var tripos = exitData.StartTriangle;
-                    drawData.DrawData.Add(TrianglesDrawHelper.GetDrawData(tripos, _map));
+                    _drawData.Add(TrianglesDrawHelper.GetDrawData(tripos, _map));
 
                     for (var i = 1; i < exitData.Length; i++)
                     {
@@ -85,8 +69,9 @@ namespace ZE.MechBattle.Develop
                         else
                             tripos = TriangularMath.GetValleyNeighbour(tripos, valleyDir);
 
-                        drawData.DrawData.Add(TrianglesDrawHelper.GetDrawData(tripos, _map));
+                        _drawData.Add(TrianglesDrawHelper.GetDrawData(tripos, _map));
                     }
+                    _exitsCount += exitData.Length;
                 }
             }
         }
@@ -97,12 +82,9 @@ namespace ZE.MechBattle.Develop
                 return;
 
             var previousZTest = TrianglesDrawHelper.SwitchZTestAndSave();
-            foreach (var hexDrawData in _hexDrawData.Values)
+            foreach (var drawData in _drawData)
             {
-                foreach (var trisDrawData in hexDrawData.DrawData)
-                {
-                    TrianglesDrawHelper.DrawHandles(trisDrawData);
-                }                
+                TrianglesDrawHelper.DrawHandles(drawData);
             }
             TrianglesDrawHelper.RestoreZTest(previousZTest);
         }

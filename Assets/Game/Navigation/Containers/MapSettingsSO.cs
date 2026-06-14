@@ -92,7 +92,11 @@ namespace ZE.MechBattle.Navigation
         }
 
         public static MapSettings Default => new(100f, 4, GetDefaultMapBorders(), true);
-        public static MapSettings CreateWithDefaultBorders(float hexEdge, int trianglesPerEdge, int raycastsSubdivisionsPerEdge = RAYCAST_SUBDIVISIONS_PER_EDGE) => 
-            new(hexEdge, trianglesPerEdge, GetDefaultMapBorders(), raycastSubdivisionPerEdge: raycastsSubdivisionsPerEdge);
+        public static MapSettings CreateWithDefaultBorders(
+            float hexEdge, 
+            int trianglesPerEdge, 
+            int raycastsSubdivisionsPerEdge = RAYCAST_SUBDIVISIONS_PER_EDGE,
+            bool unscannedSurfacesArePassable = false) => 
+            new(hexEdge, trianglesPerEdge, GetDefaultMapBorders(), raycastSubdivisionPerEdge: raycastsSubdivisionsPerEdge, unscannedSurfacesArePassable: unscannedSurfacesArePassable);
     }
 }

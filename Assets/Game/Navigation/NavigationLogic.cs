@@ -10,7 +10,5 @@ namespace ZE.MechBattle.Navigation
             };
 
         public static CellPassabilityData GetDefaultPassability(INavigationMap map) => new (map.DefaultPassability, int.MaxValue, NavigationConstants.DEFAULT_CELL_ZONE, NavigationConstants.DEFAULT_TRIANGLE_ENTRANCE_COST);
-
-
     }
 }

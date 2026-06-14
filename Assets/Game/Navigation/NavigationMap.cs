@@ -12,11 +12,12 @@ namespace ZE.MechBattle.Navigation
         void UpdateNavigationCell(IntTriangularPos pos, NavigationCell cell);
         void UpdateCellPassability(IntTriangularPos pos, CellPassabilityData passability);
         IUpdatableNavigationHex GetOrCreateUpdatableHex(int2 hexCoord);
+        new IReadOnlyCollection<IUpdatableNavigationHex> Hexes { get; }
 
         void UpdateVersion();
     }
 
-    public interface INavigationMap
+    public interface INavigationMap : ICellDataProvider<CellHeightData>
     {
         bool IsInitialized { get; }
         bool DefaultPassability { get; }
@@ -60,7 +61,8 @@ namespace ZE.MechBattle.Navigation
         public float MaxElevationDifference => Settings.MaxElevationDifference;
         public int TrianglesPerHexEdge => Settings.TrianglesPerHexEdge;
         public int Version { get;private set; } = 1;
-        public IReadOnlyCollection<INavigationHex> Hexes => _hexes.Values;
+        IReadOnlyCollection<INavigationHex> INavigationMap.Hexes => _hexes.Values;
+        IReadOnlyCollection<IUpdatableNavigationHex> IUpdatableMap.Hexes => _hexes.Values;
         public IReadOnlyCollection<int2> HexCoords => _hexes.Keys;
 
         private Allocator _allocator;
@@ -76,6 +78,11 @@ namespace ZE.MechBattle.Navigation
 
         public void OnInitialized() => IsInitialized = true;
 
+        public bool TryGetCellData(IntTriangularPos pos, out TriangleCellData<CellHeightData> cellData)
+        {
+            cellData = new(pos, GetPassabilityData(pos).IsPassable, GetHeightData(pos));
+            return true;
+        }
         public CellPassabilityData GetPassabilityData(IntTriangularPos pos) =>
              _cells.TryGetValue(pos, out var cell) ? cell.Passability : NavigationLogic.GetDefaultPassability(this);
 
@@ -112,6 +119,10 @@ namespace ZE.MechBattle.Navigation
 
         public void Dispose()
         {
+#if UNITY_EDITOR
+            if (ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
+                return;
+#endif  
             _hexes.Clear();
             _cells.Clear();
         }

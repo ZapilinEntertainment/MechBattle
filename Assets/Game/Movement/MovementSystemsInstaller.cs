@@ -16,6 +16,10 @@ namespace ZE.MechBattle.Ecs
             RegisterSystem<ActualEdgeExitDataCalculationSystem>();
             RegisterSystem<PortalEdgeExitsUpdateSystem>();
             RegisterSystem<PortalsActualizationSystem>();
+            
+            RegisterSystem<OutdatedExitsClearSystem>();
+            RegisterSystem<OutdatedPortalsClearSystem>();
+            RegisterSystem<PortalDistancesCalculationSystem>();
 
             RegisterSystem<TriangularPosUpdateSystem>();
             RegisterSystem<NoTargetPathsClearingSystem>();
@@ -59,11 +63,14 @@ namespace ZE.MechBattle.Ecs
             builder.Register<OutdatedExitsList>(Lifetime.Scoped);
             builder.Register<UpdatePortalRequestsList>(Lifetime.Scoped);
             builder.Register<OutdatedPortalsList>(Lifetime.Scoped);
+            builder.Register<PortalDistancesCalculationRequests>(Lifetime.Scoped);
 
-            builder.Register<HexPortalsList>(Lifetime.Scoped);
-            builder.Register<PortalExitsList>(Lifetime.Scoped);
+            builder.Register<IHexPortalsList, HexPortalsList>(Lifetime.Scoped).AsSelf();
+            builder.Register<IPortalExitsList, PortalExitsList>(Lifetime.Scoped).AsSelf();
             builder.Register<PortalConnectionsList>(Lifetime.Scoped);
-            builder.Register<HexPortalsCoordinator>(Lifetime.Scoped);
+            builder.Register<IHexPortalsCoordinator, HexPortalsCoordinator>(Lifetime.Scoped).AsSelf();
+            builder.Register<IPortalsLogic, HexPortalsLogic>(Lifetime.Scoped);
+            builder.Register<IExitsLogic, HexExitsLogic>(Lifetime.Scoped);
 
             builder.Register<HexDataCoordinator>(Lifetime.Scoped);
             builder.Register<FlowMapsFactory>(Lifetime.Scoped);
@@ -80,6 +87,9 @@ namespace ZE.MechBattle.Ecs
             resolver.AddSystem<ActualEdgeExitDataCalculationSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<PortalEdgeExitsUpdateSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<PortalsActualizationSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<OutdatedExitsClearSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<OutdatedPortalsClearSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<PortalDistancesCalculationSystem>(SystemGroupOrder.RegularUpdate);
 
             //resolver.AddSystem<TriangularPosUpdateSystem>(SystemGroupOrder.RegularUpdate);
 

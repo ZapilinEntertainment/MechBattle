@@ -70,7 +70,7 @@ namespace ZE.MechBattle.Navigation
         public void Dispose()
         {
 #if UNITY_EDITOR
-            if (!UnsafeUtility.IsValidAllocator(_allocator))
+            if (ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
                 return;
 #endif    
             _refinedData.Dispose();

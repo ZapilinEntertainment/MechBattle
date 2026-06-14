@@ -7,26 +7,26 @@ namespace ZE.MechBattle.Navigation
         private readonly Dictionary<int, int> _exitIdToFlowMapId = new();
         private readonly Dictionary<int, int> _flowMapToPortalExitId = new();
 
-        public bool TryGetFlowMap(int portalExitId, out int flowMapId) => _exitIdToFlowMapId.TryGetValue(portalExitId, out flowMapId);
-        public bool TryGetExit(int flowMapId, out int portalExitId) => _flowMapToPortalExitId.TryGetValue(flowMapId, out portalExitId);
-        public void RegisterBond(int portalExitId, int flowMapId)
+        public bool TryGetFlowMap(int exitId, out int flowMapId) => _exitIdToFlowMapId.TryGetValue(exitId, out flowMapId);
+        public bool TryGetExit(int flowMapId, out int exitId) => _flowMapToPortalExitId.TryGetValue(flowMapId, out exitId);
+        public void RegisterBond(int exitId, int flowMapId)
         {
-            _exitIdToFlowMapId.Add(portalExitId, flowMapId);
-            _flowMapToPortalExitId.Add(flowMapId, portalExitId);
+            _exitIdToFlowMapId.Add(exitId, flowMapId);
+            _flowMapToPortalExitId.Add(flowMapId, exitId);
         }
 
-        public void RemoveBond(int portalExitId, int flowMapId)
+        public void RemoveBond(int exitId, int flowMapId)
         {
-            _exitIdToFlowMapId.Remove(portalExitId);
+            _exitIdToFlowMapId.Remove(exitId);
             _flowMapToPortalExitId.Remove(flowMapId);
         }
 
-        public void RemoveBond(int portalExitId)
+        public void RemoveBond(int exitId)
         {
-            if (_exitIdToFlowMapId.TryGetValue(portalExitId, out var flowMapId))
+            if (_exitIdToFlowMapId.TryGetValue(exitId, out var flowMapId))
                 _flowMapToPortalExitId.Remove(flowMapId);
 
-            _exitIdToFlowMapId.Remove(portalExitId);
+            _exitIdToFlowMapId.Remove(exitId);
         }
     
     }

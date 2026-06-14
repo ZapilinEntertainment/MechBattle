@@ -21,7 +21,7 @@ namespace ZE.MechBattle.Ecs {
         private readonly UpdatePortalRequestsList _portalUpdateRequests;
         private readonly List<(int id, NavigationPortalExit exit)> _currentExitsA;
         private readonly List<(int id, NavigationPortalExit exit)> _currentExitsB;
-        private readonly HexExitsLogic _actualizationLogic;
+        private readonly IExitsLogic _exitsLogic;
 
         [Inject]
         public PortalEdgeExitsUpdateSystem(
@@ -29,14 +29,13 @@ namespace ZE.MechBattle.Ecs {
             UpdatedPortalExitsList updatedLists, 
             HexPortalsCoordinator portalsCoordinator,
             UpdatePortalRequestsList portalUpdateRequests,
-            PortalExitsList exitsList)
+            IExitsLogic exitsLogic)
         {
             _map = map;
             _updatedPortalsList = updatedLists;
             _portalsCoordinator = portalsCoordinator;
             _portalUpdateRequests = portalUpdateRequests;
-
-            _actualizationLogic = new(_portalsCoordinator, exitsList);
+            _exitsLogic = exitsLogic;
 
             var expectedMaxPortalsCount = _map.TrianglesPerHexEdge / 2;
             _currentExitsA = new(expectedMaxPortalsCount);
@@ -75,8 +74,8 @@ namespace ZE.MechBattle.Ecs {
             // form updated ids list,
             // mark old exit ids as outdated and remove them from hex exits list ,
             // register new exits, add their id to hex exits list
-            _actualizationLogic.ActualizeExitsList(_currentExitsA, updated.ExitsA, hexA);
-            _actualizationLogic.ActualizeExitsList(_currentExitsB, updated.ExitsB, hexB);
+            _exitsLogic.ActualizeExitsList(_currentExitsA, updated.ExitsA, hexA);
+            _exitsLogic.ActualizeExitsList(_currentExitsB, updated.ExitsB, hexB);
 
             _currentExitsA.Clear();
             _currentExitsB.Clear();

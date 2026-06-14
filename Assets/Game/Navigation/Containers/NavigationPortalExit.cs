@@ -57,6 +57,6 @@ namespace ZE.MechBattle
         {
             return !left.Equals(right);
         }
-        #endregion
+        #endregion        
     }
 }

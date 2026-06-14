@@ -4,12 +4,12 @@ using System.Runtime.CompilerServices;
 
 namespace ZE.MechBattle.Navigation
 {
-    public readonly struct CellPassabilityData
+    public struct CellPassabilityData
     {
-        public readonly bool IsPassable;
-        public readonly int NeighboursMask;
-        public readonly int ZoneIndex;
-        public readonly float EntranceCost;
+        public bool IsPassable;
+        public int NeighboursMask;
+        public int ZoneIndex;
+        public float EntranceCost;
 
         public CellPassabilityData(
             bool isPassable, 
@@ -25,8 +25,6 @@ namespace ZE.MechBattle.Navigation
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsNeighbourAccessible(int neighbourIndex) => IsNeighbourAccessible(neighbourIndex, NeighboursMask);
-
-        public CellPassabilityData ChangeZoneIndex(int zoneIndex) => new(IsPassable, NeighboursMask, zoneIndex, EntranceCost);
 
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

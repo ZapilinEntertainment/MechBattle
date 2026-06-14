@@ -4,14 +4,32 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
+    public interface ICellHeightData
+    {
+        float PinnacleHeight { get; }
+        float LeftBasisHeight { get; }
+        float RightBasisHeight { get; }
+        float AverageHeight { get; }
+        float this[TriangleHeightMeasurePoint measurePoint]
+        {
+            get
+            {
+                switch (measurePoint)
+                {
+                    case TriangleHeightMeasurePoint.Pinnacle: return PinnacleHeight;
+                    case TriangleHeightMeasurePoint.LeftBasis: return LeftBasisHeight;
+                    case TriangleHeightMeasurePoint.RightBasis: return RightBasisHeight;
+                    default: return AverageHeight;
+                }
+            }
+        }
+    }
+
     public static class HeightLogic
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsTransitionPossible(CellHeightData heightA, CellHeightData heightB, TransitionMeasurePoints transitionMeasurePoints, float maxElevationDifference) =>
-            math.abs(heightA[transitionMeasurePoints.CellMeasurePoint] - heightB[transitionMeasurePoints.NeighbourMeasurePoint]) < maxElevationDifference;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool AreTrianglesPassable(RefinedTriangleRaycastData heightA, RefinedTriangleRaycastData heightB, TransitionMeasurePoints transitionMeasurePoints, float maxElevationDifference) =>
-           math.abs(heightA.GetHeight(transitionMeasurePoints.CellMeasurePoint) - heightB.GetHeight(transitionMeasurePoints.NeighbourMeasurePoint)) < maxElevationDifference;
+        [BurstCompile]
+        public static bool IsTransitionPossible<T>(T start, T end, TransitionMeasurePoints transitionMeasurePoints, float maxElevationDifference) where T : struct, ICellHeightData =>
+             math.abs(start[transitionMeasurePoints.CellMeasurePoint] - end[transitionMeasurePoints.NeighbourMeasurePoint]) < maxElevationDifference;
     }
 }

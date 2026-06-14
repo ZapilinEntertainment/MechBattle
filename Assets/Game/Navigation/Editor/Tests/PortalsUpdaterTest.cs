@@ -8,58 +8,6 @@ namespace ZE.MechBattle.Navigation.Tests
 {
     public class PortalsUpdaterTest
     {
-        private class TestCoordinator : IHexPortalsCoordinator
-        {
-            private readonly PortalExitsList _exits;
-            private readonly HexPortalsList _portalsList;
-
-            public TestCoordinator(PortalExitsList exits, HexPortalsList portalsList)
-            {
-                _exits = exits;
-                _portalsList = portalsList;
-            }
-
-            public void GetEdgeExits(INavigationHex hex, HexEdge edge, List<(int id, NavigationPortalExit exitData)> exitsList)
-            {
-                foreach (var exitId in hex.PortalExitIds)
-                {
-                    if (_exits.TryGetValue(exitId, out var exitData) && exitData.Edge == edge)
-                    {
-                        exitsList.Add((exitId, exitData));
-                    }
-                }
-            }
-
-            public void GetHexPortalExits(int2 hexCoord, ICollection<HexExitOption> exits)
-            {
-                throw new System.NotImplementedException();
-            }
-
-            public IPathsList<PortalPathDestinationKey, int> GetPathsList()
-            {
-                throw new System.NotImplementedException();
-            }
-
-            public void OnExitOutdated(int exitId) => _exits.Remove(exitId);
-
-            public void OnFlowMapCalculated(int flowMapId, in FlowMapCalculationResults results)
-            {
-                throw new System.NotImplementedException();
-            }
-
-            public void OnPortalOutdated(int portalId) => _portalsList.Remove(portalId);
-
-            public bool TryGetAssignedFlowMapId(int portalExitId, out int flowMapId)
-            {
-                throw new System.NotImplementedException();
-            }
-
-            public bool TryGetPortalConnections(int portalId, out IReadOnlyDictionary<int, float> connections)
-            {
-                throw new System.NotImplementedException();
-            }
-        }
-
         [Test]
         public void EdgeTest()
         {
@@ -67,10 +15,9 @@ namespace ZE.MechBattle.Navigation.Tests
             var allocator = Allocator.Temp;
             using var map = new NavigationMap(MapSettings.CreateWithDefaultBorders(100f, TRIANGLES_PER_EDGE), allocator);
             var exits = new PortalExitsList();
-            var portals = new HexPortalsList();
-            var portalsCoordinator = new TestCoordinator(exits, portals);
-            var handler = new PortalsUpdateHandler(map, portalsCoordinator, portals, exits);
-            var hexExitsLogic = new HexExitsLogic(portalsCoordinator, exits);
+            var portals = new HexPortalsList();            
+            var portalsCoordinator = new TestCoordinator(exits, portals, map, connectionsList: null);
+            var updateHandler = new PortalsUpdateHandler(map, portalsCoordinator, portals, exits);
 
             var borderKey = new HexEdgeKey(int2.zero, HexEdge.Top);
             var oppositeKey = borderKey.ToOpposite();
@@ -107,14 +54,14 @@ namespace ZE.MechBattle.Navigation.Tests
                 new(trisA[6], 6, edgeA, 1, LAST_ZONE_INDEX), // 5
                 new(trisB[6], 6, edgeB,1, LAST_ZONE_INDEX)  // 6
             };
-            int RegisterStartExit(int index, IUpdatableNavigationHex hex) => hexExitsLogic.RegisterNewExit(startExits[index], hex);
-            int RegisterNewExit(NavigationPortalExit exit, IUpdatableNavigationHex hex) => hexExitsLogic.RegisterNewExit(exit, hex);
+            int RegisterStartExit(int index, int2 hexCoord) => portalsCoordinator.RegisterNewExit(startExits[index], hexCoord);
+            int RegisterNewExit(NavigationPortalExit exit, int2 hexCoord) => portalsCoordinator.RegisterNewExit(exit, hexCoord);
 
             var oldPortals = new NavigationPortal[] 
             {
-                new(RegisterStartExit(0, hexA), hexCoordA, RegisterStartExit(1, hexB), hexCoordB),
-                new(RegisterStartExit(2, hexA), hexCoordA, RegisterStartExit(3, hexB), hexCoordB),
-                new(RegisterStartExit(4, hexA), hexCoordA, RegisterStartExit(5, hexB), hexCoordB),
+                new(RegisterStartExit(0, hexCoordA), hexCoordA, RegisterStartExit(1, hexCoordB), hexCoordB),
+                new(RegisterStartExit(2, hexCoordA), hexCoordA, RegisterStartExit(3, hexCoordB), hexCoordB),
+                new(RegisterStartExit(4, hexCoordA), hexCoordA, RegisterStartExit(5, hexCoordB), hexCoordB),
             };
 
             portals.RegisterNewPortal(oldPortals[0]);
@@ -125,24 +72,26 @@ namespace ZE.MechBattle.Navigation.Tests
             var actualExitsA = new List<(int id, NavigationPortalExit ext)>() { (1, exits[1]), (3, exits[3]), (5, exits[5]) };
             var actualExitsB = new List<(int id, NavigationPortalExit ext)>() { (2, exits[2]), (4, exits[4]), (6, exits[6]) };
             var updatedExitsA = new List<NavigationPortalExit>() {exits[1], exits[3] };
-            var updatedExitsB = new List<NavigationPortalExit>() { exits[2], exits[6] };            
-            hexExitsLogic.ActualizeExitsList(actualExitsA, updatedExitsA, hexA);
-            hexExitsLogic.ActualizeExitsList(actualExitsB, updatedExitsB, hexB);
+            var updatedExitsB = new List<NavigationPortalExit>() { exits[2], exits[6] };    
+            
+            var exitsLogic = portalsCoordinator.ExitsLogic;
+            exitsLogic.ActualizeExitsList(actualExitsA, updatedExitsA, hexA);
+            exitsLogic.ActualizeExitsList(actualExitsB, updatedExitsB, hexB);
             // 0 1 1 0 3 0 X  - exit ids a
             // 0 2 2 0 X 0 6  - exit ids b
             // 0 1 1 0 2 0 3  - portal ids
 
             // 3. Update exits - add new AB at 0 index, replace exit A at 6
-            var exit7Id = RegisterNewExit(new(trisA[0], 0, edgeA, 1, 4), hexA);
-            var exit8Id = RegisterNewExit(new(trisB[0], 0, edgeB, 1, 4), hexB);
-            var exit9Id = RegisterNewExit(new(trisA[6], 6, edgeA, 1, LAST_ZONE_INDEX), hexA);
+            var exit7Id = RegisterNewExit(new(trisA[0], 0, edgeA, 1, 4), hexCoordA);
+            var exit8Id = RegisterNewExit(new(trisB[0], 0, edgeB, 1, 4), hexCoordB);
+            var exit9Id = RegisterNewExit(new(trisA[6], 6, edgeA, 1, LAST_ZONE_INDEX), hexCoordA);
 
             // 7 1 1 0 3 0 9  - exit ids a
             // 8 2 2 0 0 0 6  - exit ids b
             // 0 1 1 0 2 0 3  - portal ids
 
             // 4. Update statuses
-            handler.Handle(hexCoordA, edgeA, hexCoordB, edgeB);
+            updateHandler.Handle(hexCoordA, edgeA, hexCoordB, edgeB);
 
             // 5. Check
 

@@ -6,8 +6,8 @@ namespace ZE.MechBattle
 {
     public class PortalExitsUpdateData 
     {
-        public List<NavigationPortalExit> ExitsA;
-        public List<NavigationPortalExit> ExitsB;
+        public List<NavigationPortalExit> ExitsA = new(8);
+        public List<NavigationPortalExit> ExitsB = new(8);
         private readonly IObjectPool<PortalExitsUpdateData> _pool;
 
         public PortalExitsUpdateData(IObjectPool<PortalExitsUpdateData> pool)

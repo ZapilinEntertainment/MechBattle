@@ -67,9 +67,9 @@ namespace ZE.MechBattle
             _defineCellZonesProcess.Dispose();
 
 #if UNITY_EDITOR
-            if (!UnsafeUtility.IsValidAllocator(_allocator))
+            if (ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
                 return;
-#endif            
+#endif          
             _isPeakData.Dispose();           
         }
 
@@ -104,11 +104,12 @@ namespace ZE.MechBattle
             if (_isDisposed | WasStopped) goto FORCE_COMPLETION;
 
             // 3. define passability and height for each nav cell
-            var prepareCellJobHandle =  _prepareNavCellDataProcess.ScheduleParallel(hexCenter);
-            await WaitForJobHandle(prepareCellJobHandle);
-            prepareCellJobHandle.Complete();
-
-            if (_isDisposed | WasStopped) goto FORCE_COMPLETION;
+                //var prepareCellJobHandle =  _prepareNavCellDataProcess.ScheduleParallel(hexCenter);
+                // await WaitForJobHandle(prepareCellJobHandle);
+                // prepareCellJobHandle.Complete();
+                //if (_isDisposed | WasStopped) goto FORCE_COMPLETION;
+            _prepareNavCellDataProcess.Run(hexCenter);
+            
 
             // 4. define cell zones
             var defineCellJobHandle = _defineCellZonesProcess.ScheduleJob(hexCenter, _prepareNavCellDataProcess.GetPassabilityDataSource());
@@ -129,10 +130,7 @@ namespace ZE.MechBattle
 
                 var calculatedPassabilitySource = _prepareNavCellDataProcess.GetPassabilityDataSource();                
                 var passability = calculatedPassabilitySource.GetPassabilityData(tripos);
-
-                var zoneIndex = _defineCellZonesProcess.GetZoneIndex(tripos);
-                passability.ChangeZoneIndex(zoneIndex);
-
+                passability.ZoneIndex = _defineCellZonesProcess.GetZoneIndex(tripos);                
                 cellData.Passability = passability;
                 _map.UpdateNavigationCell(tripos, cellData);
             }

@@ -4112,6 +4112,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5029b64d4b707f4f90427e70a74dfbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.PortalExitDebugDrawer
+  _currentExitListVersion: 0
+  _exitsCount: 0
 --- !u!1 &1324568865
 GameObject:
   m_ObjectHideFlags: 0

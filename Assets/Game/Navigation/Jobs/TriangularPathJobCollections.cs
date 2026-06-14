@@ -39,30 +39,22 @@ namespace ZE.MechBattle.Navigation
         public void ChangeCenter(NavigationHexPosition pos) =>
             _setupData = _setupData.ChangeHexCenter(pos.TriangularCenterPos);
 
+
         public void Dispose()
         {
-            #if UNITY_EDITOR
-            try
-            {
-                DisposeResources();
-            }
-            catch 
-            {
-                // collections are disposed before scope (editor-only situation)
-            }
-            #else
-            DisposeResources();
-            #endif            
-        }
+            
 
-        private void DisposeResources()
-        {
+#if UNITY_EDITOR
+            if (ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
+                return;
+#endif  
+
             _setupDataArray.Dispose();
             CalculationData.Dispose();
             ResultList.Dispose();
             OpenedList.Dispose();
-            _rowIndicesArray.Dispose();
             PathCostReference.Dispose();
+            _rowIndicesArray.Dispose();
         }
 
         #region IReadonlyList of IntTriangularPos

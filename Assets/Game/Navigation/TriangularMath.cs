@@ -22,9 +22,9 @@ namespace ZE.MechBattle.Navigation
             var peakDirection = edge.ToAlongsidePeakDirection().ToTriangularOffsetVector();
             var valleyDirection = edge.ToAlongsideValleyDirection().ToTriangularOffsetVector();
 
-            return start.IsPeak 
+            return start + (start.IsPeak 
                 ? (half * peakDirection + otherHalf * valleyDirection)
-                : (half * valleyDirection + otherHalf * peakDirection);
+                : (half * valleyDirection + otherHalf * peakDirection));
         }
 
         [BurstCompile]

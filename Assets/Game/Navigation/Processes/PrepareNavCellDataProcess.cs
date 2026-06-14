@@ -16,7 +16,8 @@ namespace ZE.MechBattle.Navigation
         private readonly FlowFieldCalculationCollections _flowCalculationCollections;        
         private readonly NativeArray<CellHeightData> _cellHeightData;
         private readonly int _trianglesPerHex;
-        private PrepareNavCellDataJob _job;
+        private PrepareNavCellDataJob _prepareJob;
+        private CalculateCellNeighboursMaskJob _calculateMaskJob;
 
 
         public PrepareNavCellDataProcess(
@@ -30,7 +31,7 @@ namespace ZE.MechBattle.Navigation
             _flowCalculationCollections = FlowFieldCalculationCollections.CreateCollection(allocator, default, mapSettings);
             _cellHeightData = new NativeArray<CellHeightData>(_trianglesPerHex, allocator, NativeArrayOptions.UninitializedMemory);
 
-            _job = new PrepareNavCellDataJob()
+            _prepareJob = new PrepareNavCellDataJob()
             {
                 SetupData = _flowCalculationCollections.PassabilityDataInnerArray,
                 RefinedRaycastData = refinedData,
@@ -38,12 +39,21 @@ namespace ZE.MechBattle.Navigation
                 UnwalkableSurfacesPercentForLock = mapSettings.UnwalkableSurfacesPercentForLock,
                 SubdividedTrianglesCount = raycastsPerTriangle,
                 HeightData = _cellHeightData,
+            };
+
+            _calculateMaskJob = new()
+            {
+                CellDataProvider = new CalculateCellNeighboursMaskJob.JobCellDataProvider(refinedData, _flowCalculationCollections.PassabilityData),
                 MaxElevationDifference = mapSettings.MaxElevationDifference,
             };
         }
 
         public void Dispose()
         {
+#if UNITY_EDITOR
+            if (ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
+                return;
+#endif  
             _flowCalculationCollections.Dispose();            
             _cellHeightData.Dispose();
         }
@@ -55,8 +65,8 @@ namespace ZE.MechBattle.Navigation
             _flowCalculationCollections.ChangeHexPosAndReset(hexCenter);
             CurrentHexCenter = hexCenter;
 
-            _job.CoordsConverter = _flowCalculationCollections.PassabilityData.GetCoordsConverter();
-            _job.Run(_trianglesPerHex);
+            _prepareJob.Run(_trianglesPerHex);
+            _calculateMaskJob.Run(_trianglesPerHex);
         }
 
         public JobHandle ScheduleParallel(IntTriangularPos hexCenter)
@@ -64,8 +74,8 @@ namespace ZE.MechBattle.Navigation
             _flowCalculationCollections.ChangeHexPosAndReset(hexCenter);
             CurrentHexCenter = hexCenter;
 
-            _job.CoordsConverter = _flowCalculationCollections.PassabilityData.GetCoordsConverter();
-            return _job.Schedule(_trianglesPerHex, innerloopBatchCount : 16);
+            var handleA =  _prepareJob.ScheduleByRef(_trianglesPerHex, innerloopBatchCount : 16);
+            return _calculateMaskJob.ScheduleByRef(_trianglesPerHex, innerloopBatchCount : 16, handleA);
         }
     }
 }

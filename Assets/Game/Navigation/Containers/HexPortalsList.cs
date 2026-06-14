@@ -4,11 +4,18 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
-    public class HexPortalsList : IEnumerable<KeyValuePair<int, NavigationPortal>>
+    public interface IHexPortalsList : IEnumerable<KeyValuePair<int, NavigationPortal>> 
+    {
+        bool TryGetValue(int key, out NavigationPortal portal);
+    }
+    public class HexPortalsList : IHexPortalsList
     {
         public int Count => _dict.Count;
+        public IReadOnlyCollection<NavigationPortal> Values => _dict.Values;
         private readonly Dictionary<int, NavigationPortal> _dict = new();
         private int _nextId = 1;
+
+        public NavigationPortal this[int portalId] => _dict[portalId];
 
         public int RegisterNewPortal(NavigationPortal portal)
         {

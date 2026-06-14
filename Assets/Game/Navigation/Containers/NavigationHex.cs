@@ -13,13 +13,13 @@ namespace ZE.MechBattle.Navigation
         float2 CenterPosWorld { get; }
         int2 HexCoordinate { get; }
         NavigationHexPosition Pos { get; }
-        IReadOnlyList<int> PortalExitIds { get; }
+        IReadOnlyCollection<int> PortalExitIds { get; }
     }
 
     public interface IUpdatableNavigationHex : INavigationHex
     {
         void UpdatePassabilityVersion();
-        List<int> Exits { get; }
+        HashSet<int> Exits { get; }
     }
 
 
@@ -33,11 +33,11 @@ namespace ZE.MechBattle.Navigation
 
         public int2 HexCoordinate => _pos.HexCoordinate;
         public NavigationHexPosition Pos => _pos;
-        public IReadOnlyList<int> PortalExitIds => _exits;
-        public List<int> Exits => _exits;
+        public IReadOnlyCollection<int> PortalExitIds => _exits;
+        public HashSet<int> Exits => _exits;
 
         private readonly NavigationHexPosition _pos;
-        private readonly List<int> _exits = new();
+        private readonly HashSet<int> _exits = new();
 
 
 

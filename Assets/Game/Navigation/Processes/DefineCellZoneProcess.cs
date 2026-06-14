@@ -29,6 +29,10 @@ namespace ZE.MechBattle
 
         public void Dispose()
         {
+#if UNITY_EDITOR
+            if (ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
+                return;
+#endif  
             _activeCells.Dispose();
             _cells.Dispose();
         }

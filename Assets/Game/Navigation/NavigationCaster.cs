@@ -137,6 +137,10 @@ namespace ZE.MechBattle.Navigation
             _casterLifetimeCts.Cancel();
             _casterLifetimeCts.Dispose();
 
+#if UNITY_EDITOR
+            if (ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
+                return;
+#endif  
             _raycastCommands.Dispose();
             _raycastPointsArray.Dispose();
             _raycastResults.Dispose();

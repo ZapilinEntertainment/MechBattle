@@ -7,7 +7,7 @@ using ZE.MechBattle.Navigation;
 namespace ZE.MechBattle
 {
     [BurstCompile]
-    public struct GeneratePointDistancesJob : IJob
+    public struct CalculatePointDistancesJob : IJob
     {
         public struct CellData
         {
@@ -22,6 +22,10 @@ namespace ZE.MechBattle
 
         public void Execute()
         {
+            var zeroData = Cells[ZeroPos];
+            zeroData.Distance = 0f;
+            Cells[ZeroPos] = zeroData;
+
             HandleCell(ZeroPos);
             while (ActiveCells.Count != 0) 
             {

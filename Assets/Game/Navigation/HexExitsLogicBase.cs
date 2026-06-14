@@ -3,16 +3,42 @@ using System.Collections.Generic;
 
 namespace ZE.MechBattle.Navigation
 {
-    public struct HexExitsLogic
+    public interface IExitsLogic 
     {
-        private readonly IHexPortalsCoordinator _portalsCoordinator;
-        private readonly PortalExitsList _exitsList;
+        void OnExitOutdated(int exitId);
+        void ActualizeExitsList(
+            List<(int id, NavigationPortalExit exitData)> actualData,
+            List<NavigationPortalExit> newData,
+            IUpdatableNavigationHex hex);
 
-        public HexExitsLogic(IHexPortalsCoordinator portalsCoordinator, PortalExitsList exitsList)
+        bool TryGetExitDataWithValidation(int exitId, out NavigationPortalExit exitData);
+        void RemoveExit(int exitId);
+        int RegisterNewExit(NavigationPortalExit exit, IUpdatableNavigationHex hex);
+    }
+
+    public class HexExitsLogicBase : IExitsLogic
+    {
+        private readonly PortalExitsList _exitsList;
+        private readonly IHexPortalsList _portalsList;
+        private readonly IUpdatableMap _map;
+
+        public HexExitsLogicBase(PortalExitsList exitsList, IUpdatableMap map, IHexPortalsList portalsList)
         {
-            _portalsCoordinator = portalsCoordinator;
             _exitsList = exitsList;
+            _map = map;
+            _portalsList = portalsList;
         }
+
+        public bool TryGetExitDataWithValidation(int exitId, out NavigationPortalExit exitData)
+        {
+            if (_exitsList.TryGetValue(exitId, out exitData))
+                return true;
+
+            OnExitOutdated(exitId);
+            return false;
+        }
+
+        public virtual void OnExitOutdated(int exitId) { }
 
         public void ActualizeExitsList(
             List<(int id, NavigationPortalExit exitData)> actualData,
@@ -47,7 +73,7 @@ namespace ZE.MechBattle.Navigation
                 if (!matchFound)
                 {
                     var outdatedId = exitCD.id;
-                    _portalsCoordinator.OnExitOutdated(outdatedId);
+                    OnExitOutdated(outdatedId);
                     hex.Exits.Remove(outdatedId);
                 }
             }
@@ -69,6 +95,18 @@ namespace ZE.MechBattle.Navigation
             var id = _exitsList.RegisterExit(exit);
             hex.Exits.Add(id);
             return id;
+        }
+
+        public virtual void RemoveExit(int exitId)
+        {
+            if (!_exitsList.TryGetValue(exitId, out var exit))
+                return;
+
+            _exitsList.Remove(exitId);
+            var hexCoord = TriangularMath.TriangularToHex(exit.StartTriangle, _map.TriangleHeight, _map.HexEdgeLength);
+            _map.GetOrCreateUpdatableHex(hexCoord).Exits.Remove(exitId);
+
+            // unexisting portal exit data will be actualized by another systems
         }
     }
 }

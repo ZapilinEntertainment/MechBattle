@@ -17,7 +17,7 @@ namespace ZE.MechBattle.Ecs {
     public sealed class ActualEdgeExitDataCalculationSystem : ISystem 
     {
         public World World { get; set;}
-        private readonly INavigationMap _map;
+        private readonly IUpdatableMap _map;
         private readonly UpdateEdgeExitsRequestsList _requests;
         private readonly HexDataCoordinator _hexDataCoordinator;
         private readonly PortalExitsUpdateDataPool _exitsUpdateDataPool;
@@ -26,15 +26,17 @@ namespace ZE.MechBattle.Ecs {
 
         [Inject]
         public ActualEdgeExitDataCalculationSystem(
-            INavigationMap map, 
+            IUpdatableMap map, 
             UpdateEdgeExitsRequestsList requestsList, 
             HexDataCoordinator hexDataCoordinator,
-            UpdatedPortalExitsList updatedPortalsData)
+            UpdatedPortalExitsList updatedPortalsData,
+            PortalExitsUpdateDataPool exitUpdateDataPool)
         {
             _map = map;
             _requests = requestsList;
             _hexDataCoordinator = hexDataCoordinator;
             _updatedPortalsData = updatedPortalsData;
+            _exitsUpdateDataPool = exitUpdateDataPool;
         }
 
         public void Dispose() { }
@@ -43,6 +45,9 @@ namespace ZE.MechBattle.Ecs {
 
         public void OnUpdate(float deltaTime) 
         {
+            if (!_map.IsInitialized)
+                return;
+
             var count = _requests.Count;
             if (count == 0)
                 return;
@@ -58,10 +63,15 @@ namespace ZE.MechBattle.Ecs {
                 if (!_hexDataCoordinator.IsHexCalculated(hexKeyA.HexCoord) || !_hexDataCoordinator.IsHexCalculated(hexKeyB.HexCoord))
                     continue;
 
+                //UpdateEdgeTrianglesNeighboursMaskCommand.Execute(_map, doubleEdgeKey);
+
                 var updateData = _exitsUpdateDataPool.Get();
                 CalculateHexExitsCommand.Execute(_map, hexKeyA.HexCoord, hexKeyA.Edge, updateData.ExitsA);
                 CalculateHexExitsCommand.Execute(_map, hexKeyB.HexCoord, hexKeyB.Edge, updateData.ExitsB);
                 updateData.ExitsB.Reverse();
+
+                UnityEngine.Debug.Log($"{hexKeyA}  - {updateData.ExitsA.Count} exits");
+                UnityEngine.Debug.Log($"{hexKeyB}  - {updateData.ExitsB.Count} exits");
 
                 _updatedPortalsData.Add(doubleEdgeKey, updateData);
                 _clearList.Add(doubleEdgeKey);

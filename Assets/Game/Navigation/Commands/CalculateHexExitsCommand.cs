@@ -91,7 +91,8 @@ namespace ZE.MechBattle.Navigation
                     }
                     else
                     {
-                        var neighbourData = map.GetPassabilityData(TriangularMath.GetNeighbourByDirection(tripos, direction));
+                        var neighbourPos = TriangularMath.GetNeighbourByDirection(tripos, direction);
+                        var neighbourData = map.GetPassabilityData(neighbourPos);
                         var cellZone = passableData.ZoneIndex;
                         var neighbourCellZone = neighbourData.ZoneIndex;
 

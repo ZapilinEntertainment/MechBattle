@@ -15,6 +15,7 @@ namespace ZE.MechBattle.Ecs
         public World World { get;set; }
         private readonly INavigationMap _map;
         private readonly HexRaycastRequestsList _hexRaycastRequests;
+        private readonly CancellationTokenSource _cts = new();
 
         [Inject]
         public NavigationMapInitializer(INavigationMap map, HexRaycastRequestsList hexRaycastRequestsList) 
@@ -23,7 +24,7 @@ namespace ZE.MechBattle.Ecs
             _hexRaycastRequests = hexRaycastRequestsList;
         }
 
-        public void OnAwake()
+        public async void OnAwake()
         {
             using var hexes = GetHexCoordsInRectangleCommand.Execute(_map.Settings, Allocator.Temp);
             foreach (var hexCoord in hexes)
@@ -31,8 +32,14 @@ namespace ZE.MechBattle.Ecs
                 var hex = _map.GetOrCreateHex(hexCoord);
                 _hexRaycastRequests.AddRequest(hexCoord, hex.PassabilityVersion);
             }
+
+
         }
 
-        public void Dispose() { }
+        public void Dispose() 
+        { 
+            _cts.Cancel();
+            _cts.Dispose();
+        }
     }
 }

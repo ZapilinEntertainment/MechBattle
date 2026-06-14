@@ -7,20 +7,20 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
-    public struct RefinedTriangleRaycastData
+    public struct RefinedTriangleRaycastData : ICellHeightData
     {
         public int ObstacledCellsCount;
 
         public int GroundCastsCount;
-        public float AverageGroundHeight;
+        public float AverageHeight { get; set; }
 
-        public float PinnacleHeight;
-        public float LeftBasisHeight;
-        public float RightBasisHeight;
+        public float PinnacleHeight { get; set; }   
+        public float LeftBasisHeight { get; set; }
+        public float RightBasisHeight { get; set; }
 
-        public short GetResultingAverageHeight() => (short)math.round(AverageGroundHeight);
+        public short GetResultingAverageHeight() => (short)math.round(AverageHeight);
         public float AddHeightAndRecalculate(float newHeight) =>
-            (AverageGroundHeight * GroundCastsCount + newHeight) / (GroundCastsCount + 1);
+            (AverageHeight * GroundCastsCount + newHeight) / (GroundCastsCount + 1);
 
         public float GetHeight(TriangleHeightMeasurePoint param)
         {
@@ -29,7 +29,7 @@ namespace ZE.MechBattle.Navigation
                 case TriangleHeightMeasurePoint.Pinnacle: return PinnacleHeight;
                 case TriangleHeightMeasurePoint.LeftBasis: return LeftBasisHeight;
                 case TriangleHeightMeasurePoint.RightBasis: return RightBasisHeight;
-                default: return AverageGroundHeight;
+                default: return AverageHeight;
             }
         }
     }
@@ -104,7 +104,7 @@ namespace ZE.MechBattle.Navigation
             {
                 sum += heights[i];
             }
-            resultingData.AverageGroundHeight = sum / RaycastsPerTriangle;
+            resultingData.AverageHeight = sum / RaycastsPerTriangle;
             resultingData.PinnacleHeight = heights[ PINNACLE_INDEX];
             resultingData.LeftBasisHeight = heights[ leftBasisIndex];
             resultingData.RightBasisHeight = heights[ rightBasisIndex];

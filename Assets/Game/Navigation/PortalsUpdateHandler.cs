@@ -8,7 +8,7 @@ namespace ZE.MechBattle.Navigation
         private readonly int _edgeTrisCount;
         private readonly INavigationMap _map;
         private readonly IHexPortalsCoordinator _portalsCoordinator;
-        private readonly HexPortalsList _portalsList;
+        private readonly IHexPortalsList _portalsList;
         private readonly PortalExitsList _exitsList;
         private readonly PortalExitsMask _existingPortalsMask;
         private readonly PortalExitsMask _updatedPortalsMask;
@@ -136,7 +136,7 @@ namespace ZE.MechBattle.Navigation
                 {
                     _portalsCoordinator.OnPortalOutdated(oldPortalId);
                     var newPortal = new NavigationPortal(actualExitA, hexCoordA, actualExitB, hexCoordB);
-                    var newPortalId = _portalsList.RegisterNewPortal(newPortal);
+                    var newPortalId = _portalsCoordinator.RegisterNewPortal(newPortal);
 
                     //UnityEngine.Debug.Log($"portal registered: {newPortalId}");
                     do

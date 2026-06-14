@@ -22,7 +22,7 @@ namespace ZE.MechBattle.Navigation
         private readonly IHexPortalsCoordinator _portalsCoordinator;
         private readonly IPathsList<PortalPathDestinationKey, int> _pathsBuffer;
 
-        private readonly GeneratePointDistancesProcess _generatePointDistancesProcess;
+        private readonly CalculatePointDistancesProcess _calculateDistancesProcess;
         private readonly List<PortalOption> _startPortals = new();
         private readonly List<PortalOption> _endPortals = new();
         private readonly List<HexExitOption> _hexPortalsList = new();
@@ -67,7 +67,7 @@ namespace ZE.MechBattle.Navigation
         {
             _map = map;
             _portalsCoordinator = portalsCoordinator;
-            _generatePointDistancesProcess = new(allocator, _map);
+            _calculateDistancesProcess = new(allocator, _map);
             _pathsBuffer = _portalsCoordinator.GetPathsList();
 
             _resultingPath = new(allocator);
@@ -75,7 +75,7 @@ namespace ZE.MechBattle.Navigation
 
         protected override void DisposeResources()
         {
-            _generatePointDistancesProcess.Dispose();
+            _calculateDistancesProcess.Dispose();
             _resultingPath.Dispose();
         }
 
@@ -103,12 +103,12 @@ namespace ZE.MechBattle.Navigation
         {
             _isDisposeAvailable = false;
             // 1. calculate distances map through job
-            var distanceCalculationHandle = _generatePointDistancesProcess.Schedule(hexCoord, pos);
+            _calculateDistancesProcess.Launch(new(0, hexCoord, pos));
             do
             {
                 await Awaitable.NextFrameAsync();
             }
-            while (!distanceCalculationHandle.IsCompleted);
+            while (_calculateDistancesProcess.Stage == CalculationProcessStage.Calculating);
             _isDisposeAvailable = true;
 
             if (StopProcessRequired)
@@ -121,6 +121,7 @@ namespace ZE.MechBattle.Navigation
 
             _hexPortalsList.Clear();
             _portalsCoordinator.GetHexPortalExits(hexCoord, _hexPortalsList);
+            var calculationDistancesResult = _calculateDistancesProcess.StopAndGetResults();
             foreach (var exitOption in _hexPortalsList)
             {
                 var exitData = exitOption.ExitData;
@@ -130,7 +131,7 @@ namespace ZE.MechBattle.Navigation
                 var portalCf = directionCoefficients[edge];
                 foreach (var portalTriangle in edge.GetEdgeEnumerable(exitData))
                 {
-                    minDist = math.min(minDist, _generatePointDistancesProcess.GetDistance(portalTriangle) * portalCf);
+                    minDist = math.min(minDist, calculationDistancesResult.GetDistance(portalTriangle) * portalCf);
                 }
 
             if (minDist == float.MaxValue)
