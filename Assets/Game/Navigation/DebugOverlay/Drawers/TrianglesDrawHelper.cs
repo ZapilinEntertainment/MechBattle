@@ -24,34 +24,40 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
         public static TriangleDrawData GetDrawData(IntTriangularPos tripos, INavigationMap map)
         {
-            var cellHeights = map.GetHeightData(tripos);
-            var vertices = GetTriangleVerticesCommand.Execute(tripos, map.TriangleHeight, 0.01f);
-            vertices = vertices.ApplyHeights(cellHeights);
-
             var isCellPassable = map.GetPassabilityData(tripos).IsPassable;
-            return new TriangleDrawData(vertices, isCellPassable);
+            return new TriangleDrawData(GetDrawVertices(tripos, map), isCellPassable);
         }
 
-        public static CompareFunction SwitchZTestAndSave()
+        public static TriangleVertices GetDrawVertices(IntTriangularPos tripos, INavigationMap map)
+        {
+            var cellHeights = map.GetHeightData(tripos);
+            var vertices = GetTriangleVerticesCommand.Execute(tripos, map.TriangleHeight, 0.01f);
+            return vertices.ApplyHeights(cellHeights);
+        }
+
+        public static CompareFunction SwitchZTestAndSave(CompareFunction next)
         {
             var previousZTest = Handles.zTest;
-            Handles.zTest = CompareFunction.NotEqual;
+            Handles.zTest = next;
             return previousZTest;
         }
 
         public static void RestoreZTest(CompareFunction previousZTest) => Handles.zTest = previousZTest;
 
-        public static void DrawHandles(TriangleDrawData data, bool opaquePassables = true)
+        public static void DrawHandles(TriangleDrawData data, bool opaquePassables = true) =>
+            DrawHandles(data.Vertices, data.IsPassable == opaquePassables);
+
+        public static void DrawHandles(TriangleVertices vertices, bool opaque)
         {
-            if (data.IsPassable == opaquePassables)
+            if (opaque)
             {
-                Handles.DrawAAConvexPolygon(data.Vertices.PinnaclePos, data.Vertices.LeftBasisPos, data.Vertices.RightBasisPos);                             
+                Handles.DrawAAConvexPolygon(vertices.PinnaclePos, vertices.LeftBasisPos, vertices.RightBasisPos);
             }
             else
             {
-                Handles.DrawLine(data.Vertices.PinnaclePos, data.Vertices.LeftBasisPos);
-                Handles.DrawLine(data.Vertices.RightBasisPos, data.Vertices.LeftBasisPos);
-                Handles.DrawLine(data.Vertices.RightBasisPos, data.Vertices.PinnaclePos);
+                Handles.DrawLine(vertices.PinnaclePos, vertices.LeftBasisPos);
+                Handles.DrawLine(vertices.RightBasisPos, vertices.LeftBasisPos);
+                Handles.DrawLine(vertices.RightBasisPos, vertices.PinnaclePos);
             }
         }
     }

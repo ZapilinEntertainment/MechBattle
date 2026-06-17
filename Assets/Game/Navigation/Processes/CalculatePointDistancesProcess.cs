@@ -85,9 +85,24 @@ namespace ZE.MechBattle
         protected override void DisposeResources()
         {
 #if UNITY_EDITOR
-            if (ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
-                return;
-#endif  
+            try
+            {
+                FinalDispose();
+            }
+            catch (Exception ex)
+            {
+                if (!ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
+                    UnityEngine.Debug.LogError(ex);
+            }
+            return;
+#else  
+
+            FinalDispose();       
+#endif            
+        }
+
+        private void FinalDispose() 
+        {
             _activeCells.Dispose();
             _cells.Dispose();
         }
@@ -105,6 +120,9 @@ namespace ZE.MechBattle
             {
                 _cells.Add(tripos, new() { Distance = DEFAULT_DISTANCE, IsOpened = false, Passability = _map.GetPassabilityData(tripos) });
             }
+
+            if (!_cells.ContainsKey(_job.ZeroPos))
+                UnityEngine.Debug.LogError($"{_job.ZeroPos} is not in {_hexCoord} (portal {_portalId})");
         }
     }
 }

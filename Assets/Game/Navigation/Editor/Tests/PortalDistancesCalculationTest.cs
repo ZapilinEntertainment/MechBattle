@@ -69,10 +69,10 @@ namespace ZE.MechBattle.Navigation.Tests
 
             //
             TestContext.WriteLine("exits:");
-            foreach (var exitId in _exits)
+            foreach (var exitKvp in _exits)
             {
-                var exitData = _exits[exitId];
-                TestContext.WriteLine($"[{exitId}]: {exitData}");
+                var exitData = _exits[exitKvp.Key];
+                TestContext.WriteLine($"[{exitKvp.Key}]: {exitData}");
             }
 
             //

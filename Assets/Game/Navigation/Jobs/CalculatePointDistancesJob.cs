@@ -52,14 +52,7 @@ namespace ZE.MechBattle
                     if (!Cells.TryGetValue(neighbourPos, out var neighbourData) || !neighbourData.Passability.IsPassable)
                         continue;
 
-                    neighbourData.Distance = math.min(neighbourData.Distance, data.Distance + TriangularMath.GetPeakTransitionCost(direction));
-                    if (!neighbourData.IsOpened)
-                    {
-                        ActiveCells.Enqueue(neighbourPos);
-                        neighbourData.IsOpened = true;
-                    }
-
-                    Cells[neighbourPos] = neighbourData;
+                    TryHandleNeighbour(neighbourPos, data.Distance + TriangularMath.GetPeakTransitionCost(direction));
                 }
             }
             else
@@ -71,21 +64,24 @@ namespace ZE.MechBattle
 
                     var direction = (ValleyNeighbour)i;
                     var neighbourPos = TriangularMath.GetValleyNeighbour(pos, direction);
-
-                    if (!Cells.TryGetValue(neighbourPos, out var neighbourData))
-                        continue;
-
-                    neighbourData.Distance = math.min(neighbourData.Distance, data.Distance + TriangularMath.GetValleyTransitionCost(direction));
-                    if (!neighbourData.IsOpened)
-                    {
-                        ActiveCells.Enqueue(neighbourPos);
-                        neighbourData.IsOpened = true;
-                    }
-
-                    Cells[neighbourPos] = neighbourData;
+                    TryHandleNeighbour(neighbourPos, data.Distance + TriangularMath.GetValleyTransitionCost(direction));                    
                 }
+            }            
+        }
+
+        private void TryHandleNeighbour(IntTriangularPos neighbourPos, float distance)
+        {
+            if (!Cells.TryGetValue(neighbourPos, out var neighbourData) || !neighbourData.Passability.IsPassable)
+                return;
+
+            neighbourData.Distance = math.min(neighbourData.Distance, distance);
+            if (!neighbourData.IsOpened)
+            {
+                ActiveCells.Enqueue(neighbourPos);
+                neighbourData.IsOpened = true;
             }
-            
+
+            Cells[neighbourPos] = neighbourData;
         }
     }
 }

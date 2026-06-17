@@ -67,10 +67,25 @@ namespace ZE.MechBattle
             _defineCellZonesProcess.Dispose();
 
 #if UNITY_EDITOR
-            if (ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
-                return;
-#endif          
-            _isPeakData.Dispose();           
+            try
+            {
+                FinalDispose();
+            }
+            catch (System.Exception ex)
+            {
+                if (!ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
+                    UnityEngine.Debug.LogError(ex);
+            }
+            return;
+#else  
+
+            FinalDispose();       
+#endif        
+        }
+
+        private void FinalDispose()
+        {
+            _isPeakData.Dispose();
         }
 
         public async void LaunchAsync(int2 hexCoord)

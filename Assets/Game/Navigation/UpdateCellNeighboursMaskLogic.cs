@@ -31,14 +31,18 @@ namespace ZE.MechBattle.Navigation
             var neighboursAccessMask = 0;
             for (var i = 0; i < NavigationConstants.TRIANGLE_DIRECTIONS_COUNT; i++)
             {
-                var neighbourPos = TriangularMath.GetNeighbourByDirection(_cellData.Tripos, i);
-                if (!_cellDataList.TryGetCellData(neighbourPos, out var neighbourData) 
-                    || TrianglesTransitionLogic.IsCloseTransitionPossible<HeightData>(_cellData, neighbourData, _maxElevationDifference))
+                var neighbourPos = TriangularMath.GetNeighbourByDirection(_cellData.Tripos, i);                
+                var neighbourIsPassable = 
+                    _cellDataList.TryGetCellData(neighbourPos, out var neighbourData)
+                    && TrianglesTransitionLogic.IsCloseTransitionPossible<HeightData>(_cellData, neighbourData, _maxElevationDifference);
+
+                if (!neighbourIsPassable)
                     continue;
+
                 neighboursAccessMask |= (1 << i);
             }
-
-            return TrianglesTransitionLogic.CheckMaskForJumpNeighbours(neighboursAccessMask, _cellData.Tripos.IsPeak);
+            return neighboursAccessMask;
+            //return TrianglesTransitionLogic.CheckMaskForJumpNeighbours(neighboursAccessMask, _cellData.Tripos.IsPeak);
         }
     }
 }

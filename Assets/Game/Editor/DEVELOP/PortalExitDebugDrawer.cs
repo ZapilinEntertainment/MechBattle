@@ -1,5 +1,7 @@
+using System;
 using UnityEngine;
 using Unity.Mathematics;
+using UnityEngine.Rendering;
 using System.Collections.Generic;
 using VContainer;
 using TriInspector;
@@ -10,12 +12,24 @@ namespace ZE.MechBattle.Develop
 {
     public class PortalExitDebugDrawer : MonoBehaviour
     {
+        [Serializable]
+        private struct SerializableExitData
+        {
+            public int Id;
+            public int3 Start;
+            public int Length;
+            public int ZoneIndex;
+        }
+
+        [SerializeField] private CompareFunction _compareFunction = CompareFunction.LessEqual;
         [SerializeField, ReadOnly] private int _currentExitListVersion = 0;
         [SerializeField, ReadOnly] private int _exitsCount = 0;
+        [SerializeField, ReadOnly] private List<SerializableExitData> _exitsList = new();
         private IPortalExitsList _exits;
         private INavigationMap _map;
         private List<TriangleDrawData> _drawData = new();
         private List<IntTriangularPos> _trianglesList = new();
+        
 
         [Inject]
         public void Inject(IPortalExitsList exitsList, INavigationMap map)
@@ -34,6 +48,13 @@ namespace ZE.MechBattle.Develop
             foreach (var hex in _map.Hexes)
             {
                 RedrawHex(hex);
+            }
+
+            _exitsList.Clear();
+            foreach (var exitKvp in _exits)
+            {
+                var exitData = exitKvp.Value;
+                _exitsList.Add(new() { Id = exitKvp.Key, Start = exitData.StartTriangle, Length = exitData.Length, ZoneIndex = exitData.ZoneIndex});
             }
 
             _currentExitListVersion = _exits.Version;
@@ -81,7 +102,7 @@ namespace ZE.MechBattle.Develop
             if (!enabled)
                 return;
 
-            var previousZTest = TrianglesDrawHelper.SwitchZTestAndSave();
+            var previousZTest = TrianglesDrawHelper.SwitchZTestAndSave(_compareFunction);
             foreach (var drawData in _drawData)
             {
                 TrianglesDrawHelper.DrawHandles(drawData);

@@ -142,17 +142,17 @@ namespace ZE.MechBattle.Navigation
 
     public struct BottomEdgeEnumerationLogic : IEdgeEnumerationLogic
     {
-        // bottom left corner -> bottom right corner
+        // bottom right corner -> bottom left corner
         public bool StartsWithPeak => true;
-        public const PeakNeighbour PeakDirection = PeakNeighbour.EdgeUpRight;
-        public const ValleyNeighbour ValleyDirection = ValleyNeighbour.EdgeDownRight;
+        public const PeakNeighbour PeakDirection = PeakNeighbour.EdgeUpLeft;
+        public const ValleyNeighbour ValleyDirection = ValleyNeighbour.EdgeDownLeft;
 
         public IntTriangularPos GetStart(int trianglesPerEdge, NavigationHexPosition hex)
         {
-            return hex.TriangularCenterPos + new int3(trianglesPerEdge - 1, -trianglesPerEdge, 0);
+            return hex.TriangularCenterPos + new int3(0, -trianglesPerEdge, trianglesPerEdge - 1);
         }
-        public IntTriangularPos EvenStep(IntTriangularPos pos) => TriangularMath.GetPeakNeighbour(pos, PeakNeighbour.EdgeUpRight);
-        public IntTriangularPos OddStep(IntTriangularPos pos) => TriangularMath.GetValleyNeighbour(pos, ValleyNeighbour.EdgeDownRight);
+        public IntTriangularPos EvenStep(IntTriangularPos pos) => TriangularMath.GetPeakNeighbour(pos, PeakDirection);
+        public IntTriangularPos OddStep(IntTriangularPos pos) => TriangularMath.GetValleyNeighbour(pos, ValleyDirection);
 
         public static IntTriangularPos AlongsidePeakVector => PeakDirection.ToTriangularOffsetVector();
         public static IntTriangularPos AlongsideValleyVector => ValleyDirection.ToTriangularOffsetVector();
@@ -160,17 +160,17 @@ namespace ZE.MechBattle.Navigation
 
     public struct BottomLeftEdgeEnumerationLogic : IEdgeEnumerationLogic
     {
-        // left corner -> bottom left corner
+        // bottom left corner -> left corner
         public bool StartsWithPeak => false;
-        public const PeakNeighbour PeakDirection = PeakNeighbour.EdgeDown;
-        public const ValleyNeighbour ValleyDirection = ValleyNeighbour.EdgeDownRight;
+        public const PeakNeighbour PeakDirection = PeakNeighbour.EdgeUpLeft;
+        public const ValleyNeighbour ValleyDirection = ValleyNeighbour.EdgeUp;
 
         public IntTriangularPos GetStart(int trianglesPerEdge, NavigationHexPosition hex)
         {
-            return hex.TriangularCenterPos + new int3(trianglesPerEdge, 0, -trianglesPerEdge + 1);
+            return hex.TriangularCenterPos + new int3(trianglesPerEdge, -trianglesPerEdge + 1, 0);
         }
-        public IntTriangularPos OddStep(IntTriangularPos pos) => TriangularMath.GetPeakNeighbour(pos, PeakNeighbour.EdgeDown);
-        public IntTriangularPos EvenStep(IntTriangularPos pos) => TriangularMath.GetValleyNeighbour(pos, ValleyNeighbour.EdgeDownRight);
+        public IntTriangularPos OddStep(IntTriangularPos pos) => TriangularMath.GetPeakNeighbour(pos, PeakDirection);
+        public IntTriangularPos EvenStep(IntTriangularPos pos) => TriangularMath.GetValleyNeighbour(pos, ValleyDirection);
 
         public static IntTriangularPos AlongsidePeakVector => PeakDirection.ToTriangularOffsetVector();
         public static IntTriangularPos AlongsideValleyVector => ValleyDirection.ToTriangularOffsetVector();

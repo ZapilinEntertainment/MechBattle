@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using Unity.Mathematics;
@@ -8,6 +9,41 @@ namespace ZE.MechBattle.Navigation.Tests
     {
         private const float TRIANGLE_EDGE_SIZE = 1f;
         private const float TOLERANCE = 0.001f;
+
+        [Test]
+        public void NeighboursOffsetTest()
+        {
+            const int RADIUS = 3;
+            var tris = new HashSet<IntTriangularPos>(TriangularMath.GetTrianglesCountInHex(RADIUS));
+            foreach (var tripos in new HexTrianglesEnumerator(IntTriangularPos.zero, RADIUS))
+            {
+                tris.Add(tripos);
+            }
+
+            var innerTris = NavigationMapHelper.GetSixInnerRingTriangles();
+            foreach (var innerTripos in innerTris)
+            {
+                if (innerTripos.IsPeak)
+                {
+                    for (var i = 0; i < NavigationConstants.TRIANGLE_DIRECTIONS_COUNT; i++)
+                    {
+                        Assert.IsTrue(tris.Contains(TriangularMath.GetPeakNeighbour(innerTripos,i)), $"failed at PeakNeighbour.{(PeakNeighbour)i}");
+                    }
+                }
+                else
+                {
+                    for (var i = 0; i < NavigationConstants.TRIANGLE_DIRECTIONS_COUNT; i++)
+                    {
+                        Assert.IsTrue(tris.Contains(TriangularMath.GetValleyNeighbour(innerTripos, i)), $"failed at ValleyNeighbour.{(ValleyNeighbour)i}");
+                    }
+                }
+
+                for (var i = 0; i < NavigationConstants.TRIANGLE_DIRECTIONS_COUNT; i++)
+                {
+                    Assert.IsTrue(tris.Contains(TriangularMath.GetNeighbourByDirection(innerTripos, i)), $"failed at universal direction: {innerTripos} to {i}");
+                }
+            }
+        }
 
         [TestCase(0f,0f,0.3f)]
         [TestCase(150f, 0f, 86.6f)]

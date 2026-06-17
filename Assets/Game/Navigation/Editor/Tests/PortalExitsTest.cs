@@ -8,8 +8,10 @@ namespace ZE.MechBattle.Navigation.Tests
 {
     public class PortalExitsTest
     {
+        private const float HEX_EDGE_LENGTH = 100f;
+
         [Test]
-        public void Test()
+        public void ExitListConstructionTest()
         {
             const int TRIANGLES_PER_EDGE = 6;
             var mapSettings = MapSettings.CreateWithDefaultBorders(100f, TRIANGLES_PER_EDGE);
@@ -75,6 +77,38 @@ namespace ZE.MechBattle.Navigation.Tests
             }
 
         }
-    
+
+       
+
+        [TestCase(0, 10, 0,0,  1,3, -1, 10, -8)]
+        [TestCase(1, 10, 0,0,  5,4,  -9,6,4)]
+        [TestCase(2, 10, 0,0,  5,5, -6, -4, 9)]
+        [TestCase(3, 10, 0, 0,  1,3,  1, -10, 8)]
+        [TestCase(4, 10, 0, 0, 3, 4,  9, -7, -3)]
+        [TestCase(5, 10, 0, 0, 0, 8, 7, 2, -10)]
+        public void ExitCenterTest(
+            int edgeIndex, int trianglesPerHexEdge, int hexCoordX, int hexCoordY,
+            int startIndex, int length, int centerX, int centerY, int centerZ)
+        {
+            var edge = (HexEdge)edgeIndex;
+            var hexCoord = new int2(hexCoordX, hexCoordY);
+            var hexPos = new NavigationHexPosition(hexCoord, HEX_EDGE_LENGTH, trianglesPerHexEdge);
+
+            IntTriangularPos start = default;
+            var i = 0;
+            foreach (var tripos in edge.GetEdgeEnumerable(trianglesPerHexEdge, hexPos))
+            {
+                if (i == startIndex)
+                {
+                    start = tripos;
+                    break;
+                }
+                i++;
+            }
+            var exit = new NavigationPortalExit(start, startIndex, edge, length, 0);
+            TestContext.WriteLine($"start: {exit.StartTriangle}");
+            Assert.AreEqual(new int3(centerX, centerY, centerZ), exit.Center.ToInt3(), "center tripos not match");
+        }
+
     }
 }

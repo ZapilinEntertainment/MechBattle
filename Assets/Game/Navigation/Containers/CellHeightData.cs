@@ -37,6 +37,16 @@ namespace ZE.MechBattle.Navigation
             RightBasisHeightDelta = 0;
         }
 
+        private CellHeightData(short averageHeight, sbyte pinnacleDelta, sbyte leftBasisDelta, sbyte rightBasisDelta)
+        {
+            AverageHeight = averageHeight;
+            PinnacleHeightDelta = pinnacleDelta;
+            LeftBasisHeightDelta = leftBasisDelta;
+            RightBasisHeightDelta = rightBasisDelta;
+        }
+
+        public CellHeightData AddHeight(float delta) => new((short)(AverageHeight + delta), PinnacleHeightDelta, LeftBasisHeightDelta, RightBasisHeightDelta);
+
         
         public float4 ToCombinedValue()
         {

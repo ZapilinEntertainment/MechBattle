@@ -63,15 +63,15 @@ namespace ZE.MechBattle.Ecs {
                 if (!_hexDataCoordinator.IsHexCalculated(hexKeyA.HexCoord) || !_hexDataCoordinator.IsHexCalculated(hexKeyB.HexCoord))
                     continue;
 
-                //UpdateEdgeTrianglesNeighboursMaskCommand.Execute(_map, doubleEdgeKey);
+                UpdateEdgeTrianglesNeighboursMaskCommand.Execute(_map, doubleEdgeKey);
 
                 var updateData = _exitsUpdateDataPool.Get();
                 CalculateHexExitsCommand.Execute(_map, hexKeyA.HexCoord, hexKeyA.Edge, updateData.ExitsA);
                 CalculateHexExitsCommand.Execute(_map, hexKeyB.HexCoord, hexKeyB.Edge, updateData.ExitsB);
                 updateData.ExitsB.Reverse();
 
-                UnityEngine.Debug.Log($"{hexKeyA}  - {updateData.ExitsA.Count} exits");
-                UnityEngine.Debug.Log($"{hexKeyB}  - {updateData.ExitsB.Count} exits");
+                //UnityEngine.Debug.Log($"{hexKeyA}  - {updateData.ExitsA.Count} exits");
+                //UnityEngine.Debug.Log($"{hexKeyB}  - {updateData.ExitsB.Count} exits");
 
                 _updatedPortalsData.Add(doubleEdgeKey, updateData);
                 _clearList.Add(doubleEdgeKey);

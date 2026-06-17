@@ -1,11 +1,13 @@
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 using System.Collections.Generic;
 
 namespace ZE.MechBattle.Navigation.DebugOverlay
 {
     public class MapPassabilityDrawer
     {
+        [SerializeField] private CompareFunction _compareFunction = CompareFunction.LessEqual;
         private readonly List<TriangleDrawData> _drawData = new();
         private const float ALPHA = 0.5f;
         private readonly Color _passableColor = new Color(0f, 0.1f, 1f, ALPHA);
@@ -27,7 +29,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             if (_drawData.Count == 0)
                 return;
 
-            var prevZTest = TrianglesDrawHelper.SwitchZTestAndSave();
+            var prevZTest = TrianglesDrawHelper.SwitchZTestAndSave(_compareFunction);
             //var isPassable = false; 
             Handles.color = _impassableColor;
             foreach (var triangleData in _drawData)

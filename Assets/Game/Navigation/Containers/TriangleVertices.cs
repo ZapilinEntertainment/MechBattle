@@ -36,7 +36,7 @@ namespace ZE.MechBattle.Navigation
             var pinnacle = new float3(PinnaclePos.x, heights.PinnacleHeight, PinnaclePos.z);
             var leftBasis = new float3(LeftBasisPos.x, heights.LeftBasisHeight, LeftBasisPos.z);
             var rightBasis = new float3(RightBasisPos.x, heights.RightBasisHeight, RightBasisPos.z);
-            return new(pinnacle, leftBasis, rightBasis);
+            return new(pinnacle + 0.01f, leftBasis + 0.01f, rightBasis + 0.01f);
         }
 
         public TriangleVertices AddHeight(float value)

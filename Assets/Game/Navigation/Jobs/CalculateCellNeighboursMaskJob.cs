@@ -8,27 +8,31 @@ namespace ZE.MechBattle.Navigation
     public struct CalculateCellNeighboursMaskJob : IJobParallelFor
     {
         [BurstCompile]
-        public struct JobCellDataProvider : ICellDataProvider<RefinedTriangleRaycastData>
+        public struct JobCellDataProvider : ICellDataProvider<CellHeightData>
         {
-            private NativeArray<RefinedTriangleRaycastData>.ReadOnly _raycastData;
+            private NativeArray<CellHeightData>.ReadOnly _heightData;
             private FlattenedHexList<CellPassabilityData> _passabilityData;
 
             public IntTriangularPos IndexToTriangular(int index) => _passabilityData.IndexToTriangular(index);
             public bool IsCellPassable(int index) => _passabilityData[index].IsPassable;
-            public RefinedTriangleRaycastData GetHeightData(int index) => _raycastData[index];
+            public CellHeightData GetHeightData(int index) => _heightData[index];
 
             public JobCellDataProvider(
-                NativeArray<RefinedTriangleRaycastData>.ReadOnly raycastData, 
+                NativeArray<CellHeightData>.ReadOnly raycastData, 
                 FlattenedHexList<CellPassabilityData> passabilityData)
             {
-                _raycastData = raycastData;
+                _heightData = raycastData;
                 _passabilityData = passabilityData;
             }
 
-            public bool TryGetCellData(IntTriangularPos pos, out TriangleCellData<RefinedTriangleRaycastData> cellData)
+            public JobCellDataProvider ChangePassabilityData(in FlattenedHexList<CellPassabilityData> passData) =>
+                new(_heightData, passData);
+
+            public bool TryGetCellData(IntTriangularPos pos, out TriangleCellData<CellHeightData> cellData)
             {
                 if (!_passabilityData.TryGetIndex(pos, out var index))
                 {
+                    //UnityEngine.Debug.Log($"{pos} not recognized");
                     cellData = default;
                     return false;
                 }
@@ -37,7 +41,7 @@ namespace ZE.MechBattle.Navigation
                 return true;
             }
 
-            public TriangleCellData<RefinedTriangleRaycastData> GetCellData(int index, IntTriangularPos pos) => new(pos, IsCellPassable(index), GetHeightData(index));
+            public TriangleCellData<CellHeightData> GetCellData(int index, IntTriangularPos pos) => new(pos, IsCellPassable(index), GetHeightData(index));
 
             public void SetNeighboursMask(int index, int mask)
             {
@@ -53,7 +57,7 @@ namespace ZE.MechBattle.Navigation
         public void Execute(int index)
         {
             var cellTripos = CellDataProvider.IndexToTriangular(index);
-            var logic = new UpdateCellNeighboursMaskLogic<RefinedTriangleRaycastData, JobCellDataProvider>(cellTripos, CellDataProvider, MaxElevationDifference);
+            var logic = new UpdateCellNeighboursMaskLogic<CellHeightData, JobCellDataProvider>(cellTripos, CellDataProvider, MaxElevationDifference);
             var neighboursMask = logic.CalculateNeighboursMask();
             CellDataProvider.SetNeighboursMask(index, neighboursMask);
         }

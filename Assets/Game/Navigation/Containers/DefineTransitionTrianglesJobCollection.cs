@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Mathematics;
+using ZE.Utils;
 
 namespace ZE.MechBattle.Navigation
 {
@@ -44,9 +45,24 @@ namespace ZE.MechBattle.Navigation
         public void Dispose()
         {
 #if UNITY_EDITOR
-            if (ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
-                return;
+            try
+            {
+                FinalDispose();
+            }
+            catch (Exception ex)
+            {
+                if (!ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
+                    UnityEngine.Debug.LogError(ex);
+            }
+            return;
+#else  
+
+            FinalDispose();       
 #endif  
+        }
+
+        private void FinalDispose()
+        {
             CalculatingNodes.Dispose();
             Results.Dispose();
         }

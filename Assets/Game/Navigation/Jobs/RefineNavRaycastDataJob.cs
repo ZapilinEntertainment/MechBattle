@@ -77,7 +77,7 @@ namespace ZE.MechBattle.Navigation
                 walkablesHitMask[i] = isWalkable;
                 var walkableHeight = isWalkable ? walkableHit.point.y : NavigationConstants.DEFAULT_HEIGHT;
                 resultingData.GroundCastsCount += isWalkable ? 1 : 0;
-                heights[i] = walkableHeight;               
+                heights[i] = walkableHeight; 
                 
                 var obstacleHit = ObstacleHits[readIndex + i];
                 var isObstacled = obstacleHit.colliderInstanceID != 0;

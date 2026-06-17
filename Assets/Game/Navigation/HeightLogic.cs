@@ -29,7 +29,12 @@ namespace ZE.MechBattle.Navigation
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [BurstCompile]
-        public static bool IsTransitionPossible<T>(T start, T end, TransitionMeasurePoints transitionMeasurePoints, float maxElevationDifference) where T : struct, ICellHeightData =>
-             math.abs(start[transitionMeasurePoints.CellMeasurePoint] - end[transitionMeasurePoints.NeighbourMeasurePoint]) < maxElevationDifference;
+        public static bool IsTransitionPossible<T>(T start, T end, TransitionMeasurePoints transitionMeasurePoints, float maxElevationDifference) where T : struct, ICellHeightData
+        {
+            var startHeight = start[transitionMeasurePoints.CellMeasurePoint];
+            var endHeight = end[transitionMeasurePoints.NeighbourMeasurePoint];
+            return math.abs(startHeight - endHeight) < maxElevationDifference;
+        }
+             
     }
 }

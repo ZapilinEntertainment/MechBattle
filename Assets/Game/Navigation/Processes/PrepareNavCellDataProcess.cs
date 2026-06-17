@@ -43,7 +43,7 @@ namespace ZE.MechBattle.Navigation
 
             _calculateMaskJob = new()
             {
-                CellDataProvider = new CalculateCellNeighboursMaskJob.JobCellDataProvider(refinedData, _flowCalculationCollections.PassabilityData),
+                CellDataProvider = new CalculateCellNeighboursMaskJob.JobCellDataProvider(_prepareJob.HeightData.AsReadOnly(), default),
                 MaxElevationDifference = mapSettings.MaxElevationDifference,
             };
         }
@@ -51,10 +51,25 @@ namespace ZE.MechBattle.Navigation
         public void Dispose()
         {
 #if UNITY_EDITOR
-            if (ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
-                return;
+            try
+            {
+                FinalDispose();
+            }
+            catch (Exception ex)
+            {
+                if (!ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
+                    UnityEngine.Debug.LogError(ex);
+            }
+            return;
+#else  
+
+            FinalDispose();       
 #endif  
-            _flowCalculationCollections.Dispose();            
+        }
+
+        private void FinalDispose()
+        {
+            _flowCalculationCollections.Dispose();
             _cellHeightData.Dispose();
         }
 
@@ -64,8 +79,10 @@ namespace ZE.MechBattle.Navigation
         {
             _flowCalculationCollections.ChangeHexPosAndReset(hexCenter);
             CurrentHexCenter = hexCenter;
-
             _prepareJob.Run(_trianglesPerHex);
+
+            var dataProvider = _calculateMaskJob.CellDataProvider.ChangePassabilityData(_flowCalculationCollections.PassabilityData);
+            _calculateMaskJob.CellDataProvider = dataProvider;
             _calculateMaskJob.Run(_trianglesPerHex);
         }
 
@@ -73,6 +90,9 @@ namespace ZE.MechBattle.Navigation
         {
             _flowCalculationCollections.ChangeHexPosAndReset(hexCenter);
             CurrentHexCenter = hexCenter;
+
+            var dataProvider = _calculateMaskJob.CellDataProvider.ChangePassabilityData(_flowCalculationCollections.PassabilityData);
+            _calculateMaskJob.CellDataProvider = dataProvider;
 
             var handleA =  _prepareJob.ScheduleByRef(_trianglesPerHex, innerloopBatchCount : 16);
             return _calculateMaskJob.ScheduleByRef(_trianglesPerHex, innerloopBatchCount : 16, handleA);

@@ -24,8 +24,9 @@ namespace ZE.MechBattle.Navigation
             isPassable &= (1f - refinedData.GroundCastsCount / SubdividedTrianglesCount) < UnwalkableSurfacesPercentForLock;
 
             // neighbours access mask will be calculated at next job
-            SetupData[index] = new CellPassabilityData(isPassable, 0);
+            SetupData[index] = new CellPassabilityData(isPassable, 0);            
             HeightData[index] = new CellHeightData(refinedData);
+            var heightData = new CellHeightData(refinedData);
         }
     }
 }

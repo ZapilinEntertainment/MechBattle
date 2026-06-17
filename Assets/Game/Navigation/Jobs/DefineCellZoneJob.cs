@@ -61,10 +61,12 @@ namespace ZE.MechBattle
                 if (data.IsPassable && data.ZoneIndex == 0)
                 {
                     newStartPos = kvp.Key;
+                    //UnityEngine.Debug.Log($"start zone {nextZoneIndex} from {newStartPos}");
                     return true;
                 }
             }
 
+            //UnityEngine.Debug.Log("no more zones exists");
             newStartPos = default;
             return false;
         }
@@ -84,6 +86,7 @@ namespace ZE.MechBattle
                 if (!Cells.TryGetValue(neighbourPos, out var neighbourData) || neighbourData.ZoneIndex != 0)
                     continue;
 
+               // UnityEngine.Debug.Log($"[{i}]: {pos} -> {neighbourPos}");
                 neighbourData.ZoneIndex = zoneIndex;
                 Cells[neighbourPos] = neighbourData;
                 ActiveCells.Enqueue(neighbourPos);

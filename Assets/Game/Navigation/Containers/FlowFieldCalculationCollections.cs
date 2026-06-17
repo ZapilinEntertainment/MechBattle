@@ -77,10 +77,24 @@ namespace ZE.MechBattle.Navigation
         public void Dispose()
         {
 #if UNITY_EDITOR
-            if (ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
-                return;
-#endif  
+            try
+            {
+                FinalDispose();
+            }
+            catch (Exception ex)
+            {
+                if (!ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
+                    UnityEngine.Debug.LogError(ex);
+            }
+            return;
+#else  
 
+            FinalDispose();       
+#endif  
+        }
+
+        private void FinalDispose()
+        {
             PassabilityDataInnerArray.Dispose();
             CalculationData.Dispose();
             CalculationQueue.Dispose();

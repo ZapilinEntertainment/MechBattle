@@ -75,7 +75,7 @@ namespace ZE.MechBattle.Navigation
         public static bool IsCloseTransitionPossible<HeightData>(TriangleCellData<HeightData> checkCell, TriangleCellData<HeightData> neighbourCell, float maxElevationDifference)
           where HeightData : unmanaged, ICellHeightData
         {
-            if (neighbourCell.IsPassable)
+            if (!neighbourCell.IsPassable)
                 return false;
 
             var transitionMeasurePoints = TriangularMath.GetTransitionMeasurePoints(checkCell.Tripos, neighbourCell.Tripos);

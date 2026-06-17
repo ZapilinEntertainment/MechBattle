@@ -15,7 +15,8 @@ MonoBehaviour:
   <HexEdgeSize>k__BackingField: 100
   <TrianglesPerHexEdge>k__BackingField: 10
   <RaycastSubdivisionsPerEdge>k__BackingField: 4
-  <IntersectionPercentForLock>k__BackingField: 0.5
+  <ObstaclesPercentForLock>k__BackingField: 0.5
+  <UnwalkableSurfacePercentForLock>k__BackingField: 0.5
   <BottomLeftCorner>k__BackingField:
     x: -499
     y: 0

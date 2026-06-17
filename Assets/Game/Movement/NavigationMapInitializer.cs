@@ -24,7 +24,7 @@ namespace ZE.MechBattle.Ecs
             _hexRaycastRequests = hexRaycastRequestsList;
         }
 
-        public async void OnAwake()
+        public void OnAwake()
         {
             using var hexes = GetHexCoordsInRectangleCommand.Execute(_map.Settings, Allocator.Temp);
             foreach (var hexCoord in hexes)
@@ -33,13 +33,28 @@ namespace ZE.MechBattle.Ecs
                 _hexRaycastRequests.AddRequest(hexCoord, hex.PassabilityVersion);
             }
 
-
+            WaitUntilAllMapRaycasted();
         }
 
         public void Dispose() 
         { 
             _cts.Cancel();
             _cts.Dispose();
+        }
+
+        private async void WaitUntilAllMapRaycasted()
+        {
+            var token = _cts.Token;
+            do
+            {
+                await Awaitable.NextFrameAsync();
+            }
+            while (!token.IsCancellationRequested && _hexRaycastRequests.Count != 0);
+
+            if (token.IsCancellationRequested)
+                return;
+
+            _map.OnInitialized();
         }
     }
 }

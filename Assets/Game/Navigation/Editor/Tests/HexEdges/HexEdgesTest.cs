@@ -10,6 +10,29 @@ namespace ZE.MechBattle.Navigation.Tests
 {
     public class HexEdgesTest
     {
+        [TestCase(0,10,-9,   0,0,   0,10,-9 )]
+        [TestCase(0, 10, -9,  0, 5,   -3, 9, -7)]
+        [TestCase(-5,9,-5,  0,4, -7,9,-3 )]
+        [TestCase(-7,10,-2,  0,-4,  -5,10,-4)]
+        [TestCase(-9,8,2,  1,3,   -10,6,3)]
+        [TestCase(-10,3,6, 1,1,  -9,3,7)]
+        [TestCase(-7,-3,9, 2,2,  -6,-4,9)]
+        [TestCase(-2,-7,10, 2,3, -1,-9,9)]
+        [TestCase(2,-9,8, 3,3, 3,-10,6)]
+        [TestCase(7,-10,2, 3, -4,  5,-10,4)]
+        [TestCase(10,-8,-1, 4,1,  9,-8,-2)]
+        [TestCase(9,-4,-6, 4,3,  10,-2,-7)]
+        [TestCase(8,2,-9,  5,2,  7,3,-9)]
+        [TestCase(6,3,-10,  5,5,   4,6,-9)]
+        public void AlongsideOffsetTest(int startX, int startY, int startZ,  int edgeIndex, int offset,   int endX, int endY, int endZ)
+        {
+            var edge = (HexEdge)edgeIndex;
+            var start = new IntTriangularPos(startX, startY, startZ);
+            var end = new IntTriangularPos(endX, endY, endZ);
+
+            Assert.AreEqual(end, TriangularMath.DoOffsetAlongEdge(start, edge, offset), "incorrect offset destinations");
+        }
+
         [Test]
         public void NextAndPreviousEdgesTest()
         {

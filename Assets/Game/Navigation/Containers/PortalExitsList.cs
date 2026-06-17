@@ -4,14 +4,14 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
-    public interface IPortalExitsList : IEnumerable<int>
+    public interface IPortalExitsList : IEnumerable<KeyValuePair<int, NavigationPortalExit>>
     {
         bool ContainsKey(int id);
         bool TryGetValue(int key, out NavigationPortalExit exit);
         int Version { get; }
     }
 
-    public class PortalExitsList :IPortalExitsList
+    public class PortalExitsList : IPortalExitsList
     {
         public int Version { get; private set; }
         public NavigationPortalExit this[int exitId] => _dictionary[exitId];
@@ -36,7 +36,7 @@ namespace ZE.MechBattle.Navigation
         public bool ContainsKey(int key) => _dictionary.ContainsKey(key);
         public int Count => _dictionary.Count;
 
-        public IEnumerator<int> GetEnumerator() => _dictionary.Keys.GetEnumerator();
+        public IEnumerator<KeyValuePair<int, NavigationPortalExit>> GetEnumerator() => _dictionary.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
