@@ -77,7 +77,7 @@ namespace ZE.MechBattle.Navigation
             
             foreach (var tripos in enumerator)
             {
-                var passableData = map.GetPassabilityData(tripos);
+                var passableData = map.GetPassabilityData(tripos);                
                 if (!passableData.IsPassable)
                 {                    
                     FinishSequence();
@@ -85,6 +85,7 @@ namespace ZE.MechBattle.Navigation
                 else
                 {
                     var direction = tripos.IsPeak ? peakDir : valleyDir;
+                    //UnityEngine.Debug.Log($"{tripos} -> {passableData.IsNeighbourAccessible(direction)} ({direction})");
                     if (!passableData.IsNeighbourAccessible(direction))
                     {
                         FinishSequence();
@@ -109,13 +110,16 @@ namespace ZE.MechBattle.Navigation
                             }
                         }
                         else
-                        {
+                        {                            
                             StartNewSequence(tripos, cellZone, neighbourCellZone);                            
                         }
                     }
                 }
                 index++;
             }
+
+            if (sequenceStarted)
+                FinishSequence();
         }
     
     }

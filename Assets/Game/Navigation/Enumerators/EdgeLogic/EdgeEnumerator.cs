@@ -15,7 +15,7 @@ namespace ZE.MechBattle.Navigation
     }
 
     [BurstCompile]
-    public struct EdgeEnumerator<T> : IEnumerator<IntTriangularPos>, IEnumerable<IntTriangularPos> where T : struct, IEdgeEnumerationLogic
+    public struct EdgeEnumerator<T> : IEdgeTrisEnumerator where T : struct, IEdgeEnumerationLogic
     {
         private T _logic;
         private int _limit;

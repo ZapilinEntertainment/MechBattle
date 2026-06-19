@@ -16,5 +16,7 @@ namespace ZE.MechBattle.Navigation
             HexCoordA = hexCoordA;
             HexCoordB = hexCoordB;
         }
+
+        public override string ToString() => $"exit A: {ExitIdA} at {HexCoordA}; exit B: {ExitIdB} at {HexCoordB}";
     }
 }

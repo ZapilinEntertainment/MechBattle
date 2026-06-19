@@ -20,6 +20,17 @@ namespace ZE.MechBattle.Navigation
             Clear();
         }
 
+        public void ReverseArrayB()
+        {
+            for (var i = 0; i < ExitsMaskB.Length / 2; i++)
+            {
+                var index = ExitsMaskB.Length - 1 -  i;
+                var temp = ExitsMaskB[index];
+                ExitsMaskB[index] = ExitsMaskB[i];
+                ExitsMaskB[i] = temp;
+            }
+        }
+
         public void Clear()
         {
             for (var i = 0; i < ExitsMaskA.Length; i++)

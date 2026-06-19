@@ -187,7 +187,7 @@ namespace ZE.MechBattle.Navigation
 
         // TEST PURPOSES ONLY
         [BurstDiscard]
-        public static IEnumerable<IntTriangularPos> GetEdgeEnumerable(this HexEdge edge, int trianglesPerEdge, NavigationHexPosition hexPos)
+        public static IEdgeTrisEnumerator GetEdgeEnumerable(this HexEdge edge, int trianglesPerEdge, NavigationHexPosition hexPos)
         {
             switch (edge)
             {
@@ -201,7 +201,7 @@ namespace ZE.MechBattle.Navigation
         }
 
         [BurstDiscard]
-        public static IEnumerable<IntTriangularPos> GetEdgeEnumerable(this HexEdge edge, NavigationPortalExit portalExit)
+        public static IEdgeTrisEnumerator GetEdgeEnumerable(this HexEdge edge, NavigationPortalExit portalExit)
         {
             switch (edge)
             {

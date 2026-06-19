@@ -76,7 +76,10 @@ namespace ZE.MechBattle.Navigation
           where HeightData : unmanaged, ICellHeightData
         {
             if (!neighbourCell.IsPassable)
+            {
+                //UnityEngine.Debug.Log($"{neighbourCell.Tripos} is no passable");
                 return false;
+            }
 
             var transitionMeasurePoints = TriangularMath.GetTransitionMeasurePoints(checkCell.Tripos, neighbourCell.Tripos);
             return HeightLogic.IsTransitionPossible(checkCell.HeightData, neighbourCell.HeightData, transitionMeasurePoints, maxElevationDifference);

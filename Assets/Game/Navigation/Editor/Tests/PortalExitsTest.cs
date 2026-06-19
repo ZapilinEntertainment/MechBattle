@@ -11,6 +11,104 @@ namespace ZE.MechBattle.Navigation.Tests
         private const float HEX_EDGE_LENGTH = 100f;
 
         [Test]
+        public void ExitListConstructionTest2()
+        {
+            const int TRIANGLES_PER_EDGE = 6;
+            const int BORDER_TRIS_COUNT = 11;
+            Assert.AreEqual(TriangularMath.GetTwoRowEdgeTrianglesCount(TRIANGLES_PER_EDGE), BORDER_TRIS_COUNT, "why border tris count don't match?");
+
+            var mapSettings = MapSettings.CreateWithDefaultBorders(100f, TRIANGLES_PER_EDGE, unscannedSurfacesArePassable: true);
+            using var map = new NavigationMap(mapSettings, Allocator.Temp);
+
+            var hexCoord = int2.zero;
+            var hexPos = new NavigationHexPosition(hexCoord, map);
+            var passabilities = new CellPassabilityData[BORDER_TRIS_COUNT]
+            {
+                new (false, default, 1),// [0] not exit (passability)
+                new (true, default, 1), // [1] 0: exit of zone 1
+                new (true, default, 1), // [2] 0: 
+                new (true, default, 2), // [3] 1: exit of zone 2
+                new (true, default, 2), // [4] 1:
+                new (true, default, 2), // [5] 1:
+                new (false, default, 2),// [6] not exit(passability)
+                new (true, default, 2), // [7] 2: exit of zone 2
+                new (true, default, 2), // [8] 2:
+                new (true, default, 2), // [9] 2:
+                new (false, default, 1) // [10] not exit (passability)
+            };
+
+
+            var exitsList = new List<NavigationPortalExit>();
+            var triangles = new IntTriangularPos[TriangularMath.GetTwoRowEdgeTrianglesCount(TRIANGLES_PER_EDGE)];
+            var cellDataProvider = map as ICellDataProvider<CellHeightData>;
+
+            void CheckNeighboursMask(IntTriangularPos pos, int mask, int index)
+            {
+                for (var i = 0; i < NavigationConstants.TRIANGLE_DIRECTIONS_COUNT; i++)
+                {
+                    var mustBePassable = (mask & (1<<i)) != 0;
+                    var neighbourPos = TriangularMath.GetNeighbourByDirection(pos, i);
+                    var mapPassability = map.GetPassabilityData(neighbourPos).IsPassable;
+                    Assert.AreEqual(mapPassability, mustBePassable, $"failed for {pos} -> {neighbourPos}, mask passability: {mustBePassable}, map passability: {mapPassability}");
+                }
+            }
+
+            for (var i = 0; i < 6; i++)
+            {
+                var edge = (HexEdge)i;
+                var index = 0;
+
+                foreach (var tripos in edge.GetEdgeEnumerable(TRIANGLES_PER_EDGE, hexPos))
+                {
+                    var a = index++;
+                    map.UpdateCellPassability(tripos, passabilities[a]);
+                    triangles[a] = tripos;
+                }
+
+                var n = 0;
+                foreach (var tripos in edge.GetEdgeEnumerable(TRIANGLES_PER_EDGE, hexPos))
+                {
+                    var logic = new UpdateCellNeighboursMaskLogic<CellHeightData, INavigationMap>(tripos, map, map.Settings.MaxElevationDifference);
+                    Assert.AreEqual(passabilities[n].IsPassable, cellDataProvider.TryGetCellData(tripos, out var cellData) & cellData.IsPassable, $"passability doesn't match for [{n}]:{tripos}");
+                    
+                    var passability = map.GetPassabilityData(tripos);
+                    passability.NeighboursMask = logic.CalculateNeighboursMask();
+                    CheckNeighboursMask(tripos, passability.NeighboursMask, n);
+                    map.UpdateCellPassability(tripos, passability);
+
+                    n++;
+                }
+
+                var correctExitsList = new NavigationPortalExit[3]
+               {
+                    new (triangles[1], 1, edge, 2, 1),
+                    new (triangles[3], 3, edge, 3, 2),
+                    new (triangles[7], 7, edge, 3, 2)
+               };
+
+                CalculateHexExitsCommand.Execute(map, hexCoord, edge, exitsList);
+                for (var k = 0; k < exitsList.Count; k++)
+                {
+                    TestContext.WriteLine($"{k}: {exitsList[k]}");
+                }
+
+                Assert.AreEqual(correctExitsList.Length, exitsList.Count, "exits count didn't match");
+
+
+
+                index = 0;
+                foreach (var exit in exitsList)
+                {
+                    Assert.AreEqual(correctExitsList[index], exit, $"failed at index {index}");
+                    index++;
+                }
+
+                exitsList.Clear();
+            }
+
+        }
+
+        [Test]
         public void ExitListConstructionTest()
         {
             const int TRIANGLES_PER_EDGE = 6;

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
@@ -56,6 +57,10 @@ namespace ZE.MechBattle.Navigation
             // actual exit data
             WriteUpdatedExitData(hexCoordA, edgeA, _updatedPortalsMask.ExitsMaskA);
             WriteUpdatedExitData(hexCoordB, edgeB, _updatedPortalsMask.ExitsMaskB);
+
+            _updatedPortalsMask.ReverseArrayB();
+            _existingPortalsMask.ReverseArrayB();
+
             for (var i = 0; i < _edgeTrisCount; i++)
             {
                 _updatedPortalsMask.PortalIdsMask[i] = (_updatedPortalsMask.ExitsMaskA[i] != INVALID_ID) & (_updatedPortalsMask.ExitsMaskB[i] != INVALID_ID) ? PLACEHOLDER_PORTAL_ID : INVALID_ID;

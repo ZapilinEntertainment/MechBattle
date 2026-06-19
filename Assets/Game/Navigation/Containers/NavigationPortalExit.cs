@@ -25,7 +25,7 @@ namespace ZE.MechBattle
             ZoneIndex = zoneIndex;
         }
 
-        public override string ToString() => $"exit: from [{StartTriangleIndex}]{StartTriangle} : {Edge}, {Length} tris length, zone: {ZoneIndex}";
+        public override string ToString() => $"exit: from [{StartTriangleIndex}]{StartTriangle} : {Edge}, tris length: {Length}, zone: {ZoneIndex}";
 
         #region iequatable
         // deepseek generated

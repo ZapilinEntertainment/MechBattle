@@ -1,6 +1,7 @@
 using System.Collections.Generic;   
 using Unity.Mathematics;
 using Unity.Burst;
+using ZE.Utils;
 
 namespace ZE.MechBattle.Navigation
 {

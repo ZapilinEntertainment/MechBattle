@@ -122,7 +122,9 @@ namespace ZE.MechBattle
             }
 
             if (!_cells.ContainsKey(_job.ZeroPos))
+            {
                 UnityEngine.Debug.LogError($"{_job.ZeroPos} is not in {_hexCoord} (portal {_portalId})");
+            }                
         }
     }
 }

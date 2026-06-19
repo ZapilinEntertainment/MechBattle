@@ -60,6 +60,8 @@ namespace ZE.MechBattle.Ecs {
 
         private void CalculateDistancesForPortalExits(int portalId, NavigationPortal portal)
         {
+            UnityEngine.Debug.Log($"{portalId}: {portal.ExitIdA} in {portal.HexCoordA} |  {portal.ExitIdB} in {portal.HexCoordB}");
+
             if (_exitsList.TryGetValue(portal.ExitIdA, out var exitA))
                 ProcessExitDistances(portalId, exitA, portal.HexCoordA);
 

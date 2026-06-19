@@ -68,7 +68,6 @@ namespace ZE.MechBattle.Ecs {
                 var updateData = _exitsUpdateDataPool.Get();
                 CalculateHexExitsCommand.Execute(_map, hexKeyA.HexCoord, hexKeyA.Edge, updateData.ExitsA);
                 CalculateHexExitsCommand.Execute(_map, hexKeyB.HexCoord, hexKeyB.Edge, updateData.ExitsB);
-                updateData.ExitsB.Reverse();
 
                 //UnityEngine.Debug.Log($"{hexKeyA}  - {updateData.ExitsA.Count} exits");
                 //UnityEngine.Debug.Log($"{hexKeyB}  - {updateData.ExitsB.Count} exits");

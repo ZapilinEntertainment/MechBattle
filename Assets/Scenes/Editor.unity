@@ -4108,7 +4108,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1259888751}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f5029b64d4b707f4f90427e70a74dfbb, type: 3}
   m_Name: 
@@ -4129,6 +4129,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90bb08656b0c8bc449590971d445aefd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.ZonesDrawer
+  _hexCoords:
+  - x: 0
+    y: 0
   _compareFunction: 6
   _shownMapVersion: 0
 --- !u!1 &1324568865
