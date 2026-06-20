@@ -37,6 +37,8 @@ namespace ZE.MechBattle.Navigation
             _updatedPortalsMask = new(trianglesPerEdge, _exitsList);
         }
 
+        public void Handle(HexEdgeKey keyA, HexEdgeKey keyB) => Handle(keyA.HexCoord, keyA.Edge, keyB.HexCoord, keyB.Edge);
+
         public void Handle(int2 hexCoordA, HexEdge edgeA, int2 hexCoordB, HexEdge edgeB)
         {
             var recordsCount = 0;
@@ -55,26 +57,32 @@ namespace ZE.MechBattle.Navigation
             }
 
             // actual exit data
-            WriteUpdatedExitData(hexCoordA, edgeA, _updatedPortalsMask.ExitsMaskA);
-            WriteUpdatedExitData(hexCoordB, edgeB, _updatedPortalsMask.ExitsMaskB);
+            WriteUpdatedExitData(hexCoordA, edgeA, sideA: true);
+            WriteUpdatedExitData(hexCoordB, edgeB, sideA: false);
 
-            _updatedPortalsMask.ReverseArrayB();
-            _existingPortalsMask.ReverseArrayB();
+            // there are 2 combined portals mask
+            // 1) existingPortalsMask (current exit-portal data)
+            // 2) updatedPortalsMask (freshly recalculated data)
+            // 
+            // each mask consists of 2 arrays - exit ids and portal ids
+            // however we cannot just match them by id - opposite edges indexation direction are opposited
+            // ex. TOP: left top corner -> right top corner
+            // BOTTOM: bottom right corner -> bottom left corner
+            // reversing will be done by exit masks method, just mention arguments (like indexA means direct indexation order)
 
             for (var i = 0; i < _edgeTrisCount; i++)
             {
-                _updatedPortalsMask.PortalIdsMask[i] = (_updatedPortalsMask.ExitsMaskA[i] != INVALID_ID) & (_updatedPortalsMask.ExitsMaskB[i] != INVALID_ID) ? PLACEHOLDER_PORTAL_ID : INVALID_ID;
+                var pairExits = _updatedPortalsMask.GetPairExits(i);
+                var portalId = (pairExits.exitIdA != INVALID_ID) & (pairExits.exitIdB != INVALID_ID) ? PLACEHOLDER_PORTAL_ID : INVALID_ID;
+                _updatedPortalsMask.SetPortalId(i, portalId);
             }
 
             // portals updating and outdating
             ClearOutdatedPortalsData();
-            HandleResultingMask(hexCoordA, hexCoordB);
+            HandleResultingMask(hexCoordA, edgeA, hexCoordB, edgeB);
 
-            if (recordsCount != 0)
-            {
-                _existingPortalsMask.Clear();
-                _updatedPortalsMask.Clear();
-            }
+            _existingPortalsMask.Clear();
+            _updatedPortalsMask.Clear();
         }
 
         private void ClearOutdatedPortalsData()
@@ -96,8 +104,8 @@ namespace ZE.MechBattle.Navigation
                 }
                 else
                 {
-                    var currentExitA = _updatedPortalsMask.ExitsMaskA[i];
-                    var currentExitB = _updatedPortalsMask.ExitsMaskB[i];
+                    var currentExitA = _updatedPortalsMask.GetExitIdA(i);
+                    var currentExitB = _updatedPortalsMask.GetExitIdB(i);
 
                     clearPortalData = actualExitAId != currentExitA | actualExitBId != currentExitB;                   
                 }
@@ -109,59 +117,72 @@ namespace ZE.MechBattle.Navigation
                     {
                         _existingPortalsMask.ClearPosition(i++);                        
                     }
-                    while (i < _edgeTrisCount && _existingPortalsMask.PortalIdsMask[i] == currentPortalId);
+                    while (i < _edgeTrisCount && _existingPortalsMask.GetPortalId(i) == currentPortalId);
                     i--; // mention main cycle incremention
                 }
             }
         }
 
-        private void HandleResultingMask(int2 hexCoordA, int2 hexCoordB)
+        private void HandleResultingMask(int2 hexCoordA, HexEdge edgeA, int2 hexCoordB, HexEdge edgeB)
         {
             for (var i = 0; i < _edgeTrisCount; i++)
             {
                 // some new portal should be at this index
-                if (_updatedPortalsMask.PortalIdsMask[i] != PLACEHOLDER_PORTAL_ID)
+                if (_updatedPortalsMask.GetPortalId(i) != PLACEHOLDER_PORTAL_ID)
                     continue;
 
-                var previousExitA = _existingPortalsMask.ExitsMaskA[i];
-                var previousExitB = _existingPortalsMask.ExitsMaskB[i];
-                var actualExitA = _updatedPortalsMask.ExitsMaskA[i];
-                var actualExitB = _updatedPortalsMask.ExitsMaskB[i];
+                var previousExitA = _existingPortalsMask.GetExitIdA(i);
+                var previousExitB = _existingPortalsMask.GetExitIdB(i);
+                var actualExitA = _updatedPortalsMask.GetExitIdA(i);
+                var actualExitB = _updatedPortalsMask.GetExitIdB(i);
 
-                var oldPortalId = _existingPortalsMask.PortalIdsMask[i];
+                var oldPortalId = _existingPortalsMask.GetPortalId(i);
 
                 //UnityEngine.Debug.Log($"[{i}]: {previousExitA},{previousExitB} -> {actualExitA},{actualExitB}");
 
                 if (previousExitA == actualExitA & previousExitB == actualExitB)
                 {
                     // save previous portal (portal id already checked for existence - PLACEHOLDER_PORTAL_ID check)
-                    _updatedPortalsMask.PortalIdsMask[i] = oldPortalId;
+                    _updatedPortalsMask.SetPortalId(i, oldPortalId);
                 }
                 else
                 {
                     _portalsCoordinator.OnPortalOutdated(oldPortalId);
-                    var newPortal = new NavigationPortal(actualExitA, hexCoordA, actualExitB, hexCoordB);
+                    var newPortal = RegisterPortal(hexCoordA, edgeA, actualExitA, hexCoordB, edgeB, actualExitB);
                     var newPortalId = _portalsCoordinator.RegisterNewPortal(newPortal);
 
-                    //UnityEngine.Debug.Log($"portal registered: {newPortalId}");
+                    //UnityEngine.Debug.Log($"portal registered: {newPortalId}, A: {newPortal.ExitIdA} ({newPortal.HexCoordA}), B: {newPortal.ExitIdB} ({newPortal.HexCoordB})");
+                    
+
                     do
                     {
-                        _updatedPortalsMask.PortalIdsMask[i++] = newPortalId;
+                        _updatedPortalsMask.SetPortalId(i++, newPortalId);
                     }
-                    while ((i < _edgeTrisCount) && (_updatedPortalsMask.ExitsMaskA[i] == actualExitA));
+                    while ((i < _edgeTrisCount) && (_updatedPortalsMask.GetExitIdA(i) == actualExitA));
                     i--; // mention main cycle incremention
                 }
             }
         }
 
-        private void WriteUpdatedExitData(int2 hexCoord, HexEdge edge, int[] exitsMask)
+        private void WriteUpdatedExitData(int2 hexCoord, HexEdge edge, bool sideA)
         {
             _portalsCoordinator.GetEdgeExits(_map.GetOrCreateHex(hexCoord), edge, _edgeExitData);
             foreach (var exitCD in _edgeExitData)
             {
-                _updatedPortalsMask.AddExit(exitCD.id, exitsMask, PLACEHOLDER_PORTAL_ID);
+                _updatedPortalsMask.AddExit(exitCD.id, PLACEHOLDER_PORTAL_ID, sideA);
             }
             _edgeExitData.Clear();
+        }
+
+
+        private NavigationPortal RegisterPortal(int2 hexCoordA, HexEdge edgeA, int exitIdA, int2 hexCoordB, HexEdge edgeB, int exitIdB)
+        {
+            var doubleSideKey = new BothSideHexEdge(hexCoordA, edgeA, hexCoordB, edgeB);
+            var coordsSwitched = math.any(doubleSideKey.SideA.HexCoord != hexCoordA);
+            var exitId1 = coordsSwitched ? exitIdB : exitIdA;
+            var exitId2 = coordsSwitched ? exitIdA : exitIdB;
+
+            return new NavigationPortal(exitId1, doubleSideKey.SideA.HexCoord, exitId2, doubleSideKey.SideB.HexCoord);
         }
 
     }

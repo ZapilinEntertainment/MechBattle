@@ -4066,6 +4066,7 @@ GameObject:
   - component: {fileID: 1259888754}
   - component: {fileID: 1259888755}
   - component: {fileID: 1259888756}
+  - component: {fileID: 1259888757}
   m_Layer: 0
   m_Name: DEVELOP
   m_TagString: Untagged
@@ -4082,7 +4083,7 @@ Transform:
   m_GameObject: {fileID: 1259888751}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 119, y: 0, z: 214.5}
+  m_LocalPosition: {x: 0, y: 0, z: -400}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4108,7 +4109,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1259888751}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f5029b64d4b707f4f90427e70a74dfbb, type: 3}
   m_Name: 
@@ -4134,6 +4135,18 @@ MonoBehaviour:
     y: 0
   _compareFunction: 6
   _shownMapVersion: 0
+--- !u!114 &1259888757
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259888751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9c5a58d6461f9245b7bdb8bbd107741, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.ExitAndPortalsIdsDrawer
 --- !u!1 &1324568865
 GameObject:
   m_ObjectHideFlags: 0

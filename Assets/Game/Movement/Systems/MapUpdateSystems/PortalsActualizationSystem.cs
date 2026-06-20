@@ -48,7 +48,7 @@ namespace ZE.MechBattle
             // 4. and then check both masks, making portals obsolete or register new in progress
 
             foreach (var request in _portalRequestsList)
-            {
+            {               
                 _logic.Handle(request.SideA.HexCoord, request.SideA.Edge, request.SideB.HexCoord, request.SideB.Edge);
             }
 
