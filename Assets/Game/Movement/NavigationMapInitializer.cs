@@ -26,16 +26,11 @@ namespace ZE.MechBattle.Ecs
 
         public void OnAwake()
         {
-            //using var hexes = GetHexCoordsInRectangleCommand.Execute(_map.Settings, Allocator.Temp);
-            //foreach (var hexCoord in hexes)
-            //{
-            //    var hex = _map.GetOrCreateHex(hexCoord);
-            //    _hexRaycastRequests.AddRequest(hexCoord, hex.PassabilityVersion);
-            //}
-
-            foreach (var hexCoord in new HexRadiusEnumerator(int2.zero, 1))
+            using var hexes = GetHexCoordsInRectangleCommand.Execute(_map.Settings, Allocator.Temp);
+            foreach (var hexCoord in hexes)
             {
-                _hexRaycastRequests.AddRequest(hexCoord, 1);
+                var hex = _map.GetOrCreateHex(hexCoord);
+                _hexRaycastRequests.AddRequest(hexCoord, hex.PassabilityVersion);
             }
 
             WaitUntilAllMapRaycasted();

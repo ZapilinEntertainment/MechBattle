@@ -15,7 +15,7 @@ namespace ZE.MechBattle.Ecs {
         private Filter _clearFilter;
 
         private Stash<ClearHexPathTag> _hexClearTags;
-        private Stash<HexPathComponent> _regularHexPaths;
+        private Stash<HexPathIdComponent> _regularHexPaths;
         private Stash<ClearTrianglePathTag> _triangleClearTags;
         private Stash<HexPathDefinedTag> _hexPathDefinedTags;
 
@@ -32,7 +32,7 @@ namespace ZE.MechBattle.Ecs {
                 .Build();
 
             _hexClearTags = World.GetStash<ClearHexPathTag>();
-            _regularHexPaths = World.GetStash<HexPathComponent>();
+            _regularHexPaths = World.GetStash<HexPathIdComponent>();
             _triangleClearTags = World.GetStash<ClearTrianglePathTag>();
             _hexPathDefinedTags = World.GetStash<HexPathDefinedTag>();
         }

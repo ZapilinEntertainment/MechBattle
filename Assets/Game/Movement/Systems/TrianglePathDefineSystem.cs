@@ -20,7 +20,7 @@ namespace ZE.MechBattle.Ecs
         private Stash<RegularTrianglePathProcessingTag> _regularProcessingTags;
         private Stash<FlowTrianglePathProcessingTag> _flowProcessingTags;
 
-        private Stash<HexPathComponent> _hexPathComponents;
+        private Stash<HexPathIdComponent> _hexPathComponents;
         private Stash<HexPathProgressionComponent> _hexPathProgressionComponents;
         private Stash<ClearHexPathTag> _invalidHexPaths;
 
@@ -43,7 +43,7 @@ namespace ZE.MechBattle.Ecs
 
             _noHexPathUsers = World.Filter
                 .With<HexPathReadyTag>()
-                .Without<HexPathComponent>()
+                .Without<HexPathIdComponent>()
                 .Without<TrianglePathDefinedTag>()
                 .Build();
 
@@ -53,7 +53,7 @@ namespace ZE.MechBattle.Ecs
             _regularProcessingTags = World.GetStash<RegularTrianglePathProcessingTag>();
             _flowProcessingTags = World.GetStash<FlowTrianglePathProcessingTag>();
 
-            _hexPathComponents = World.GetStash<HexPathComponent>();
+            _hexPathComponents = World.GetStash<HexPathIdComponent>();
             _hexPathProgressionComponents = World.GetStash<HexPathProgressionComponent>();
             _invalidHexPaths = World.GetStash<ClearHexPathTag>();
 

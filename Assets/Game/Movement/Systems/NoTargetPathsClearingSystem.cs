@@ -15,13 +15,13 @@ namespace ZE.MechBattle.Ecs {
         public void OnAwake() 
         {
             _regularPathsFilter = World.Filter
-                .With<HexPathComponent>()
+                .With<HexPathIdComponent>()
                 .Without<MoveTargetComponent>()
                 .Build();
 
             _noPathFilter = World.Filter
                 .With<HexPathReadyTag>()
-                .Without<HexPathComponent>()
+                .Without<HexPathIdComponent>()
                 .Without<MoveTargetComponent>()
                 .Build();
 

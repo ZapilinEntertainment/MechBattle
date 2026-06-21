@@ -11,7 +11,7 @@ namespace ZE.MechBattle.Ecs {
     {
         public World World { get; set;}
         private Filter _invalidRequestsFilter;
-        private Stash<HexPathComponent> _paths;
+        private Stash<HexPathIdComponent> _paths;
         private Stash<InvalidPortalsPathTag> _invalidTags;
         private Stash<ClearHexPathTag> _clearTags;
 
@@ -28,7 +28,7 @@ namespace ZE.MechBattle.Ecs {
         {
             _invalidRequestsFilter = World.Filter.With<InvalidPortalsPathTag>().Build();
 
-            _paths = World.GetStash<HexPathComponent>();
+            _paths = World.GetStash<HexPathIdComponent>();
             _invalidTags = World.GetStash<InvalidPortalsPathTag>();
             _clearTags = World.GetStash<ClearHexPathTag>();
         }

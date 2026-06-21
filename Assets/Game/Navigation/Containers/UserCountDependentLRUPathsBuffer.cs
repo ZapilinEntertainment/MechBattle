@@ -41,7 +41,7 @@ namespace ZE.MechBattle.Navigation
             var pathId = _nextPathId++;
             var path = CreateNewPath(pathId, start, end);
             _endpointsToPathId.Add((start,end), pathId);
-            Add(pathId, path);
+            Add(pathId, path);           
             return path;
         }
        

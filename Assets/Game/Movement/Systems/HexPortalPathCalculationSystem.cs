@@ -27,8 +27,9 @@ namespace ZE.MechBattle.Ecs {
         private Stash<HexPathProgressionComponent> _progressionComponents;
         private Stash<TriangularPosComponent> _triangularPosComponents;
         private Stash<MoveTargetComponent> _moveTargets;
+        private Stash<HexPathIdComponent> _hexPathIds;
 
-        private EntityPathValidator<HexPortalsPath, HexPathComponent, ClearHexPathTag> _validator;
+        private EntityPathValidator<HexPortalsPath, HexPathIdComponent, ClearHexPathTag> _validator;
 
         private readonly INavigationMap _map;
         private readonly PortalPathConstructionProcessManager _processesManager;
@@ -56,8 +57,9 @@ namespace ZE.MechBattle.Ecs {
 
             _triangularPosComponents = World.GetStash<TriangularPosComponent>();
             _moveTargets = World.GetStash<MoveTargetComponent>();
+            _hexPathIds = World.GetStash<HexPathIdComponent>();
 
-            _validator = new EntityPathValidator<HexPortalsPath, HexPathComponent, ClearHexPathTag>(World, PathStatusesLRU, _portalsCoordinator.GetPortalPaths());
+            _validator = new EntityPathValidator<HexPortalsPath, HexPathIdComponent, ClearHexPathTag>(World, PathStatusesLRU, _portalsCoordinator.GetPortalPaths());
         }
 
         public override void Dispose()
@@ -83,7 +85,9 @@ namespace ZE.MechBattle.Ecs {
                 endpoints.start,
                 endpoints.end);
 
-            token = _processesManager.TryLaunchProcess(request);
+            var launchData = new PortalConstructionProcessInput() { Request = request, ReservedPathId = _hexPathIds.Get(entity).PathId };
+
+            token = _processesManager.TryLaunchProcess(launchData);
             return token.IsValid;
         }
     }

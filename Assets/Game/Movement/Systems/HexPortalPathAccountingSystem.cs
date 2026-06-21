@@ -10,7 +10,7 @@ namespace ZE.MechBattle.Ecs
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public sealed class HexPortalPathAccountingSystem : PathsAccountingSystemBase<HexPathComponent, HexPortalsPath>
+    public sealed class HexPortalPathAccountingSystem : PathsAccountingSystemBase<HexPathIdComponent, HexPortalsPath>
     {
 
 
@@ -24,7 +24,7 @@ namespace ZE.MechBattle.Ecs
         protected override float ClearInterval => 15f;
 
         protected override Filter CreateFilter() => World.Filter
-            .With<HexPathComponent>()
+            .With<HexPathIdComponent>()
             .With<HexPathReadyTag>()
             .Build();
     }

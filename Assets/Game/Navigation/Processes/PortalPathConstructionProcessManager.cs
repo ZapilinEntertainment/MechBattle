@@ -3,7 +3,7 @@ using ZE.Utils;
 
 namespace ZE.MechBattle.Navigation
 {
-    public class PortalPathConstructionProcessManager : ProcessManagerBase<PortalsPathConstructionProcess, HexPathSearchRequest, PathCalculationProcessToken>
+    public class PortalPathConstructionProcessManager : ProcessManagerBase<PortalsPathConstructionProcess, PortalConstructionProcessInput, PathCalculationProcessToken>
     {
         private readonly Allocator _allocator;
         private readonly INavigationMap _map;
@@ -30,12 +30,10 @@ namespace ZE.MechBattle.Navigation
         // add to list inside process
         protected override void HandleResults(PortalsPathConstructionProcess process) { }
 
-        protected override PathCalculationProcessToken LaunchProcess(HexPathSearchRequest launchData, PortalsPathConstructionProcess process, int index)
+        protected override PathCalculationProcessToken LaunchProcess(PortalConstructionProcessInput launchData, PortalsPathConstructionProcess process, int index)
         {
-            var destinations = launchData.ToDestinationsKey();
-            var reservedId = _pathsBuffer.ReservePath(destinations.start, destinations.end);
-            process.LaunchAsync(new() { Request = launchData, ReservedPathId = reservedId });
-            return new PathCalculationProcessToken(reservedId, index, process.ProcessIteration);
+            process.LaunchAsync(launchData);
+            return new PathCalculationProcessToken(launchData.ReservedPathId, index, process.ProcessIteration);
         }
     }
 }

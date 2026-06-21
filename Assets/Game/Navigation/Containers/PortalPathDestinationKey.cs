@@ -12,5 +12,7 @@ namespace ZE.MechBattle.Navigation
             HexCoord = hexCoord;
             ZoneIndex = zoneIndex;
         }
+
+        public override string ToString() => $"({HexCoord}) z{ZoneIndex}";
     }
 }

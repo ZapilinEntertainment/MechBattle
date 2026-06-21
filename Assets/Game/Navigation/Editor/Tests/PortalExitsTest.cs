@@ -10,6 +10,38 @@ namespace ZE.MechBattle.Navigation.Tests
     {
         private const float HEX_EDGE_LENGTH = 100f;
 
+        [TestCase(0,10,-9, 0,  5,  -2,10,-7)]
+        [TestCase(11,18,-30,  5, 3, 10, 19, -30)]
+        [TestCase(9,0,-10,  5,   19,   0,9,-10)]
+        public void ExitEdgeEnumeratorTest(int startX, int startY, int startZ, int edgeIndex, int length, int endX, int endY, int endZ)
+        {
+            var edge = (HexEdge)edgeIndex;
+            var pos = new IntTriangularPos(startX, startY, startZ);
+            var exitData = new NavigationPortalExit(pos, default, edge, length, default);
+            var i = 0;
+            
+            var peakAlongsideDirection = edge.ToAlongsidePeakDirection().ToTriangularOffsetVector();
+            var valleyAlongsideDirection = edge.ToAlongsideValleyDirection().ToTriangularOffsetVector();
+
+
+            foreach (var portalTriangle in edge.GetEdgeEnumerable(exitData))
+            {
+                TestContext.WriteLine($"[{i}]: {portalTriangle}");
+
+                if (i != 0)
+                {
+                    var expectedNextPos = pos + (pos.IsPeak ? peakAlongsideDirection : valleyAlongsideDirection);
+                    Assert.AreEqual(expectedNextPos, portalTriangle, $"wrong enumerator offset at [{i}]");
+                }                
+
+                i++;
+                pos = portalTriangle;
+            }
+
+            Assert.AreEqual(length, i, "incorrect length");
+            Assert.AreEqual(new int3(endX, endY, endZ), pos.ToInt3(), "end triangle doesn't match");
+        }
+
         [Test]
         public void ExitListConstructionTest2()
         {

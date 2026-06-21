@@ -10,15 +10,18 @@ namespace ZE.MechBattle.Navigation.Tests
     {
         delegate IntTriangularPos GetNeighbourDelegate(IntTriangularPos pos);
 
-        [TestCase(0,0,100f, 4)]
-        [TestCase(5, 3, 100f, 8)]
-        public void EdgeEnumeratorTest(int hexCoordX, int hexCoordY, float hexEdgeSize, int hexRadius)
+        [TestCase(0,0, 10)]
+        [TestCase(0,0, 4)]
+        [TestCase(5, 3, 8)]
+        public void EdgeEnumeratorTest(int hexCoordX, int hexCoordY,  int hexRadius)
         {
+            const float HEX_EDGE_LENGTH = 100f;
+
             for (var e = 0; e < 6; e++)
             {
                 var edge = (HexEdge)e;
 
-                var hexPos = new NavigationHexPosition(hexCoordX, hexCoordY, hexEdgeSize, hexEdgeSize / hexRadius * NavigationConstants.SQRT_OF_THREE_HALVED);
+                var hexPos = new NavigationHexPosition(hexCoordX, hexCoordY, HEX_EDGE_LENGTH, HEX_EDGE_LENGTH / hexRadius * NavigationConstants.SQRT_OF_THREE_HALVED);
                 var cornerPos = hexRadius * edge.GetHexCornerOffsetTriangularVector(false) + hexPos.TriangularCenterPos;
                 int3 startTriangleOffset;
                 switch (edge)

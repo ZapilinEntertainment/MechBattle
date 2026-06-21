@@ -75,6 +75,25 @@ namespace ZE.MechBattle.Navigation
 
         protected override void DisposeResources()
         {
+#if UNITY_EDITOR
+            if (EditorPlaymodeLifetimeObject.IsQuitting)
+            {
+                try
+                {
+                    FinalDispose();
+                }
+                finally
+                {
+                }
+            }
+                return;
+#else
+            FinalDispose();
+#endif
+        }
+
+        private void FinalDispose()
+        {
             _calculateDistancesProcess.Dispose();
             _resultingPath.Dispose();
         }
@@ -129,6 +148,7 @@ namespace ZE.MechBattle.Navigation
                 
                 var minDist = float.MaxValue;
                 var portalCf = directionCoefficients[edge];
+
                 foreach (var portalTriangle in edge.GetEdgeEnumerable(exitData))
                 {
                     minDist = math.min(minDist, calculationDistancesResult.GetDistance(portalTriangle) * portalCf);

@@ -15,7 +15,7 @@ namespace ZE.MechBattle.Ecs {
         private Filter _filter;
         private Stash<HexPathSearchRequestComponent> _searchRequests;
         private Stash<HexPathCalculationRequestTag> _calculationTags;
-        private Stash<HexPathComponent> _hexPathComponents;
+        private Stash<HexPathIdComponent> _hexPathComponents;
 
         [Inject]
         public HexPathSearchSystem(HexPortalPathsLRUBuffer hexPaths)
@@ -28,7 +28,7 @@ namespace ZE.MechBattle.Ecs {
             _filter = World.Filter.With<HexPathSearchRequestComponent>().Build();
 
             _searchRequests = World.GetStash<HexPathSearchRequestComponent>();
-            _hexPathComponents = World.GetStash<HexPathComponent>();
+            _hexPathComponents = World.GetStash<HexPathIdComponent>();
             _calculationTags = World.GetStash<HexPathCalculationRequestTag>();
         }
 
