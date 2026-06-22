@@ -24,6 +24,7 @@ namespace ZE.MechBattle.Ecs
         private Filter _filter;
         private Stash<RegularTrianglePathProgressionComponent> _progressionComponents;
         private Stash<TrianglePathCalculationTag> _calculationTags;
+        private Stash<RegularTrianglePathComponent> _tripathComponents;
         private EntityPathValidator<TrianglesPath, RegularTrianglePathComponent, ClearTrianglePathTag> _pathValidator;
 
         private readonly TrianglePathCalculationProcessManager _processesManager;
@@ -48,11 +49,12 @@ namespace ZE.MechBattle.Ecs
 
             _progressionComponents = World.GetStash<RegularTrianglePathProgressionComponent>();
             _calculationTags = World.GetStash<TrianglePathCalculationTag>();
+            _tripathComponents = World.GetStash<RegularTrianglePathComponent>();
 
             _pathValidator = new(World,  PathStatusesLRU, _paths);
         }
 
-        protected override void OnPathCompleted(Entity entity, TrianglesPath path)
+        protected override void OnPathCalculated(Entity entity, TrianglesPath path)
         {
             _progressionComponents.Set(entity, new(path.NodesCount));
             _calculationTags.Remove(entity);
@@ -61,7 +63,8 @@ namespace ZE.MechBattle.Ecs
         protected override bool TryStartCalculation(Entity entity, TrianglesPath path, out PathCalculationProcessToken token)
         {
             var endpoints = path.DestinationKeys;
-            token = _processesManager.TryLaunchProcess(new(endpoints.start, endpoints.end));
+            var id = _tripathComponents.Get(entity).PathId;
+            token = _processesManager.TryLaunchProcess(new(id, endpoints.start, endpoints.end));
             return token.IsValid;
         }
     }

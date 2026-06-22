@@ -23,6 +23,7 @@ namespace ZE.MechBattle.Ecs
         private Stash<HexPathIdComponent> _hexPathComponents;
         private Stash<HexPathProgressionComponent> _hexPathProgressionComponents;
         private Stash<ClearHexPathTag> _invalidHexPaths;
+        private Stash<TrianglePathDefinedTag> _trianglePathDefinedTag;
 
         private Stash<FlowMapSearchRequestComponent> _flowMapSearchRequests;
         
@@ -52,6 +53,7 @@ namespace ZE.MechBattle.Ecs
             _moveTargets = World.GetStash<MoveTargetComponent>();
             _regularProcessingTags = World.GetStash<RegularTrianglePathProcessingTag>();
             _flowProcessingTags = World.GetStash<FlowTrianglePathProcessingTag>();
+            _trianglePathDefinedTag = World.GetStash<TrianglePathDefinedTag>();
 
             _hexPathComponents = World.GetStash<HexPathIdComponent>();
             _hexPathProgressionComponents = World.GetStash<HexPathProgressionComponent>();
@@ -72,7 +74,8 @@ namespace ZE.MechBattle.Ecs
             // a. move inside hex
             foreach (var entity in _noHexPathUsers)
             {
-                SetupPathToFinalTarget(entity);
+                SetupPathToFinalTarget(entity);                
+                UnityEngine.Debug.Log("move inside hex");
             }
 
             // b. move through hex portals
@@ -82,6 +85,7 @@ namespace ZE.MechBattle.Ecs
                 if (!_hexPaths.TryGetValue(hexPathId, out var path, updateUsingTime: false))
                 {
                     _invalidHexPaths.Add(entity);
+                    UnityEngine.Debug.Log("invalid hex path - no path found");
                     continue;
                 }
 
@@ -90,6 +94,7 @@ namespace ZE.MechBattle.Ecs
                 if (stepIndex >= progressionComponent.StepsCount)
                 {
                     // all portals passed, move to final target
+                    UnityEngine.Debug.Log("move to final target");
                     SetupPathToFinalTarget(entity);
                     continue;
                 }
@@ -97,11 +102,16 @@ namespace ZE.MechBattle.Ecs
                 if (!path.TryGetNode(stepIndex, out var portalId))
                 {
                     _invalidHexPaths.Add(entity);
+                    UnityEngine.Debug.Log("invalid hex path - no portal found");
                     continue;
                 }
 
+                UnityEngine.Debug.Log($"flow map requested for portal {portalId} index {progressionComponent.StepIndex} at {entity.GetComponent<HexCoordComponent>().Value}");
+
                 _flowMapSearchRequests.Add(entity, new(portalId));
                 _flowProcessingTags.Add(entity);
+                _trianglePathDefinedTag.Add(entity);
+                
             }
         }
 
@@ -114,6 +124,7 @@ namespace ZE.MechBattle.Ecs
 
             _regularPathSearchRequests.Set(entity, new(startTripos, endTripos));
             _regularProcessingTags.Add(entity);
+            _trianglePathDefinedTag.Add(entity);
         }
     }
 }

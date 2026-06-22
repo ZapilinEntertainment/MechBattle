@@ -58,6 +58,7 @@ namespace ZE.MechBattle.Develop
             {
                 _moveTargets.Set(entity, new(pos, _triangleHeight));
             }
+            UnityEngine.Debug.Log($"move target set to {pos}");
         }
 
 #if UNITY_EDITOR

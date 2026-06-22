@@ -10,7 +10,9 @@ namespace ZE.Utils
         public Value this[Key key] { get; }
     }
 
-    public class UseTimeStoringDictionary<Key, Value> : IItemsBuffer<Key,Value>, IEnumerable<Value> where Value : ILRUBufferElement
+    public class UseTimeStoringDictionary<Key, Value> : 
+        IItemsBuffer<Key,Value>, 
+        IEnumerable<Value> where Value : ILRUBufferElement
     {
         public int Version { get; private set; }
         public int Count => _values.Count;

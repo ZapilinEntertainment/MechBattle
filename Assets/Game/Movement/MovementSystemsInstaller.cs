@@ -56,7 +56,7 @@ namespace ZE.MechBattle.Ecs
             builder.Register<HexRaycastRequestsList>(Lifetime.Scoped);
             builder.Register<UpdateEdgeExitsRequestsList>(Lifetime.Scoped);            
             builder.Register<TrianglePathsLRUBuffer>(_ => new(), Lifetime.Scoped);            
-            builder.Register<HexPortalPathsLRUBuffer>(Lifetime.Scoped);
+            builder.Register<IPortalPaths, HexPortalPathsLRUBuffer>(Lifetime.Scoped).AsSelf();
 
             builder.Register<UpdatedPortalExitsList>(Lifetime.Scoped);
             builder.Register<PortalExitsUpdateDataPool>(Lifetime.Scoped);

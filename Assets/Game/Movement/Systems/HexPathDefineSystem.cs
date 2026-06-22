@@ -85,8 +85,9 @@ namespace ZE.MechBattle.Ecs
                 else
                 {
                     //b: in-hex movement, no hex path needed
-                    _hexPathDefinedTag.Add(entity);
+                   
                 }
+                _hexPathDefinedTag.Add(entity);
             }
         }
 

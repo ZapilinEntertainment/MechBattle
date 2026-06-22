@@ -7,6 +7,5 @@ namespace ZE.MechBattle.Navigation
         where DestinationKey : unmanaged
     {
         void AddCalculatedPath(int pathKey, PathCalculationResult<DestinationKey, NodeKey> calculatedData);
-        int ReservePath(DestinationKey start, DestinationKey end);
     }
 }

@@ -32,6 +32,7 @@ namespace ZE.MechBattle.Navigation
 
         protected override PathCalculationProcessToken LaunchProcess(FlowMapProcessLaunchProtocol launchData, FlowMapCalculationProcess process, int processIndex)
         {
+            UnityEngine.Debug.Log($"start flow map calculation: {launchData.FlowMapId} at {launchData.HexCoord}");
             process.Launch(launchData);
             return new PathCalculationProcessToken(launchData.FlowMapId, processIndex, process.ProcessIteration);
         }

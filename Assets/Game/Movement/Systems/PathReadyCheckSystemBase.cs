@@ -27,11 +27,6 @@ namespace ZE.MechBattle.Ecs {
                 .Without<ClearTag>()
                 .Build();
 
-            _clearFilter = World.Filter
-                .Without<ClearTag>()
-                .With<ReadyTag>()
-                .Build();
-
             _processingTags = World.GetStash<ProcessingTag>();
             _completionTag = World.GetStash<ReadyTag>();
         }
@@ -43,16 +38,8 @@ namespace ZE.MechBattle.Ecs {
                 _processingTags.Remove(entity);
                 _completionTag.Set(entity);
             }
-
-            foreach (var entity in _clearFilter)
-            {
-                _completionTag.Remove(entity);
-            }
         }
 
-        public void Dispose()
-        {
-
-        }
+        public void Dispose() { }
     }
 }

@@ -41,9 +41,9 @@ namespace ZE.MechBattle.Ecs {
         {
             foreach (var entity in _filter)
             {
+                var portalId = _searchRequests.Get(entity).PortalId;
                 _searchRequests.Remove(entity);
 
-                var portalId = _searchRequests.Get(entity).PortalId;
                 var hexCoord = _hexCoords.Get(entity).Value;
                 if (!_flowMapsCoordinator.TryGetPortalExitId(hexCoord, portalId, out var exitId)
                     || !_flowMapsCoordinator.TryGetExitDataWithValidation(exitId, out var exitData))
@@ -59,6 +59,7 @@ namespace ZE.MechBattle.Ecs {
                     _flowMapCalculationTags.Add(entity);
                 }
                 _flowPaths.Set(entity, new(flowMapId, hexCoord));
+                UnityEngine.Debug.Log($"flow map set {flowMapId}");
             }
         }
 

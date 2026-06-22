@@ -8,7 +8,7 @@ namespace ZE.MechBattle.Navigation
         void OnPortalOutdated(int id);
         void ApplyPortalDistancesMap(CalculatePointDistancesResults results);
         void RemovePortal(int portalId);
-        void GetHexPortalExits(int2 hexCoord, ICollection<HexExitOption> exits);
+        void GetHexPortalExits(int zoneIndex, int2 hexCoord, ICollection<HexExitOption> exits);
         int RegisterNewPortal(NavigationPortal portal);
 
     }
@@ -57,13 +57,13 @@ namespace ZE.MechBattle.Navigation
             _connectionsList.RemoveConnection(portalId);
         }
 
-        public void GetHexPortalExits(int2 hexCoord, ICollection<HexExitOption> exits)
+        public void GetHexPortalExits(int zoneIndex, int2 hexCoord, ICollection<HexExitOption> exits)
         {
             foreach (var result in EnumerateHexPortals(hexCoord))
             {
                 var portalData = result.Portal;
                 var exitId = result.MatchedSideA ? portalData.ExitIdA : portalData.ExitIdB;
-                if (_exitsLogic.TryGetExitDataWithValidation(exitId, out var exitData))
+                if (_exitsLogic.TryGetExitDataWithValidation(exitId, out var exitData) && exitData.ZoneIndex == zoneIndex)
                     exits.Add(new(result.PortalId, exitId, exitData));
             }
         }

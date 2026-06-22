@@ -67,8 +67,9 @@ namespace ZE.MechBattle.Ecs {
             _processesManager.Dispose();
         }
 
-        protected override void OnPathCompleted(Entity entity, HexPortalsPath path)
+        protected override void OnPathCalculated(Entity entity, HexPortalsPath path)
         {
+            UnityEngine.Debug.Log($"hex path calculated: {path.Id} for entity {entity.Id}");
             _progressionComponents.Add(entity, new(path.NodesCount));
             _calculationTags.Remove(entity);
         }

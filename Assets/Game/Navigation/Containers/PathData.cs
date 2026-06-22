@@ -46,7 +46,7 @@ namespace ZE.MechBattle.Navigation
             Points = calculationResult.Points.ToArray();
             PathCost = calculationResult.PathCost;
             HasReachedTarget = calculationResult.HasReachedTarget;
-            LastUseTime = Time.time;            
+            LastUseTime = Time.time;   
         }
 
         public bool TryGetTriangle(int stepIndex, out NodeKey pos)

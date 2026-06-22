@@ -9,6 +9,7 @@ namespace ZE.MechBattle.Navigation
 
         public bool TryGetFlowMap(int exitId, out int flowMapId) => _exitIdToFlowMapId.TryGetValue(exitId, out flowMapId);
         public bool TryGetExit(int flowMapId, out int exitId) => _flowMapToPortalExitId.TryGetValue(flowMapId, out exitId);
+
         public void RegisterBond(int exitId, int flowMapId)
         {
             _exitIdToFlowMapId.Add(exitId, flowMapId);

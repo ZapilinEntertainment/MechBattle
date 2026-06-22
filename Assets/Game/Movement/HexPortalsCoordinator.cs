@@ -13,7 +13,7 @@ namespace ZE.MechBattle.Navigation
         private readonly FlowMapAssignmentList _assignmentList;
         private readonly FlowMapsFactory _flowMapFactory;
         private readonly PortalFlowMapsList _flowMapsList;
-        private readonly PortalExitsList _portalExitsList;
+        private readonly PortalExitsList _exits;
         private readonly HexPortalsList _portalsList;
         private readonly HexPortalPathsLRUBuffer _pathsList;
         private readonly PortalConnectionsList _connectionsList;
@@ -40,7 +40,7 @@ namespace ZE.MechBattle.Navigation
             _assignmentList = assignmentList;
             _flowMapFactory = flowMapsFactory;
             _flowMapsList = flowMapsList;
-            _portalExitsList = portalExitsList;
+            _exits = portalExitsList;
             _portalsList = portalsList;
             _connectionsList = connectionsList;
 
@@ -65,25 +65,29 @@ namespace ZE.MechBattle.Navigation
             return assignmentFound;
         }
 
-        public bool TryGetFlowMapPortalExit(int flowMapId, out NavigationPortalExit exit)
+        public bool TryGetAssignedExit(int flowMapId, out NavigationPortalExit exit)
         {
-            if (_assignmentList.TryGetFlowMap(flowMapId, out var portalExitId) && _portalExitsList.TryGetValue(portalExitId, out exit ))
+            if (_assignmentList.TryGetExit(flowMapId, out var exitId) && _exits.TryGetValue(exitId, out exit ))
                 return true;
 
             exit = default;
             return false;
         }     
 
-        public PortalExitFlowMap ReserveFlowMap(int exitPortalId, NavigationPortalExit exit, int2 hexCoord)
+        public PortalExitFlowMap ReserveFlowMap(int exitId, NavigationPortalExit exit, int2 hexCoord)
         {
-            var map = _flowMapFactory.CreateEmptyPortalExitFlowMap(hexCoord, exit);
-            _flowMapsList.Add(map.Id, map);
-            _assignmentList.RegisterBond(exitPortalId, map.Id);
-            return map;
+            var flowMap = _flowMapFactory.CreateEmptyPortalExitFlowMap(hexCoord, exit);
+            _flowMapsList.Add(flowMap.Id, flowMap);
+            _assignmentList.RegisterBond(exitId, flowMap.Id);
+            UnityEngine.Debug.Log($"registered bond: flow map {flowMap.Id} - exit {exitId}");
+            if (!_assignmentList.TryGetExit(flowMap.Id, out var fexitId) || fexitId != exitId)
+                UnityEngine.Debug.LogError("failed at reversed request");
+            return flowMap;
         }
 
         public void OnFlowMapCalculated(int flowMapId, in FlowMapCalculationResults results)
         {
+            UnityEngine.Debug.Log($"flow map calculated: {flowMapId}");
             if (!_flowMapsList.TryGetPathById(flowMapId, out var flowMap))
             {
                 UnityEngine.Debug.LogWarning("flow map calculated, but it is no longer needed");
@@ -108,7 +112,7 @@ namespace ZE.MechBattle.Navigation
 
             var match = new int4(hexCoord, hexCoord) == new int4(portal.HexCoordA, portal.HexCoordB);
             var isExitA = match.x & match.y;
-            if (isExitA | (match.z & match.w) == false)
+            if (!(isExitA | (match.z & match.w)))
             {
                 exitId = -1;
                 return false;
@@ -122,7 +126,7 @@ namespace ZE.MechBattle.Navigation
 
         public void OnExitOutdated(int exitId) => _exitsLogic.OnExitOutdated(exitId);
 
-        public void GetHexPortalExits(int2 hexCoord, ICollection<HexExitOption> exits) => _portalsLogic.GetHexPortalExits(hexCoord, exits);
+        public void GetHexPortalExits(int zoneIndex, int2 hexCoord, ICollection<HexExitOption> exits) => _portalsLogic.GetHexPortalExits(zoneIndex, hexCoord, exits);
 
         public void GetEdgeExits(INavigationHex hex, HexEdge edge, List<(int id, NavigationPortalExit exitData)> exitsList)
         {

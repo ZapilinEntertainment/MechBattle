@@ -39,7 +39,7 @@ namespace ZE.MechBattle.Navigation.Tests
             }
         }
 
-        public void GetHexPortalExits(int2 hexCoord, ICollection<HexExitOption> exits)
+        public void GetHexPortalExits(int zoneIndex, int2 hexCoord, ICollection<HexExitOption> exits)
         {
             throw new System.NotImplementedException();
         }

@@ -12,7 +12,7 @@ namespace ZE.MechBattle.Navigation
             for (var i = 0; i < 6; i++)
             {
                 var edge = (HexEdge)i;
-                cf[edge] = 0.2f * math.dot(dir, math.normalize(edge.ToHexOffsetVector()));
+                cf[edge] = 1f + 0.2f * math.dot(dir, math.normalize(edge.ToHexOffsetVector()));
             }
             return cf;
         }

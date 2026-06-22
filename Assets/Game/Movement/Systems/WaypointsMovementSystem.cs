@@ -8,7 +8,7 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public sealed class WaypointsMovementSystem : PausableSystem 
     {
-        private Filter _filter;
+        private Filter _moveFilter;
         private Stash<WaypointMoveTarget> _waypoints;
         private Stash<MoveSpeedComponent> _moveSpeed;
         private Stash<PositionComponent> _positions;
@@ -17,7 +17,7 @@ namespace ZE.MechBattle.Ecs {
 
         public override void OnAwake() 
         {
-            _filter = World.Filter
+            _moveFilter = World.Filter
                 .With<WaypointMoveTarget>()
                 .With<MoveSpeedComponent>()
                 .Build();
@@ -32,18 +32,19 @@ namespace ZE.MechBattle.Ecs {
             if (IsPaused)
                 return;
 
-            foreach (var entity in _filter)
+            foreach (var entity in _moveFilter)
             {
                 var waypointPosition = _waypoints.Get(entity).WorldPos;
                 ref var positionsComponent = ref _positions.Get(entity);
                 var speed = _moveSpeed.Get(entity).Value;
 
                 var endPos = MathExtensions.MoveTowards(positionsComponent.Value, waypointPosition, speed * deltaTime);
-                if (math.all(endPos == waypointPosition))
-                    _waypoints.Remove(entity);
+                if (math.distancesq(endPos, waypointPosition) < math.EPSILON)
+                {
+                    _waypoints.Remove(entity);                    
+                }                    
 
                 positionsComponent.Value = endPos;
-                //UnityEngine.Debug.Log(endPos);
             }
         }
     }

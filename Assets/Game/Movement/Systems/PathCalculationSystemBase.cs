@@ -49,7 +49,7 @@ namespace ZE.MechBattle.Ecs {
             HandleReceivedRequests(idleProcessesCount);
         }        
 
-        protected abstract void OnPathCompleted(Entity entity, PathType path);
+        protected abstract void OnPathCalculated(Entity entity, PathType path);
 
         protected abstract bool TryStartCalculation(Entity entity, PathType path, out PathCalculationProcessToken token);
 
@@ -73,7 +73,7 @@ namespace ZE.MechBattle.Ecs {
             {
                 var pathId = clearArray[i];
                 _calculationProcessTokens.Remove(pathId);
-                PathStatusesLRU.AddCachedValue(pathId, PathCalculationStatus.Completed);
+                PathStatusesLRU.SetCachedValue(pathId, PathCalculationStatus.Completed);
             }
 
             _pool.Return(clearArray);
@@ -91,7 +91,7 @@ namespace ZE.MechBattle.Ecs {
                 {
                     case PathCalculationStatus.Completed:
                         {
-                            OnPathCompleted(entity, path);
+                            OnPathCalculated(entity, path);
                             break;
                         }
                     case PathCalculationStatus.Calculating:
@@ -112,7 +112,7 @@ namespace ZE.MechBattle.Ecs {
 
                             var pathId = path.Id;
                             _calculationProcessTokens.Add(pathId, token);
-                            PathStatusesLRU.AddCachedValue(pathId, PathCalculationStatus.Calculating);
+                            PathStatusesLRU.SetCachedValue(pathId, PathCalculationStatus.Calculating);
                             idleProcessesCount--;
                             break;
                         }

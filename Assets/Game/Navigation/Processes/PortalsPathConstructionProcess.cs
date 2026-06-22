@@ -40,21 +40,17 @@ namespace ZE.MechBattle.Navigation
 
         private struct PortalNode
         {
-            public readonly float HeuristicValue;
             public readonly int PortalId;
 
-            public float PathCost => IntegrationValue + HeuristicValue;
-
-            public float IntegrationValue;
+            public float Distance;
             public int PreviousPortalId;
             public int StepsCount;
 
-            public PortalNode(int portalId, float heuristicValue)
+            public PortalNode(int portalId, float distance)
             {
-                HeuristicValue = heuristicValue;
+                Distance = distance;
                 PortalId = portalId;
 
-                IntegrationValue = 0f;
                 PreviousPortalId = -1;
                 StepsCount = 0;
             }
@@ -80,7 +76,8 @@ namespace ZE.MechBattle.Navigation
             {
                 try
                 {
-                    FinalDispose();
+                    _calculateDistancesProcess.Dispose();
+                    _resultingPath.Dispose();
                 }
                 finally
                 {
@@ -101,20 +98,21 @@ namespace ZE.MechBattle.Navigation
         protected override async Awaitable ExecuteAsync(PortalConstructionProcessInput input)
         {
             var request = input.Request;
-            await PreparePortalOptions(request.StartHexCoord, request.EndHexCoord, request.StartTripos, _startPortals);
-            await PreparePortalOptions(request.EndHexCoord, request.StartHexCoord, request.EndTripos, _endPortals);
+            await PreparePortalOptions(request.StartHexZoneIndex, request.StartHexCoord, request.EndHexCoord, request.StartTripos, _startPortals);
+            await PreparePortalOptions(request.EndHexZoneIndex, request.EndHexCoord, request.StartHexCoord, request.EndTripos, _endPortals);
 
             if (_startPortals.Count == 0)
-                throw new System.NotImplementedException("start hex has no portals");
+                throw new System.NotImplementedException($"start hex {input.Request.StartHexCoord} has no portals");
 
             if (_endPortals.Count == 0)
-                throw new System.NotImplementedException("end hex has no portals");
+                throw new System.NotImplementedException($"end hex {input.Request.EndHexCoord} has no portals");
 
             var pathCost = PreparePortalsPath();
             _pathsBuffer.AddCalculatedPath(input.ReservedPathId, FormResult(request, pathCost));
         }
 
         private async Awaitable<List<PortalOption>> PreparePortalOptions(
+           int startZone,
            int2 hexCoord,
            int2 targetHexCoord,
            IntTriangularPos pos,
@@ -139,7 +137,7 @@ namespace ZE.MechBattle.Navigation
             var directionCoefficients = HexTransitionLogic.GetDirectionCostCoefficients(hexCoord, targetHexCoord);
 
             _hexPortalsList.Clear();
-            _portalsCoordinator.GetHexPortalExits(hexCoord, _hexPortalsList);
+            _portalsCoordinator.GetHexPortalExits(startZone, hexCoord, _hexPortalsList);
             var calculationDistancesResult = _calculateDistancesProcess.StopAndGetResults();
             foreach (var exitOption in _hexPortalsList)
             {
@@ -151,7 +149,7 @@ namespace ZE.MechBattle.Navigation
 
                 foreach (var portalTriangle in edge.GetEdgeEnumerable(exitData))
                 {
-                    minDist = math.min(minDist, calculationDistancesResult.GetDistance(portalTriangle) * portalCf);
+                    minDist = math.min(minDist, calculationDistancesResult.GetDistance(portalTriangle) * portalCf);                    
                 }
 
             if (minDist == float.MaxValue)
@@ -191,13 +189,14 @@ namespace ZE.MechBattle.Navigation
                 foreach (var nodeId in activeNodeIds)
                 {
                     var nodeData = nodes[nodeId];
-                    if (nodeData.PathCost < minDist)
+                    if (nodeData.Distance < minDist)
                     {
-                        minDist = nodeData.PathCost;
+                        minDist = nodeData.Distance;
                         nextNode = nodeData;
                     }
                 }
-
+                
+                activeNodeIds.Remove(nextNode.PortalId);
                 return nextNode;
             }
 
@@ -209,25 +208,27 @@ namespace ZE.MechBattle.Navigation
 
                 foreach (var connection in connections)
                 {
-                    var portalId = connection.Key;
+                    var connectedPortalId = connection.Key;
                     var transitionCost = connection.Value;
+                    var moveDist = transitionCost + node.Distance;
+                    
 
-                    if (nodes.TryGetValue(portalId, out var connectedNode))
-                    {
-                        var newDistance = node.IntegrationValue + transitionCost;
-                        if (connectedNode.IntegrationValue > transitionCost)
+                    if (nodes.TryGetValue(connectedPortalId, out var connectedNode))
+                    {                        
+                        if (connectedNode.Distance > moveDist)
                         {
-                            connectedNode.IntegrationValue = transitionCost;
+                            connectedNode.Distance = moveDist;
                             connectedNode.PreviousPortalId = node.PortalId;
                             connectedNode.StepsCount = node.StepsCount + 1;
 
                             nodes[node.PortalId] = connectedNode;
-                        }
+                        }                       
                     }
                     else
                     {
-                        var newNode = new PortalNode(portalId, node.HeuristicValue + transitionCost);
-                        activeNodeIds.Add(newNode.PortalId);
+                        var newNode = new PortalNode(connectedPortalId, moveDist);
+                        activeNodeIds.Add(connectedPortalId);
+                        nodes.Add(connectedPortalId, newNode);
                     }
                 }
             }
@@ -250,11 +251,12 @@ namespace ZE.MechBattle.Navigation
                 if (!nodes.TryGetValue(endPortalOption.PortalId, out var endPortalNode))
                     continue;
 
-                var pathCost = endPortalNode.IntegrationValue + endPortalOption.MinDist;
+                var pathCost = endPortalNode.Distance + endPortalOption.MinDist;
                 if (pathCost < shortestPathLength)
                 {
                     shortestPathLength = pathCost;
                     shortestPathEndPortalId = endPortalNode.PortalId;
+                    //UnityEngine.Debug.Log($"final portal: {shortestPathEndPortalId}, length: {pathCost}, length: {nodes[shortestPathEndPortalId].StepsCount + 1}");
                 }
             }
 
@@ -263,15 +265,17 @@ namespace ZE.MechBattle.Navigation
 
             // fulfill resulting path
             var observingNode = nodes[shortestPathEndPortalId];
-            var resultingPathCost = observingNode.PathCost;
+            var resultingPathCost = observingNode.Distance;
             _resultingPath.Clear();
-            _resultingPath.InsertRange(0, observingNode.StepsCount);
+            _resultingPath.InsertRange(0, observingNode.StepsCount+1);
 
-            for (var i = observingNode.StepsCount - 1; i >= 0; i--)
+            for (var i = observingNode.StepsCount; i > 0; i--)
             {
                 _resultingPath[i] = observingNode.PortalId;
                 observingNode = nodes[observingNode.PreviousPortalId];
             }
+
+            _resultingPath[0] = observingNode.PortalId;
 
             return resultingPathCost;
         }

@@ -4064,10 +4064,12 @@ GameObject:
   m_Component:
   - component: {fileID: 1259888753}
   - component: {fileID: 1259888758}
+  - component: {fileID: 1259888759}
   - component: {fileID: 1259888754}
   - component: {fileID: 1259888755}
   - component: {fileID: 1259888756}
   - component: {fileID: 1259888757}
+  - component: {fileID: 1259888760}
   m_Layer: 0
   m_Name: DEVELOP
   m_TagString: Untagged
@@ -4084,7 +4086,7 @@ Transform:
   m_GameObject: {fileID: 1259888751}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -400}
+  m_LocalPosition: {x: -249.7, y: 0, z: 152.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4143,11 +4145,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1259888751}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d9c5a58d6461f9245b7bdb8bbd107741, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.ExitAndPortalsIdsDrawer
+  _drawPortalIds: 1
+  _drawExitIds: 0
 --- !u!114 &1259888758
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4163,6 +4167,31 @@ MonoBehaviour:
   _center: {x: 0, y: 0, z: 0}
   _radius: 100
   _manualDefinedTarget: {x: 0, y: 0, z: 0}
+--- !u!114 &1259888759
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259888751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4053ecfd4544b764a8371d27718c680d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.EntityPathOccupationDrawer
+--- !u!114 &1259888760
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259888751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e01a1534dc43de40ab81e8e964dbc90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.PortalPathsTracker
+  _serializedPortalsData: []
 --- !u!1 &1324568865
 GameObject:
   m_ObjectHideFlags: 0
@@ -6014,63 +6043,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1919553567}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1001 &1934233378
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4821656203000804905, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
-      propertyPath: m_Name
-      value: Tank (1)
-      objectReference: {fileID: 0}
-    - target: {fileID: 5543723104446639765, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 36.98565
-      objectReference: {fileID: 0}
-    - target: {fileID: 5543723104446639765, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5543723104446639765, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -28.892048
-      objectReference: {fileID: 0}
-    - target: {fileID: 5543723104446639765, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5543723104446639765, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5543723104446639765, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5543723104446639765, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5543723104446639765, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5543723104446639765, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5543723104446639765, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
 --- !u!1 &1938163058
 GameObject:
   m_ObjectHideFlags: 0
@@ -7537,4 +7509,3 @@ SceneRoots:
   - {fileID: 1870978388}
   - {fileID: 884254267}
   - {fileID: 328283869}
-  - {fileID: 1934233378}

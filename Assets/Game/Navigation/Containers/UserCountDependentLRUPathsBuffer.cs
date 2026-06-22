@@ -6,7 +6,7 @@ namespace ZE.MechBattle.Navigation
 {
     public abstract class UserCountDependentLRUPathsBuffer<DestinationKey, NodeKey, PathType> 
         : UseTimeStoringDictionary<int, PathType>,
-          IPathsList<DestinationKey, NodeKey>         
+          IPathsList<DestinationKey, NodeKey>
         where PathType : PathData<DestinationKey, NodeKey>
         where NodeKey : unmanaged
         where DestinationKey : unmanaged
@@ -65,8 +65,5 @@ namespace ZE.MechBattle.Navigation
 
         void IPathsList<DestinationKey, NodeKey>.AddCalculatedPath(int pathKey, PathCalculationResult<DestinationKey, NodeKey> calculatedData) =>
             AddCalculatedPath(pathKey, calculatedData);
-
-        int IPathsList<DestinationKey, NodeKey>.ReservePath(DestinationKey start, DestinationKey end) =>
-            ReservePath(start, end).Id;
     }
 }

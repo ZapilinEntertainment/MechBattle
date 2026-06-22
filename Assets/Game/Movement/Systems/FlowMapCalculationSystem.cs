@@ -41,17 +41,19 @@ namespace ZE.MechBattle.Ecs {
             _filter = World.Filter.With<FlowMapCalculationTag>().Build();
 
             _validator = new(World, PathStatusesLRU, _flowMapsCoordinator.MapsList);
+            _calculationTag = World.GetStash<FlowMapCalculationTag>();
         }
 
-        protected override void OnPathCompleted(Entity entity, PortalExitFlowMap path)
+        protected override void OnPathCalculated(Entity entity, PortalExitFlowMap path)
         {
             _calculationTag.Remove(entity);
         }
 
         protected override bool TryStartCalculation(Entity entity, PortalExitFlowMap flowMap, out PathCalculationProcessToken token)
         {
-            if (!_flowMapsCoordinator.TryGetFlowMapPortalExit(flowMap.Id, out var exitData))
+            if (!_flowMapsCoordinator.TryGetAssignedExit(flowMap.Id, out var exitData))
             {
+                UnityEngine.Debug.Log("flow map exit search failed");
                 token = default;
                 return false;
             }
@@ -63,6 +65,7 @@ namespace ZE.MechBattle.Ecs {
                 ExitData = exitData
             };
             token = _processesManager.TryLaunchProcess(protocol);
+            UnityEngine.Debug.Log($"tried to launch: {token.IsValid}");
             return token.IsValid;
         }
 

@@ -31,7 +31,21 @@ namespace ZE.MechBattle
             _keyUseHistory = new LinkedList<Key>();
         }
 
-        public void AddCachedValue(Key key, Value value)
+        public void SetCachedValue(Key key, Value value)
+        {
+            if (_cache.TryGetValue(key, out var cachedValue))
+            {
+                var historyNode = cachedValue.HistoryListNode;
+                _cache[key] = new(value, historyNode);
+                OnElementUpdated(historyNode);
+            }
+            else
+            {
+                AddCachedValue(key, value);
+            }
+        }
+
+        private void AddCachedValue(Key key, Value value)
         {
             CheckCacheLimit();
 
@@ -53,8 +67,7 @@ namespace ZE.MechBattle
             if (_cache.TryGetValue(key, out var element)) 
             {
                 var node = element.HistoryListNode;
-                _keyUseHistory.Remove(node);
-                _keyUseHistory.AddLast(node);
+                OnElementUpdated(node);
                 value = element.Value;
                 return true;
             }
@@ -76,6 +89,12 @@ namespace ZE.MechBattle
 
             _keyUseHistory.Remove(cacheElement.HistoryListNode);
             _cache.Remove(key);
+        }
+
+        private void OnElementUpdated(LinkedListNode<Key> historyNode)
+        {
+            _keyUseHistory.Remove(historyNode);
+            _keyUseHistory.AddLast(historyNode);
         }
 
         #region IEnumerator

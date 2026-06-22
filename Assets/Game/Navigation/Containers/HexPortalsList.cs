@@ -6,6 +6,7 @@ namespace ZE.MechBattle.Navigation
 {
     public interface IHexPortalsList : IEnumerable<KeyValuePair<int, NavigationPortal>> 
     {
+        int Count { get; }
         bool TryGetValue(int key, out NavigationPortal portal);
     }
     public class HexPortalsList : IHexPortalsList

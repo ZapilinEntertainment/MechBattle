@@ -36,7 +36,7 @@ namespace ZE.MechBattle.Ecs
         {
             _flowPathsFilter = World.Filter
                 .With<FlowTrianglePathComponent>()
-                .Without<FlowTrianglePathProcessingTag>()
+                .With<TrianglePathReadyTag>()
                 .Without<WaypointMoveTarget>()
                 .Build();
 
@@ -58,6 +58,7 @@ namespace ZE.MechBattle.Ecs
                 if (!_flowMaps.TryGetPathById(flowMapId, out var flowMap)
                     || math.any(hexCoord != flowMap.HexCoord))
                 {
+                    UnityEngine.Debug.Log("invalid triangle path");
                     _invalidTrianglePaths.Set(entity);
                     continue;
                 }
@@ -67,13 +68,10 @@ namespace ZE.MechBattle.Ecs
                 var nextTripos = TriangularMath.GetNeighbourByDirection(tripos, exitDirection);
                 var nextWorldPos = TriangularMath.TriangularToWorld(nextTripos, _triangleHeight);
                 _waypoints.Set(entity, new(worldPos: nextWorldPos, tripos: nextTripos));
-                //UnityEngine.Debug.Log($"new flow waypoint: {nextTripos}");
+                UnityEngine.Debug.Log($"new flow waypoint: {nextTripos}");
             }
         }
 
-        public void Dispose()
-        {
-
-        }
+        public void Dispose() { }
     }
 }

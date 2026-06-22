@@ -17,7 +17,7 @@ namespace ZE.MechBattle.Navigation
 
         bool TryGetAssignedFlowMapId(int portalExitId, out int flowMapId);
         void OnFlowMapCalculated(int flowMapId, in FlowMapCalculationResults results);
-        void GetHexPortalExits(int2 hexCoord, ICollection<HexExitOption> exits);
+        void GetHexPortalExits(int zone, int2 hexCoord, ICollection<HexExitOption> exits);
         
         IPathsList<PortalPathDestinationKey, int> GetPathsList();
     }

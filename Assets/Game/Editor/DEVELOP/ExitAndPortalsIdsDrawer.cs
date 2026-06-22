@@ -9,6 +9,9 @@ namespace ZE.MechBattle.Develop
 {
     public class ExitAndPortalsIdsDrawer : MonoBehaviour
     {
+        [SerializeField] private bool _drawPortalIds = true;
+        [SerializeField] private bool _drawExitIds = true;
+
         private IHexPortalsList _portals;
         private IPortalExitsList _exits;
         private INavigationMap _map;
@@ -27,22 +30,28 @@ namespace ZE.MechBattle.Develop
         private void UpdateExitsAndPortalsList()
         {
             _ids.Clear();
-            foreach (var exitKvp in _exits)
-            {
-                var centerPos = TriangularMath.TriangularToWorld(exitKvp.Value.Center, _map.TriangleHeight);
-                _ids.Add((centerPos, exitKvp.Key));
+            if (_drawExitIds) 
+            { 
+                foreach (var exitKvp in _exits)
+                {
+                    var centerPos = TriangularMath.TriangularToWorld(exitKvp.Value.Center, _map.TriangleHeight);
+                    _ids.Add((centerPos, exitKvp.Key));
+                }
             }
 
-            foreach (var portalKvp in _portals)
+            if (_drawPortalIds)
             {
-                _exits.TryGetValue(portalKvp.Value.ExitIdA, out var exitA);
-                _exits.TryGetValue(portalKvp.Value.ExitIdB, out var exitB);
+                foreach (var portalKvp in _portals)
+                {
+                    _exits.TryGetValue(portalKvp.Value.ExitIdA, out var exitA);
+                    _exits.TryGetValue(portalKvp.Value.ExitIdB, out var exitB);
 
-                var centerA = TriangularMath.TriangularToWorld(exitA.Center, _map.TriangleHeight);
-                var centerB = TriangularMath.TriangularToWorld(exitB.Center, _map.TriangleHeight);
+                    var centerA = TriangularMath.TriangularToWorld(exitA.Center, _map.TriangleHeight);
+                    var centerB = TriangularMath.TriangularToWorld(exitB.Center, _map.TriangleHeight);
 
-                _ids.Add((Vector3.Lerp(centerA, centerB, 0.5f), portalKvp.Key));
-            }
+                    _ids.Add((Vector3.Lerp(centerA, centerB, 0.5f), portalKvp.Key));
+                }
+            }            
         }
 
         private void OnDrawGizmos()

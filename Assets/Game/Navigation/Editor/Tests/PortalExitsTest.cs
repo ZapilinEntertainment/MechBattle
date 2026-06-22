@@ -10,6 +10,16 @@ namespace ZE.MechBattle.Navigation.Tests
     {
         private const float HEX_EDGE_LENGTH = 100f;
 
+        [Test]
+        public void WriteOutput()
+        {
+            foreach (var tripos in new EdgeEnumerator<BottomRightEdgeEnumerationLogic>(new(new(1,10,-10), 0, HexEdge.BottomRight, 19, 1)))
+            {
+                TestContext.WriteLine(tripos);
+            }
+        }
+
+        [TestCase(1,10,-10,  2,  19,  10,1,-10)]
         [TestCase(0,10,-9, 0,  5,  -2,10,-7)]
         [TestCase(11,18,-30,  5, 3, 10, 19, -30)]
         [TestCase(9,0,-10,  5,   19,   0,9,-10)]

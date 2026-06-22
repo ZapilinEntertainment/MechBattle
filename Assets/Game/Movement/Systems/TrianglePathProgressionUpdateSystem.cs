@@ -74,6 +74,7 @@ namespace ZE.MechBattle.Ecs
                 {
                     _completedPathTags.Add(entity);
                    _flowPaths.Remove(entity);
+                    UnityEngine.Debug.Log($"flow move stopped: out of {flowMapHexCoord} ({entityHexCoord})");
                 }
             }
         }

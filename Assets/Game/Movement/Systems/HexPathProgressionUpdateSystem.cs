@@ -56,6 +56,9 @@ namespace ZE.MechBattle.Ecs {
 
                 ref var progression = ref _hexProgression.Get(entity);
                 var currentStep = progression.StepIndex;
+
+                UnityEngine.Debug.Log($"completed tripath: {currentStep} / {progression.StepsCount}");
+
                 if (currentStep + 1 > progression.StepsCount)
                 {
                     DoTargetCheck(entity);

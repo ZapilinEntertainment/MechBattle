@@ -42,7 +42,6 @@ namespace ZE.MechBattle.Navigation
             _generateFlowFieldJob = new()
             {
                 CalculationData = _collections.CalculationData,
-                PassabilityData = _collections.PassabilityData,
                 CalculationQueue = _collections.CalculationQueue,
                 QueuedPositions = _collections.QueuedPositions,
                 ExitNeighbourPassabilityRequired = false,
@@ -62,6 +61,7 @@ namespace ZE.MechBattle.Navigation
 
             var hexPos = new NavigationHexPosition(protocol.HexCoord, _map);
             _collections.ChangeHexPosAndReset(hexPos.TriangularCenterPos);
+            _generateFlowFieldJob.PassabilityData = _collections.PassabilityData;
 
             PrepareExitCells();
             _generateFlowFieldJob.ExitDirection = exit.Edge;
@@ -86,11 +86,11 @@ namespace ZE.MechBattle.Navigation
 
         private void PrepareExitCells<T>() where T : unmanaged, IEdgeEnumerationLogic
         {
-            _zeroPositions.Clear();
             _zeroPositions.Resize(ActiveProtocol.ExitData.Length, NativeArrayOptions.UninitializedMemory);
+            var i = 0;
             foreach (var tripos in new EdgeEnumerator<T>(ActiveProtocol.ExitData))
             {
-                _zeroPositions.Add(tripos);
+                _zeroPositions[i++] = tripos;
             }
         }
     }
