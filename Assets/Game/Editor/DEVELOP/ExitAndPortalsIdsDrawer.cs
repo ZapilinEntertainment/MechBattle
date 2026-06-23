@@ -14,16 +14,18 @@ namespace ZE.MechBattle.Develop
 
         private IHexPortalsList _portals;
         private IPortalExitsList _exits;
+        private IPortalsLogic _portalLogic;
         private INavigationMap _map;
         private List<(Vector3 pos, int id)> _ids = new();
 
 
         [Inject]
-        public void Inject(IPortalExitsList exitsList, INavigationMap map, IHexPortalsList portals)
+        public void Inject(IPortalExitsList exitsList, INavigationMap map, IHexPortalsList portals, IPortalsLogic portalsLogic)
         {
             _portals = portals;
             _exits = exitsList;
             _map = map;
+            _portalLogic = portalsLogic;
         }
 
         [Button("Update lists")]
@@ -43,13 +45,8 @@ namespace ZE.MechBattle.Develop
             {
                 foreach (var portalKvp in _portals)
                 {
-                    _exits.TryGetValue(portalKvp.Value.ExitIdA, out var exitA);
-                    _exits.TryGetValue(portalKvp.Value.ExitIdB, out var exitB);
-
-                    var centerA = TriangularMath.TriangularToWorld(exitA.Center, _map.TriangleHeight);
-                    var centerB = TriangularMath.TriangularToWorld(exitB.Center, _map.TriangleHeight);
-
-                    _ids.Add((Vector3.Lerp(centerA, centerB, 0.5f), portalKvp.Key));
+                    var triCenter = _portalLogic.GetPortalCenterTriangular(portalKvp.Key);
+                    _ids.Add((TriangularMath.TriangularToWorld(triCenter, _map.TriangleHeight), portalKvp.Key));
                 }
             }            
         }

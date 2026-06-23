@@ -10,6 +10,7 @@ namespace ZE.MechBattle.Navigation
         void RemovePortal(int portalId);
         void GetHexPortalExits(int zoneIndex, int2 hexCoord, ICollection<HexExitOption> exits);
         int RegisterNewPortal(NavigationPortal portal);
+        float3 GetPortalCenterTriangular(int portalId);
 
     }
 
@@ -108,6 +109,13 @@ namespace ZE.MechBattle.Navigation
             _cachedPointsList.Clear();
         }
 
+        public float3 GetPortalCenterTriangular(int portalId)
+        {
+            var portal = _portals[portalId];
+            var exitCenterA = _exitsList[portal.ExitIdA].Center.ToFloat3();
+            var exitCenterB = _exitsList[portal.ExitIdB].Center.ToFloat3();
+            return math.lerp(exitCenterA, exitCenterB, 0.5f);
+        }
 
         private IEnumerable<EnumerationResult> EnumerateHexPortals(int2 hexCoord)
         {

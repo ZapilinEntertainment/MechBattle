@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
@@ -8,16 +9,34 @@ namespace ZE.MechBattle.Navigation
     {
         public const int DEFAULT_STEP_COST = 1;
 
+        [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetupStartCell<T>(int startDataIndex, NativeArray<AstarPathNodeData<T>> NavigationData) where T : unmanaged
         {
             var navData = NavigationData[startDataIndex];
-            navData.CostFromStart = 0;
-            navData.StepsCount = 0;
-            navData.Status = NavigationNodeStatus.Closed;
-            NavigationData[startDataIndex] = navData;            
+            NavigationData[startDataIndex] = HandleStartNode(navData);            
         }
 
+        [BurstDiscard]
+        public static void SetupStartCell<T>(int startDataIndex, IList<AstarPathNodeData<T>> NavigationData) where T : unmanaged
+        {
+            var navData = NavigationData[startDataIndex];             
+            NavigationData[startDataIndex] = HandleStartNode(navData); 
+        }
+
+        [BurstCompile]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static AstarPathNodeData<T> HandleStartNode<T>(AstarPathNodeData<T> original) where T : unmanaged
+        {
+            original.CostFromStart = 0;
+            original.StepsCount = 0;
+            original.Status = NavigationNodeStatus.Closed;
+            return original;
+        }
+
+
+
+        [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void HandleNeighbour<T>(
            in AstarPathNodeData<T> activeNodeData,
@@ -51,7 +70,7 @@ namespace ZE.MechBattle.Navigation
             }
         }
 
-
+        [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static (T value,int index) FindNextNode<T>(NativeHashSet<int> OpenedList, NativeArray<AstarPathNodeData<T>> NavigationData) where T: unmanaged
         {

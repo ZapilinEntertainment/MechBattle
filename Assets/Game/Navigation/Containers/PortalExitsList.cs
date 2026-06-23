@@ -9,6 +9,7 @@ namespace ZE.MechBattle.Navigation
         bool ContainsKey(int id);
         bool TryGetValue(int key, out NavigationPortalExit exit);
         int Version { get; }
+        NavigationPortalExit this[int exitId] { get;}
     }
 
     public class PortalExitsList : IPortalExitsList

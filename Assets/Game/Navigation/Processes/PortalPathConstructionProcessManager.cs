@@ -8,23 +8,26 @@ namespace ZE.MechBattle.Navigation
         private readonly Allocator _allocator;
         private readonly INavigationMap _map;
         private readonly IHexPortalsCoordinator _portalsCoordinator;
+        private readonly IPortalsLogic _portalsLogic;
         private readonly IPathsList<PortalPathDestinationKey, int> _pathsBuffer;
 
         public PortalPathConstructionProcessManager(
             Allocator allocator,
             INavigationMap map,
             int maxProcessesCount,
-            IHexPortalsCoordinator portalsCoordinator) : 
+            IHexPortalsCoordinator portalsCoordinator,
+            IPortalsLogic portalsLogic) : 
             base(maxProcessesCount)
         {
             _allocator = allocator;
             _map = map;            
             _portalsCoordinator = portalsCoordinator;
             _pathsBuffer = _portalsCoordinator.GetPathsList();
+            _portalsLogic = portalsLogic;
         }
 
         protected override PortalsPathConstructionProcess CreateNewProcess() =>
-            new PortalsPathConstructionProcess(_allocator, _map, _portalsCoordinator);
+            new PortalsPathConstructionProcess(_allocator, _map, _portalsCoordinator, _portalsLogic);
 
 
         // add to list inside process

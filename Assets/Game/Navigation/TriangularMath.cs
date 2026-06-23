@@ -227,8 +227,9 @@ namespace ZE.MechBattle.Navigation
         // explanation: https://www.boristhebrave.com/2021/05/27/some-triangle-grid-extensions/
         [BurstCompile]
         public static int CalculateDistance(IntTriangularPos start, IntTriangularPos end) => ( math.abs(start.X - end.X) + math.abs(start.Y - end.Y) + math.abs(start.Z - end.Z)) / 2;
+        [BurstCompile]
+        public static float CalculateTriangularDistance(float3 start, float3 end) => (math.abs(start.x - end.x) + math.abs(start.y - end.y) + math.abs(start.y - end.y)) / 2;
 
-        
         [BurstCompile]
         public static HexSector DefineSector(IntTriangularPos pos, float hexEdgeLength, int hexRadius, float triangleHeight)
         {

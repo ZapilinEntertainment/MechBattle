@@ -41,11 +41,12 @@ namespace ZE.MechBattle.Ecs {
         [Inject]
         public HexPortalPathCalculationSystem(
             INavigationMap map,
-            HexPortalsCoordinator portalsCoordinator)
+            HexPortalsCoordinator portalsCoordinator,
+            IPortalsLogic portalsLogic)
         {
             _map = map;
             _portalsCoordinator = portalsCoordinator;
-            _processesManager = new PortalPathConstructionProcessManager(Allocator.Persistent, _map, MAX_PROCESSES, _portalsCoordinator);
+            _processesManager = new PortalPathConstructionProcessManager(Allocator.Persistent, _map, MAX_PROCESSES, _portalsCoordinator, portalsLogic);
         }
 
         public override void OnAwake() 
