@@ -18,6 +18,8 @@ namespace ZE.MechBattle.Ecs {
         private Stash<HexPathIdComponent> _regularHexPaths;
         private Stash<ClearTrianglePathTag> _triangleClearTags;
         private Stash<HexPathDefinedTag> _hexPathDefinedTags;
+        private Stash<HexPathReadyTag> _hexPathReadyTags;
+        private Stash<HexPathProgressionComponent> _hexPathProgressionComponents;
 
         [Inject]
         public HexPortalPathClearSystem(HexPortalPathsLRUBuffer hexPaths)
@@ -35,6 +37,8 @@ namespace ZE.MechBattle.Ecs {
             _regularHexPaths = World.GetStash<HexPathIdComponent>();
             _triangleClearTags = World.GetStash<ClearTrianglePathTag>();
             _hexPathDefinedTags = World.GetStash<HexPathDefinedTag>();
+            _hexPathReadyTags = World.GetStash<HexPathReadyTag>();
+            _hexPathProgressionComponents = World.GetStash<HexPathProgressionComponent>();
         }
 
         public void OnUpdate(float deltaTime) 
@@ -44,6 +48,8 @@ namespace ZE.MechBattle.Ecs {
                 _hexClearTags.Remove(entity);
                 _regularHexPaths.Remove(entity);
                 _hexPathDefinedTags.Remove(entity);
+                _hexPathReadyTags.Remove(entity);
+                _hexPathProgressionComponents.Remove(entity);
 
                 _triangleClearTags.Set(entity);
             }

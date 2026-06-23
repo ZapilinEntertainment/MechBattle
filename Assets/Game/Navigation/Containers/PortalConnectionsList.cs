@@ -13,6 +13,10 @@ namespace ZE.MechBattle
         {
             i_AddConnection(portalIdA, portalIdB,distance);
             i_AddConnection(portalIdB, portalIdA,distance);
+            #if UNITY_EDITOR
+            if (portalIdA == portalIdB)
+                UnityEngine.Debug.LogError($"invalid connection: portal ids are the same = {portalIdA}");
+            #endif
             Version++;
         }
 

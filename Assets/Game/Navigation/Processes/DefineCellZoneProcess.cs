@@ -14,7 +14,7 @@ namespace ZE.MechBattle
 
         public DefineCellZoneProcess(Allocator allocator, IUpdatableMap map)
         {
-            var trianglesPerHex = map.TrianglesPerHex;
+            var trianglesPerHex = map.HexTrianglesCount;
             _hexRadius = map.TrianglesPerHexEdge;
 
             _activeCells = new(allocator);

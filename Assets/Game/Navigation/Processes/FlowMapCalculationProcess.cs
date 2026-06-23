@@ -35,7 +35,7 @@ namespace ZE.MechBattle.Navigation
         {
             _map = map;
 
-            _trianglesPerHex = _map.TrianglesPerHex;
+            _trianglesPerHex = _map.HexTrianglesCount;
             _collections = new(allocator, default, _map.Settings);
             _zeroPositions = new(allocator);
 
@@ -58,11 +58,8 @@ namespace ZE.MechBattle.Navigation
         {
             ActiveProtocol = protocol;
             var exit = ActiveProtocol.ExitData;
-
-            var hexPos = new NavigationHexPosition(protocol.HexCoord, _map);
-            _collections.ChangeHexPosAndReset(hexPos.TriangularCenterPos);
-            _generateFlowFieldJob.PassabilityData = _collections.PassabilityData;
-
+            
+            SetupPassabilityData();
             PrepareExitCells();
             _generateFlowFieldJob.ExitDirection = exit.Edge;
             
@@ -92,6 +89,21 @@ namespace ZE.MechBattle.Navigation
             {
                 _zeroPositions[i++] = tripos;
             }
+        }
+
+        private void SetupPassabilityData()
+        {
+            var hexPos = new NavigationHexPosition(ActiveProtocol.HexCoord, _map);
+            _collections.ChangeHexPosAndReset(hexPos.TriangularCenterPos);
+
+            var i = 0;
+            var passabilityData = _collections.PassabilityDataInnerArray;
+            foreach (var tripos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, _map.TrianglesPerHexEdge))
+            {
+                passabilityData[i++] = _map.GetPassabilityData(tripos);
+            }
+
+            _generateFlowFieldJob.PassabilityData = _collections.PassabilityData;
         }
     }
 }

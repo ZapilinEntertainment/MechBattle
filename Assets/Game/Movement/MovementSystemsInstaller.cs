@@ -74,7 +74,7 @@ namespace ZE.MechBattle.Ecs
 
             builder.Register<HexDataCoordinator>(Lifetime.Scoped);
             builder.Register<FlowMapsFactory>(Lifetime.Scoped);
-            builder.Register<PortalFlowMapsList>(Lifetime.Scoped);
+            builder.Register<IFlowMapsList, PortalFlowMapsList>(Lifetime.Scoped).AsSelf();
             builder.Register<FlowMapAssignmentList>(Lifetime.Scoped);
 
             builder.Register<NavigationMapInitializer>(Lifetime.Transient);

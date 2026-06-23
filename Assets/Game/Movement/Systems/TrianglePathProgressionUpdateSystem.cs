@@ -57,7 +57,7 @@ namespace ZE.MechBattle.Ecs
                     _regularPaths.Remove(entity);
                     _progression.Remove(entity);
                     _completedPathTags.Add(entity);
-                    UnityEngine.Debug.Log("triangle path completed");
+                    UnityEngine.Debug.Log($"triangle path completed for entity {entity.Id}");
                     continue;
                 }
 

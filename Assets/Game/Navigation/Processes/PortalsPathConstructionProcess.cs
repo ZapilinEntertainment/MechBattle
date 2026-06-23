@@ -16,6 +16,43 @@ namespace ZE.MechBattle.Navigation
 
     public class PortalsPathConstructionProcess : AsyncProcessBase<PortalConstructionProcessInput>
     {
+        private interface IPortalsList
+        {
+            void Clear();
+            void Add(PortalOption option);
+        }
+
+        private class StartPortalsList : List<PortalOption>, IPortalsList { }
+        private class EndPortalsList : Dictionary<int, PortalOption>, IPortalsList
+        {
+            public void Add(PortalOption option) => Add(option.PortalId, option);
+        }
+
+        private readonly struct ShortestPathOption
+        {
+            public readonly int PortalId;
+            public readonly float Length;
+            private const int INVALID_PATH_ID = -1;
+
+            public bool IsValid => PortalId != INVALID_PATH_ID;
+
+            private ShortestPathOption(int pathId, float length)
+            {
+                PortalId = pathId;
+                Length = length;
+            }
+
+            public ShortestPathOption TryUpdate(int otherPathId, float otherPathLength)
+            {
+                if (otherPathLength < Length)
+                    return new(otherPathId, otherPathLength);
+                else
+                    return this;
+            }
+
+            public static ShortestPathOption Default = new(pathId: INVALID_PATH_ID, length: float.MaxValue);
+        }
+
         protected override bool IsDisposeAvailable => _isDisposeAvailable;
 
         private readonly INavigationMap _map;
@@ -24,8 +61,8 @@ namespace ZE.MechBattle.Navigation
         private readonly IPathsList<PortalPathDestinationKey, int> _pathsBuffer;
 
         private readonly CalculatePointDistancesProcess _calculateDistancesProcess;
-        private readonly List<PortalOption> _startPortals = new();
-        private readonly List<PortalOption> _endPortals = new();
+        private readonly StartPortalsList _startPortals = new();
+        private readonly EndPortalsList _endPortals = new();
         private readonly List<HexExitOption> _hexPortalsList = new();
 
         private readonly Dictionary<int, PortalNode> _nodes = new();
@@ -85,8 +122,11 @@ namespace ZE.MechBattle.Navigation
             {
                 try
                 {
-                    _calculateDistancesProcess.Dispose();
-                    _resultingPath.Dispose();
+                    FinalDispose();
+                }
+                catch
+                {
+                    // ignore it
                 }
                 finally
                 {
@@ -116,6 +156,9 @@ namespace ZE.MechBattle.Navigation
             if (_endPortals.Count == 0)
                 throw new System.NotImplementedException($"end hex {input.Request.EndHexCoord} has no portals");
 
+            //  sort start portals from closest to farthest
+            _startPortals.Sort((optionA, optionB) => optionA.MinDist.CompareTo(optionB.MinDist));
+
             DEBUG_LogPortalOptions(input.Request);
 
 
@@ -126,12 +169,76 @@ namespace ZE.MechBattle.Navigation
             _activeNodeIds.Clear();
         }
 
-        private async Awaitable<List<PortalOption>> PreparePortalOptions(
+
+        private float PreparePortalsPath(IntTriangularPos target)
+        {
+            // prepare initial nodes
+            for (var i = 0; i < _startPortals.Count; i++)
+            {
+                var startPortal = _startPortals[i];
+
+                var nodeData = new PortalNode(startPortal.PortalId, heuristic: CalculatePortalHeuristics(startPortal.PortalId, target), integration: startPortal.MinDist);
+
+                _nodes.Add(nodeData.PortalId, nodeData);
+                _activeNodeIds.Add(nodeData.PortalId);
+            }
+
+            // prepare for shortest path search
+            var shortestPathOption = ShortestPathOption.Default;
+
+            // handle all accessible nodes:
+            do
+            {
+                var nextNode = GetNextNode();
+                if (_endPortals.ContainsKey(nextNode.PortalId))
+                    shortestPathOption = shortestPathOption.TryUpdate(nextNode.PortalId, nextNode.TotalPathCost);
+                else 
+                    HandleConnectedPortals(nextNode, target);
+            }
+            while (_activeNodeIds.Count != 0);
+
+
+            // select shortest path:
+            
+            foreach (var endPortalOption in _endPortals.Values)
+            {
+                var endPortalId = endPortalOption.PortalId;
+                UnityEngine.Debug.Log($"end portal result of {endPortalId}");
+                if (!_nodes.TryGetValue(endPortalId, out var endPortalNode))
+                    continue;
+
+                var pathCost = endPortalNode.TotalPathCost + endPortalOption.MinDist;
+                shortestPathOption = shortestPathOption.TryUpdate(endPortalId, pathCost);
+            }
+
+            if (!shortestPathOption.IsValid)
+                throw new System.NotImplementedException("shortest path not found");
+
+            // fulfill resulting path
+            var observingNode = _nodes[shortestPathOption.PortalId];
+            var resultingPathCost = observingNode.TotalPathCost;
+            _resultingPath.Clear();
+            _resultingPath.InsertRange(0, observingNode.StepsCount + 1);
+
+            UnityEngine.Debug.Log($"shortest path final node: {shortestPathOption.PortalId}, length: {observingNode.StepsCount}, prev: {observingNode.PreviousPortalId}");
+
+            for (var i = observingNode.StepsCount; i > 0; i--)
+            {
+                _resultingPath[i] = observingNode.PortalId;
+                observingNode = _nodes[observingNode.PreviousPortalId];
+            }
+
+            _resultingPath[0] = observingNode.PortalId;
+
+            return resultingPathCost;
+        }
+
+        private async Awaitable PreparePortalOptions(
            int startZone,
            int2 hexCoord,
            int2 targetHexCoord,
            IntTriangularPos pos,
-           List<PortalOption> portalOptions)
+           IPortalsList portalOptions)
         {
             _isDisposeAvailable = false;
             // 1. calculate distances map through job
@@ -144,7 +251,7 @@ namespace ZE.MechBattle.Navigation
             _isDisposeAvailable = true;
 
             if (StopProcessRequired)
-                return default;
+                return;
 
 
             // 2. get all accessible portals, write also shortest distance
@@ -172,10 +279,6 @@ namespace ZE.MechBattle.Navigation
 
                 portalOptions.Add(new() { MinDist = minDist, PortalId = exitOption.PortalId, ZoneIndex = exitData.ZoneIndex });
             }
-
-            //  sort portals from closest to farthest
-            portalOptions.Sort((optionA, optionB) => optionA.MinDist.CompareTo(optionB.MinDist));
-            return portalOptions;
         }
 
 
@@ -235,66 +338,7 @@ namespace ZE.MechBattle.Navigation
         }
 
 
-        private float PreparePortalsPath(IntTriangularPos target)
-        {
-            // prepare initial nodes
-            for (var i = 0; i < _startPortals.Count; i++)
-            {
-                var startPortal = _startPortals[i];
-
-                var nodeData = new PortalNode(startPortal.PortalId, heuristic: CalculatePortalHeuristics(startPortal.PortalId, target), integration: startPortal.MinDist);
-
-                _nodes.Add(nodeData.PortalId, nodeData);
-                _activeNodeIds.Add(nodeData.PortalId);
-            }
-
-            // handle all accessible nodes:
-            do
-            {
-                var nextNode = GetNextNode();
-                HandleConnectedPortals(nextNode, target);
-            }
-            while (_activeNodeIds.Count != 0);
-
-
-            // select shortest path:
-            var shortestPathLength = float.MaxValue;
-            var shortestPathEndPortalId = -1;
-            foreach (var endPortalOption in _endPortals)
-            {
-                if (!_nodes.TryGetValue(endPortalOption.PortalId, out var endPortalNode))
-                    continue;
-
-                var pathCost = endPortalNode.TotalPathCost + endPortalOption.MinDist;
-                if (pathCost < shortestPathLength)
-                {
-                    shortestPathLength = pathCost;
-                    shortestPathEndPortalId = endPortalNode.PortalId;
-                    UnityEngine.Debug.Log($"path option with end at {shortestPathEndPortalId}, length: {pathCost}, length: {_nodes[shortestPathEndPortalId].StepsCount + 1}");
-                }
-            }
-
-            if (shortestPathEndPortalId == -1)
-                throw new System.NotImplementedException("shortest path not found");
-
-            // fulfill resulting path
-            var observingNode = _nodes[shortestPathEndPortalId];           
-            var resultingPathCost = observingNode.TotalPathCost;
-            _resultingPath.Clear();
-            _resultingPath.InsertRange(0, observingNode.StepsCount+1);
-
-           // UnityEngine.Debug.Log($"final node: {shortestPathEndPortalId}, length: {observingNode.StepsCount}, prev: {observingNode.PreviousPortalId}");
-
-            for (var i = observingNode.StepsCount; i > 0; i--)
-            {
-                _resultingPath[i] = observingNode.PortalId;
-                observingNode = _nodes[observingNode.PreviousPortalId];
-            }
-
-            _resultingPath[0] = observingNode.PortalId;
-
-            return resultingPathCost;
-        }
+       
 
         private float CalculatePortalHeuristics(int portalId, IntTriangularPos targetTripos)
         {
@@ -314,6 +358,7 @@ namespace ZE.MechBattle.Navigation
                 hasReachedTarget: true );
         }
 
+        #if UNITY_EDITOR
         private void DEBUG_LogPortalOptions(in HexPathSearchRequest request)
         {
             UnityEngine.Debug.Log($"{request.StartHexCoord} zone {request.StartHexZoneIndex} -> {request.EndHexCoord} zone {request.EndHexZoneIndex}");
@@ -324,10 +369,11 @@ namespace ZE.MechBattle.Navigation
             }
 
             UnityEngine.Debug.Log("end portals: ");
-            foreach (var endPortal in _endPortals)
+            foreach (var endPortal in _endPortals.Values)
             {
                 UnityEngine.Debug.Log($"{endPortal.PortalId} : {endPortal.MinDist}");
             }
         }
+        #endif
     }
 }

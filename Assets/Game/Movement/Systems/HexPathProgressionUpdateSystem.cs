@@ -61,7 +61,8 @@ namespace ZE.MechBattle.Ecs {
 
                 if (currentStep + 1 > progression.StepsCount)
                 {
-                    DoTargetCheck(entity);
+                    if (IsEntityReachedTarget(entity)) 
+                        ClearHexPathData(entity);
                 }
                 else
                 {
@@ -73,18 +74,6 @@ namespace ZE.MechBattle.Ecs {
         }
 
         public void Dispose() { }
-
-        private void DoTargetCheck(Entity entity)
-        {
-            if (IsEntityReachedTarget(entity))
-            {
-                ClearHexPathData(entity);
-            }
-            else
-            {
-                ClearTrianglePathData(entity);
-            }
-        }
 
         private bool IsEntityReachedTarget(Entity entity)
         {
@@ -102,7 +91,6 @@ namespace ZE.MechBattle.Ecs {
         {
             _moveTarget.Remove(entity);
             _clearHexPathTags.Add(entity);
-            ClearTrianglePathData(entity);
         }
     }
 }

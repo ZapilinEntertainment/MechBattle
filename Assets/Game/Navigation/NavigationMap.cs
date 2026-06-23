@@ -22,7 +22,7 @@ namespace ZE.MechBattle.Navigation
         bool IsInitialized { get; }
         bool DefaultPassability { get; }
         int TrianglesPerHexEdge { get; }
-        int TrianglesPerHex => TriangularMath.GetTrianglesCountInHex(TrianglesPerHexEdge);
+        int HexTrianglesCount => TriangularMath.GetTrianglesCountInHex(TrianglesPerHexEdge);
         int Version { get;}
         float TriangleHeight { get; }
         float InvertedTriangleHeight => 1f/ TriangleHeight;

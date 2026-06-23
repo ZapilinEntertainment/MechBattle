@@ -17,7 +17,7 @@ namespace ZE.MechBattle
         {
             _map = map;
             _rowsTable = TrianglesToIndexFlattenedConverter.FulfilRowIndices(Allocator.Persistent, _map.TrianglesPerHexEdge);
-            _flattenedArrayLength = _map.TrianglesPerHex;
+            _flattenedArrayLength = _map.HexTrianglesCount;
         }
 
         public void Dispose()

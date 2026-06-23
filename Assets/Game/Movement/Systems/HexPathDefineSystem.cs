@@ -79,15 +79,17 @@ namespace ZE.MechBattle.Ecs
                     var startPortalKey = new PortalPathDestinationKey(startHexCoord, startZoneIndex);
                     var endPortalKey = new PortalPathDestinationKey(endHexCoord, endZoneIndex);
 
-                    _searchRequests.Set(entity, new(startPortalKey, endPortalKey));
-                    _processingTag.Add(entity);
+                    _searchRequests.Set(entity, new(startPortalKey, endPortalKey));                    
                 }
                 else
                 {
                     //b: in-hex movement, no hex path needed
-                   
+                    // no requests, will be catched by HexPathReadyCheckSystem
                 }
+
+                _processingTag.Add(entity);
                 _hexPathDefinedTag.Add(entity);
+                UnityEngine.Debug.Log($"hex path defined for entity {entity.Id}");
             }
         }
 
