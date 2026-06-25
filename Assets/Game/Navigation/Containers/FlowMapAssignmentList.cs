@@ -14,6 +14,11 @@ namespace ZE.MechBattle.Navigation
         {
             _exitIdToFlowMapId.Add(exitId, flowMapId);
             _flowMapToPortalExitId.Add(flowMapId, exitId);
+
+            #if ZE_NAVIGATION_DEBUG
+            if (NavigationLogger.Settings.HasFlag(NavigationLogEvents.FlowMapAssigment))
+                UnityEngine.Debug.Log($"flow map {flowMapId} assigned to exit {exitId}");
+            #endif
         }
 
         public void RemoveBond(int exitId, int flowMapId)

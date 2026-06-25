@@ -65,7 +65,6 @@ namespace ZE.MechBattle.Ecs {
                 ExitData = exitData
             };
             token = _processesManager.TryLaunchProcess(protocol);
-            UnityEngine.Debug.Log($"tried to launch: {token.IsValid}");
             return token.IsValid;
         }
 

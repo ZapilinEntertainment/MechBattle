@@ -89,7 +89,11 @@ namespace ZE.MechBattle.Ecs
 
                 _processingTag.Add(entity);
                 _hexPathDefinedTag.Add(entity);
-                UnityEngine.Debug.Log($"hex path defined for entity {entity.Id}");
+
+#if ZE_NAVIGATION_DEBUG
+                if (NavigationLogger.Settings.HasFlag(NavigationLogEvents.HexPathSet))
+                    UnityEngine.Debug.Log($"hex path defined for entity {entity.Id}");
+#endif
             }
         }
 

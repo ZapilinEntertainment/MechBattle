@@ -79,15 +79,11 @@ namespace ZE.MechBattle.Navigation
             var flowMap = _flowMapFactory.CreateEmptyPortalExitFlowMap(hexCoord, exit);
             _flowMapsList.Add(flowMap.Id, flowMap);
             _assignmentList.RegisterBond(exitId, flowMap.Id);
-            UnityEngine.Debug.Log($"registered bond: flow map {flowMap.Id} - exit {exitId}");
-            if (!_assignmentList.TryGetExit(flowMap.Id, out var fexitId) || fexitId != exitId)
-                UnityEngine.Debug.LogError("failed at reversed request");
             return flowMap;
         }
 
         public void OnFlowMapCalculated(int flowMapId, in FlowMapCalculationResults results)
         {
-            UnityEngine.Debug.Log($"flow map calculated: {flowMapId}");
             if (!_flowMapsList.TryGetPathById(flowMapId, out var flowMap))
             {
                 UnityEngine.Debug.LogWarning("flow map calculated, but it is no longer needed");

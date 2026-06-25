@@ -4067,10 +4067,12 @@ GameObject:
   - component: {fileID: 1259888759}
   - component: {fileID: 1259888754}
   - component: {fileID: 1259888755}
-  - component: {fileID: 1259888756}
   - component: {fileID: 1259888757}
   - component: {fileID: 1259888760}
   - component: {fileID: 1259888761}
+  - component: {fileID: 1259888762}
+  - component: {fileID: 1259888763}
+  - component: {fileID: 1259888764}
   m_Layer: 0
   m_Name: DEVELOP
   m_TagString: Untagged
@@ -4087,7 +4089,7 @@ Transform:
   m_GameObject: {fileID: 1259888751}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -189.7, y: 0, z: 210.1}
+  m_LocalPosition: {x: 215.2, y: 0, z: 264.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4118,27 +4120,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5029b64d4b707f4f90427e70a74dfbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.PortalExitDebugDrawer
-  _compareFunction: 4
-  _currentExitListVersion: 0
-  _exitsCount: 0
-  _exitsList: []
---- !u!114 &1259888756
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1259888751}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 90bb08656b0c8bc449590971d445aefd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.ZonesDrawer
-  _hexCoords:
-  - x: 0
-    y: 0
-  _compareFunction: 6
-  _shownMapVersion: 0
+  _portalId: 0
+  _drawCompareFunction: 4
 --- !u!114 &1259888757
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4206,6 +4189,50 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.FlowMapDrawer
   _flowMapId: 0
+--- !u!114 &1259888762
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259888751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 264bf5fe09f5b8e4c853ef0700a6f891, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZE.Navigation::ZE.MechBattle.Navigation.NavigationLoggerSetup
+  _eventSettings: 32
+--- !u!114 &1259888763
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259888751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9af7cb2e9ae1954397a8c682093da26, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.PortalConnectionDistanceDisplay
+  _portalIdA: 0
+  _portalIdB: 0
+  _distance: 0
+--- !u!114 &1259888764
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259888751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90bb08656b0c8bc449590971d445aefd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.ZonesDrawer
+  _hexCoords:
+  - x: 0
+    y: 0
+  _compareFunction: 4
 --- !u!1 &1324568865
 GameObject:
   m_ObjectHideFlags: 0

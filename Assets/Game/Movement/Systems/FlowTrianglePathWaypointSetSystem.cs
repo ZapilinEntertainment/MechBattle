@@ -63,12 +63,18 @@ namespace ZE.MechBattle.Ecs
                     continue;
                 }
 
+                if (!flowMap.IsCalculated)
+                {
+                    //UnityEngine.Debug.Log("flow map is not yet calculated");
+                    continue;
+                }
+
                 var tripos = _triangularPositions.Get(entity).Value;
                 var exitDirection = flowMap.GetDirectionUnsafe(tripos);
                 var nextTripos = TriangularMath.GetNeighbourByDirection(tripos, exitDirection);
                 var nextWorldPos = TriangularMath.TriangularToWorld(nextTripos, _triangleHeight);
                 _waypoints.Set(entity, new(worldPos: nextWorldPos, tripos: nextTripos));
-                UnityEngine.Debug.Log($"new flow waypoint: {nextTripos}");
+                //UnityEngine.Debug.Log($"new flow waypoint: {nextTripos}");
             }
         }
 

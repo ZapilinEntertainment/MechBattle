@@ -74,8 +74,12 @@ namespace ZE.MechBattle.Ecs
             // a. move inside hex
             foreach (var entity in _noHexPathUsers)
             {
-                SetupPathToFinalTarget(entity);                
-                UnityEngine.Debug.Log("move inside hex");
+                SetupPathToFinalTarget(entity);              
+                
+#if ZE_NAVIGATION_DEBUG
+                if (NavigationLogger.Settings.HasFlag(NavigationLogEvents.EntityPortalPathStatuses))
+                    UnityEngine.Debug.Log($"entity {entity.Id}: move inside hex");
+#endif
             }
 
             // b. move through hex portals
@@ -94,7 +98,11 @@ namespace ZE.MechBattle.Ecs
                 if (stepIndex >= progressionComponent.StepsCount)
                 {
                     // all portals passed, move to final target
-                    UnityEngine.Debug.Log("move to final target");
+
+#if ZE_NAVIGATION_DEBUG
+                    if (NavigationLogger.Settings.HasFlag(NavigationLogEvents.EntityPortalPathStatuses))
+                        UnityEngine.Debug.Log($"entity {entity.Id}: move to final target");
+#endif
                     SetupPathToFinalTarget(entity);
                     continue;
                 }
@@ -106,7 +114,10 @@ namespace ZE.MechBattle.Ecs
                     continue;
                 }
 
-                UnityEngine.Debug.Log($"flow map requested for portal {portalId} index {progressionComponent.StepIndex} at {entity.GetComponent<HexCoordComponent>().Value}");
+#if ZE_NAVIGATION_DEBUG
+                if (NavigationLogger.Settings.HasFlag(NavigationLogEvents.FlowMapRequest))
+                    UnityEngine.Debug.Log($"flow map requested for portal {portalId} index {progressionComponent.StepIndex} at {entity.GetComponent<HexCoordComponent>().Value}");
+#endif
 
                 _flowMapSearchRequests.Add(entity, new(portalId));
                 _flowProcessingTags.Add(entity);

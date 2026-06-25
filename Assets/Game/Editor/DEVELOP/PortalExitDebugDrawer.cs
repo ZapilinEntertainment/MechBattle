@@ -13,110 +13,49 @@ namespace ZE.MechBattle.Develop
 {
     public class PortalExitDebugDrawer : MonoBehaviour
     {
-        [Serializable]
-        private struct SerializableExitData
-        {
-            public int Id;
-            public int3 Start;
-            public int Length;
-            public int ZoneIndex;
-            public HexEdge Edge;
-            public int3 Center;
-
-            public SerializableExitData(int id, NavigationPortalExit exit)
-            {
-                Id = id;
-                Start = exit.StartTriangle;
-                Length = exit.Length;
-                ZoneIndex = exit.ZoneIndex;
-                Center = exit.Center;
-                Edge = exit.Edge;
-            }
-        }
-
-        [SerializeField] private CompareFunction _compareFunction = CompareFunction.LessEqual;
-        [SerializeField, ReadOnly] private int _currentExitListVersion = 0;
-        [SerializeField, ReadOnly] private int _exitsCount = 0;
-        [SerializeField, ReadOnly] private List<SerializableExitData> _exitsList = new();
+        [SerializeField] private int _portalId;
+        [SerializeField] private CompareFunction _drawCompareFunction = CompareFunction.LessEqual;
+        private IHexPortalsList _portals;
         private IPortalExitsList _exits;     
         private INavigationMap _map;
-        private List<(TriangleDrawData, int)> _drawData = new();
-        private List<IntTriangularPos> _trianglesList = new();        
-        private static readonly Color[] _colors = new Color[]
-        {
-            Color.green,
-            Color.softYellow,
-            Color.brown,
-            Color.darkOrange,
-            Color.blue,
-            Color.deepPink,
-            Color.lightBlue,
-            Color.lavender,
-            Color.violet,
-            Color.cyan,
-        };
+        private List<TriangleDrawData> _drawDataA = new();
+        private List<TriangleDrawData> _drawDataB = new();
+        private readonly Color _colorA = Color.green;
+        private readonly Color _colorB = Color.blue;
 
         [Inject]
-        public void Inject(IPortalExitsList exitsList, INavigationMap map)
+        public void Inject(IPortalExitsList exitsList, INavigationMap map, IHexPortalsList portals)
         {
             _exits = exitsList;
             _map = map;
+            _portals = portals;
         }
 
-        private void Update()
+        [Button("Draw portal exits")]
+        private void DrawPortalExits()
         {
-            if (_exits.Version == _currentExitListVersion)
+            _drawDataA.Clear();
+            _drawDataB.Clear();
+
+            if (!_portals.TryGetValue(_portalId, out var portal))
+            {
+                _portalId = -1;
                 return;
-
-            _drawData.Clear();
-            _exitsCount = 0;
-            foreach (var hex in _map.Hexes)
-            {
-                RedrawHex(hex);
             }
 
-            _exitsList.Clear();
-            foreach (var exitKvp in _exits)
+            if (_exits.TryGetValue(portal.ExitIdA, out var exitA))
             {
-                _exitsList.Add(new(exitKvp.Key, exitKvp.Value));
+                foreach (var tripos in exitA.Edge.GetEdgeEnumerable(exitA))
+                {
+                    _drawDataA.Add(TrianglesDrawHelper.GetDrawData(tripos, _map));
+                }
             }
 
-            _currentExitListVersion = _exits.Version;
-        }
-
-        private void RedrawHex(INavigationHex hex)
-        {
-            foreach (var exitId in hex.PortalExitIds)
+            if (_exits.TryGetValue(portal.ExitIdB, out var exitB))
             {
-                if (!_exits.TryGetValue(exitId, out var exitData))
+                foreach (var tripos in exitB.Edge.GetEdgeEnumerable(exitB))
                 {
-                    Debug.LogWarning($"exit {exitId} of {hex.HexCoordinate} doesn't exists");
-                    continue;
-                }
-
-                if (exitData.Length == 1)
-                {
-                    _drawData.Add((TrianglesDrawHelper.GetDrawData(exitData.StartTriangle, _map), exitId));
-                    _exitsCount++;
-                }
-                else
-                {
-                    var peakDir = exitData.Edge.ToAlongsidePeakDirection();
-                    var valleyDir = exitData.Edge.ToAlongsideValleyDirection();
-
-                    var tripos = exitData.StartTriangle;
-                    _drawData.Add((TrianglesDrawHelper.GetDrawData(tripos, _map), exitId));
-
-                    for (var i = 1; i < exitData.Length; i++)
-                    {
-                        if (tripos.IsPeak)
-                            tripos = TriangularMath.GetPeakNeighbour(tripos, peakDir);
-                        else
-                            tripos = TriangularMath.GetValleyNeighbour(tripos, valleyDir);
-
-                        _drawData.Add((TrianglesDrawHelper.GetDrawData(tripos, _map), exitId));
-                    }
-                    _exitsCount += exitData.Length;
+                    _drawDataB.Add(TrianglesDrawHelper.GetDrawData(tripos, _map));
                 }
             }
         }
@@ -126,13 +65,20 @@ namespace ZE.MechBattle.Develop
             if (!enabled)
                 return;
 
-            var previousZTest = TrianglesDrawHelper.SwitchZTestAndSave(_compareFunction);
-            foreach (var drawDataPack in _drawData)
+            var previousZTest = TrianglesDrawHelper.SwitchZTestAndSave(_drawCompareFunction);
+
+            Handles.color = _colorA;
+            foreach (var drawData in _drawDataA)
             {
-                var index = drawDataPack.Item2;
-                Handles.color = _colors[index % _colors.Length];
-                TrianglesDrawHelper.DrawHandles(drawDataPack.Item1);
+                TrianglesDrawHelper.DrawHandles(drawData);
             }
+
+            Handles.color = _colorB;
+            foreach (var drawData in _drawDataB)
+            {
+                TrianglesDrawHelper.DrawHandles(drawData);
+            }
+
             TrianglesDrawHelper.RestoreZTest(previousZTest);
         }
     }

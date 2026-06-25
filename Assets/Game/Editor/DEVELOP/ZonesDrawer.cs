@@ -14,7 +14,6 @@ namespace ZE.MechBattle.Develop
     {
         [SerializeField] private List<int2> _hexCoords = new List<int2>() { int2.zero};
         [SerializeField] private CompareFunction _compareFunction = CompareFunction.LessEqual;
-        [SerializeField, ReadOnly] private int _shownMapVersion = 0;
         private INavigationMap _map; 
         private List<(Color color, int zone, TriangleVertices vertices, Vector3 worldPos)> _drawData = new();
         private static readonly Color _startColor = Color.darkGreen;
@@ -26,13 +25,8 @@ namespace ZE.MechBattle.Develop
             _map = map;
         }
 
+        
         [Button("Redraw")]
-        public void Redraw()
-        {
-            RedrawMap();
-            _shownMapVersion = _map.Version;
-        }
-
         private void RedrawMap()
         {
             _drawData.Clear();

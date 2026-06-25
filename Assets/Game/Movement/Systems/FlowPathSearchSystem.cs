@@ -59,7 +59,11 @@ namespace ZE.MechBattle.Ecs {
                     _flowMapCalculationTags.Add(entity);
                 }
                 _flowPaths.Set(entity, new(flowMapId, hexCoord));
-                UnityEngine.Debug.Log($"flow map set {flowMapId}");
+
+                #if ZE_NAVIGATION_DEBUG
+                    if (NavigationLogger.Settings.HasFlag(NavigationLogEvents.FlowMapSet)) 
+                        UnityEngine.Debug.Log($"flow map set {flowMapId} for entity {entity.Id}");
+                #endif
             }
         }
 

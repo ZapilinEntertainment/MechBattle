@@ -57,7 +57,10 @@ namespace ZE.MechBattle.Ecs
                     _regularPaths.Remove(entity);
                     _progression.Remove(entity);
                     _completedPathTags.Add(entity);
-                    UnityEngine.Debug.Log($"triangle path completed for entity {entity.Id}");
+#if ZE_NAVIGATION_DEBUG
+                    if (ZE.MechBattle.Navigation.NavigationLogger.Settings.HasFlag(Navigation.NavigationLogEvents.TripathProgression))
+                        UnityEngine.Debug.Log($"triangle path completed for entity {entity.Id}");
+#endif
                     continue;
                 }
 
@@ -74,7 +77,7 @@ namespace ZE.MechBattle.Ecs
                 {
                     _completedPathTags.Add(entity);
                    _flowPaths.Remove(entity);
-                    UnityEngine.Debug.Log($"flow move stopped: out of {flowMapHexCoord} ({entityHexCoord})");
+                    //UnityEngine.Debug.Log($"flow move stopped: out of {flowMapHexCoord} ({entityHexCoord})");
                 }
             }
         }

@@ -159,8 +159,10 @@ namespace ZE.MechBattle.Navigation
             //  sort start portals from closest to farthest
             _startPortals.Sort((optionA, optionB) => optionA.MinDist.CompareTo(optionB.MinDist));
 
-            DEBUG_LogPortalOptions(input.Request);
-
+#if ZE_NAVIGATION_DEBUG
+            if (NavigationLogger.Settings.HasFlag(NavigationLogEvents.FullPortalSelectionLog))
+                DEBUG_LogPortalOptions(input.Request);
+ #endif
 
             var pathCost = PreparePortalsPath(input.Request.StartTripos);
             _pathsBuffer.AddCalculatedPath(input.ReservedPathId, FormResult(request, pathCost));
@@ -203,7 +205,6 @@ namespace ZE.MechBattle.Navigation
             foreach (var endPortalOption in _endPortals.Values)
             {
                 var endPortalId = endPortalOption.PortalId;
-                UnityEngine.Debug.Log($"end portal result of {endPortalId}");
                 if (!_nodes.TryGetValue(endPortalId, out var endPortalNode))
                     continue;
 
@@ -220,7 +221,10 @@ namespace ZE.MechBattle.Navigation
             _resultingPath.Clear();
             _resultingPath.InsertRange(0, observingNode.StepsCount + 1);
 
-            UnityEngine.Debug.Log($"shortest path final node: {shortestPathOption.PortalId}, length: {observingNode.StepsCount}, prev: {observingNode.PreviousPortalId}");
+#if ZE_NAVIGATION_DEBUG
+            if (NavigationLogger.Settings.HasFlag(NavigationLogEvents.PortalsPathBestResult))
+                UnityEngine.Debug.Log($"shortest path final node: {shortestPathOption.PortalId}, length: {observingNode.StepsCount}, prev: {observingNode.PreviousPortalId}");
+#endif
 
             for (var i = observingNode.StepsCount; i > 0; i--)
             {
@@ -358,21 +362,24 @@ namespace ZE.MechBattle.Navigation
                 hasReachedTarget: true );
         }
 
-        #if UNITY_EDITOR
+        #if ZE_NAVIGATION_DEBUG
         private void DEBUG_LogPortalOptions(in HexPathSearchRequest request)
         {
-            UnityEngine.Debug.Log($"{request.StartHexCoord} zone {request.StartHexZoneIndex} -> {request.EndHexCoord} zone {request.EndHexZoneIndex}");
-            UnityEngine.Debug.Log("start portals:");
+            var stringBuilder = new System.Text.StringBuilder();
+            stringBuilder.AppendLine($"{request.StartHexCoord} zone {request.StartHexZoneIndex} -> {request.EndHexCoord} zone {request.EndHexZoneIndex}");
+            stringBuilder.AppendLine("start portals:");
             foreach (var startPortal in _startPortals)
             {
-                UnityEngine.Debug.Log($"{startPortal.PortalId} : {startPortal.MinDist}");
+                stringBuilder.AppendLine($"{startPortal.PortalId} : {startPortal.MinDist}");
             }
 
-            UnityEngine.Debug.Log("end portals: ");
+            stringBuilder.AppendLine("end portals: ");
             foreach (var endPortal in _endPortals.Values)
             {
-                UnityEngine.Debug.Log($"{endPortal.PortalId} : {endPortal.MinDist}");
+                stringBuilder.AppendLine($"{endPortal.PortalId} : {endPortal.MinDist}");
             }
+
+            UnityEngine.Debug.Log(stringBuilder.ToString());
         }
         #endif
     }

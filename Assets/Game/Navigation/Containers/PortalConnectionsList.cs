@@ -4,7 +4,12 @@ using System.Collections.Generic;
 
 namespace ZE.MechBattle
 {
-    public class PortalConnectionsList : IEnumerable<KeyValuePair<int, Dictionary<int,float>>>
+    public interface IPortalConnectionsList : IEnumerable<KeyValuePair<int, Dictionary<int, float>>>
+    {
+        bool TryGetDistance(int portalIdA, int portalIdB, out float distance);
+    }
+
+    public class PortalConnectionsList : IPortalConnectionsList
     {
         public int Version { get; private set; }
         private Dictionary<int, Dictionary<int, float>> _connections = new();
@@ -46,6 +51,17 @@ namespace ZE.MechBattle
 
                 _connections.Remove(portalId);
             }
+        }
+
+        public bool TryGetDistance(int portalIdA, int portalIdB, out float distance)
+        {
+            if (!TryGetPortalConnections(portalIdA, out var connectionsA) || !connectionsA.TryGetValue(portalIdB, out distance))
+            {
+                distance = -1f;
+                return false;
+            }
+
+            return true;
         }
 
         public float GetDistance(int portalIdA, int portalIdB) => _connections[portalIdA][portalIdB];
