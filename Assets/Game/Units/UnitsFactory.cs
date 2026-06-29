@@ -11,6 +11,7 @@ namespace ZE.MechBattle
         private readonly Stash<MoveSpeedComponent> _moveSpeeds;
         private readonly Stash<RotationSpeedComponent> _rotationSpeeds;
         private readonly Stash<NavigationAgentComponent> _navigationAgents;
+        private readonly Stash<MovementCollisionAvoidanceComponent> _movementCollisionAvoidanceComponents;
 
         [Inject]
         public UnitsFactory(EntityFactory entityFactory, World world)
@@ -19,6 +20,7 @@ namespace ZE.MechBattle
             _moveSpeeds = world.GetStash<MoveSpeedComponent>();
             _rotationSpeeds = world.GetStash<RotationSpeedComponent>();
             _navigationAgents = world.GetStash<NavigationAgentComponent>();
+            _movementCollisionAvoidanceComponents = world.GetStash<MovementCollisionAvoidanceComponent>();
         }
 
         public Entity Build(TankView view)
@@ -28,6 +30,7 @@ namespace ZE.MechBattle
 
             _moveSpeeds.Set(entity, new() { Value = view.Speed});
             _rotationSpeeds.Set(entity, new() { Value = view.RotationSpeed });  
+            _movementCollisionAvoidanceComponents.Add(entity, new(MovementCollisionAvoidancePriority.SmallUnit));
 
             return entity;
         }

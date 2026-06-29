@@ -44,7 +44,13 @@ namespace ZE.MechBattle.Ecs
             RegisterSystem<RegularTrianglePathWaypointSetSystem>();
             RegisterSystem<FlowTrianglePathWaypointSetSystem>();
 
+            RegisterSystem<MovementVectorsMapUpdateSystem>();
+            RegisterSystem<MovementCollisionAvoidanceSystem>();
+
             RegisterSystem<WaypointsMovementSystem>();
+            RegisterSystem<NextPositionApplySystem>();
+            RegisterSystem<WaypointsCheckSystem>();
+
             RegisterSystem<TrianglePathProgressionUpdateSystem>();
             RegisterSystem<HexPathProgressionUpdateSystem>();
 
@@ -52,6 +58,9 @@ namespace ZE.MechBattle.Ecs
             RegisterSystem<ChangeMovementTargetSystem>();
             RegisterSystem<HexPortalPathClearSystem>();
             RegisterSystem<TrianglePathClearSystem>();
+
+
+            builder.Register<TransformAspectHandler>(Lifetime.Scoped);
 
             builder.Register<HexRaycastRequestsList>(Lifetime.Scoped);
             builder.Register<UpdateEdgeExitsRequestsList>(Lifetime.Scoped);            
@@ -77,7 +86,9 @@ namespace ZE.MechBattle.Ecs
             builder.Register<IFlowMapsList, PortalFlowMapsList>(Lifetime.Scoped).AsSelf();
             builder.Register<FlowMapAssignmentList>(Lifetime.Scoped);
 
-            builder.Register<NavigationMapInitializer>(Lifetime.Transient);
+            builder.Register<MovementCellsList>(Lifetime.Scoped);
+
+            builder.Register<NavigationMapInitializer>(Lifetime.Transient);            
         }
 
         // TODO: add triangle path systems
@@ -111,7 +122,13 @@ namespace ZE.MechBattle.Ecs
 
             resolver.AddSystem<RegularTrianglePathWaypointSetSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<FlowTrianglePathWaypointSetSystem>(SystemGroupOrder.RegularUpdate);
+
             resolver.AddSystem<WaypointsMovementSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<MovementVectorsMapUpdateSystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<MovementCollisionAvoidanceSystem>(SystemGroupOrder.RegularUpdate);            
+            resolver.AddSystem<NextPositionApplySystem>(SystemGroupOrder.RegularUpdate);
+            resolver.AddSystem<WaypointsCheckSystem>(SystemGroupOrder.RegularUpdate);
+
             resolver.AddSystem<TrianglePathProgressionUpdateSystem>(SystemGroupOrder.RegularUpdate);
             resolver.AddSystem<HexPathProgressionUpdateSystem>(SystemGroupOrder.RegularUpdate);
 

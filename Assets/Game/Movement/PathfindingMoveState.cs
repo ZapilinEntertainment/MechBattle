@@ -9,7 +9,7 @@ namespace ZE.MechBattle.Ecs.States
     {
         protected readonly NavigationMapController NavMap;
 
-        public PathfindingMoveState(World world, NavigationMapController navMap) : base(world)
+        public PathfindingMoveState(World world, NavigationMapController navMap, TransformAspectHandler transformAspectHandler) : base(world, transformAspectHandler)
         {
             NavMap = navMap;
         }

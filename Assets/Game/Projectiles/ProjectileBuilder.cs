@@ -25,13 +25,14 @@ namespace ZE.MechBattle.Ecs
             World world, 
             ProjectileViewBuilder viewBuilder, 
             StringDataDictionary stringDict,
-            ProjectilesData projectileData)
+            ProjectilesData projectileData,
+            TransformAspectHandler transformAspectHandler)
         {
             _world = world;
             _viewBuilder = viewBuilder;
             _stringDict = stringDict;
             _projectileData = projectileData;
-            _transformAspectHandler = new(world);
+            _transformAspectHandler = transformAspectHandler;
             
             _projectiles = _world.GetStash<ProjectileComponent>();
             _explosionTimer = _world.GetStash<ExplosionTimerComponent>();

@@ -12,12 +12,12 @@ namespace ZE.MechBattle.Ecs.States
         protected readonly TransformAspectHandler TransformAspectHandler;
 
         [Inject]
-        public DefaultMoveState(World world)
+        public DefaultMoveState(World world, TransformAspectHandler transformAspectHandler)
         {
             MoveTargets = world.GetStash<MoveTargetComponent>();
             Speed = world.GetStash<MoveSpeedComponent>();
             AngSpeed = world.GetStash<RotationSpeedComponent>();
-            TransformAspectHandler = new(world);
+            TransformAspectHandler = transformAspectHandler;
         }
 
         public override void Enter(Entity entity)

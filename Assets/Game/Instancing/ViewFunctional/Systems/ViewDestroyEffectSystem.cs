@@ -1,6 +1,7 @@
 using VContainer;
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
+using VContainer;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -11,12 +12,14 @@ namespace ZE.MechBattle.Ecs {
         public World World { get; set;}
         private Filter _filter;
         private Stash<ViewDestroyEffectComponent> _destroyEffects;
-        private TransformAspectHandler _transformAspect;
-        private readonly VfxRequestsBuilder _vfxRequestsBuilder;   
+        private readonly VfxRequestsBuilder _vfxRequestsBuilder;
+        private readonly TransformAspectHandler _transformAspectHandler;
 
-        public ViewDestroyEffectSystem(VfxRequestsBuilder vfxRequestsBuilder)
+        [Inject]
+        public ViewDestroyEffectSystem(VfxRequestsBuilder vfxRequestsBuilder, TransformAspectHandler transformAspectHandler)
         {
             _vfxRequestsBuilder = vfxRequestsBuilder;
+            _transformAspectHandler = transformAspectHandler;
         }
 
         public void OnAwake() 
@@ -28,7 +31,6 @@ namespace ZE.MechBattle.Ecs {
                 .Build();
 
             _destroyEffects = World.GetStash<ViewDestroyEffectComponent>();
-            _transformAspect = new(World);
         }
 
         public void OnUpdate(float deltaTime) 
@@ -40,7 +42,7 @@ namespace ZE.MechBattle.Ecs {
             {
                 //UnityEngine.Debug.Log("destroy vfx call");
                 var effectKey = _destroyEffects.Get(entity).EffectKey;
-                _vfxRequestsBuilder.Build(new(effectKey), _transformAspect.GetPoint(entity));
+                _vfxRequestsBuilder.Build(new(effectKey), _transformAspectHandler.GetPoint(entity));
             }
         }
 

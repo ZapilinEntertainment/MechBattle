@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Mathematics;
 using Scellecs.Morpeh;
+using VContainer;
 
 namespace ZE.MechBattle.Ecs
 {
@@ -13,6 +14,7 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<RotationComponent> _rotations;
         private readonly Stash<TransformUpdatedTag> _updateTags;
 
+        [Inject]
         public TransformAspectHandler(World world)
         {
             _positions = world.GetStash<PositionComponent>();

@@ -21,15 +21,15 @@ namespace ZE.MechBattle.Ecs {
         private Stash<ExplosionTimerComponent> _explosionTimer;
         private Stash<ExplodeTag> _explodeTags;
         private Stash<CollisionComponent> _collisionResults;
-        private TransformAspectHandler _transformAspect;
 
+        private readonly TransformAspectHandler _transformAspect;
         private readonly List<float3> _movementVectorsCache = new (DEFAULT_CAPACITY);
         private readonly List<Entity> _projectilesList = new(DEFAULT_CAPACITY);
         private readonly QueryParameters _queryParameters;
         private const int DEFAULT_CAPACITY = 32;
 
         [Inject]
-        public ProjectileMoveSystem()
+        public ProjectileMoveSystem(TransformAspectHandler transformAspectHandler)
         {
             _queryParameters = new QueryParameters()
             {
@@ -38,6 +38,8 @@ namespace ZE.MechBattle.Ecs {
                 hitTriggers = QueryTriggerInteraction.Ignore,
                 layerMask = LayerConstants.ProjectilesCastMask
             };
+
+            _transformAspect = transformAspectHandler;
         }
 
         public void OnAwake() 
@@ -52,8 +54,6 @@ namespace ZE.MechBattle.Ecs {
             _explosionTimer = World.GetStash<ExplosionTimerComponent>();
             _explodeTags = World.GetStash<ExplodeTag>();
             _collisionResults = World.GetStash<CollisionComponent>();
-
-            _transformAspect = new(World);
         }
 
         public void OnUpdate(float dt)
