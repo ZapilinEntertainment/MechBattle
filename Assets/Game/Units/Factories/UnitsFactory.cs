@@ -7,14 +7,14 @@ namespace ZE.MechBattle
 {
     public class UnitsFactory
     {
-        private readonly EntityFactory _entityFactory;
+        private readonly EntityConversionFactory _entityFactory;
         private readonly Stash<MoveSpeedComponent> _moveSpeeds;
         private readonly Stash<RotationSpeedComponent> _rotationSpeeds;
         private readonly Stash<NavigationAgentComponent> _navigationAgents;
         private readonly Stash<MovementCollisionAvoidanceComponent> _movementCollisionAvoidanceComponents;
 
         [Inject]
-        public UnitsFactory(EntityFactory entityFactory, World world)
+        public UnitsFactory(EntityConversionFactory entityFactory, World world)
         {
             _entityFactory = entityFactory;
             _moveSpeeds = world.GetStash<MoveSpeedComponent>();

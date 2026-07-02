@@ -6,7 +6,7 @@ using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle
 {
-    // why not call builder directly - all projectiles wwill be created in same moment of frame
+    // why not call factory directly - all projectiles will be created in same moment of frame
     public class ProjectileRequestsFactory
     {
         private readonly World _world;

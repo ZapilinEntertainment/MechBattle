@@ -21,10 +21,10 @@ namespace ZE.MechBattle.Ecs {
         private Stash<ViewDestroyEffectComponent> _viewDestroyEffect;
         private readonly CollidersTable _collidersTable;
         private readonly StringDataDictionary _stringDictionary;
-        private readonly EntityFactory _entityFactory;
+        private readonly EntityConversionFactory _entityFactory;
 
         [Inject]
-        public DamageablesInitializer(CollidersTable collidersTable, StringDataDictionary strDict, EntityFactory entityBuilder)
+        public DamageablesInitializer(CollidersTable collidersTable, StringDataDictionary strDict, EntityConversionFactory entityBuilder)
         {
             _collidersTable = collidersTable;
             _stringDictionary = strDict;

@@ -4,7 +4,7 @@ using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle
 {
-    public class Projectile : DisposableGameObject, IViewLoadReceiver, IDisposable
+    public class ProjectileView : DisposableGameObject, IViewLoadReceiver, IDisposable
     {
         private IView _view;
 

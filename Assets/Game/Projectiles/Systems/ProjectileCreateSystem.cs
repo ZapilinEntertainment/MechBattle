@@ -11,12 +11,12 @@ namespace ZE.MechBattle.Ecs {
         public World World { get; set;}
         private Stash<ProjectileBuildRequest> _requests;
         private Filter _requestsFilter;
-        private readonly ProjectileBuilder _builder;
+        private readonly ProjectilesFactory _factory;
 
         [Inject]
-        public ProjectileCreateSystem(ProjectileBuilder builder)
+        public ProjectileCreateSystem(ProjectilesFactory builder)
         {
-            _builder = builder;
+            _factory = builder;
         }
 
         public void OnAwake() 
@@ -32,7 +32,7 @@ namespace ZE.MechBattle.Ecs {
                 foreach (var request in _requestsFilter)
                 {
                     var data = _requests.Get(request);
-                    _builder.Build(data.IdKey, data.Point, data.Shooter);
+                    _factory.Build(data.IdKey, data.Point, data.Shooter);
                     World.RemoveEntity(request);
                 }
             }

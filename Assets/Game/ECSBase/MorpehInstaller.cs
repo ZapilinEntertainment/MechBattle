@@ -14,12 +14,15 @@ namespace ZE.MechBattle
             builder.Register<World>(_ => CreateWorld(), Lifetime.Scoped);
 
             builder.Register<ProjectileRequestsFactory>(Lifetime.Scoped);
-            builder.Register<ProjectileBuilder>(Lifetime.Scoped);
-            builder.Register<ProjectileViewBuilder>(Lifetime.Scoped);
+            builder.Register<ProjectilesFactory>(Lifetime.Scoped);
+            builder.Register<MonoViewFactory>(Lifetime.Scoped);
             builder.Register<ExplosionRequestsBuilder>(Lifetime.Scoped);
             builder.Register<DamageRequestsBuilder>(Lifetime.Scoped);
             builder.Register<VfxRequestsBuilder>(Lifetime.Scoped);
-            builder.Register<EntityFactory>(Lifetime.Scoped);
+            builder.Register<EntityConversionFactory>(Lifetime.Scoped);
+
+            builder.Register<InitialDelayApplier>(Lifetime.Scoped);
+            builder.Register<TriangularPositionApplier>(Lifetime.Scoped);
 
             void RegisterSystem<T>() where T : class, ISystem => builder.Register<T>(Lifetime.Scoped);
             void RegisterInitializer<T>() where T : class, IInitializer => builder.Register<T>(Lifetime.Transient);

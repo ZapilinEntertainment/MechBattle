@@ -5,10 +5,10 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Ecs
 {
-    public class ProjectileBuilder
+    public class ProjectilesFactory
     {
         private readonly World _world;
-        private readonly ProjectileViewBuilder _viewBuilder;
+        private readonly MonoViewFactory _viewFactory;
         private readonly StringDataDictionary _stringDict;
         private readonly ProjectilesData _projectileData;
         private readonly TransformAspectHandler _transformAspectHandler;
@@ -21,15 +21,15 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<OwnerAffinityComponent> _projectilesOwner;
 
         [Inject]
-        public ProjectileBuilder(
+        public ProjectilesFactory(
             World world, 
-            ProjectileViewBuilder viewBuilder, 
+            MonoViewFactory viewBuilder, 
             StringDataDictionary stringDict,
             ProjectilesData projectileData,
             TransformAspectHandler transformAspectHandler)
         {
             _world = world;
-            _viewBuilder = viewBuilder;
+            _viewFactory = viewBuilder;
             _stringDict = stringDict;
             _projectileData = projectileData;
             _transformAspectHandler = transformAspectHandler;
@@ -54,7 +54,7 @@ namespace ZE.MechBattle.Ecs
                 return default;
             }
 
-            var entity = _viewBuilder.BuildView(idkey);
+            var entity = _viewFactory.BuildView<ProjectileView>(idkey);
             _transformAspectHandler.MoveToPoint(entity, point);
 
             _speed.Set(entity,new() { Value = projectileData.Speed});

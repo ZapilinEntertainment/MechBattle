@@ -15,7 +15,11 @@ namespace ZE.MechBattle
         private readonly PlayerFactory _playerFactory;
 
         [Inject]
-        public SceneBootstrap(SessionData sessionData, IObjectResolver objectResolver, PlayerFactory playerFactory)
+        public SceneBootstrap(
+            SessionData sessionData, 
+            IObjectResolver objectResolver, 
+            PlayerFactory playerFactory,
+            SpawnersManager spawnersManager)
         {
             _sessionData = sessionData;
             _objectResolver = objectResolver;

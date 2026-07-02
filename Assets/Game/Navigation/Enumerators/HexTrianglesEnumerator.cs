@@ -6,7 +6,6 @@ using System.Collections;
 
 namespace ZE.MechBattle.Navigation
 {
-    // todo: make same order, as in flattened hex
     [BurstCompile]
     public struct HexTrianglesEnumerator : IEnumerator<IntTriangularPos>, IEnumerable<IntTriangularPos>
     {

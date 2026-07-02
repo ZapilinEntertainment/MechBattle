@@ -6,6 +6,7 @@ namespace ZE.MechBattle.Navigation
 {
     public static class GetTriangleVerticesCommand
     {
+
         [BurstCompile]
         public static TriangleVertices Execute(IntTriangularPos pos, float triangleHeight, float offset = 0.05f)
         {

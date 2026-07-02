@@ -20,8 +20,7 @@ namespace ZE.MechBattle
             builder.Register<TransformAccessManager>(Lifetime.Scoped);
             
             builder.Register<MechBuilder>(Lifetime.Scoped);
-            builder.Register<PlayerFactory>(Lifetime.Scoped);
-            builder.Register<UnitsFactory>(Lifetime.Scoped);
+            builder.Register<PlayerFactory>(Lifetime.Scoped);            
             builder.Register<SceneFlagsManager>(Lifetime.Scoped);
 
             builder.Register<EcsTasksFactory>(Lifetime.Scoped);
@@ -34,6 +33,8 @@ namespace ZE.MechBattle
             var map = new NavigationMap(_mapSettings.ToStruct(), Unity.Collections.Allocator.Persistent);
             builder.RegisterInstance<INavigationMap, IUpdatableMap>(map);
             builder.Register(resolver => new NavigationMapController(map), Lifetime.Scoped);
+
+            UnitsInstaller.SceneScopeInstall(builder);
 
             builder.RegisterEntryPoint<SceneBootstrap>();
         }

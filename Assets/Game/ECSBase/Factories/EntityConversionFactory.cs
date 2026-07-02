@@ -4,7 +4,8 @@ using Scellecs.Morpeh;
 
 namespace ZE.MechBattle.Ecs
 {
-    public class EntityFactory
+    // builds Morpeh entities from existing on-scene views
+    public class EntityConversionFactory
     {
         private readonly World _world;
         private readonly TransformAccessManager _transformAccessManager;
@@ -14,7 +15,7 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<ViewComponent> _views;
 
         [Inject]
-        public EntityFactory(TransformAccessManager accessManager, World world)
+        public EntityConversionFactory(TransformAccessManager accessManager, World world)
         {
             _world = world;
             _transformAccessManager = accessManager;
