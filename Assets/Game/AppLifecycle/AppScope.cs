@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using ZE.UiService;
 using VContainer;
@@ -13,6 +14,10 @@ namespace ZE.MechBattle.Ecs
     {
         [SerializeField] private Camera _mainCamera;
         [SerializeField] private MechGameUIRoot _uiRootPrefab;
+        private readonly List<IFeatureInstaller> _globalFeatureInstallers = new()
+        {
+            new WorkersInstaller()
+        };
         private const string SCRIPTABLES_FOLDER = "Scriptables/";
 
         protected override void Configure(IContainerBuilder builder)
@@ -24,15 +29,19 @@ namespace ZE.MechBattle.Ecs
             builder.RegisterComponentInNewPrefab(_uiRootPrefab, Lifetime.Singleton).As<IUILinesParent>().As<UiRoot>();
             builder.Register<WindowsManager>(Lifetime.Singleton);
 
-            WorkersInstaller.Install(builder);
-             
-            RegisterScriptables(builder);
             builder.Register<StringDataDictionary>(Lifetime.Singleton);
             builder.Register<AppFlagsManager>(Lifetime.Singleton);
 
             builder.Register<VfxManager>(Lifetime.Singleton);
             builder.Register<VfxEffectPlayersFactory>(Lifetime.Singleton);            
             builder.Register<ViewProviderFactory>(Lifetime.Scoped);
+
+            foreach (var installer in _globalFeatureInstallers)
+            {
+                installer.InstallDependencies(builder);
+            }
+
+            RegisterScriptables(builder);
 
             builder.RegisterEntryPoint<AppBootstrap>();          
         }
@@ -51,6 +60,12 @@ namespace ZE.MechBattle.Ecs
 
             RegisterScriptable<ProjectilesData>();
             RegisterScriptable<VfxData>();            
+        }
+
+        private void Start()
+        {
+            foreach (var installer in _globalFeatureInstallers) 
+                installer.Initialize(Container);
         }
     }
 }

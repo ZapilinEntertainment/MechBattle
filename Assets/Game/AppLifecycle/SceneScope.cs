@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using VContainer.Unity;
 using VContainer;
 using Scellecs.Morpeh;
@@ -11,11 +12,14 @@ namespace ZE.MechBattle
     public class SceneScope : LifetimeScope
     {
         [SerializeField] private MapSettingsSO _mapSettings;
+        private readonly List<IFeatureInstaller> _featureInstallers = new()
+        {
+            new MorpehInstaller(),
+            new UnitsInstaller()
+        };
 
         protected override void Configure(IContainerBuilder builder)
         {
-            MorpehInstaller.SceneScopeInstall(builder);
-
             builder.Register<SessionData>(Lifetime.Scoped); 
             builder.Register<TransformAccessManager>(Lifetime.Scoped);
             
@@ -34,9 +38,18 @@ namespace ZE.MechBattle
             builder.RegisterInstance<INavigationMap, IUpdatableMap>(map);
             builder.Register(resolver => new NavigationMapController(map), Lifetime.Scoped);
 
-            UnitsInstaller.SceneScopeInstall(builder);
+            foreach (var featureInstaller in _featureInstallers)
+                featureInstaller.InstallDependencies(builder);
 
             builder.RegisterEntryPoint<SceneBootstrap>();
+        }
+
+        private void Start()
+        {
+            foreach (var featureInstaller in _featureInstallers)
+            {
+                featureInstaller.Initialize(Container);
+            }
         }
     }
 }

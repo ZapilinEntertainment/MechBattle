@@ -12,11 +12,13 @@ namespace ZE.MechBattle.Ecs {
         private Stash<TriangularPosComponent> _triangularPosComponents;
         private Stash<PlayerAffiliationComponent> _playerAffiliations;
         private readonly UnitSpawnRequestsFactory _requestsFactory;
+        private readonly MultipointSpawnHandler _multipointSpawnHandler;
 
         [Inject]
-        public SpawnersUpdateSystem(SceneFlagsManager flags, UnitSpawnRequestsFactory requestsFactory) : base(flags)
+        public SpawnersUpdateSystem(SceneFlagsManager flags, UnitSpawnRequestsFactory requestsFactory, MultipointSpawnHandler multipointSpawnHandler) : base(flags)
         {
             _requestsFactory = requestsFactory;
+            _multipointSpawnHandler = multipointSpawnHandler;
         }
 
         protected override FilterBuilder PrepareFilter() =>
@@ -36,15 +38,15 @@ namespace ZE.MechBattle.Ecs {
         {
             var spawnComponent = _spawnerComponents.Get(entity);
             var spawnerTripos = _triangularPosComponents.Get(entity).Value;
-            var spawnerAffiliation = _playerAffiliations.Get(entity).PlayerKey;
+            var playerKey = _playerAffiliations.Get(entity).PlayerKey;
 
             if (spawnComponent.Count == 1)
             {
-                _requestsFactory.CreateSpawnRequest(spawnComponent.UnitKey, spawnerTripos, spawnerAffiliation);
+                _requestsFactory.CreateSpawnRequest(spawnComponent.UnitKey, spawnerTripos, playerKey);
             }
             else
             {
-
+                _multipointSpawnHandler.Handle(entity, spawnComponent, playerKey);
             }
         }
     }

@@ -13,6 +13,7 @@ namespace ZE.MechBattle
         private readonly Stash<SpawnIntervalComponent> _updateIntervals;
         private readonly Stash<SpawnerComponent> _spawnerComponents;
         private readonly Stash<TriangularPosComponent> _triangularPosComponents;
+        private readonly Stash<PositionComponent> _positionComponents;
         private readonly Stash<PlayerAffiliationComponent> _playerAffiliationComponents;
 
         [Inject]
@@ -26,6 +27,7 @@ namespace ZE.MechBattle
             _spawnerComponents = _world.GetStash<SpawnerComponent>();
             _triangularPosComponents = _world.GetStash<TriangularPosComponent>();
             _playerAffiliationComponents = _world.GetStash<PlayerAffiliationComponent>();
+            _positionComponents = _world.GetStash<PositionComponent>();
         }
 
         public Entity CreateSpawnerEntity(ISpawner spawner)
@@ -40,7 +42,10 @@ namespace ZE.MechBattle
             _initialDelayApplier.ApplyInitialDelay(entity, spawner.InitialDelay);
             _updateIntervals.Set(entity, new(spawner.UpdateIntervalDuration));
             _spawnerComponents.Set(entity, spawner.GetSpawnerData());
+
             _triangularPositionApplier.Apply(entity, spawner.WorldPos);
+            _positionComponents.Set(entity, new() { Value = spawner.WorldPos });
+
             _playerAffiliationComponents.Set(entity, new(spawner.PlayerKey));
         }
     

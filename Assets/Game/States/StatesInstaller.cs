@@ -3,14 +3,8 @@ using VContainer;
 
 namespace ZE.MechBattle.Ecs.States
 {
-    public static class StatesInstaller
-    {
-        public static void RegisterStates(IContainerBuilder builder) 
-        { 
-            builder.Register<DefaultIdleState>(Lifetime.Transient);
-            builder.Register<DefaultMoveState>(Lifetime.Transient);
-            builder.Register<PathfindingMoveState>(Lifetime.Transient);
-        }
+    public class StatesInstaller : IFeatureInstaller
+    { 
         
         public static Dictionary<StateUpdateSystem.StateHandlerKey, StateHandler> PrepareStatesList(IObjectResolver resolver)
         {
@@ -34,6 +28,17 @@ namespace ZE.MechBattle.Ecs.States
 
             return dict;
         }
-    
+
+        public void InstallDependencies(IContainerBuilder builder)
+        {
+            builder.Register<DefaultIdleState>(Lifetime.Transient);
+            builder.Register<DefaultMoveState>(Lifetime.Transient);
+            builder.Register<PathfindingMoveState>(Lifetime.Transient);
+        }
+
+        public void Initialize(IObjectResolver resolver)
+        {
+           
+        }
     }
 }

@@ -18,8 +18,7 @@ namespace ZE.MechBattle
         public SceneBootstrap(
             SessionData sessionData, 
             IObjectResolver objectResolver, 
-            PlayerFactory playerFactory,
-            SpawnersManager spawnersManager)
+            PlayerFactory playerFactory)
         {
             _sessionData = sessionData;
             _objectResolver = objectResolver;
@@ -28,7 +27,7 @@ namespace ZE.MechBattle
 
         public void Initialize()
         {
-            MorpehInstaller.OnSceneDependenciesResolved(_objectResolver);
+            //MorpehInstaller.OnSceneDependenciesResolved(_objectResolver);
         }
 
         public void Start()

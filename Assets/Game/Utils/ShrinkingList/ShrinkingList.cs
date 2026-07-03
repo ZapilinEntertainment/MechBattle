@@ -5,25 +5,31 @@ namespace ZE.Utils
 {
     public class ShrinkingList<T>
     {
+        public int ActiveItemsCount { get; private set; }
         private readonly List<T> _list = new();
-        private int _activeItemsCount;
-
-        public void SetActiveItemsCount(int x) => _activeItemsCount = x;
     
-        public void Clear() => _list.Clear();
-        public void Add(T item) => _list.Add(item);
+        public void Clear() 
+        {
+            _list.Clear();
+            ActiveItemsCount++;
+        }
+        public void Add(T item) 
+        {
+            _list.Add(item);
+            ActiveItemsCount++;
+        }
         public T PullOut(float percentValue)
         {
-            if (_activeItemsCount == 1)
+            if (ActiveItemsCount == 1)
             {
-                _activeItemsCount = 0;
+                ActiveItemsCount = 0;
                 return _list[0];
             }
             else
             {
-                var lastIndex = _activeItemsCount - 1;
+                var lastIndex = ActiveItemsCount - 1;
                 var index = (int)math.round(percentValue * lastIndex);
-                _activeItemsCount--;
+                ActiveItemsCount--;
 
                 if (index == lastIndex)
                 {
@@ -41,7 +47,7 @@ namespace ZE.Utils
 
         public bool TryPullOut(float percentValue, out T value)
         {
-            if (_activeItemsCount < 1)
+            if (ActiveItemsCount < 1)
             {
                 value = default;
                 return false;
@@ -52,5 +58,7 @@ namespace ZE.Utils
                 return true;
             }
         }
+
+        public void RestoreAllItemsAsActive() => ActiveItemsCount = _list.Count;
     }
 }

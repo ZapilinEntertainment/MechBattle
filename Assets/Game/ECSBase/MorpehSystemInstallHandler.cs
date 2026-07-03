@@ -5,7 +5,7 @@ using VContainer;
 
 namespace ZE.MechBattle.Ecs
 {
-    public class SystemsResolver
+    public class MorpehSystemInstallHandler
     {
         public IReadOnlyDictionary<SystemGroupOrder, SystemsGroup> SystemGroups => _systemGroups;
 
@@ -13,11 +13,12 @@ namespace ZE.MechBattle.Ecs
         private readonly IObjectResolver _resolver;
         private readonly World _world;
 
-        public SystemsResolver(IObjectResolver resolver)
+        [Inject]
+        public MorpehSystemInstallHandler(World world, IObjectResolver resolver)
         {
             _systemGroups = new();
             _resolver = resolver;
-            _world = _resolver.Resolve<World>();
+            _world = world;
         }
 
         public void AddSystem<T>(SystemGroupOrder order) where T : class, ISystem
@@ -32,16 +33,6 @@ namespace ZE.MechBattle.Ecs
             GetGroup(order).AddInitializer(initializer);
         }
 
-        public void ApplySystems()
-        {
-            foreach (var groupKvp in _systemGroups)
-            {
-                _world.AddSystemsGroup((int)groupKvp.Key, groupKvp.Value);
-            }
-
-            _world.Commit();
-        }
-
         private SystemsGroup GetGroup(SystemGroupOrder order)
         {
             if (_systemGroups.TryGetValue(order, out var group))
@@ -50,6 +41,16 @@ namespace ZE.MechBattle.Ecs
             group = _world.CreateSystemsGroup();
             _systemGroups.Add(order, group);
             return group;
+        }
+
+        public void ApplySystems()
+        {
+            foreach (var groupKvp in _systemGroups)
+            {
+                _world.AddSystemsGroup((int)groupKvp.Key, groupKvp.Value);
+            }
+
+            _world.Commit();
         }
     }
 }
