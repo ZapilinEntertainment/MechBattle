@@ -11,7 +11,7 @@ namespace ZE.Utils
         public void Clear() 
         {
             _list.Clear();
-            ActiveItemsCount++;
+            ActiveItemsCount = 0;
         }
         public void Add(T item) 
         {

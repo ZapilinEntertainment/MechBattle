@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using Scellecs.Morpeh;
 using Unity.Mathematics;
+using ZE.MechBattle.Navigation;
 
-namespace ZE.MechBattle.Navigation
+namespace ZE.MechBattle
 {
     public readonly struct CellMovementData
     {

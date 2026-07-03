@@ -72,7 +72,7 @@ namespace ZE.MechBattle.Ecs
                     return;
 
                 // TODO: there can be more complicated logic of loading cost
-                requestsCount = math.min(requestsCount, GameConstants.MAX_INSTANCE_PER_FRAME);
+                requestsCount = math.min(requestsCount, GameConstants.MAX_VIEW_INSTANTIATIONS_PER_FRAME);
                 for (var i = 0; i < requestsCount; i++) 
                 {
                     var request = _executableRequests[i];

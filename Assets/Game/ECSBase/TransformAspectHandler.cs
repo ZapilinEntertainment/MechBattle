@@ -44,7 +44,7 @@ namespace ZE.MechBattle.Ecs
             _updateTags.Set(entity);
         }
 
-        public void MoveToPoint(Entity entity, in RigidTransform point)
+        public void MoveToPoint(Entity entity, RigidTransform point)
         {
             SetPosition(entity, point.pos);
             _rotations.Set(entity, new() {Value = point.rot });

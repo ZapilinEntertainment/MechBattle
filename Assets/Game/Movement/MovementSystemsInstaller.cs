@@ -10,6 +10,9 @@ namespace ZE.MechBattle.Ecs
     {
         private MovementSystemsConfigurator _systemsConfigurator = new();
 
+
+        public void PreloadResources(IObjectResolver globalContainerResolver) { }
+
         public void InstallDependencies(IContainerBuilder builder)
         {
             _systemsConfigurator.InstallDependencies(builder);

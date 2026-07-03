@@ -1,7 +1,7 @@
 using UnityEngine;
 using Unity.Mathematics;
 
-namespace ZE.MechBattle.Movement
+namespace ZE.MechBattle.MechMovement
 {
     public class MechChassisController : MonoBehaviour
     {

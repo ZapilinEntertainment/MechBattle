@@ -2,10 +2,14 @@ using System;
 
 namespace ZE.MechBattle
 {
-    [Serializable]
-    public struct UnitKey
+    public readonly struct UnitKey
     {
-        public UnitType Type;
+        public readonly int Id;
+
+        public UnitKey(int id)
+        {
+            Id = id;
+        }
     
     }
 }

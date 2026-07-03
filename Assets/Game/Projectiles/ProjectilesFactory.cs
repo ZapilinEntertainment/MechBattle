@@ -54,7 +54,7 @@ namespace ZE.MechBattle.Ecs
                 return default;
             }
 
-            var entity = _viewFactory.BuildView<ProjectileView>(idkey);
+            var entity = _viewFactory.BuildViewWithEntity<SimpleViewContainer>(idkey);
             _transformAspectHandler.MoveToPoint(entity, point);
 
             _speed.Set(entity,new() { Value = projectileData.Speed});

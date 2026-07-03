@@ -12,13 +12,15 @@ namespace ZE.MechBattle.Ecs {
     {
         public World World { get; set;}
         private readonly UnitsFactory _unitsFactory;
+        private readonly StringDataDictionary _stringDataDictionary;
         private readonly ISpawnersManager _spawnersManager;
 
         [Inject]
-        public SceneUnitsInitializer(UnitsFactory unitsFactory, ISpawnersManager spawnersManager)
+        public SceneUnitsInitializer(UnitsFactory unitsFactory, ISpawnersManager spawnersManager, StringDataDictionary stringDataDictionary)
         {
             _unitsFactory = unitsFactory;
             _spawnersManager = spawnersManager;
+            _stringDataDictionary = stringDataDictionary;
         }
 
         public void OnAwake() 
@@ -32,6 +34,7 @@ namespace ZE.MechBattle.Ecs {
             var sceneSpawners = GameObject.FindObjectsByType<UnitsSpawner>(FindObjectsSortMode.None);
             foreach (var spawner in sceneSpawners)
             {
+                spawner.Inject(_stringDataDictionary);
                 _spawnersManager.Register(spawner);
             }
         }

@@ -11,10 +11,12 @@ namespace ZE.MechBattle
     {
         private readonly List<IFeatureInstaller> _localInstallers = new()
         {
-            new BaseEcsSystemsConfigurator(),
+            new BaseEcsSystemsInstallQueue(),
             new MovementSystemsInstaller(),
             new StatesInstaller()
         };
+
+        public void PreloadResources(IObjectResolver globalContainerResolver) { }
 
         public void InstallDependencies(IContainerBuilder builder)
         {
@@ -28,7 +30,7 @@ namespace ZE.MechBattle
             builder.Register<VfxRequestsBuilder>(Lifetime.Scoped);
             builder.Register<EntityConversionFactory>(Lifetime.Scoped);
 
-            builder.Register<InitialDelayApplier>(Lifetime.Scoped);
+            builder.Register<DelayApplier>(Lifetime.Scoped);
             builder.Register<TriangularPositionApplier>(Lifetime.Scoped);
 
             builder.Register<MorpehSystemInstallHandler>(Lifetime.Scoped);
@@ -53,6 +55,6 @@ namespace ZE.MechBattle
             world.UpdateByUnity = true;
             //UnityEngine.Debug.Log($"registered: {world.GetHashCode()}");
             return world;
-        }
+        }       
     }
 }

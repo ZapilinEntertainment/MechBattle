@@ -41,6 +41,13 @@ namespace ZE.MechBattle.Navigation
 
     public static class NeighbourDirectionExtension
     {
+        private const float DEG_30 = math.PI / 6f;
+        private const float DEG_60 = math.PI / 3f;
+        private const float DEG_75 = math.PI / 12f * 5f;
+        private const float DEG_90 = math.PI / 2f;
+        private const float DEG_120 = math.PI / 3f * 2f;
+        private const float DEG_150 = DEG_30 * 5f;
+
         [BurstCompile]
         public static int3 ToTriangularOffsetVector(this PeakNeighbour peakNeighbour) => peakNeighbour switch
         {
@@ -180,6 +187,46 @@ namespace ZE.MechBattle.Navigation
                     return (int)ValleyNeighbour.EdgeDownLeft;
 
                 default: return -1;
+            }
+        }
+
+        [BurstCompile]
+        public static quaternion ToRotation(this PeakNeighbour peakNeighbour)
+        {
+            switch (peakNeighbour)
+            {
+                case PeakNeighbour.VertexUpRight: return quaternion.AxisAngle(math.up(), DEG_30);
+                case PeakNeighbour.EdgeUpRight: return quaternion.AxisAngle(math.up(), DEG_75);
+                case PeakNeighbour.VertexRight: return quaternion.LookRotation(math.right(), math.up());
+                case PeakNeighbour.VertexDownRightValley: return quaternion.AxisAngle(math.up(), DEG_120);
+                case PeakNeighbour.VertexDownRightPeak: return quaternion.AxisAngle(math.up(), DEG_150);
+                case PeakNeighbour.EdgeDown: return quaternion.LookRotation(math.back(), math.up());
+                case PeakNeighbour.VertexDownLeftPeak: return quaternion.AxisAngle(math.down(), DEG_150);
+                case PeakNeighbour.VertexDownLeftValley: return quaternion.AxisAngle(math.down(), DEG_120);
+                case PeakNeighbour.VertexLeft: return quaternion.LookRotation(math.left(), math.up());
+                case PeakNeighbour.EdgeUpLeft: return quaternion.LookRotation(math.down(), DEG_75);
+                case PeakNeighbour.VertexUpLeft: return quaternion.LookRotation(math.down(), DEG_30);
+                default: return quaternion.identity;
+            }
+        }
+
+        [BurstCompile]
+        public static quaternion ToRotation(this ValleyNeighbour valleyNeighbour)
+        {
+            switch(valleyNeighbour)
+            {
+                case ValleyNeighbour.VertexUpRightValley: return quaternion.AxisAngle(math.up(), DEG_30);
+                case ValleyNeighbour.VertexUpRightPeak: return quaternion.AxisAngle(math.up(), DEG_60);
+                case ValleyNeighbour.VertexRight: return quaternion.LookRotation(math.right(), math.up());
+                case ValleyNeighbour.EdgeDownRight: return quaternion.AxisAngle(math.up(), DEG_120);
+                case ValleyNeighbour.VertexDownRight: return quaternion.AxisAngle(math.up(), DEG_150);
+                case ValleyNeighbour.VertexDown: return quaternion.LookRotation(math.back(), math.up());
+                case ValleyNeighbour.VertexDownLeft: return quaternion.AxisAngle(math.down(), DEG_150);
+                case ValleyNeighbour.EdgeDownLeft: return quaternion.AxisAngle(math.down(), DEG_120);
+                case ValleyNeighbour.VertexLeft: return quaternion.LookRotation(math.left(), math.up());
+                case ValleyNeighbour.VertexUpLeftPeak: return quaternion.AxisAngle(math.down(), DEG_60);
+                case ValleyNeighbour.VertexUpLeftValley: return quaternion.AxisAngle(math.down(), DEG_30);
+                default: return quaternion.identity;
             }
         }
     }

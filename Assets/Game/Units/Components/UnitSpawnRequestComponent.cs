@@ -8,17 +8,17 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public readonly struct SpawnRequestComponent : IComponent 
+    public readonly struct UnitSpawnRequestComponent : IComponent 
     {
         public readonly UnitKey UnitKey;
-        public readonly IntTriangularPos Tripos;
+        public readonly CellPoint CellPoint;
         public readonly PlayerKey PlayerKey;
 
-        public SpawnRequestComponent(UnitKey key, IntTriangularPos tripos, PlayerKey playerKey)
+        public UnitSpawnRequestComponent(UnitKey key, CellPoint point, PlayerKey playerKey)
         {
             UnitKey = key;
-            Tripos = tripos;
             PlayerKey = playerKey;
+            CellPoint = point;
         }
     
     }

@@ -63,7 +63,6 @@ namespace ZE.MechBattle.Views
 
         private void OnViewLoaded(IAssetProvider assetProvider, ViewKey key)
         {
-            //Debug.Log("on view loaded");
             var view = assetProvider.GetValue<SimpleView>();
             if (view is PoolableView poolableView)
                 AddViewPool(poolableView, key);

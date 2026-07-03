@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace ZE.MechBattle.Movement
+namespace ZE.MechBattle.MechMovement
 {
     [Serializable]
     public class StepSettings

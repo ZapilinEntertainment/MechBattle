@@ -15,7 +15,7 @@ namespace ZE.MechBattle
             OnDisposed();
         }
 
-        public void SetParent(Transform parent) => transform.parent = parent;
+        public virtual void SetParent(Transform parent) => transform.parent = parent;
         virtual protected void OnDisposed() => GameObject.Destroy(gameObject);
         private void OnDestroy()
         {

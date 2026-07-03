@@ -18,10 +18,13 @@ namespace ZE.MechBattle.Ecs
         {
             new WorkersInstaller()
         };
-        private const string SCRIPTABLES_FOLDER = "Scriptables/";
+        
 
         protected override void Configure(IContainerBuilder builder)
         {
+            foreach (var featureInstaller in _globalFeatureInstallers)
+                featureInstaller.PreloadResources(null);
+
             builder.Register<AssetsManager>(Lifetime.Singleton);
 
             var cameraController = new CameraController(_mainCamera);
@@ -51,9 +54,9 @@ namespace ZE.MechBattle.Ecs
             void RegisterScriptable<T>() where T : ScriptableObject 
             {
                 var typeString = typeof(T).Name;
-                var scriptable = Resources.Load<T>(SCRIPTABLES_FOLDER + typeString);
+                var scriptable = Resources.Load<T>(DirectoryConstants.SCRIPTABLES_FOLDER + typeString);
                 if (scriptable == null)
-                    Debug.LogError(SCRIPTABLES_FOLDER + typeString + " not found");
+                    Debug.LogError($"{DirectoryConstants.SCRIPTABLES_FOLDER} {typeString} not found");
                 else
                     builder.RegisterInstance(scriptable);
             }

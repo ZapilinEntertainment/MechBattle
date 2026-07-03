@@ -11,6 +11,7 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<ViewRequestComponent> _viewRequests;
         private readonly Stash<ViewInfoComponent> _viewInfos;
         private readonly Stash<ViewComponent> _viewComponents;
+        private readonly Stash<TransformComponent> _transformComponents;
         private readonly EntityConversionFactory _entityFactory;
 
         [Inject]
@@ -21,13 +22,14 @@ namespace ZE.MechBattle.Ecs
             _viewRequests = world.GetStash<ViewRequestComponent>();
             _viewInfos = world.GetStash<ViewInfoComponent>();
             _viewComponents = world.GetStash<ViewComponent>();
+            _transformComponents = world.GetStash<TransformComponent>();
         }
         
         // creates GO and requests view (should be loaded asynchronously in next frames)
-        public Entity BuildView<T>(int idkey) where T : MonoBehaviour, IMonoView, IViewLoadReceiver
+        public Entity BuildViewWithEntity<T>(int idkey) where T : MonoBehaviour, IMonoView, IViewLoadReceiver
         {           
             var viewReceiver = new GameObject(idkey.ToString()).AddComponent<T>();
-            var entity = _entityFactory.Build(viewReceiver);
+            var entity = _entityFactory.ViewToEntity(viewReceiver);
             _viewComponents.Set(entity, new() { Value = viewReceiver });
             
             _viewInfos.Set(entity, new() { Value = new ViewKey() { IdKey = idkey} });

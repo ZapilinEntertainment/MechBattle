@@ -10,7 +10,7 @@ namespace ZE.MechBattle
     public class UnitsSpawner : MonoBehaviour, ISpawner
     {
         [SerializeField] private int _playerId = 0;
-        [SerializeField] private UnitKey _unitKey;
+        [SerializeField] private string _unitId;
         [Space]
         [SerializeField] private int _count;
         [SerializeField] private int _spawnRadius;
@@ -26,6 +26,7 @@ namespace ZE.MechBattle
         public PlayerKey PlayerKey => new(_playerId);
 
         private ISpawnersManager _spawnersManager;
+        private StringDataDictionary _stringDataDictionary;
         [SerializeField, ReadOnly] private SpawnerStatus _status = SpawnerStatus.Disabled;
 
         public void OnRegistered(Entity entity, ISpawnersManager spawnersManager)
@@ -33,6 +34,11 @@ namespace ZE.MechBattle
             Entity = entity;
             _spawnersManager = spawnersManager;
             _status = SpawnerStatus.Active;
+        }
+
+        public void Inject(StringDataDictionary stringDataDictionary)
+        {
+            _stringDataDictionary = stringDataDictionary;
         }
 
 #if UNITY_EDITOR
@@ -45,12 +51,17 @@ namespace ZE.MechBattle
             _status = _spawnersManager.UpdateSpawner(this);
         }
 
-        public SpawnerComponent GetSpawnerData() => new()
+        public SpawnerComponent GetSpawnerData() 
         {
-            Count = _count,
-            SpawnRadius = _spawnRadius,
-            UnitKey = _unitKey,
-        };
+            var unitId = _stringDataDictionary.GetStringKey(_unitId);
+
+            return new()
+            {
+                Count = _count,
+                SpawnRadius = _spawnRadius,
+                UnitKey = new(unitId),
+            };
+        } 
 #endif
     }
 }

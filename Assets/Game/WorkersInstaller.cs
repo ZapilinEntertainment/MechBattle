@@ -7,6 +7,8 @@ namespace ZE.MechBattle
 {
     public class WorkersInstaller : IFeatureInstaller
     {
+        public void PreloadResources(IObjectResolver globalContainerResolver) { }
+
         public void InstallDependencies(IContainerBuilder builder)
         {
             // IMPORTANT: do not use AsImplementedInterfaces() for ITickable - it will double every instance on resolve

@@ -3,7 +3,6 @@ using Unity.Mathematics;
 using VContainer;
 using Scellecs.Morpeh;
 using ZE.MechBattle.Navigation;
-using ZE.MechBattle.Movement;
 
 namespace ZE.MechBattle.Ecs
 {

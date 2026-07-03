@@ -7,7 +7,7 @@ namespace ZE.MechBattle
     public class SpawnerFactory
     {
         private readonly World _world;
-        private readonly InitialDelayApplier _initialDelayApplier;
+        private readonly DelayApplier _initialDelayApplier;
         private readonly TriangularPositionApplier _triangularPositionApplier;
 
         private readonly Stash<SpawnIntervalComponent> _updateIntervals;
@@ -17,7 +17,7 @@ namespace ZE.MechBattle
         private readonly Stash<PlayerAffiliationComponent> _playerAffiliationComponents;
 
         [Inject]
-        public SpawnerFactory(World world, InitialDelayApplier initialDelayApplier, TriangularPositionApplier triposApplier)
+        public SpawnerFactory(World world, DelayApplier initialDelayApplier, TriangularPositionApplier triposApplier)
         {
             _world = world;
             _initialDelayApplier = initialDelayApplier;
@@ -32,7 +32,7 @@ namespace ZE.MechBattle
 
         public Entity CreateSpawnerEntity(ISpawner spawner)
         {
-            var entity = new Entity();
+            var entity = _world.CreateEntity();
             UpdateSpawnerData(entity, spawner);
             return entity;
         }

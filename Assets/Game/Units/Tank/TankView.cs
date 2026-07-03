@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace ZE.MechBattle
 {
-    public class TankView : DisposableGameObject, IDamageableView
+    public class TankView : SimpleView, IDamageableView
     {
         [SerializeField] private Transform _tower;
         [SerializeField] private Transform _trunk;

@@ -49,7 +49,7 @@ namespace ZE.MechBattle.Ecs {
 
         private void CreateDamageableEntity(IDamageableView view)
         {
-            var entity = _entityFactory.Build(view);
+            var entity = _entityFactory.ViewToEntity(view);
 
             var parameters = view.GetParameters();
             _healthComponents.Set(entity, new() { CurrentValue = parameters.Health, MaxValue = parameters.Health});           

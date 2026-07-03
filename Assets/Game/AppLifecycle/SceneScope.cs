@@ -15,11 +15,18 @@ namespace ZE.MechBattle
         private readonly List<IFeatureInstaller> _featureInstallers = new()
         {
             new MorpehInstaller(),
-            new UnitsInstaller()
+            new UnitsInstaller(),
+            new GridOperationsInstaller(),
         };
 
         protected override void Configure(IContainerBuilder builder)
         {
+            foreach (var featureInstaller in _featureInstallers)
+            {
+                featureInstaller.PreloadResources(Parent.Container);
+            }
+                
+
             builder.Register<SessionData>(Lifetime.Scoped); 
             builder.Register<TransformAccessManager>(Lifetime.Scoped);
             

@@ -2,13 +2,15 @@ using System.Collections.Generic;
 
 namespace ZE.MechBattle.Ecs
 {
-    public class BaseEcsSystemsConfigurator : FeatureSystemsConfigurator
+    public class BaseEcsSystemsInstallQueue : FeatureSystemsInstallQueue
     {
         protected override void Configure(ISystemsOperator installer)
         {
             installer.AddInitializer<WorldInitializer>(SystemGroupOrder.Initialization);
             installer.AddInitializer<DamageablesInitializer>(SystemGroupOrder.Initialization);
             installer.AddInitializer<SceneUnitsInitializer>(SystemGroupOrder.Initialization);
+
+            installer.AddSystem<InitialDelaySystem>(SystemGroupOrder.Initialization);  
 
             installer.AddSystem<ViewRequestsHandleSystem>(SystemGroupOrder.Default);
             installer.AddSystem<VfxCreateSystem>(SystemGroupOrder.Default);
@@ -23,6 +25,8 @@ namespace ZE.MechBattle.Ecs
 
             installer.AddSystem<TransformsSyncSystem>(SystemGroupOrder.PostUpdate);
             installer.AddSystem<ViewDestroyEffectSystem>(SystemGroupOrder.PostUpdate);
+
+            installer.AddSystem<EntityDestructionDelaySystem>(SystemGroupOrder.Final);
 
             installer.AddSystem<TransformsClearSystem>(SystemGroupOrder.Final);
             installer.AddSystem<CollidersClearSystem>(SystemGroupOrder.Final);

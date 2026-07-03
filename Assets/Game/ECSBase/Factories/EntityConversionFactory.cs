@@ -26,7 +26,7 @@ namespace ZE.MechBattle.Ecs
             _views = _world.GetStash<ViewComponent>();
         }
 
-        public Entity Build(IMonoView view)
+        public Entity ViewToEntity(IMonoView view)
         {
             var entity = _world.CreateEntity();
 

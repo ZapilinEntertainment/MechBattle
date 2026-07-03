@@ -29,6 +29,8 @@ namespace ZE.MechBattle.Ecs.States
             return dict;
         }
 
+        public void PreloadResources(IObjectResolver globalContainerResolver) { }
+
         public void InstallDependencies(IContainerBuilder builder)
         {
             builder.Register<DefaultIdleState>(Lifetime.Transient);

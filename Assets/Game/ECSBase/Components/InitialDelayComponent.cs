@@ -7,13 +7,14 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public readonly struct InitialDelayComponent : IComponent 
+    public readonly struct InitialDelayComponent : IDelayComponent 
     {
-        public readonly float StopTime;    
+        public float StopTime => _stopTime;
+        private readonly float _stopTime;    
 
         public InitialDelayComponent(float stopTime)
         {
-            StopTime = stopTime;
+            _stopTime = stopTime;
         }
     }
 }
