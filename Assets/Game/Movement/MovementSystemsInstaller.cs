@@ -43,7 +43,7 @@ namespace ZE.MechBattle.Ecs
             builder.Register<IFlowMapsList, PortalFlowMapsList>(Lifetime.Scoped).AsSelf();
             builder.Register<FlowMapAssignmentList>(Lifetime.Scoped);
 
-            builder.Register<MovementCellsList>(Lifetime.Scoped);
+            builder.Register<IMovementCellsMap, MovementCellsMap>(Lifetime.Scoped).AsSelf();
         }
 
         public void Initialize(IObjectResolver resolver)

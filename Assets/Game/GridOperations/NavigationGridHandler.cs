@@ -9,10 +9,10 @@ namespace ZE.MechBattle
     }
     public class NavigationGridHandler : INavigationGridHandler
     {
-        private readonly MovementCellsList _movementCellsList;
+        private readonly IMovementCellsMap _movementCellsList;
 
         [Inject]
-        public NavigationGridHandler(MovementCellsList movementCellsList)
+        public NavigationGridHandler(IMovementCellsMap movementCellsList)
         {
             _movementCellsList = movementCellsList;
         }

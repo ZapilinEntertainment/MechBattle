@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using Unity.Collections;
 using Scellecs.Morpeh;
 using VContainer;
 using ZE.MechBattle.Ecs;
@@ -13,25 +14,25 @@ namespace ZE.MechBattle.Develop
     {
         private bool _isInitialized = false;
         private INavigationMap _map;
-        private MovementCellsList _movementCells; 
+        private NativeParallelHashMap<IntTriangularPos, CellMovementData>.ReadOnly _readonlyMap;
 
         [Inject]
-        public void Inject(INavigationMap map, MovementCellsList movementCells)
+        public void Inject(INavigationMap map, IMovementCellsMap movementCells)
         {
             _map = map;
-            _movementCells = movementCells;
+            _readonlyMap = movementCells.AsReadonlyMap();
             _isInitialized = true;
         }
 
         public void OnDrawGizmosSelected()
         {
-            if (!(enabled & _isInitialized))
+            if (!(enabled & _isInitialized & _readonlyMap.IsCreated))
                 return;
 
             Handles.color = Color.yellow;
-            foreach (var position in _movementCells.Keys)
+            foreach (var cellKvp in _readonlyMap)
             {
-                var drawVertices = TrianglesDrawHelper.GetDrawVertices(position, _map);
+                var drawVertices = TrianglesDrawHelper.GetDrawVertices(cellKvp.Key, _map);
                 TrianglesDrawHelper.DrawHandles(drawVertices, false);
             }
         }

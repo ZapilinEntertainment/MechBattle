@@ -1,5 +1,6 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
+using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -29,7 +30,7 @@ namespace ZE.MechBattle.Ecs {
                 _clearHexPathTags.Set(entity);
 
                 var request = _requests.Get(entity);
-                _moveTargets.Set(entity, new(request.WorldPos, request.Tripos));
+                _moveTargets.Set(entity, new(request.WorldPos, request.Tripos, request.HexCoord));
                 _requests.Remove(entity);
             }
         }

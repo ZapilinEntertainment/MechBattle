@@ -16,11 +16,11 @@ namespace ZE.MechBattle.Ecs
         private Stash<PositionComponent> _positionComponents;
         private Stash<TriangularPosComponent> _triangularPosComponents;
 
-        private readonly MovementCellsList _vectorsList;
+        private readonly MovementCellsMap _vectorsList;
         private readonly float _invertedTriangleHeight;
 
         [Inject]
-        public MovementCollisionAvoidanceSystem(SceneFlagsManager flags, MovementCellsList vectorsList, INavigationMap map) : base(flags)
+        public MovementCollisionAvoidanceSystem(SceneFlagsManager flags, MovementCellsMap vectorsList, INavigationMap map) : base(flags)
         {
             _vectorsList = vectorsList;
             _invertedTriangleHeight = map.InvertedTriangleHeight;

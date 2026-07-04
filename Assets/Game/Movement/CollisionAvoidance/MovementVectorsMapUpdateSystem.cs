@@ -17,13 +17,13 @@ namespace ZE.MechBattle.Ecs {
         private Stash<NextPositionComponent> _nextPositionComponents;
         private Stash<TriangularPosComponent> _triangularPosComponents;
 
-        private readonly MovementCellsList _vectorsList;
+        private readonly MovementCellsMap _vectorsList;
       
 
         [Inject]
         public MovementVectorsMapUpdateSystem(
             SceneFlagsManager flags, 
-            MovementCellsList vectorsList) : base(flags)
+            MovementCellsMap vectorsList) : base(flags)
         {
             _vectorsList = vectorsList;
         }

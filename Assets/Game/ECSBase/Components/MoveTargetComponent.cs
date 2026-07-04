@@ -12,17 +12,20 @@ namespace ZE.MechBattle.Ecs {
     {
         public readonly float3 WorldPos;    
         public readonly IntTriangularPos TriangularPos;
+        public readonly int2 HexCoord;
 
-        public MoveTargetComponent(float3 worldPos, IntTriangularPos tripos)
+        public MoveTargetComponent(float3 worldPos, IntTriangularPos tripos, int2 hexCoord)
         {
             WorldPos = worldPos;
             TriangularPos = tripos;
+            HexCoord = hexCoord;
         }
 
-        public MoveTargetComponent(float3 worldPos, float triangleHeight)
+        public MoveTargetComponent(float3 worldPos, float triangleHeight, float hexEdgeLength)
         {
             WorldPos = worldPos;
             TriangularPos = TriangularMath.WorldToTrianglePos(WorldPos, triangleHeight);
+            HexCoord = HexMath.DefineHex(WorldPos.xz, hexEdgeLength);
         }
     }
 }

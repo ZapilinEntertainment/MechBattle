@@ -44,6 +44,7 @@ namespace ZE.MechBattle.Navigation
                trianglesPerEdge: hexRadius)
         { }
 
+        // NOTE: is not public to evade parameters mistakes (float triangles height vs int triangles per edge)
         private NavigationHexPosition(int2 hexCoord, float hexEdge, float triangleHeight)
         {
             HexCoordinate = hexCoord;

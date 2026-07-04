@@ -17,13 +17,16 @@ namespace ZE.MechBattle.Develop
         private Stash<ChangeMoveTargetRequestComponent> _moveTargets;
         private Vector3? _targetPos;
         private float _triangleHeight;
+        private float _hexEdgeLength;
 
         [Inject]
         public void Inject(World world, INavigationMap map)
         {
             _filter = world.Filter.With<NavigationAgentComponent>().Build();
             _moveTargets = world.GetStash<ChangeMoveTargetRequestComponent>();
+
             _triangleHeight = map.TriangleHeight;
+            _hexEdgeLength = map.HexEdgeLength;
         }
 
         [EnableInPlayMode, Button("Set new random target")]
@@ -54,9 +57,13 @@ namespace ZE.MechBattle.Develop
 
         private void SetEntitiesTarget(float3 pos)
         {
+            var tripos = TriangularMath.WorldToTrianglePos(pos, _triangleHeight);
+            var hexCoord = HexMath.DefineHex(pos.xz, _hexEdgeLength);
+
             foreach (var entity in _filter)
             {
-                _moveTargets.Set(entity, new(pos, _triangleHeight));
+                
+                _moveTargets.Set(entity, new(pos, tripos, hexCoord));
             }
             UnityEngine.Debug.Log($"move target set to {pos}");
         }

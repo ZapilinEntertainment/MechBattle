@@ -12,6 +12,9 @@ namespace ZE.MechBattle.Ecs
 
             installer.AddSystem<InitialDelaySystem>(SystemGroupOrder.Initialization);  
 
+            installer.AddSystem<AttackTargetDefineSystem>(SystemGroupOrder.Default);
+            installer.AddSystem<AttackTargetValidationSystem>(SystemGroupOrder.Default);
+
             installer.AddSystem<ViewRequestsHandleSystem>(SystemGroupOrder.Default);
             installer.AddSystem<VfxCreateSystem>(SystemGroupOrder.Default);
             installer.AddSystem<RestorationSystem>(SystemGroupOrder.Default);
