@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using Scellecs.Morpeh;
+using VContainer;
 using Unity.IL2CPP.CompilerServices;
 
 namespace ZE.MechBattle.Ecs {
@@ -10,34 +12,31 @@ namespace ZE.MechBattle.Ecs {
         public World World { get; set;}
         private Filter _clearFilter;
 
-        private Stash<ClearTrianglePathTag> _clearTags;
-        private Stash<FlowTrianglePathComponent> _flowPaths;
-        private Stash<RegularTrianglePathComponent> _regularPaths;
-        private Stash<CompletedTrianglePathTag> _completedTags;
-        private Stash<TrianglePathDefinedTag> _trianglePathDefinedTags;
+        private readonly List<IStash> _clearingStashes;
+
+        [Inject]
+        public TrianglePathClearSystem(World world) 
+        {
+            _clearingStashes = ReceiveStashesListByComponentInterfaceCommand.Execute<ITrianglePathComponent>(world);
+        }
 
         public void OnAwake() 
         {
             _clearFilter = World.Filter
                 .With<ClearTrianglePathTag>()
                 .Build();
-
-            _clearTags = World.GetStash<ClearTrianglePathTag>();
-            _flowPaths = World.GetStash<FlowTrianglePathComponent>();
-            _regularPaths = World.GetStash<RegularTrianglePathComponent>();
-            _completedTags = World.GetStash<CompletedTrianglePathTag>();
-            _trianglePathDefinedTags = World.GetStash<TrianglePathDefinedTag>();
         }
 
         public void OnUpdate(float deltaTime) 
         {
             foreach (var entity in _clearFilter)
             {
-                _completedTags.Remove(entity);
-                _regularPaths.Remove(entity);
-                _flowPaths.Remove(entity);
-                _clearTags.Remove(entity);
-                _trianglePathDefinedTags.Remove(entity);
+                foreach (var stash in _clearingStashes)
+                {
+                    stash.Remove(entity);
+                }
+
+                //UnityEngine.Debug.Log($"triangle path data cleared for entity {entity.Id}");
             }
         }
 

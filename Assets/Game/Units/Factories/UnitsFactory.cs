@@ -13,12 +13,14 @@ namespace ZE.MechBattle
         private readonly TransformAspectHandler _transformAspectHandler;
         private readonly MonoViewFactory _viewFactory;
         private readonly StringDataDictionary _stringDataDictionary;
+        private readonly StatesApplier _statesApplier;
         private readonly IUnitConfigsList _unitConfigs;
 
         private readonly Stash<MoveSpeedComponent> _moveSpeeds;
         private readonly Stash<RotationSpeedComponent> _rotationSpeeds;
         private readonly Stash<NavigationAgentComponent> _navigationAgents;
         private readonly Stash<MovementCollisionAvoidanceComponent> _movementCollisionAvoidanceComponents;
+        private readonly Stash<TargetSearchRadiusComponent> _targetSearchRadiusComponents;
 
         [Inject]
         public UnitsFactory(
@@ -27,6 +29,7 @@ namespace ZE.MechBattle
             TransformAspectHandler transformAspectHandler,
             MonoViewFactory viewFactory,
             StringDataDictionary stringDataDictionary,
+            StatesApplier statesApplier,
             IUnitConfigsList unitConfigsList)
         {
             _world = world;
@@ -35,13 +38,16 @@ namespace ZE.MechBattle
             _unitConfigs = unitConfigsList;
             _viewFactory = viewFactory;
             _stringDataDictionary = stringDataDictionary;
+            _statesApplier = statesApplier;
 
             _moveSpeeds = world.GetStash<MoveSpeedComponent>();
             _rotationSpeeds = world.GetStash<RotationSpeedComponent>();
             _navigationAgents = world.GetStash<NavigationAgentComponent>();
             _movementCollisionAvoidanceComponents = world.GetStash<MovementCollisionAvoidanceComponent>();
+            _targetSearchRadiusComponents = world.GetStash<TargetSearchRadiusComponent>();
         }
 
+        // todo: rework to universal version
         public Entity Build(TankView view)
         {
             var entity = _entityConversionFactory.ViewToEntity(view);
@@ -69,8 +75,11 @@ namespace ZE.MechBattle
             _navigationAgents.Add(entity);
             _movementCollisionAvoidanceComponents.Add(entity, new(unitConfig.CollisionAvoidancePriority));
 
+            _targetSearchRadiusComponents.Add(entity, new(unitConfig.TargetSearchRadius));
+
+            _statesApplier.ApplyState(entity, unitConfig.BehaviourKey, Ecs.States.StateKey.Idle);
             
-            
+            _moveSpeeds.Set(entity, new() {Value = unitConfig.MoveSpeed });
             return entity;
         }
     

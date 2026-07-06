@@ -28,7 +28,8 @@ namespace ZE.MechBattle.Ecs
         // creates GO and requests view (should be loaded asynchronously in next frames)
         public Entity BuildViewWithEntity<T>(int idkey) where T : MonoBehaviour, IMonoView, IViewLoadReceiver
         {           
-            var viewReceiver = new GameObject(idkey.ToString()).AddComponent<T>();
+            var go = new GameObject();
+            var viewReceiver = go.AddComponent<T>();
             var entity = _entityFactory.ViewToEntity(viewReceiver);
             _viewComponents.Set(entity, new() { Value = viewReceiver });
             
@@ -36,6 +37,8 @@ namespace ZE.MechBattle.Ecs
 
             var receiverId = _viewReceivers.Register(viewReceiver);
             _viewRequests.Set(entity, new() { ReceiverId = receiverId });
+
+            go.name = entity.Id.ToString();
             
             return entity;
         }    

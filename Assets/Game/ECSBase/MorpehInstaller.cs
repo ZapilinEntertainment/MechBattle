@@ -32,6 +32,8 @@ namespace ZE.MechBattle
 
             builder.Register<DelayApplier>(Lifetime.Scoped);
             builder.Register<TriangularPositionApplier>(Lifetime.Scoped);
+            builder.Register<MoveTargetApplier>(Lifetime.Scoped);
+            builder.Register<DisposeTagApplier>(Lifetime.Scoped);
 
             builder.Register<MorpehSystemInstallHandler>(Lifetime.Scoped);
 

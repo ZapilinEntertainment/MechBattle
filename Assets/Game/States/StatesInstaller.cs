@@ -33,13 +33,18 @@ namespace ZE.MechBattle.Ecs.States
 
         public void InstallDependencies(IContainerBuilder builder)
         {
+            builder.Register<StatesApplier>(Lifetime.Scoped);
+
             builder.Register<DefaultIdleState>(Lifetime.Transient);
             builder.Register<DefaultMoveState>(Lifetime.Transient);
+
+            builder.Register<StateUpdateSystem>(Lifetime.Scoped);
         }
 
         public void Initialize(IObjectResolver resolver)
         {
-           
+           var systemsResolver = resolver.Resolve<MorpehSystemInstallHandler>();
+            systemsResolver.AddSystem<StateUpdateSystem>(SystemGroupOrder.RegularUpdate);
         }
     }
 }

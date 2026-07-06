@@ -23,7 +23,9 @@ namespace ZE.MechBattle.Ecs {
             {
                 var target = _stash.Get(entity).Entity;
                 if (!World.Has(target))
+                {
                     _stash.Remove(entity);
+                }                    
             }
         }
 

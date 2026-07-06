@@ -4,7 +4,12 @@ using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle
 {
-    public class SpawnerFactory
+    public interface ISpawnerClearHandler
+    {
+        void ClearSpawnData(Entity entity);
+    }
+
+    public class SpawnerFactory : ISpawnerClearHandler
     {
         private readonly World _world;
         private readonly DelayApplier _initialDelayApplier;
@@ -15,6 +20,7 @@ namespace ZE.MechBattle
         private readonly Stash<TriangularPosComponent> _triangularPosComponents;
         private readonly Stash<PositionComponent> _positionComponents;
         private readonly Stash<PlayerAffiliationComponent> _playerAffiliationComponents;
+        private readonly Stash<SpawnOperationsLeftComponent> _spawnOperationsLeftComponents;
 
         [Inject]
         public SpawnerFactory(World world, DelayApplier initialDelayApplier, TriangularPositionApplier triposApplier)
@@ -28,6 +34,7 @@ namespace ZE.MechBattle
             _triangularPosComponents = _world.GetStash<TriangularPosComponent>();
             _playerAffiliationComponents = _world.GetStash<PlayerAffiliationComponent>();
             _positionComponents = _world.GetStash<PositionComponent>();
+            _spawnOperationsLeftComponents = _world.GetStash<SpawnOperationsLeftComponent>();
         }
 
         public Entity CreateSpawnerEntity(ISpawner spawner)
@@ -47,7 +54,18 @@ namespace ZE.MechBattle
             _positionComponents.Set(entity, new() { Value = spawner.WorldPos });
 
             _playerAffiliationComponents.Set(entity, new(spawner.PlayerKey));
+
+            if (spawner.TryGetLimit(out var limit))
+                _spawnOperationsLeftComponents.Set(entity, new() { Value = limit});
+            else
+                _spawnOperationsLeftComponents.Remove(entity);
         }
     
+        public void ClearSpawnData(Entity entity)
+        {
+            _spawnerComponents.Remove(entity);
+            _updateIntervals.Remove(entity);
+            _spawnOperationsLeftComponents.Remove(entity);
+        }
     }
 }

@@ -14,7 +14,9 @@ namespace ZE.MechBattle.Develop
         [SerializeField] private float _radius = 100f;
         [SerializeField] private Vector3 _manualDefinedTarget;
         private Filter _filter;
-        private Stash<ChangeMoveTargetRequestComponent> _moveTargets;
+        private Stash<ChangeMoveTargetRequestComponent> _changeTargetRequests;
+        private Stash<ClearHexPathTag> _clearHexPathTags;
+        private Stash<MoveTargetComponent> _moveTargetComponents;
         private Vector3? _targetPos;
         private float _triangleHeight;
         private float _hexEdgeLength;
@@ -23,7 +25,10 @@ namespace ZE.MechBattle.Develop
         public void Inject(World world, INavigationMap map)
         {
             _filter = world.Filter.With<NavigationAgentComponent>().Build();
-            _moveTargets = world.GetStash<ChangeMoveTargetRequestComponent>();
+
+            _changeTargetRequests = world.GetStash<ChangeMoveTargetRequestComponent>();
+            _clearHexPathTags = world.GetStash<ClearHexPathTag>();
+            _moveTargetComponents = world.GetStash<MoveTargetComponent>();
 
             _triangleHeight = map.TriangleHeight;
             _hexEdgeLength = map.HexEdgeLength;
@@ -48,8 +53,10 @@ namespace ZE.MechBattle.Develop
         {
             foreach (var entity in _filter)
             {
-                _moveTargets.Remove(entity);
+                _clearHexPathTags.Set(entity);
             }
+            _changeTargetRequests.RemoveAll();
+            _moveTargetComponents.RemoveAll();
         }
 
         [EnableInPlayMode, Button("Move to object")]
@@ -61,9 +68,8 @@ namespace ZE.MechBattle.Develop
             var hexCoord = HexMath.DefineHex(pos.xz, _hexEdgeLength);
 
             foreach (var entity in _filter)
-            {
-                
-                _moveTargets.Set(entity, new(pos, tripos, hexCoord));
+            {                
+                _changeTargetRequests.Set(entity, new(pos, tripos, hexCoord));
             }
             UnityEngine.Debug.Log($"move target set to {pos}");
         }

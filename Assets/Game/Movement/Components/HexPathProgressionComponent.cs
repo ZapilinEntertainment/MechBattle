@@ -7,7 +7,7 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public struct HexPathProgressionComponent : IComponent 
+    public struct HexPathProgressionComponent : IHexPathComponent
     {
         public readonly int StepsCount;
         public int StepIndex;

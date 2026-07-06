@@ -15,8 +15,8 @@ namespace ZE.MechBattle.Ecs
         public int TrianglesPerEdge;
         public NativeArray<PlayerRelationsMask> EnemiesMask;
 
-        [ReadOnly] public NativeParallelHashMap<IntTriangularPos, CellMovementData> MovementCells;
-        [ReadOnly] public NativeFilter Filter;
+        [ReadOnly] public NativeList<Entity> Entities;
+        [ReadOnly] public NativeParallelHashMap<IntTriangularPos, CellMovementData>.ReadOnly MovementCells;        
         [ReadOnly] public NativeStash<PlayerAffiliationComponent> AffiliationsStash;
         [ReadOnly] public NativeStash<HexCoordComponent> HexCoordComponents;
         [ReadOnly] public NativeStash<PositionComponent> PositionComponents;
@@ -26,14 +26,16 @@ namespace ZE.MechBattle.Ecs
 
         public void Execute(int index)
         {
-            var entity = Filter[index];
+            var entity = Entities[index];
             var searchRadius = TargetSearchRadius.Get(entity).Value;
             var searchRadiusInHexes = (int)math.ceil(searchRadius / HexEdgeLength); // edge = r
 
             var entityHexCoord = HexCoordComponents.Get(entity).Value;
             Entity closestEntity = default;
             var closestDistanceSq = searchRadius * searchRadius;
-            var entityPosition = PositionComponents.Get(entity).Value;
+            var entityPosition = PositionComponents.Get(entity).Value;     
+            var entityOwnerId = AffiliationsStash.Get(entity).PlayerKey.Id;
+            var entityEnemiesMask = EnemiesMask[entityOwnerId];
 
             foreach (var hexCoord in new HexRadiusEnumerator(entityHexCoord, searchRadiusInHexes))
             {
@@ -43,12 +45,11 @@ namespace ZE.MechBattle.Ecs
                     if (MovementCells.TryGetValue(tripos, out var cellData) && cellData.IsRealOccupationCell)
                     {
                         var targetEntity = cellData.Entity;
-                        var affiliationComponent = AffiliationsStash.Get(targetEntity, out var affiliated);
+                        var targetAffiliationComponent = AffiliationsStash.Get(targetEntity, out var affiliated);
                         if (!affiliated)
                             continue;
 
-                        var enemiesMask = EnemiesMask[affiliationComponent.PlayerKey.Id];
-                        if (!enemiesMask.Contains(affiliationComponent.PlayerKey))
+                        if (!entityEnemiesMask.Contains(targetAffiliationComponent.PlayerKey))
                             continue;
 
                         var targetPosition = PositionComponents.Get(targetEntity).Value;
@@ -58,6 +59,7 @@ namespace ZE.MechBattle.Ecs
                         {
                             closestDistanceSq = distanceSq;
                             closestEntity = targetEntity;
+                            
                         }
                     }
                 }
@@ -65,6 +67,7 @@ namespace ZE.MechBattle.Ecs
 
             ref var attackTargetComponent = ref AttackTargets.Get(entity);
             attackTargetComponent.Entity = closestEntity;
-        }
+            //if (closestEntity != default) UnityEngine.Debug.Log($"closest enemy for entity {entity.Id} is entity {closestEntity.Id}");
+          }
     }
 }

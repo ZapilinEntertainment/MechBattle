@@ -15,6 +15,8 @@ namespace ZE.MechBattle
 
         void OnRegistered(Entity entity, ISpawnersManager manager);
         SpawnerComponent GetSpawnerData();
+
+        bool TryGetLimit(out int limit);
     
     }
 }

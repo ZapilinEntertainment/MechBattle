@@ -17,6 +17,7 @@ namespace ZE.MechBattle
         [Space]
         [SerializeField] private float _interval = 10f;
         [SerializeField] private float _initialDelay;
+        [SerializeField] private int _limit = -1;
 
         public Entity Entity { get; private set;}
 
@@ -61,7 +62,19 @@ namespace ZE.MechBattle
                 SpawnRadius = _spawnRadius,
                 UnitKey = new(unitId),
             };
-        } 
+        }
+
+        public bool TryGetLimit(out int limit)
+        {
+            if (_limit > 0)
+            {
+                limit = _limit;
+                return true;
+            }
+
+            limit= 0;
+            return false;
+        }
 #endif
     }
 }

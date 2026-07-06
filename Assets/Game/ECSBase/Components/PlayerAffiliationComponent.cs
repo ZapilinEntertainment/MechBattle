@@ -7,9 +7,9 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public readonly struct PlayerAffiliationComponent : IComponent 
+    public struct PlayerAffiliationComponent : IComponent 
     {
-        public readonly PlayerKey PlayerKey;
+        public PlayerKey PlayerKey;
 
         public PlayerAffiliationComponent(PlayerKey playerKey)
         {

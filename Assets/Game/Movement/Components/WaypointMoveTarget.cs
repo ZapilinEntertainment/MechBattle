@@ -9,10 +9,10 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public readonly struct WaypointMoveTarget : IComponent 
+    public struct WaypointMoveTarget : IComponent 
     {
-        public readonly float3 WorldPos;   
-        public readonly IntTriangularPos TriangularPos;
+        public float3 WorldPos;   
+        public IntTriangularPos TriangularPos;
 
         public WaypointMoveTarget(float3 worldPos, IntTriangularPos tripos)
         {

@@ -1,28 +1,20 @@
 using VContainer;
 using Scellecs.Morpeh;
-using ZE.MechBattle.Navigation;
-
 namespace ZE.MechBattle.Ecs.States
 {
     public class DefaultIdleState : StateHandler
     {
-        private readonly float _triangleHeight;
+        private readonly MoveTargetApplier _moveTargetApplier;
         private readonly Stash<AttackTargetComponent> _attackTargets;
         private readonly Stash<MoveTargetComponent> _moveTargets;
-        private readonly Stash<PositionComponent> _positions;
-        private readonly Stash<HexCoordComponent> _hexCoords;
-        private readonly Stash<TriangularPosComponent> _triangularPositions;
 
         [Inject]
-        public DefaultIdleState(World world, INavigationMap map)
+        public DefaultIdleState(World world, MoveTargetApplier moveTargetApplier)
         {
-            _triangleHeight = map.TriangleHeight;
+            _moveTargetApplier = moveTargetApplier;
 
             _attackTargets = world.GetStash<AttackTargetComponent>();
             _moveTargets = world.GetStash<MoveTargetComponent>();
-            _positions = world.GetStash<PositionComponent>();
-            _hexCoords = world.GetStash<HexCoordComponent>();
-            _triangularPositions = world.GetStash<TriangularPosComponent>();
         }
 
         public override void Enter(Entity entity) { }
@@ -31,19 +23,20 @@ namespace ZE.MechBattle.Ecs.States
 
         public override StateKey Update(Entity entity, float dt)
         {
-            if (_attackTargets.Has(entity))
+            if (_moveTargets.Has(entity))
             {
-                _moveTargets.Set(entity, 
-                    new(
-                        _positions.Get(entity).Value, 
-                        _triangularPositions.Get(entity).Value, 
-                        _hexCoords.Get(entity).Value));
+                UnityEngine.Debug.Log($"entity {entity.Id} move target is {_moveTargets.Get(entity).TriangularPos}");
                 return StateKey.Move;
             }
-            else
+                
+
+            var attackTargetComponent = _attackTargets.Get(entity, out var hasAttackTarget);
+            if (hasAttackTarget)
             {
-                return StateKey.Idle;
+                var attackTargetEntity = attackTargetComponent.Entity;
+                _moveTargetApplier.SetMoveTarget(entity, attackTargetEntity);      
             }
+            return StateKey.Idle;
         }
     }
 }

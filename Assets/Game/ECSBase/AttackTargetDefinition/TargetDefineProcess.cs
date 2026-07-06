@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 using Unity.Collections;
 using Unity.Mathematics;
 using Unity.Jobs;
@@ -11,11 +12,14 @@ namespace ZE.MechBattle.Ecs
     public class TargetDefineProcess : IDisposable
     {
         private TargetDefineJob _job;
+        private NativeArray<PlayerRelationsMask> _relationMasks;
+        private NativeList<Entity> _entities;
+        private JobHandle _activeJobHandle;
+
         private readonly float _hexEdgeLength;
         private readonly int _trianglesPerHexEdge;
         private readonly World _world;
         private readonly PlayerRelations _relations;
-        private NativeArray<PlayerRelationsMask> _relationMasks;
 
         private readonly Stash<PlayerAffiliationComponent> _affiliationComponents;
         private readonly Stash<AttackTargetComponent> _attackTargets;
@@ -23,7 +27,12 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<HexCoordComponent> _hexCoordComponents;
         private readonly Stash<TargetSearchRadiusComponent> _targetSearchRadiusComponents;
 
-        public TargetDefineProcess(INavigationMap map, IPlayersList playersList, PlayerRelations relations, World world)
+        public TargetDefineProcess(
+            INavigationMap map, 
+            IPlayersList playersList, 
+            IMovementCellsMap movementCellsMap,
+            PlayerRelations relations, 
+            World world)
         {
             _relations = relations;
             _world = world;
@@ -37,35 +46,32 @@ namespace ZE.MechBattle.Ecs
             _hexCoordComponents = _world.GetStash<HexCoordComponent>();
             _targetSearchRadiusComponents = _world.GetStash<TargetSearchRadiusComponent>();
 
-            _relationMasks = new NativeArray<PlayerRelationsMask>(playersList.Count, Allocator.Persistent);
+            _relationMasks = new NativeArray<PlayerRelationsMask>(playersList.Count, Allocator.Persistent);     
+            _entities = new NativeList<Entity>(Allocator.Persistent);   
 
             _job = new()
             {
                 HexEdgeLength = _hexEdgeLength,
                 TrianglesPerEdge = _trianglesPerHexEdge,
-                EnemiesMask = _relationMasks
+                EnemiesMask = _relationMasks,
+                MovementCells = movementCellsMap.AsReadonlyMap()
             };
         }
 
         public JobHandle Launch(Filter filter)
         {
-            var dirtyFlag = false;
+            _entities.Clear();
             foreach (var entity in filter)
             {
-                if (!_attackTargets.Has(entity))
-                {
-                    _attackTargets.Add(entity);
-                    dirtyFlag = true;
-                }
+                _attackTargets.Set(entity);
+                _entities.Add(entity);
             }
 
-            if (dirtyFlag)
-                _world.Commit();
-            
+            _world.Commit();
+
 
             // WARNING: Native stashes and filters exists only for one frame!
-            var nativeFilter = filter.AsNative();
-            _job.Filter = nativeFilter;
+            _job.Entities = _entities;
             _job.AffiliationsStash = _affiliationComponents.AsNative();
             _job.AttackTargets = _attackTargets.AsNative();
             _job.HexCoordComponents = _hexCoordComponents.AsNative();
@@ -73,12 +79,38 @@ namespace ZE.MechBattle.Ecs
             _job.TargetSearchRadius = _targetSearchRadiusComponents.AsNative();
             UpdateRelationsMask();
 
-            return _job.Schedule(nativeFilter.length, 32);
+            _activeJobHandle = _job.Schedule(_entities.Length, 32);
+            return _activeJobHandle;
         }
 
-        public void Dispose()
+        public async void Dispose()
+        {
+            if (!_activeJobHandle.IsCompleted)
+            {
+                do
+                {
+                    await Awaitable.NextFrameAsync();
+                }
+                while (!_activeJobHandle.IsCompleted);
+            }
+            #if UNITY_EDITOR
+            try
+            {
+                FinalDispose();
+            }
+            catch
+            {
+                // ignore possible misses
+            }
+#else
+            FinalDispose();
+#endif
+        }
+
+        private void FinalDispose()
         {
             _relationMasks.Dispose();
+            _entities.Dispose();
         }
 
         private void UpdateRelationsMask()

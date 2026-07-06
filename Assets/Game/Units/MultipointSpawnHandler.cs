@@ -12,6 +12,24 @@ namespace ZE.MechBattle.Ecs
 {
     public class MultipointSpawnHandler
     {
+        public struct ExecutionProtocol
+        {
+            public Entity SpawnerEntity;
+            public UnitKey UnitKey;
+            public int Count;
+            public float SpawnRadius;
+            public PlayerKey PlayerKey;
+
+            public ExecutionProtocol(Entity entity, SpawnerComponent component, PlayerKey playerKey)
+            {
+                SpawnerEntity = entity;
+                UnitKey = component.UnitKey;
+                Count = component.Count;
+                SpawnRadius = component.SpawnRadius;
+                PlayerKey = playerKey;
+            }
+        }
+
         private readonly INavigationMap _map;
         private readonly ShrinkingList<IntTriangularPos> _positionsList = new();
         private readonly NativeList<IntTriangularPos> _jobResultsList = new();
@@ -35,20 +53,19 @@ namespace ZE.MechBattle.Ecs
             _job = new() { TriangleHeight = _map.TriangleHeight, ResultList = _jobResultsList};
         }
 
-        public void Handle(Entity spawnerEntity, SpawnerComponent spawnerComponent, PlayerKey playerKey)
+        public void Handle(ExecutionProtocol protocol)
         {
-            var worldPos = _positionComponent.Get(spawnerEntity).Value;
-            var unitKey = spawnerComponent.UnitKey;
+            var worldPos = _positionComponent.Get(protocol.SpawnerEntity).Value;
 
-            PrepareSuitablePositions(worldPos, spawnerComponent.SpawnRadius);
-            var count = spawnerComponent.Count;           
+            PrepareSuitablePositions(worldPos, protocol.SpawnRadius);
+            var count = protocol.Count;           
 
             while (count > 0 && _selectionList.ActiveItemsCount > 0)
             {
                 var randomValue = (float)_random.NextDouble();
                 if (_selectionList.TryPullOut(randomValue, out var tripos))
                 {
-                    _spawnRequestFactory.CreateSpawnRequest(unitKey, tripos, playerKey);
+                    _spawnRequestFactory.CreateSpawnRequest(protocol.UnitKey, tripos, protocol.PlayerKey);
                     count--;
                 }
                 else

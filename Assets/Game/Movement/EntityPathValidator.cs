@@ -9,9 +9,8 @@ namespace ZE.MechBattle.Ecs
         bool ValidateAndGetCalculationStatus(Entity entity, out PathCalculationStatus status, out PathType path);
     }
 
-    public interface IPathStorage<PathType>
+    public interface IPathStorage<PathType> : IItemsBuffer<int,PathType>
     {
-        int Count { get; }
         bool TryGetPathById(int pathId, out PathType path);
         void Remove(int key);
     }

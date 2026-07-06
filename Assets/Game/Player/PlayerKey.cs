@@ -1,8 +1,10 @@
+using System;
 namespace ZE.MechBattle
 {
-    public readonly struct PlayerKey
+    [Serializable]
+    public struct PlayerKey
     {
-        public readonly int Id;
+        public int Id;
 
         public PlayerKey(int id)
         {

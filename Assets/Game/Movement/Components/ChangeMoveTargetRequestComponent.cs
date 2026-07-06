@@ -2,6 +2,7 @@ using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
 using Unity.Mathematics;
 using ZE.MechBattle.Navigation;
+using TriInspector;
 
 namespace ZE.MechBattle.Ecs 
 {
@@ -14,6 +15,12 @@ namespace ZE.MechBattle.Ecs
         public readonly float3 WorldPos;
         public readonly IntTriangularPos Tripos;
         public readonly int2 HexCoord;
+
+#if UNITY_EDITOR
+        [ShowInInspector,ReadOnly] public float3 worldPos => WorldPos;
+        [ShowInInspector, ReadOnly] public IntTriangularPos tripos => Tripos;
+        [ShowInInspector, ReadOnly] public int2 hexCoord => HexCoord;
+#endif
 
         public ChangeMoveTargetRequestComponent(float3 worldPos, IntTriangularPos tripos, int2 hexCoord)
         {

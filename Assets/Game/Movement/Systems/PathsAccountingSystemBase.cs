@@ -48,8 +48,9 @@ namespace ZE.MechBattle.Ecs {
             private readonly Func<ElementData, float> lastUsedComparator;
             private readonly List<int> _clearList = new();
 
-            public ClearLogic(int bufferLimit)
+            public ClearLogic(IItemsBuffer<int, PathType> originalList, int bufferLimit)
             {
+                _originalList = originalList;
                 _bufferLimit = bufferLimit;
 
                 unusedPredicate = kvp => kvp.Value == 0;
@@ -102,7 +103,7 @@ namespace ZE.MechBattle.Ecs {
         public PathsAccountingSystemBase(IPathStorage<PathType> list)
         {
             _list = list;
-            _logic = new(BufferLimit);
+            _logic = new(list, BufferLimit);
         }
 
         public void OnAwake()

@@ -10,9 +10,12 @@ namespace ZE.MechBattle.Ecs
             installer.AddInitializer<DamageablesInitializer>(SystemGroupOrder.Initialization);
             installer.AddInitializer<SceneUnitsInitializer>(SystemGroupOrder.Initialization);
 
-            installer.AddSystem<InitialDelaySystem>(SystemGroupOrder.Initialization);  
+            installer.AddSystem<InitialDelaySystem>(SystemGroupOrder.Initialization); 
 
-            installer.AddSystem<AttackTargetDefineSystem>(SystemGroupOrder.Default);
+            // ATTENTION: TargetDefineSystem and next TargetValidation are in different systems group
+            // because target define system laucnhes a job with World.Handle
+            installer.AddSystem<AttackTargetDefineSystem>(SystemGroupOrder.Initialization);
+
             installer.AddSystem<AttackTargetValidationSystem>(SystemGroupOrder.Default);
 
             installer.AddSystem<ViewRequestsHandleSystem>(SystemGroupOrder.Default);

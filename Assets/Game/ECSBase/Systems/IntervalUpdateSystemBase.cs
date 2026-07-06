@@ -41,7 +41,7 @@ namespace ZE.MechBattle.Ecs {
             }
         }
 
-        virtual protected FilterBuilder PrepareFilter() => World.Filter.With<T>();
+        virtual protected FilterBuilder PrepareFilter() => World.Filter.With<T>().Without<EntityDisposeTag>();
 
         abstract protected void IntervalUpdate(Entity entity);
     }

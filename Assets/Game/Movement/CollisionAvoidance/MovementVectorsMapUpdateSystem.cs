@@ -75,7 +75,7 @@ namespace ZE.MechBattle.Ecs {
                 if (!_vectorsList.TryWriteCell(currentTripos, currentCellData))
                 {
                     #if UNITY_EDITOR
-                    UnityEngine.Debug.LogError("entity move cell overlap");
+                    UnityEngine.Debug.LogWarning("entity move cell overlap");
                     #endif
                 }
             }

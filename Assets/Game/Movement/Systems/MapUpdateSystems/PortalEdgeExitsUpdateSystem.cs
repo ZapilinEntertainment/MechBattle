@@ -39,7 +39,7 @@ namespace ZE.MechBattle.Ecs {
 
             var expectedMaxPortalsCount = _map.TrianglesPerHexEdge / 2;
             _currentExitsA = new(expectedMaxPortalsCount);
-            _currentExitsB = new (expectedMaxPortalsCount);          
+            _currentExitsB = new (expectedMaxPortalsCount);       
         }
 
         public void OnAwake() { }

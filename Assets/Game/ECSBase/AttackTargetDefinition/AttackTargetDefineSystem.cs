@@ -13,19 +13,17 @@ namespace ZE.MechBattle.Ecs
     {
         public World World { get; set;}
         private Filter _filter;
-        private readonly MovementCellsMap _movementCellsMap;
         private readonly TargetDefineProcess _targetDefineProcess;
 
         [Inject]
         public AttackTargetDefineSystem(
-            MovementCellsMap movementCellsMap, 
+            IMovementCellsMap movementCellsMap, 
             INavigationMap map, 
             IPlayersList playersList, 
             PlayerRelations playerRelations,
             World world)
         {
-            _movementCellsMap = movementCellsMap;
-            _targetDefineProcess = new(map, playersList, playerRelations, world);
+            _targetDefineProcess = new(map, playersList, movementCellsMap, playerRelations, world);
         }
 
         public void OnAwake() 
@@ -35,12 +33,18 @@ namespace ZE.MechBattle.Ecs
                 .With<PlayerAffiliationComponent>()
                 .With<HexCoordComponent>()
                 .Without<EntityDisposeTag>()
+                .Without<AttackTargetComponent>()
                 .Build();
         }
 
         public void OnUpdate(float deltaTime) 
         {
-            World.JobHandle = _targetDefineProcess.Launch(_filter);
+            // TODO: add search cd (for situations with no enemies in radius)
+
+            if (_filter.IsNotEmpty())
+            {
+                World.JobHandle = _targetDefineProcess.Launch(_filter);                
+            }                
         }
 
         public void Dispose()

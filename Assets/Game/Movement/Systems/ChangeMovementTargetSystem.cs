@@ -1,5 +1,6 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
+using Unity.Mathematics;
 using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle.Ecs {
@@ -13,6 +14,8 @@ namespace ZE.MechBattle.Ecs {
         private Stash<ChangeMoveTargetRequestComponent> _requests;
         private Stash<MoveTargetComponent> _moveTargets;
         private Stash<ClearHexPathTag> _clearHexPathTags;
+        private Stash<ClearTrianglePathTag> _clearTrianglePathTag;
+        private Stash<HexCoordComponent> _hexCoordComponents;
 
         public void OnAwake() 
         {
@@ -21,20 +24,45 @@ namespace ZE.MechBattle.Ecs {
             _requests = World.GetStash<ChangeMoveTargetRequestComponent>();
             _moveTargets = World.GetStash<MoveTargetComponent>();
             _clearHexPathTags = World.GetStash<ClearHexPathTag>();
+            _clearTrianglePathTag = World.GetStash<ClearTrianglePathTag>();
+            _hexCoordComponents = World.GetStash<HexCoordComponent>();
         }
 
         public void OnUpdate(float deltaTime) 
         {
             foreach (var entity in _filter)
             {
-                _clearHexPathTags.Set(entity);
-
+                var moveTargetComponent = _moveTargets.Get(entity, out var hasMoveTarget);
                 var request = _requests.Get(entity);
-                _moveTargets.Set(entity, new(request.WorldPos, request.Tripos, request.HexCoord));
-                _requests.Remove(entity);
+                if (!hasMoveTarget)
+                {
+                    ApplyRequest(entity, request);
+                    continue;
+                }
+
+                
+                if (math.any(moveTargetComponent.HexCoord != request.HexCoord))
+                {
+                    _clearHexPathTags.Set(entity);
+                }
+                else
+                {
+                    var currentHexCoord = _hexCoordComponents.Get(entity).Value;
+                    // clear triangle path only if in final hex (otherwise it will be calculated after arrival into)
+                    if (math.all(currentHexCoord == request.HexCoord) && moveTargetComponent.TriangularPos != request.Tripos)
+                        _clearTrianglePathTag.Set(entity);
+                }              
+
+                ApplyRequest(entity, request);
             }
         }
 
         public void Dispose() { }
+
+        private void ApplyRequest(Entity entity, ChangeMoveTargetRequestComponent request)
+        {
+            _moveTargets.Set(entity, new(request.WorldPos, request.Tripos, request.HexCoord));
+            _requests.Remove(entity);
+        }
     }
 }

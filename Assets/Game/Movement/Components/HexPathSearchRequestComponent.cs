@@ -8,7 +8,7 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public readonly struct HexPathSearchRequestComponent : IComponent 
+    public readonly struct HexPathSearchRequestComponent : IHexPathComponent
     {
         public readonly PortalPathDestinationKey Start;
         public readonly PortalPathDestinationKey End;

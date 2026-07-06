@@ -36,7 +36,13 @@ namespace ZE.MechBattle
     public class MovementCellsMap : IMovementCellsMap, IDisposable
     {
         public NativeParallelHashMap<IntTriangularPos, CellMovementData> AsNative() => _map;
-        private NativeParallelHashMap<IntTriangularPos, CellMovementData> _map;        
+        private NativeParallelHashMap<IntTriangularPos, CellMovementData> _map;    
+        private const int INITIAL_CAPACITY = 512;
+
+        public MovementCellsMap()
+        {
+            _map = new NativeParallelHashMap<IntTriangularPos, CellMovementData>(INITIAL_CAPACITY, Allocator.Persistent);
+        }
 
         public bool TryGetValue(IntTriangularPos tripos, out CellMovementData cellValue) => _map.TryGetValue(tripos, out cellValue);
 
@@ -51,7 +57,14 @@ namespace ZE.MechBattle
             return true;
         }
 
-        public void Add(IntTriangularPos tripos, CellMovementData movementData) => _map.Add(tripos, movementData);
+        public void Add(IntTriangularPos tripos, CellMovementData movementData) 
+        {
+            if (_map.Count() == _map.Capacity)
+            {
+                _map.Capacity *= 2;
+            }
+            _map.Add(tripos, movementData);
+        } 
         public void Clear() => _map.Clear();
 
         public void Dispose() => _map.Dispose();

@@ -11,7 +11,7 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public readonly struct FlowTrianglePathComponent : IPathUserComponent<int> 
+    public readonly struct FlowTrianglePathComponent : IPathUserComponent<int>, ITrianglePathComponent
     {
         public readonly int FlowMapId;
         public readonly int2 MapHexCoord;

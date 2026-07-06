@@ -7,9 +7,9 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public readonly struct TargetSearchRadiusComponent : IComponent 
+    public struct TargetSearchRadiusComponent : IComponent 
     {
-        public readonly float Value;
+        public float Value;
     
         public TargetSearchRadiusComponent(float value)
         {

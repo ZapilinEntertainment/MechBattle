@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
+using TriInspector;
 
 namespace ZE.MechBattle.Navigation
 {
@@ -13,9 +14,9 @@ namespace ZE.MechBattle.Navigation
         public readonly int Up;
         public readonly int DownRight;
 
-        public int X => DownLeft;
-        public int Y => Up;
-        public int Z => DownRight;
+        [ShowInInspector, ReadOnly] public int X => DownLeft;
+        [ShowInInspector, ReadOnly] public int Y => Up;
+        [ShowInInspector, ReadOnly] public int Z => DownRight;
 
         public int2 XZ => new(X,Z);
         public int2 XY => new(X,Y);

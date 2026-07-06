@@ -14,3 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitConfig
   <CollisionAvoidancePriority>k__BackingField: 1
   <ViewKey>k__BackingField: tank_view
+  <TargetSearchRadius>k__BackingField: 600
+  <BehaviourKey>k__BackingField: 1
+  <MoveSpeed>k__BackingField: 10

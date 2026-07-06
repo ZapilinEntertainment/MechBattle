@@ -8,7 +8,7 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public readonly struct TrianglePathSearchRequestComponent : IComponent 
+    public readonly struct TrianglePathSearchRequestComponent : ITrianglePathComponent
     {
         public readonly IntTriangularPos Start;
         public readonly IntTriangularPos End;

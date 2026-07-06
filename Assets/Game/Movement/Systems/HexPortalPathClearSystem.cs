@@ -1,8 +1,10 @@
-using VContainer;
 using Scellecs.Morpeh;
+using System.Collections.Generic;
 using Unity.IL2CPP.CompilerServices;
+using VContainer;
 
-namespace ZE.MechBattle.Ecs {
+namespace ZE.MechBattle.Ecs
+{
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
@@ -11,20 +13,16 @@ namespace ZE.MechBattle.Ecs {
         public World World { get; set;}
 
         private readonly HexPortalPathsLRUBuffer _paths;
+        private readonly List<IStash> _clearingStashes;
 
+        private Stash<ClearTrianglePathTag> _clearTrianglePathTags;
         private Filter _clearFilter;
 
-        private Stash<ClearHexPathTag> _hexClearTags;
-        private Stash<HexPathIdComponent> _regularHexPaths;
-        private Stash<ClearTrianglePathTag> _triangleClearTags;
-        private Stash<HexPathDefinedTag> _hexPathDefinedTags;
-        private Stash<HexPathReadyTag> _hexPathReadyTags;
-        private Stash<HexPathProgressionComponent> _hexPathProgressionComponents;
-
         [Inject]
-        public HexPortalPathClearSystem(HexPortalPathsLRUBuffer hexPaths)
+        public HexPortalPathClearSystem(HexPortalPathsLRUBuffer hexPaths, World world)
         {
             _paths = hexPaths;
+            _clearingStashes = ReceiveStashesListByComponentInterfaceCommand.Execute<IHexPathComponent>(world);
         }
 
         public void OnAwake() 
@@ -33,25 +31,19 @@ namespace ZE.MechBattle.Ecs {
                 .With<ClearHexPathTag>()
                 .Build();
 
-            _hexClearTags = World.GetStash<ClearHexPathTag>();
-            _regularHexPaths = World.GetStash<HexPathIdComponent>();
-            _triangleClearTags = World.GetStash<ClearTrianglePathTag>();
-            _hexPathDefinedTags = World.GetStash<HexPathDefinedTag>();
-            _hexPathReadyTags = World.GetStash<HexPathReadyTag>();
-            _hexPathProgressionComponents = World.GetStash<HexPathProgressionComponent>();
+            _clearTrianglePathTags = World.GetStash<ClearTrianglePathTag>();
         }
 
         public void OnUpdate(float deltaTime) 
         {
             foreach (var entity in _clearFilter)
             {
-                _hexClearTags.Remove(entity);
-                _regularHexPaths.Remove(entity);
-                _hexPathDefinedTags.Remove(entity);
-                _hexPathReadyTags.Remove(entity);
-                _hexPathProgressionComponents.Remove(entity);
+                foreach (var stash in _clearingStashes)
+                    stash.Remove(entity);
 
-                _triangleClearTags.Set(entity);
+                _clearTrianglePathTags.Set(entity);
+
+                UnityEngine.Debug.Log($"hex path data cleared for entity {entity.Id}");
             }
         }
 

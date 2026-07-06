@@ -7,8 +7,16 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public struct FlowTrianglePathProcessingTag : ITrianglePathComponent
+    public struct SpawnOperationsLeftComponent : IComponent 
     {
-    
+        public int Value;
+        public SpawnLimitExhaustedStrategy Strategy;
+
+    }
+
+    public enum SpawnLimitExhaustedStrategy : byte
+    {
+        Dispose,
+        StopSpawn
     }
 }
