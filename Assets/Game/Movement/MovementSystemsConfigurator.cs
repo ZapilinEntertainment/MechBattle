@@ -38,10 +38,10 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<RegularTrianglePathWaypointSetSystem>(SystemGroupOrder.RegularUpdate);
             installer.AddSystem<FlowTrianglePathWaypointSetSystem>(SystemGroupOrder.RegularUpdate);
 
-            installer.AddSystem<MovementVectorsMapUpdateSystem>(SystemGroupOrder.RegularUpdate);
+            installer.AddSystem<MovementVectorsMapUpdateSystem>(SystemGroupOrder.RegularUpdate);           
+            installer.AddSystem<WaypointsMovementSystem>(SystemGroupOrder.RegularUpdate);
             installer.AddSystem<MovementCollisionAvoidanceSystem>(SystemGroupOrder.RegularUpdate);
 
-            installer.AddSystem<WaypointsMovementSystem>(SystemGroupOrder.RegularUpdate);
             installer.AddSystem<NextPositionApplySystem>(SystemGroupOrder.RegularUpdate);
             installer.AddSystem<WaypointsCheckSystem>(SystemGroupOrder.RegularUpdate);
 

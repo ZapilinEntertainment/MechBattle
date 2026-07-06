@@ -15,6 +15,7 @@ namespace ZE.MechBattle.Ecs
         private Stash<NextPositionComponent> _nextPositionComponents;
         private Stash<PositionComponent> _positionComponents;
         private Stash<TriangularPosComponent> _triangularPosComponents;
+        private Stash<MovementCollisionAvoidanceComponent> _movementCollisionAvoidanceComponents;
 
         private readonly MovementCellsMap _vectorsList;
         private readonly float _invertedTriangleHeight;
@@ -33,6 +34,7 @@ namespace ZE.MechBattle.Ecs
             _nextPositionComponents = World.GetStash<NextPositionComponent>();
             _positionComponents = World.GetStash<PositionComponent>();
             _triangularPosComponents = World.GetStash<TriangularPosComponent>();
+            _movementCollisionAvoidanceComponents = World.GetStash<MovementCollisionAvoidanceComponent>();
         }
 
         public override void OnUpdate(float deltaTime)
@@ -44,9 +46,13 @@ namespace ZE.MechBattle.Ecs
             {
                 var nextPosComponent = _nextPositionComponents.Get(entity);
                 var nextTripos = nextPosComponent.Tripos;
+                var currentPos = _positionComponents.Get(entity).Value;
+                var moveDir = nextPosComponent.WorldPos - currentPos;
+
                 if (!_vectorsList.TryGetValue(nextTripos, out var moveCell))
                 {
-                    _vectorsList.Add(nextTripos, default);
+                    var collisionAvoidance = _movementCollisionAvoidanceComponents.Get(entity);
+                    _vectorsList.Add(nextTripos, new(entity, collisionAvoidance.Priority, moveDir, 0));
                     continue;
                 }
                 else
@@ -64,8 +70,7 @@ namespace ZE.MechBattle.Ecs
                     continue;
                 }
 
-                var currentPos = _positionComponents.Get(entity).Value;
-                var moveDir = nextPosComponent.WorldPos - currentPos;
+                
                 var dot = math.dot(moveCell.MoveVector, moveDir);
 
                 if (dot < 1f)

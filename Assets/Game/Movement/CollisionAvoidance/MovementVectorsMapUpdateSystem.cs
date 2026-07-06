@@ -18,14 +18,17 @@ namespace ZE.MechBattle.Ecs {
         private Stash<TriangularPosComponent> _triangularPosComponents;
 
         private readonly MovementCellsMap _vectorsList;
+        private readonly INavigationMap _map;
       
 
         [Inject]
         public MovementVectorsMapUpdateSystem(
             SceneFlagsManager flags, 
-            MovementCellsMap vectorsList) : base(flags)
+            MovementCellsMap vectorsList,
+            INavigationMap map) : base(flags)
         {
             _vectorsList = vectorsList;
+            _map = map;
         }
 
         public override void OnAwake()
@@ -50,8 +53,9 @@ namespace ZE.MechBattle.Ecs {
             foreach (var entity in _occupationCellsFilter)
             {
                 var avoidanceComponent = _avoidanceComponents.Get(entity);
-                var currentTripos = _triangularPosComponents.Get(entity).Value;                
                 var pos = _positionComponents.Get(entity).Value;
+                var currentTripos = _triangularPosComponents.Get(entity).Value;                
+               
 
                 var nextPosComponent = _nextPositionComponents.Get(entity, out var haveNextPos);
                 float3 moveDir;

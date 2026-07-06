@@ -46,8 +46,12 @@ namespace ZE.MechBattle
 
         public void UpdateSpawnerData(Entity entity, ISpawner spawner) 
         {
-            _initialDelayApplier.ApplyInitialDelay(entity, spawner.InitialDelay);
-            _updateIntervals.Set(entity, new(spawner.UpdateIntervalDuration));
+            if (spawner.InitialDelay != 0f) 
+                _initialDelayApplier.ApplyInitialDelay(entity, spawner.InitialDelay);
+
+            if (spawner.UpdateIntervalDuration != 0f)
+                _updateIntervals.Set(entity, new(spawner.UpdateIntervalDuration));
+
             _spawnerComponents.Set(entity, spawner.GetSpawnerData());
 
             _triangularPositionApplier.Apply(entity, spawner.WorldPos);

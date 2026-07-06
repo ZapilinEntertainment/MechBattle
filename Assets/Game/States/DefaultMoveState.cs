@@ -32,9 +32,8 @@ namespace ZE.MechBattle.Ecs.States
 
         public override StateKey Update(Entity entity, float dt)
         {
-            var attackTargetComponent = _attackTargets.Get(entity, out var attackTargetExists);
             var moveTargetComponent = _moveTargets.Get(entity, out var moveTargetExists);
-            if (!attackTargetExists || !moveTargetExists)
+            if (!moveTargetExists)
             {
                 //UnityEngine.Debug.Log($"attack target: {attackTargetExists}, move target: {moveTargetExists}");
                 return StateKey.Idle;
@@ -42,11 +41,15 @@ namespace ZE.MechBattle.Ecs.States
 
             // why do target check inside state:
             // entity may run way or going through (different order), but attack some target simulataneously
-            var targetEntity = attackTargetComponent.Entity;
-            var targetTripos = _triangularPosComponents.Get(targetEntity).Value;
-            if (targetTripos != moveTargetComponent.TriangularPos)
-            {
-                _moveTargetApplier.SetMoveTarget(entity, targetEntity);
+            var attackTargetComponent = _attackTargets.Get(entity, out var attackTargetExists);
+            if (attackTargetExists) 
+            { 
+                var targetEntity = attackTargetComponent.Entity;
+                var targetTripos = _triangularPosComponents.Get(targetEntity).Value;
+                if (targetTripos != moveTargetComponent.TriangularPos)
+                {
+                    _moveTargetApplier.SetMoveTarget(entity, targetEntity);
+                }
             }
 
 

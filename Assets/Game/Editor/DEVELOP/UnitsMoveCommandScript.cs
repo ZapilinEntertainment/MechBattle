@@ -13,25 +13,19 @@ namespace ZE.MechBattle.Develop
         [SerializeField] private Vector3 _center = Vector3.zero;
         [SerializeField] private float _radius = 100f;
         [SerializeField] private Vector3 _manualDefinedTarget;
+
         private Filter _filter;
-        private Stash<ChangeMoveTargetRequestComponent> _changeTargetRequests;
-        private Stash<ClearHexPathTag> _clearHexPathTags;
-        private Stash<MoveTargetComponent> _moveTargetComponents;
+        private MoveTargetApplier _moveTargetApplier;
         private Vector3? _targetPos;
         private float _triangleHeight;
         private float _hexEdgeLength;
 
         [Inject]
-        public void Inject(World world, INavigationMap map)
+        public void Inject(World world, MoveTargetApplier moveTargetApplier)
         {
+            _moveTargetApplier = moveTargetApplier;
+
             _filter = world.Filter.With<NavigationAgentComponent>().Build();
-
-            _changeTargetRequests = world.GetStash<ChangeMoveTargetRequestComponent>();
-            _clearHexPathTags = world.GetStash<ClearHexPathTag>();
-            _moveTargetComponents = world.GetStash<MoveTargetComponent>();
-
-            _triangleHeight = map.TriangleHeight;
-            _hexEdgeLength = map.HexEdgeLength;
         }
 
         [EnableInPlayMode, Button("Set new random target")]
@@ -53,10 +47,8 @@ namespace ZE.MechBattle.Develop
         {
             foreach (var entity in _filter)
             {
-                _clearHexPathTags.Set(entity);
+                _moveTargetApplier.StopMovement(entity);
             }
-            _changeTargetRequests.RemoveAll();
-            _moveTargetComponents.RemoveAll();
         }
 
         [EnableInPlayMode, Button("Move to object")]
@@ -64,14 +56,11 @@ namespace ZE.MechBattle.Develop
 
         private void SetEntitiesTarget(float3 pos)
         {
-            var tripos = TriangularMath.WorldToTrianglePos(pos, _triangleHeight);
-            var hexCoord = HexMath.DefineHex(pos.xz, _hexEdgeLength);
-
             foreach (var entity in _filter)
             {                
-                _changeTargetRequests.Set(entity, new(pos, tripos, hexCoord));
+                _moveTargetApplier.SetMoveTarget(entity, pos);
             }
-            UnityEngine.Debug.Log($"move target set to {pos}");
+            UnityEngine.Debug.Log($"move target set to {pos} | {_filter.GetLengthSlow()} entities");
         }
 
 #if UNITY_EDITOR
