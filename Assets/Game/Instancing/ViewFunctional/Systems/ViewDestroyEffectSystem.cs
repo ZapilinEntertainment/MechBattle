@@ -12,11 +12,11 @@ namespace ZE.MechBattle.Ecs {
         public World World { get; set;}
         private Filter _filter;
         private Stash<ViewDestroyEffectComponent> _destroyEffects;
-        private readonly VfxRequestsBuilder _vfxRequestsBuilder;
+        private readonly VfxRequestsFactory _vfxRequestsBuilder;
         private readonly TransformAspectHandler _transformAspectHandler;
 
         [Inject]
-        public ViewDestroyEffectSystem(VfxRequestsBuilder vfxRequestsBuilder, TransformAspectHandler transformAspectHandler)
+        public ViewDestroyEffectSystem(VfxRequestsFactory vfxRequestsBuilder, TransformAspectHandler transformAspectHandler)
         {
             _vfxRequestsBuilder = vfxRequestsBuilder;
             _transformAspectHandler = transformAspectHandler;

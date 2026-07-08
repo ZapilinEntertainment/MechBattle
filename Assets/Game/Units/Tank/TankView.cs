@@ -5,8 +5,8 @@ namespace ZE.MechBattle
     public class TankView : SimpleView, IDamageableView
     {
         [SerializeField] private Transform _tower;
-        [SerializeField] private Transform _trunk;
-        [SerializeField] private float _trunkLength = 2f;
+        [SerializeField] private Transform _barrel;
+        [SerializeField] private float _barrelLength = 2f;
         [Space]
         [SerializeField] private string _destroyEffectKey = "tank_destroy";
         [SerializeField] private Collider _collider;

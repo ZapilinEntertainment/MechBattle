@@ -22,14 +22,14 @@ namespace ZE.MechBattle.Ecs {
         private Stash<RotationComponent> _rotationComponents;
 
         private readonly CollidersTable _collidersTable;
-        private readonly VfxRequestsBuilder _vfxRequestsBuilder;
+        private readonly VfxRequestsFactory _vfxRequestsBuilder;
         private readonly ExplosionRequestsBuilder _explosionRequestsBuilder;
         private readonly DamageRequestsBuilder _damageRequestsBuilder;
 
         [Inject]
         public ProjectilesExplodeSystem(
             CollidersTable collidersTable, 
-            VfxRequestsBuilder vfxRequestsBuilder, 
+            VfxRequestsFactory vfxRequestsBuilder, 
             ExplosionRequestsBuilder explosionRequestsBuilder,
             DamageRequestsBuilder damageRequestsBuilder)
         {

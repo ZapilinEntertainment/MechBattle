@@ -13,7 +13,7 @@ namespace ZE.MechBattle
         {
             new BaseEcsSystemsInstallQueue(),
             new MovementSystemsInstaller(),
-            new StatesInstaller()
+            new StatesInstaller()            
         };
 
         public void PreloadResources(IObjectResolver globalContainerResolver) { }
@@ -27,13 +27,16 @@ namespace ZE.MechBattle
             builder.Register<MonoViewFactory>(Lifetime.Scoped);
             builder.Register<ExplosionRequestsBuilder>(Lifetime.Scoped);
             builder.Register<DamageRequestsBuilder>(Lifetime.Scoped);
-            builder.Register<VfxRequestsBuilder>(Lifetime.Scoped);
+            builder.Register<VfxRequestsFactory>(Lifetime.Scoped);
             builder.Register<EntityConversionFactory>(Lifetime.Scoped);
 
             builder.Register<DelayApplier>(Lifetime.Scoped);
             builder.Register<TriangularPositionApplier>(Lifetime.Scoped);
             builder.Register<MoveTargetApplier>(Lifetime.Scoped);
             builder.Register<DisposeTagApplier>(Lifetime.Scoped);
+            builder.Register<ParentingRelationsApplier>(Lifetime.Scoped);
+
+            builder.Register<ChildEntitiesUpdateHandler>(Lifetime.Scoped);
 
             builder.Register<MorpehSystemInstallHandler>(Lifetime.Scoped);
 

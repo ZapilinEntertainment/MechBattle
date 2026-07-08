@@ -4,7 +4,7 @@ using Scellecs.Morpeh;
 
 namespace ZE.MechBattle.Ecs
 {
-    public class VfxRequestsBuilder
+    public class VfxRequestsFactory
     {
         private readonly World _world;
         private readonly Stash<PositionComponent> _positions;
@@ -12,7 +12,7 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<VfxRequestComponent> _requests;
 
         [Inject]
-        public VfxRequestsBuilder(World world)
+        public VfxRequestsFactory(World world)
         {
             _world = world;
             _positions = _world.GetStash<PositionComponent>();

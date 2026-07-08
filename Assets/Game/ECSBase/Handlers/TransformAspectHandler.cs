@@ -13,6 +13,11 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<PositionComponent> _positions;
         private readonly Stash<RotationComponent> _rotations;
         private readonly Stash<TransformUpdatedTag> _updateTags;
+        private readonly Stash<TriangularPosComponent> _triangularPositions;
+        private readonly Stash<HexCoordComponent> _hexCoordComponents;
+        private readonly Stash<LocalPositionComponent> _localPositions;
+        private readonly Stash<LocalRotationComponent> _localRotation;
+        private readonly Stash<ParentEntityComponent> _parentEntities;
 
         [Inject]
         public TransformAspectHandler(World world)
@@ -20,6 +25,13 @@ namespace ZE.MechBattle.Ecs
             _positions = world.GetStash<PositionComponent>();
             _rotations = world.GetStash<RotationComponent>();
             _updateTags = world.GetStash<TransformUpdatedTag>();
+            _triangularPositions = world.GetStash<TriangularPosComponent>();
+            _hexCoordComponents = world.GetStash<HexCoordComponent>();
+
+            _localPositions = world.GetStash<LocalPositionComponent>();
+            _localRotation = world.GetStash<LocalRotationComponent>();
+
+            _parentEntities = world.GetStash<ParentEntityComponent>();
         }
 
         public float3 GetPosition(Entity entity) => _positions.Get(entity).Value;
@@ -71,6 +83,32 @@ namespace ZE.MechBattle.Ecs
                 ? rotationComponent.Value 
                 : (randomRotationIfNone ? (quaternion)UnityEngine.Random.rotationUniform : quaternion.identity);
             return new(rotation, pos);
+        }
+        
+        public void SyncPositionWithParental(Entity childEntity, Entity parentEntity)
+        {
+            SyncComponentsCommand.Execute<TriangularPosComponent>(childEntity, parentEntity, _triangularPositions);
+            SyncComponentsCommand.Execute<HexCoordComponent>(childEntity, parentEntity, _hexCoordComponents);
+
+            var globalPoint = GetChildWorldPoint(childEntity);
+
+            _positions.Set(childEntity, new() { Value = globalPoint.pos});
+            _rotations.Set(childEntity, new() { Value = globalPoint.rot});
+            // yes, ignore tripos & hexcoord local offset for child
+        }
+
+        private RigidTransform GetChildWorldPoint(Entity childEntity)
+        {
+            var localPos = _localPositions.Get(childEntity).Value;
+            var localRot = _localRotation.Get(childEntity).Value;
+
+            var parentEntity = _parentEntities.Get(childEntity).Value;
+            var parentPoint = GetPoint(parentEntity, randomRotationIfNone: false);
+
+            var globalPos = parentPoint.pos + math.mul(parentPoint.rot, localPos);
+            var globalRot = math.mul(parentPoint.rot, localRot);
+
+            return new(globalRot, globalPos);
         }
     }
 }

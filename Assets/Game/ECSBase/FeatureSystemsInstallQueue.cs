@@ -13,6 +13,9 @@ namespace ZE.MechBattle.Ecs
             void AddSystem<T>(SystemGroupOrder order)
                 where T : class, ISystem;
 
+            void AddSystemWithInterface<SystemType, InterfaceType>(SystemGroupOrder order)
+                where SystemType : class, ISystem;
+
             void AddInitializer<T>(SystemGroupOrder order)
                 where T : class, IInitializer;
         }
@@ -32,6 +35,12 @@ namespace ZE.MechBattle.Ecs
                 builder.Register<T>(Lifetime.Scoped);
             }
 
+            public void AddSystemWithInterface<SystemType, InterfaceType>(SystemGroupOrder order)
+                where SystemType : class, ISystem
+            {
+                builder.Register<SystemType>(Lifetime.Scoped).AsSelf().As<InterfaceType>();
+            }
+
             public void AddInitializer<T>(SystemGroupOrder order)
                 where T : class, IInitializer
             {
@@ -47,6 +56,10 @@ namespace ZE.MechBattle.Ecs
             {
                 this.resolver = resolver.Resolve<MorpehSystemInstallHandler>();
             }
+
+            public void AddSystemWithInterface<SystemType, InterfaceType>(SystemGroupOrder order)
+                where SystemType : class, ISystem
+                => AddSystem<SystemType>(order);
 
             public void AddSystem<T>(SystemGroupOrder order)
                 where T : class, ISystem

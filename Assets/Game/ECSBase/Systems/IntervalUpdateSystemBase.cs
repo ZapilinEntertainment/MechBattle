@@ -27,7 +27,7 @@ namespace ZE.MechBattle.Ecs {
 
             foreach (var entity in _filter)
             {
-                ref var component = ref _stash.Get(entity);
+                var component = _stash.Get(entity);
                 var newValue = component.TimeLeft - deltaTime;
                 if (newValue > 0f)
                 {
@@ -35,7 +35,7 @@ namespace ZE.MechBattle.Ecs {
                 }                    
                 else
                 {
-                    component.TimeLeft = component.Interval + newValue;
+                    RestartTimer(entity, newValue);
                     IntervalUpdate(entity);
                 }                    
             }
@@ -44,5 +44,11 @@ namespace ZE.MechBattle.Ecs {
         virtual protected FilterBuilder PrepareFilter() => World.Filter.With<T>().Without<EntityDisposeTag>();
 
         abstract protected void IntervalUpdate(Entity entity);
+
+        protected void RestartTimer(Entity entity, float delta = 0f)
+        {
+            ref var component = ref _stash.Get(entity);
+            component.TimeLeft = component.Interval + delta;
+        }
     }
 }

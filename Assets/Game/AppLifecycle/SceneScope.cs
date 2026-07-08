@@ -17,6 +17,7 @@ namespace ZE.MechBattle
             new MorpehInstaller(),
             new UnitsInstaller(),
             new GridOperationsInstaller(),
+            new WeaponFeatureInstaller(),
         };
 
         protected override void Configure(IContainerBuilder builder)
