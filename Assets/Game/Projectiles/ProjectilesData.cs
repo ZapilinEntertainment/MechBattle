@@ -11,10 +11,9 @@ namespace ZE.MechBattle
         public struct ProjectileData
         {
             public float Speed;
-            public string ViewKey;
+            public string ViewId;
             public string ExplosionEffectKey;
             public float ExplosionRadius;
-            public float Damage;
             public float Lifetime;
         }
 

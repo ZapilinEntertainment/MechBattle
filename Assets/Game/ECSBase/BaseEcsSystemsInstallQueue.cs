@@ -6,19 +6,13 @@ namespace ZE.MechBattle.Ecs
     {
         protected override void Configure(ISystemsOperator installer)
         {
-            installer.AddInitializer<WorldInitializer>(SystemGroupOrder.Initialization);
-            installer.AddInitializer<DamageablesInitializer>(SystemGroupOrder.Initialization);
-            installer.AddInitializer<SceneUnitsInitializer>(SystemGroupOrder.Initialization);
-
             installer.AddSystem<InitialDelaySystem>(SystemGroupOrder.Initialization); 
 
             // ATTENTION: TargetDefineSystem and next TargetValidation are in different systems group
-            // because target define system laucnhes a job with World.Handle
+            // because target define system launches a job with World.Handle
             installer.AddSystem<AttackTargetDefineSystem>(SystemGroupOrder.Initialization);
 
             installer.AddSystem<AttackTargetValidationSystem>(SystemGroupOrder.Default);
-
-            installer.AddSystem<ViewRequestsHandleSystem>(SystemGroupOrder.Default);
             installer.AddSystem<VfxCreateSystem>(SystemGroupOrder.Default);
             installer.AddSystem<RestorationSystem>(SystemGroupOrder.Default);
 
@@ -29,11 +23,15 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<ProjectileMoveSystem>(SystemGroupOrder.RegularUpdate);
             installer.AddSystem<ProjectilesExplodeSystem>(SystemGroupOrder.RegularUpdate);
 
-            installer.AddSystem<TransformsSyncSystem>(SystemGroupOrder.PostUpdate);
-            installer.AddSystem<ViewDestroyEffectSystem>(SystemGroupOrder.PostUpdate);
+            installer.AddSystem<LocalRotationTargetingSystem>(SystemGroupOrder.TransformUpdates);
+            installer.AddSystem<HierarchyTransformUpdateTagSync>(SystemGroupOrder.TransformUpdates);
+            installer.AddSystem<ChildPointsUpdateSystem>(SystemGroupOrder.TransformUpdates);
+            installer.AddSystem<TransformsSyncSystem>(SystemGroupOrder.TransformUpdates);
+
+            installer.AddSystem<ViewDestroyEffectSystem>(SystemGroupOrder.PostUpdate);            
 
             installer.AddSystem<EntityDestructionDelaySystem>(SystemGroupOrder.Final);
-
+            installer.AddSystem<HierarchyDisposeSyncSystem>(SystemGroupOrder.Final);
             installer.AddSystem<TransformsClearSystem>(SystemGroupOrder.Final);
             installer.AddSystem<CollidersClearSystem>(SystemGroupOrder.Final);
             installer.AddSystem<EntityDisposeSystem>(SystemGroupOrder.Final);

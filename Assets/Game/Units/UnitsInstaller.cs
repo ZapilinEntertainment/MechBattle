@@ -1,5 +1,6 @@
 using UnityEngine;
 using VContainer;
+using VContainer.Unity;
 using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle
@@ -31,11 +32,15 @@ namespace ZE.MechBattle
             builder.RegisterInstance<IUnitConfigsList, UnitConfigsList>(_unitConfigsList);
 
             _installQueue.InstallDependencies(builder);
+
+            builder.RegisterEntryPoint<SceneUnitsInitializer>();
         }
 
         public void Initialize(IObjectResolver resolver) 
         { 
             _installQueue.Initialize(resolver);
         }
+
+        public void PostInitialize(IObjectResolver resolver) { }
     }
 }

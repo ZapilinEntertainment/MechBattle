@@ -7,6 +7,8 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public sealed class EntityDestructionDelaySystem : DelaySystemBase<EntityDestructionDelayComponent>
     {
-        protected override void OnDelayCompleted(Entity entity) => World.RemoveEntity(entity);
+        private readonly Stash<EntityDisposeTag> _disposeTags;
+
+        protected override void OnDelayCompleted(Entity entity) => _disposeTags.Set(entity);
     }
 }

@@ -7,40 +7,46 @@ namespace ZE.MechBattle.Ecs
 {
     public class MonoViewFactory
     {
-        private readonly ViewReceiversList _viewReceivers;
-        private readonly Stash<ViewRequestComponent> _viewRequests;
-        private readonly Stash<ViewInfoComponent> _viewInfos;
-        private readonly Stash<ViewComponent> _viewComponents;
-        private readonly Stash<TransformComponent> _transformComponents;
-        private readonly EntityConversionFactory _entityFactory;
+        private readonly World _world;
+        private readonly ViewSynchronizationApplier _viewSyncApplier;
+        private readonly ViewContainersPool _viewContainersPool;
+        private readonly StringDataDictionary _stringDataDict;
+
+        private readonly Stash<ViewLoadRequestTag> _viewRequests;
+        private readonly Stash<ViewContainerComponent> _viewContainers;
+        private readonly Stash<ViewKeyComponent> _viewKeyComponents;
+       
 
         [Inject]
-        public MonoViewFactory(World world, ViewReceiversList receiversList, EntityConversionFactory factory)
+        public MonoViewFactory(
+            World world,
+            ViewSynchronizationApplier viewSyncApplier,
+            ViewContainersPool viewContainersPool,
+            StringDataDictionary stringDataDictionary)
         {
-            _viewReceivers = receiversList;
-            _entityFactory = factory;
-            _viewRequests = world.GetStash<ViewRequestComponent>();
-            _viewInfos = world.GetStash<ViewInfoComponent>();
-            _viewComponents = world.GetStash<ViewComponent>();
-            _transformComponents = world.GetStash<TransformComponent>();
+            _world = world;
+            _viewSyncApplier = viewSyncApplier;
+            _viewContainersPool = viewContainersPool;
+            _stringDataDict = stringDataDictionary;
+
+            _viewRequests = world.GetStash<ViewLoadRequestTag>();
+            _viewContainers = world.GetStash<ViewContainerComponent>();
+            _viewKeyComponents = world.GetStash<ViewKeyComponent>();
         }
         
-        // creates GO and requests view (should be loaded asynchronously in next frames)
-        public Entity BuildViewWithEntity<T>(int idkey) where T : MonoBehaviour, IMonoView, IViewLoadReceiver
-        {           
-            var go = new GameObject();
-            var viewReceiver = go.AddComponent<T>();
-            var entity = _entityFactory.ViewToEntity(viewReceiver);
-            _viewComponents.Set(entity, new() { Value = viewReceiver });
-            
-            _viewInfos.Set(entity, new() { Value = new ViewKey() { IdKey = idkey} });
+        public Entity CreateViewReceiver(string viewId)
+        {
+            var containerData = _viewContainersPool.Get();
+            var entity = _world.CreateEntity();
+            _viewSyncApplier.Apply(entity, containerData.container);            
 
-            var receiverId = _viewReceivers.Register(viewReceiver);
-            _viewRequests.Set(entity, new() { ReceiverId = receiverId });
+            _viewContainers.Add(entity, new(containerData.id));
+            _viewRequests.Add(entity);
 
-            go.name = entity.Id.ToString();
-            
+            var viewKey = new ViewKey() { IdKey = _stringDataDict.StringToKey(viewId)};
+            _viewKeyComponents.Add(entity, new(viewKey));
+
             return entity;
-        }    
+        }
     }
 }

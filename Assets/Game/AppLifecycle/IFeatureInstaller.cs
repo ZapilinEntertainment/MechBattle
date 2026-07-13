@@ -7,7 +7,7 @@ namespace ZE.MechBattle
         void PreloadResources(IObjectResolver globalContainerResolver);
         void InstallDependencies(IContainerBuilder builder);
         void Initialize(IObjectResolver resolver);
-
+        void PostInitialize(IObjectResolver resolver);
 
     }
 }

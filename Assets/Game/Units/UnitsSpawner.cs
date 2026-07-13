@@ -54,7 +54,7 @@ namespace ZE.MechBattle
 
         public SpawnerComponent GetSpawnerData() 
         {
-            var unitId = _stringDataDictionary.GetStringKey(_unitId);
+            var unitId = _stringDataDictionary.StringToKey(_unitId);
 
             return new()
             {

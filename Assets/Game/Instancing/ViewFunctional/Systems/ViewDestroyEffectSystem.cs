@@ -1,7 +1,6 @@
 using VContainer;
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
-using VContainer;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]

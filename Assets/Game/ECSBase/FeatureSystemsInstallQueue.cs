@@ -15,9 +15,6 @@ namespace ZE.MechBattle.Ecs
 
             void AddSystemWithInterface<SystemType, InterfaceType>(SystemGroupOrder order)
                 where SystemType : class, ISystem;
-
-            void AddInitializer<T>(SystemGroupOrder order)
-                where T : class, IInitializer;
         }
 
         internal sealed class ContainerSystemsBinder : ISystemsOperator
@@ -40,12 +37,6 @@ namespace ZE.MechBattle.Ecs
             {
                 builder.Register<SystemType>(Lifetime.Scoped).AsSelf().As<InterfaceType>();
             }
-
-            public void AddInitializer<T>(SystemGroupOrder order)
-                where T : class, IInitializer
-            {
-                builder.Register<T>(Lifetime.Transient);
-            }
         }
 
         internal sealed class SystemsInitializer : ISystemsOperator
@@ -65,12 +56,6 @@ namespace ZE.MechBattle.Ecs
                 where T : class, ISystem
             {
                 resolver.AddSystem<T>(order);
-            }
-
-            public void AddInitializer<T>(SystemGroupOrder order)
-                where T : class, IInitializer
-            {
-                resolver.AddInitializer<T>(order);
             }
         }
 
@@ -93,5 +78,6 @@ namespace ZE.MechBattle.Ecs
         }
 
         public void PreloadResources(IObjectResolver globalContainerResolver) { }
+        public void PostInitialize(IObjectResolver resolver) { }
     }
 }

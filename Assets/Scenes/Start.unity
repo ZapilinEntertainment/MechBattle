@@ -603,6 +603,7 @@ MonoBehaviour:
   - {fileID: 1127800011}
   _mainCamera: {fileID: 330585545}
   _uiRootPrefab: {fileID: 4166187317439397386, guid: 026b89acf922b66409d7e4368ff4dfbf, type: 3}
+  _viewContainerPrefab: {fileID: 3616711230607137784, guid: f203c5d2f9e05b84a9dff0e348fc5357, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

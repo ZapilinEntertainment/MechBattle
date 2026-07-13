@@ -6,5 +6,9 @@ namespace ZE.MechBattle
     public interface IMonoView : IView
     {
         public Transform Transform { get;}    
+
+        #if UNITY_EDITOR
+        public string name { get;set;}
+        #endif
     }
 }

@@ -52,8 +52,6 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<ChangeMovementTargetSystem>(SystemGroupOrder.RegularUpdate);
             installer.AddSystem<HexPortalPathClearSystem>(SystemGroupOrder.RegularUpdate);
             installer.AddSystem<TrianglePathClearSystem>(SystemGroupOrder.RegularUpdate);
-
-            installer.AddInitializer<NavigationMapInitializer>(SystemGroupOrder.Default);
         }
     }
 }

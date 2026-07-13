@@ -28,27 +28,32 @@ namespace ZE.MechBattle
             builder.Register<ExplosionRequestsBuilder>(Lifetime.Scoped);
             builder.Register<DamageRequestsBuilder>(Lifetime.Scoped);
             builder.Register<VfxRequestsFactory>(Lifetime.Scoped);
-            builder.Register<EntityConversionFactory>(Lifetime.Scoped);
 
             builder.Register<DelayApplier>(Lifetime.Scoped);
             builder.Register<TriangularPositionApplier>(Lifetime.Scoped);
             builder.Register<MoveTargetApplier>(Lifetime.Scoped);
             builder.Register<DisposeTagApplier>(Lifetime.Scoped);
             builder.Register<ParentingRelationsApplier>(Lifetime.Scoped);
-
-            builder.Register<ChildEntitiesUpdateHandler>(Lifetime.Scoped);
+            builder.Register<ViewSynchronizationApplier>(Lifetime.Scoped);
 
             builder.Register<MorpehSystemInstallHandler>(Lifetime.Scoped);
 
             foreach (var installer in _localInstallers)
                 installer.InstallDependencies(builder);
+
+
+
+            builder.RegisterEntryPoint<DamageablesInitializer>();
         }
 
         public void Initialize(IObjectResolver resolver)
         {
             foreach (var installer in _localInstallers)
-                installer.Initialize(resolver);
+                installer.Initialize(resolver);            
+        }
 
+        public void PostInitialize(IObjectResolver resolver)
+        {
             var handler = resolver.Resolve<MorpehSystemInstallHandler>();
             handler.ApplySystems();
         }

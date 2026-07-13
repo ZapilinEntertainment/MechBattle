@@ -2,40 +2,43 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using VContainer;
+using VContainer.Unity;
 using Scellecs.Morpeh;
-using Unity.IL2CPP.CompilerServices;
 using R3;
 
 namespace ZE.MechBattle.Ecs {
-    [Il2CppSetOption(Option.NullChecks, false)]
-    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-    [Il2CppSetOption(Option.DivideByZeroChecks, false)]
 
     // create damageable entities from scene decorations
     // (using searching to avoid direct inject in every damageable decoration GO)
-    public sealed class DamageablesInitializer : IInitializer 
+    public sealed class DamageablesInitializer : IInitializable
     {
-        public World World { get; set;}
         private Stash<HealthComponent> _healthComponents;
         private Stash<RegisteredCollidersOwnerTag> _collidersOwnerTag; 
         private Stash<ViewDestroyEffectComponent> _viewDestroyEffect;
+
+        private readonly World _world;
         private readonly CollidersTable _collidersTable;
         private readonly StringDataDictionary _stringDictionary;
-        private readonly EntityConversionFactory _entityFactory;
+        private readonly ViewSynchronizationApplier _viewSyncApplier;
 
         [Inject]
-        public DamageablesInitializer(CollidersTable collidersTable, StringDataDictionary strDict, EntityConversionFactory entityBuilder)
+        public DamageablesInitializer(
+            World world,
+            CollidersTable collidersTable, 
+            StringDataDictionary strDict, 
+            ViewSynchronizationApplier viewSyncApplier)
         {
+            _world = world;
             _collidersTable = collidersTable;
             _stringDictionary = strDict;
-            _entityFactory = entityBuilder;
+            _viewSyncApplier = viewSyncApplier;
         }
 
-        public void OnAwake() 
+        public void Initialize()
         {
-            _healthComponents = World.GetStash<HealthComponent>();
-            _collidersOwnerTag = World.GetStash<RegisteredCollidersOwnerTag>();
-            _viewDestroyEffect = World.GetStash<ViewDestroyEffectComponent>();
+            _healthComponents = _world.GetStash<HealthComponent>();
+            _collidersOwnerTag = _world.GetStash<RegisteredCollidersOwnerTag>();
+            _viewDestroyEffect = _world.GetStash<ViewDestroyEffectComponent>();
 
             var destructibleDecorations = GameObject.FindObjectsByType<DestructibleDecoration>(FindObjectsSortMode.None);
             foreach (var decoration in destructibleDecorations)
@@ -44,12 +47,10 @@ namespace ZE.MechBattle.Ecs {
             }
         }
 
-
-        public void Dispose() { }
-
         private void CreateDamageableEntity(IDamageableView view)
         {
-            var entity = _entityFactory.ViewToEntity(view);
+            var entity = _world.CreateEntity();
+            _viewSyncApplier.Apply(entity, view);
 
             var parameters = view.GetParameters();
             _healthComponents.Set(entity, new() { CurrentValue = parameters.Health, MaxValue = parameters.Health});           
@@ -63,9 +64,11 @@ namespace ZE.MechBattle.Ecs {
             var destroyEffectKey = view.ViewDestroyEffectKey;
             if (!string.IsNullOrEmpty(destroyEffectKey))
             {
-                var encodedKey = _stringDictionary.GetStringKey(destroyEffectKey);
+                var encodedKey = _stringDictionary.StringToKey(destroyEffectKey);
                 _viewDestroyEffect.Set(entity, new() { EffectKey = encodedKey });
             }               
         }
+
+     
     }
 }

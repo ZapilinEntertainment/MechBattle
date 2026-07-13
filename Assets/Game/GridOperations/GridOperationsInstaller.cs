@@ -12,5 +12,7 @@ namespace ZE.MechBattle
         public void Initialize(IObjectResolver resolver) { }
 
         public void PreloadResources(IObjectResolver globalContainerResolver) { }
+
+        public void PostInitialize(IObjectResolver resolver) { }
     }
 }

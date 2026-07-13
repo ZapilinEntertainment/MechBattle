@@ -136,10 +136,6 @@ namespace ZE.MechBattle.Ecs {
 
                 Debug.Log($"{GetType().ToString()} removed {clearList.Count} excess elements");
             }
-            else
-            {
-                Debug.Log($"{GetType().ToString()} overflow");
-            }
         }
 
         public void Dispose() { }

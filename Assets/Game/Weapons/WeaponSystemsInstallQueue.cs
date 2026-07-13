@@ -6,16 +6,19 @@ namespace ZE.MechBattle.Ecs
     {
         protected override void Configure(ISystemsOperator installer)
         {
-            installer.AddSystemWithInterface<WeaponReadyCheckSystem, IWeaponShotCompletenessHandler>(SystemGroupOrder.WeaponSystems);
-            installer.AddSystem<WeaponAimCalculationSystem>(SystemGroupOrder.WeaponSystems);
-            installer.AddSystem<WeaponAimUpdateSystem>(SystemGroupOrder.WeaponSystems);
-            installer.AddSystem<WeaponAimCheckSystem>(SystemGroupOrder.WeaponSystems);
+            installer.AddSystemWithInterface<WeaponReadyCheckSystem, IWeaponShotCompletenessHandler>(SystemGroupOrder.WeaponUpdates);
+            installer.AddSystem<ChildEntityAttackTargetSyncSystem>(SystemGroupOrder.WeaponUpdates);
+            //installer.AddSystem<WeaponAimCalculationSystem>(SystemGroupOrder.WeaponUpdates);
+           // installer.AddSystem<AimCheckSystem>(SystemGroupOrder.WeaponUpdates);
 
-            installer.AddSystem<WeaponAutoShotSystem>(SystemGroupOrder.WeaponSystems);
-            installer.AddSystem<WeaponShotPointCalculationSystem>(SystemGroupOrder.WeaponSystems);
-            installer.AddSystem<WeaponMuzzleEffectCallSystem>(SystemGroupOrder.WeaponSystems);
-            installer.AddSystem<WeaponProjectilesCreateSystem>(SystemGroupOrder.WeaponSystems);
-            installer.AddSystem<WeaponStopFireSystem>(SystemGroupOrder.WeaponSystems);
+            installer.AddSystem<WeaponAutoShotSystem>(SystemGroupOrder.WeaponUpdates);
+            installer.AddSystem<WeaponShotPointCalculationSystem>(SystemGroupOrder.WeaponUpdates);
+            installer.AddSystem<WeaponMuzzleEffectCallSystem>(SystemGroupOrder.WeaponUpdates);
+            installer.AddSystem<WeaponProjectilesCreateSystem>(SystemGroupOrder.WeaponUpdates);
+            installer.AddSystem<WeaponStopFireSystem>(SystemGroupOrder.WeaponUpdates);
+
+            installer.AddSystem<WeaponTowerViewAssignSystem>(SystemGroupOrder.ViewsLoading);
+            installer.AddSystem<WeaponBarrelViewAssignSystem>(SystemGroupOrder.ViewsLoading);
         }
     }
 }

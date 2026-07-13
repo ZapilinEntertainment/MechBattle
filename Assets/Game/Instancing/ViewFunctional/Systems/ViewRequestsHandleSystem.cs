@@ -14,38 +14,40 @@ namespace ZE.MechBattle.Ecs
 
     // reading view requests and launch loading processes
     // why so complicated - host should not freeze when loading own client views
-    // also there can be some visibility restrictions on request-calling systems (there will be a GO, but without real view)
+    // also there can be some visibility restrictions on request-calling systems
+    // (we can easily unload and load poolable views, but left view containers untouched)
     public sealed class ViewRequestsHandleSystem : ISystem
     {
         private struct ViewRequest
         {
-            public Entity Entity;
+            public Entity ReceiveEntity;
             public IViewProvider Provider;
-            public int ViewReceiverKey;
         }
 
         public World World { get; set; }
         private Filter _requestsFilter;
-        private Stash<ViewRequestComponent> _requests;
-        private Stash<ViewInfoComponent> _viewInfos;
+        private Stash<ViewLoadRequestTag> _requests;
+        private Stash<ViewKeyComponent> _viewKeys;
+        private Stash<ViewContainerComponent> _viewContainerComponents;
 
         private readonly ViewProviderFactory _viewProviderFactory;
-        private readonly ViewReceiversList _viewReceivers;
+        private readonly IViewContainersList _viewContainersList;
         private readonly List<ViewRequest> _executableRequests = new();
 
         [Inject]
-        public ViewRequestsHandleSystem(ViewProviderFactory viewProviderFactory, ViewReceiversList viewReceivers)
+        public ViewRequestsHandleSystem(ViewProviderFactory viewProviderFactory, IViewContainersList viewContainersList)
         {
             _viewProviderFactory = viewProviderFactory;
-            _viewReceivers = viewReceivers;
+            _viewContainersList = viewContainersList;
         }
 
         public void OnAwake()
         {
-            _requestsFilter = World.Filter.With<ViewRequestComponent>().Build();
+            _requestsFilter = World.Filter.With<ViewLoadRequestTag>().Without<EntityDisposeTag>().Build();
 
-            _requests = World.GetStash<ViewRequestComponent>();
-            _viewInfos = World.GetStash<ViewInfoComponent>();
+            _requests = World.GetStash<ViewLoadRequestTag>();
+            _viewKeys = World.GetStash<ViewKeyComponent>();
+            _viewContainerComponents = World.GetStash<ViewContainerComponent>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -54,15 +56,14 @@ namespace ZE.MechBattle.Ecs
             {
                 foreach (var entity in _requestsFilter)
                 {
-                    var viewKey = _viewInfos.Get(entity).Value;
+                    var viewKey = _viewKeys.Get(entity).Value;
                     var provider = _viewProviderFactory.GetViewProvider(viewKey);
                     if (provider.IsReadyToProvide)
                     {
                         _executableRequests.Add(new()
                         {
-                            Entity = entity,
+                            ReceiveEntity = entity,
                             Provider = provider,
-                            ViewReceiverKey = _requests.Get(entity).ReceiverId
                         });
                     }                       
                 }
@@ -75,15 +76,8 @@ namespace ZE.MechBattle.Ecs
                 requestsCount = math.min(requestsCount, GameConstants.MAX_VIEW_INSTANTIATIONS_PER_FRAME);
                 for (var i = 0; i < requestsCount; i++) 
                 {
-                    var request = _executableRequests[i];
-                    _requests.Remove(request.Entity);
-
-                    if (!_viewReceivers.TryGetElement(request.ViewReceiverKey, out var receiver))
-                        continue;
-
-                    receiver.OnViewLoaded(request.Provider.GetView());
-
-                    _viewReceivers.Unregister(request.ViewReceiverKey);
+                    var request = _executableRequests[i];                   
+                    ExecuteRequest(request);
                 }
 
                 _executableRequests.Clear();
@@ -93,6 +87,22 @@ namespace ZE.MechBattle.Ecs
         public void Dispose()
         {
             _executableRequests.Clear();
+        }
+
+        private void ExecuteRequest(ViewRequest request)
+        {
+            _requests.Remove(request.ReceiveEntity);
+
+            var containerId = _viewContainerComponents.Get(request.ReceiveEntity).Id;
+            if (!_viewContainersList.TryGetContainer(containerId, out var viewContainer))
+            {
+                #if UNITY_EDITOR
+                UnityEngine.Debug.LogWarning($"no container found by id {containerId}");
+                #endif
+                return;
+            }
+
+            viewContainer.OnViewInstanced(request.Provider.GetView());
         }
     }
 }

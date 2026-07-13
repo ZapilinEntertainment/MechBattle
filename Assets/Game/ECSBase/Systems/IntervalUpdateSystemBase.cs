@@ -27,7 +27,7 @@ namespace ZE.MechBattle.Ecs {
 
             foreach (var entity in _filter)
             {
-                var component = _stash.Get(entity);
+                ref var component = ref _stash.Get(entity);
                 var newValue = component.TimeLeft - deltaTime;
                 if (newValue > 0f)
                 {

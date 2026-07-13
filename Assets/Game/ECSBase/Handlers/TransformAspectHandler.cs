@@ -52,14 +52,24 @@ namespace ZE.MechBattle.Ecs
 
         public void SetRotation(Entity entity, quaternion rotation)
         {
+            i_SetRotation(entity, rotation);
+            _updateTags.Set(entity);
+        }
+
+        private void i_SetRotation(Entity entity, quaternion rotation) =>
             _rotations.Set(entity, new() { Value = rotation });
+
+        public void UpdatePoint(Entity entity, Transform transform)
+        {
+            SetPosition(entity, transform.position);
+            i_SetRotation(entity, transform.rotation);
             _updateTags.Set(entity);
         }
 
         public void MoveToPoint(Entity entity, RigidTransform point)
         {
             SetPosition(entity, point.pos);
-            _rotations.Set(entity, new() {Value = point.rot });
+            i_SetRotation(entity, point.rot);
         }
 
         public void Translate(Entity entity, float3 moveVector, Space space)
@@ -75,25 +85,52 @@ namespace ZE.MechBattle.Ecs
             _updateTags.Set(entity);
         }    
 
+        /// <summary>
+        /// returns true if target rotation reached
+        /// </summary>
+        public bool RotateLocal(Entity entity, quaternion targetRotation, float step )
+        {
+            ref var localRotationComponent = ref _localRotation.Get(entity);
+            localRotationComponent.Value = MathExtensions.RotateTowards(localRotationComponent.Value, targetRotation, step);
+            _updateTags.Set(entity);
+
+            var rotationFinished = math.abs(1 - math.dot(localRotationComponent.Value, targetRotation)) < math.EPSILON;
+            //UnityEngine.Debug.Log($"entity {entity.Id} : {Quaternion.Angle(localRotationComponent.Value, targetRotation)} : {rotationFinished}");
+
+            return rotationFinished;
+        }
+
         public RigidTransform GetPoint(Entity entity, bool randomRotationIfNone = true)
         {
-            var pos = _positions.Get(entity).Value;
+            var parentPositionComponent = _positions.Get(entity, out var isPositionPresented);
             var rotationComponent = _rotations.Get(entity, out var isRotationPresented);
+
+            // NOTE: if creating multiple parented entities without world commit, their component values will be default
+            // but there is notifyable error with rotation: if w == 0, any rotation multiplication will fail
+            isRotationPresented &= (rotationComponent.Value.value.w != 0);
+
             var rotation = isRotationPresented 
                 ? rotationComponent.Value 
                 : (randomRotationIfNone ? (quaternion)UnityEngine.Random.rotationUniform : quaternion.identity);
-            return new(rotation, pos);
+            return new(rotation, isPositionPresented ? parentPositionComponent.Value : float3.zero);
         }
-        
-        public void SyncPositionWithParental(Entity childEntity, Entity parentEntity)
+
+        public void SyncPositionWithParental(Entity childEntity)
+        {
+            var parent = _parentEntities.Get(childEntity, out var parentExists);
+            if (!parentExists)
+                return;
+            SyncPositionWithParent(childEntity, parent.Value);
+        }
+
+        public void SyncPositionWithParent(Entity childEntity, Entity parentEntity)
         {
             SyncComponentsCommand.Execute<TriangularPosComponent>(childEntity, parentEntity, _triangularPositions);
             SyncComponentsCommand.Execute<HexCoordComponent>(childEntity, parentEntity, _hexCoordComponents);
 
             var globalPoint = GetChildWorldPoint(childEntity);
 
-            _positions.Set(childEntity, new() { Value = globalPoint.pos});
-            _rotations.Set(childEntity, new() { Value = globalPoint.rot});
+            MoveToPoint(childEntity, globalPoint);
             // yes, ignore tripos & hexcoord local offset for child
         }
 

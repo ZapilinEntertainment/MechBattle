@@ -2,6 +2,7 @@ using Scellecs.Morpeh;
 using UnityEngine;
 using Unity.Mathematics;
 using Unity.IL2CPP.CompilerServices;
+using TriInspector;
 
 namespace ZE.MechBattle.Ecs {
     [System.Serializable]
@@ -10,6 +11,10 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public struct LocalRotationComponent : IComponent 
     {
-        public quaternion Value;    
+        public quaternion Value;
+
+#if UNITY_EDITOR
+        [ShowInInspector] private float3 valueEuler => math.degrees(math.Euler(Value));
+#endif
     }
 }

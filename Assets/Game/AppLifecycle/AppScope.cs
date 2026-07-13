@@ -14,6 +14,7 @@ namespace ZE.MechBattle.Ecs
     {
         [SerializeField] private Camera _mainCamera;
         [SerializeField] private MechGameUIRoot _uiRootPrefab;
+        [SerializeField] private ViewContainer _viewContainerPrefab;
         private readonly List<IFeatureInstaller> _globalFeatureInstallers = new()
         {
             new WorkersInstaller()
@@ -38,6 +39,8 @@ namespace ZE.MechBattle.Ecs
             builder.Register<VfxManager>(Lifetime.Singleton);
             builder.Register<VfxEffectPlayersFactory>(Lifetime.Singleton);            
             builder.Register<ViewProviderFactory>(Lifetime.Scoped);
+
+            PrepareViews(builder);
 
             foreach (var installer in _globalFeatureInstallers)
             {
@@ -69,6 +72,12 @@ namespace ZE.MechBattle.Ecs
         {
             foreach (var installer in _globalFeatureInstallers) 
                 installer.Initialize(Container);
+        }
+
+        private void PrepareViews(IContainerBuilder builder)
+        {
+            builder.RegisterInstance<ViewContainer>(_viewContainerPrefab);
+            builder.RegisterComponentOnNewGameObject<ViewContainersPool>(Lifetime.Singleton, typeof(ViewContainersPool).ToString()).AsSelf().As<IViewContainersList>();
         }
     }
 }

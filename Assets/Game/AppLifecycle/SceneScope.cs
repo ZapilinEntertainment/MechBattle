@@ -17,6 +17,7 @@ namespace ZE.MechBattle
             new MorpehInstaller(),
             new UnitsInstaller(),
             new GridOperationsInstaller(),
+            new MonoViewFeatureInstaller(),
             new WeaponFeatureInstaller(),
         };
 
@@ -42,7 +43,6 @@ namespace ZE.MechBattle
             builder.Register<AwaitingTokensList>(Lifetime.Scoped);
 
             builder.Register<RestorablesList>(Lifetime.Scoped);
-            builder.Register<ViewReceiversList>(Lifetime.Scoped);
             builder.Register<CollidersTable>(Lifetime.Scoped);                              
 
             var map = new NavigationMap(_mapSettings.ToStruct(), Unity.Collections.Allocator.Persistent);
@@ -60,6 +60,11 @@ namespace ZE.MechBattle
             foreach (var featureInstaller in _featureInstallers)
             {
                 featureInstaller.Initialize(Container);
+            }
+
+            foreach (var featureInstaller in _featureInstallers)
+            {
+                featureInstaller.PostInitialize(Container);
             }
         }
     }

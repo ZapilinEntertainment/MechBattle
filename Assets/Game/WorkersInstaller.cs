@@ -18,9 +18,7 @@ namespace ZE.MechBattle
             RegisterWorker<PlayerInterfaceWorker>();
         }
 
-        public void Initialize(IObjectResolver resolver)
-        {
-
-        }
+        public void Initialize(IObjectResolver resolver) { }
+        public void PostInitialize(IObjectResolver resolver) { }
     }
 }

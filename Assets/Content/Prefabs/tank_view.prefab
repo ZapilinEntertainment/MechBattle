@@ -178,6 +178,37 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &2285285053682453162
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8948375011663860051}
+  m_Layer: 0
+  m_Name: shotPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8948375011663860051
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2285285053682453162}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 2.12}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6569825466417728463}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4821656203000804905
 GameObject:
   m_ObjectHideFlags: 0
@@ -224,14 +255,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ZE.MechBattle.TankView
   _tower: {fileID: 974919391759065064}
-  _trunk: {fileID: 6569825466417728463}
-  _trunkLength: 2
-  _destroyEffectKey: tank_destroy
-  _collider: {fileID: 3025236635644781336}
-  _damageParameters:
-    Health: 0
-  _speed: 5
-  _rotationSpeed: 40
+  _barrel: {fileID: 6569825466417728463}
+  _unitConfig: {fileID: 11400000, guid: cc95fa461e26c9041ab2c442e12e04aa, type: 2}
 --- !u!1 &5361265750071927081
 GameObject:
   m_ObjectHideFlags: 0
@@ -364,7 +389,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6569825466417728463}
   m_Layer: 0
-  m_Name: trunk
+  m_Name: barrel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -384,6 +409,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 493393847834782384}
+  - {fileID: 8948375011663860051}
   m_Father: {fileID: 974919391759065064}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8721916201299017569

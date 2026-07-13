@@ -1,18 +1,16 @@
+using System;
 using System.Threading;
-using System.Threading.Tasks;
-using UnityEngine;
-using Unity.Mathematics;
 using Unity.Collections;
+using UnityEngine;
 using VContainer;
-using Scellecs.Morpeh;
+using VContainer.Unity;
 using ZE.MechBattle.Navigation;
 
 
 namespace ZE.MechBattle.Ecs
 {
-    public class NavigationMapInitializer : IInitializer
+    public class NavigationMapInitializer : IInitializable, IDisposable
     {
-        public World World { get;set; }
         private readonly INavigationMap _map;
         private readonly HexRaycastRequestsList _hexRaycastRequests;
         private readonly CancellationTokenSource _cts = new();
@@ -24,7 +22,7 @@ namespace ZE.MechBattle.Ecs
             _hexRaycastRequests = hexRaycastRequestsList;
         }
 
-        public void OnAwake()
+        public void Initialize()
         {
             using var hexes = GetHexCoordsInRectangleCommand.Execute(_map.Settings, Allocator.Temp);
             foreach (var hexCoord in hexes)
@@ -56,5 +54,7 @@ namespace ZE.MechBattle.Ecs
 
             _map.OnInitialized();
         }
+
+        
     }
 }

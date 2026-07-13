@@ -10,13 +10,6 @@ namespace ZE.MechBattle.Ecs {
     {
         public World World { get; set;}
         private Filter _filter;
-        private readonly ChildEntitiesUpdateHandler _childEntitiesUpdateHandler;
-
-        [Inject]
-        public EntityDisposeSystem(ChildEntitiesUpdateHandler childEntitiesUpdateSystem)
-        {
-            _childEntitiesUpdateHandler = childEntitiesUpdateSystem;
-        }
 
         public void OnAwake() 
         {
@@ -25,8 +18,6 @@ namespace ZE.MechBattle.Ecs {
 
         public void OnUpdate(float deltaTime) 
         {
-            _childEntitiesUpdateHandler.ClearEntitiesWithDisposedParents();
-
 
             if (_filter.IsNotEmpty())
             {

@@ -42,7 +42,7 @@ namespace ZE.MechBattle.Ecs
             _speed = _world.GetStash<MoveSpeedComponent>();
         }
 
-        public Entity Build(string id, RigidTransform point, Entity shooter) => Build(id, _stringDict.GetStringKey(id), point, shooter);
+        public Entity Build(string id, RigidTransform point, Entity shooter) => Build(id, _stringDict.StringToKey(id), point, shooter);
 
         public Entity Build(int idkey, RigidTransform point, Entity shooter) => Build(_stringDict.GetStringByKey(idkey), idkey, point, shooter);
 
@@ -54,7 +54,7 @@ namespace ZE.MechBattle.Ecs
                 return default;
             }
 
-            var entity = _viewFactory.BuildViewWithEntity<SimpleViewContainer>(idkey);
+            var entity = _viewFactory.CreateViewReceiver(projectileData.ViewId);
             _transformAspectHandler.MoveToPoint(entity, point);
 
             _speed.Set(entity,new() { Value = projectileData.Speed});
@@ -64,11 +64,9 @@ namespace ZE.MechBattle.Ecs
             SetVfxExplosionComponent(entity, idkey, projectileData);
             SetExplosionComponent(entity, projectileData);
 
-            var damageParameters = new DamageApplyParameters()
-            {
-                Value = projectileData.Damage
-            };
-            _damage.Set(entity, new() { DamageParameters = damageParameters });     
+            var shooterDamageComponent = _damage.Get(entity, out var haveDamage);
+            if (haveDamage) 
+                _damage.Set(entity, new() { DamageParameters = shooterDamageComponent.DamageParameters });     
 
             return entity;
         }
@@ -78,7 +76,7 @@ namespace ZE.MechBattle.Ecs
              var projectileComponent = new ProjectileComponent() { IdKey = idkey};
             if (!string.IsNullOrEmpty(projectileData.ExplosionEffectKey))
             {
-                var vfxKey = _stringDict.GetStringKey(projectileData.ExplosionEffectKey);
+                var vfxKey = _stringDict.StringToKey(projectileData.ExplosionEffectKey);
                  projectileComponent.ExplosionEffectKey = new VfxKey(vfxKey);
                 _projectiles.Set(entity, projectileComponent);
             }               

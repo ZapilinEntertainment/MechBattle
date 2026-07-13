@@ -2,6 +2,7 @@ using UnityEngine;
 using VContainer;
 using Scellecs.Morpeh;
 using ZE.MechBattle.Ecs;
+using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle
 {
@@ -28,8 +29,8 @@ namespace ZE.MechBattle
             _systemsQueue.Initialize(resolver);
         }
 
-       
+        public void PostInitialize(IObjectResolver resolver) { }
 
-       
+
     }
 }

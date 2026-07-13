@@ -27,12 +27,6 @@ namespace ZE.MechBattle.Ecs
             GetGroup(order).AddSystem(system);
         }
 
-        public void AddInitializer<T>(SystemGroupOrder order) where T : class, IInitializer
-        {
-            var initializer = _resolver.Resolve<T>();
-            GetGroup(order).AddInitializer(initializer);
-        }
-
         private SystemsGroup GetGroup(SystemGroupOrder order)
         {
             if (_systemGroups.TryGetValue(order, out var group))

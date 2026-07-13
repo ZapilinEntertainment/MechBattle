@@ -12,14 +12,12 @@ namespace ZE.MechBattle.Ecs {
         private Filter _filter;
         private Stash<NextPositionComponent> _nextPositions;
         private readonly TransformAspectHandler _handler;
-        private readonly ChildEntitiesUpdateHandler _childEntitiesUpdateHandler;
 
 
         [Inject]
-        public NextPositionApplySystem(SceneFlagsManager flags, TransformAspectHandler handler, ChildEntitiesUpdateHandler childEntitiesUpdateHandler) : base(flags)
+        public NextPositionApplySystem(SceneFlagsManager flags, TransformAspectHandler handler) : base(flags)
         {
             _handler = handler;
-            _childEntitiesUpdateHandler = childEntitiesUpdateHandler;
         }
 
         public override void OnAwake()
@@ -39,8 +37,6 @@ namespace ZE.MechBattle.Ecs {
                 _handler.SetPosition(entity, nextPos);
             }
             _nextPositions.RemoveAll();
-
-            _childEntitiesUpdateHandler.UpdateChildPositions();
         }
     }
 }

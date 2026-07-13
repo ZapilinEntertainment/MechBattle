@@ -10,7 +10,7 @@ namespace ZE.MechBattle
         private Dictionary<int, string> _keyToString = new();
         private int _nextKey = 0;
 
-        public int GetStringKey(string str)
+        public int StringToKey(string str)
         {
             if (_stringToKey.TryGetValue(str, out var key))
                 return key;

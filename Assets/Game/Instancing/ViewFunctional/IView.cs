@@ -5,7 +5,7 @@ namespace ZE.MechBattle
 {
     public interface IView : IDisposable
     {
-        void SetParent(Transform parent);
+        void SetParent(Transform parent);        
     
     }
 }

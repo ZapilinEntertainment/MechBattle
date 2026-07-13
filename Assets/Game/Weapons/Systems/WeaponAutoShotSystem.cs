@@ -10,10 +10,8 @@ namespace ZE.MechBattle.Ecs
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public sealed class WeaponAutoShotSystem : PausableSystem
     {
-        // note: add tower-only and barrel-only filters when needed
-        private Filter _towerBarrelWeapons;
-        private Stash<WeaponTowerAimPrecisionComponent> _towerPrecision;
-        private Stash<WeaponBarrelAimPrecisionComponent> _barrelPrecision;
+        private Filter _filter;
+        private Stash<AimPrecisionComponent> _aimPrecisions;
         private Stash<WeaponFireTag> _fireTags;
 
 
@@ -22,28 +20,23 @@ namespace ZE.MechBattle.Ecs
 
         public override void OnAwake()
         {
-            _towerBarrelWeapons = World.Filter
+            _filter = World.Filter
                 .With<WeaponAutoShotTag>()
-                .With<WeaponTowerComponent>()
-                .With<WeaponBarrelComponent>()
+                .With<AimPrecisionComponent>()
                 .With<ReadyToShotTag>()
                 .Without<EntityDisposeTag>()
                 .Without<WeaponFireTag>()
                 .Build();
 
-            _towerPrecision = World.GetStash<WeaponTowerAimPrecisionComponent>();
-            _barrelPrecision = World.GetStash<WeaponBarrelAimPrecisionComponent>();
             _fireTags = World.GetStash<WeaponFireTag>();
+            _aimPrecisions = World.GetStash<AimPrecisionComponent>();
         }
 
         public override void OnUpdate(float deltaTime)
         {
-            foreach (var weaponEntity in _towerBarrelWeapons)
+            foreach (var weaponEntity in _filter)
             {
-                var towerAimReady = _towerPrecision.Get(weaponEntity).IsInsideLimit;
-                var barrelAimReady = _barrelPrecision.Get(weaponEntity).IsInsideLimit;
-
-                if (towerAimReady & barrelAimReady)
+                if (_aimPrecisions.Get(weaponEntity).IsInsideLimit)
                 {
                     // note: there can be added some delay
                     // also note: fire tag can stay for a some time (ex.: laser weapons)

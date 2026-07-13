@@ -27,16 +27,16 @@ namespace ZE.MechBattle.Views
                 return provider;
             }                
 
+            // TODO: rework to caching int-string asset dictionary
+
             if (!_stringsDict.TryGetStringByKey(key.IdKey, out var strKey))
             {
                 Debug.LogError("view key not registered: " + key.IdKey.ToString());
                 return null;
             }
-
-            // temp?
             var assetKey = strKey;
+            //
 
-            // TODO:
             var assetProvider = _assetsManager.GetAssetProvider(assetKey);
             if (assetProvider.IsReadyToProvideProperty.CurrentValue)
             {

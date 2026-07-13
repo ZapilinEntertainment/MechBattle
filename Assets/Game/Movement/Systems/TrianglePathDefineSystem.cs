@@ -115,8 +115,10 @@ namespace ZE.MechBattle.Ecs
                 }
 
 #if ZE_NAVIGATION_DEBUG
+#pragma warning disable CS0618
                 if (NavigationLogger.Settings.HasFlag(NavigationLogEvents.FlowMapRequest))
                     UnityEngine.Debug.Log($"flow map requested for portal {portalId} index {progressionComponent.StepIndex} at {entity.GetComponent<HexCoordComponent>().Value}");
+#pragma warning restore CS1234
 #endif
 
                 _flowMapSearchRequests.Add(entity, new(portalId));

@@ -19,7 +19,7 @@ namespace ZE.MechBattle.Weapons
         public override void Fire()
         {
             var point = _gunPoint.ToRigidTransform();
-            _requestsFactory.CreateProjectileRequest(_projectileId, point, PlayerEntity);
+            _requestsFactory.CreateProjectileRequestById(_projectileId, point, PlayerEntity);
         }
 
 #if UNITY_EDITOR

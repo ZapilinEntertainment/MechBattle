@@ -13,7 +13,21 @@ MonoBehaviour:
   m_Name: tank
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitConfig
   <CollisionAvoidancePriority>k__BackingField: 1
-  <ViewKey>k__BackingField: tank_view
+  <ViewId>k__BackingField: tank_view
   <TargetSearchRadius>k__BackingField: 600
   <BehaviourKey>k__BackingField: 1
   <MoveSpeed>k__BackingField: 10
+  <MaxPrecisionAberration>k__BackingField: 0
+  _weaponData:
+    Config: {fileID: 11400000, guid: e264f1e7d88a2a24baf9c073915d807b, type: 2}
+    AttachmentProtocol:
+      LocalPosition:
+        x: 0
+        y: 0
+        z: 0
+      LocalRotation:
+        value:
+          x: 0
+          y: 0
+          z: 0
+          w: 0

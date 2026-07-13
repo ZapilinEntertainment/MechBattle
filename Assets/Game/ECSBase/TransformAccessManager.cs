@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Jobs;
@@ -12,7 +11,7 @@ namespace ZE.MechBattle
         public TransformAccessArray TransformsArray => _transformsArray;
         public NativeParallelHashMap<int, int> KeysMap { get;private set; }
 
-        private int _nextId = 0;
+        private int _nextId = 1;
         private int _capacityLimit;
         private int _elementsCount = 0;
         private TransformAccessArray _transformsArray;
@@ -30,7 +29,7 @@ namespace ZE.MechBattle
 
         public int RegisterTransform(Transform transform)
         {
-            var key = Interlocked.Increment(ref _nextId);
+            var key = _nextId++;
             if (_elementsCount == _capacityLimit)
                 ImproveCapacity();
 

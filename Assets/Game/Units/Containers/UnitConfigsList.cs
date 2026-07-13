@@ -22,7 +22,7 @@ namespace ZE.MechBattle
         public void AddConfig(UnitConfig config) 
         { 
             var name = config.name;
-            var id = _stringDictionary.GetStringKey(name);
+            var id = _stringDictionary.StringToKey(name);
             _dictionary.Add(id, config);
         }
 

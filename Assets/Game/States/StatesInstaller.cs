@@ -5,7 +5,6 @@ namespace ZE.MechBattle.Ecs.States
 {
     public class StatesInstaller : IFeatureInstaller
     { 
-        
         public static Dictionary<StateUpdateSystem.StateHandlerKey, StateHandler> PrepareStatesList(IObjectResolver resolver)
         {
             var dict = new Dictionary<StateUpdateSystem.StateHandlerKey, StateHandler>();
@@ -25,6 +24,7 @@ namespace ZE.MechBattle.Ecs.States
 
             AddState<DefaultIdleState>(BehaviourKey.Tank, StateKey.Idle);
             AddState<DefaultMoveState>(BehaviourKey.Tank, StateKey.Move);
+            AddState<DefaultAttackState>(BehaviourKey.Tank, StateKey.Attack);
 
             return dict;
         }
@@ -37,6 +37,7 @@ namespace ZE.MechBattle.Ecs.States
 
             builder.Register<DefaultIdleState>(Lifetime.Transient);
             builder.Register<DefaultMoveState>(Lifetime.Transient);
+            builder.Register<DefaultAttackState>(Lifetime.Transient);
 
             builder.Register<StateUpdateSystem>(Lifetime.Scoped);
         }
@@ -46,5 +47,7 @@ namespace ZE.MechBattle.Ecs.States
            var systemsResolver = resolver.Resolve<MorpehSystemInstallHandler>();
             systemsResolver.AddSystem<StateUpdateSystem>(SystemGroupOrder.RegularUpdate);
         }
+
+        public void PostInitialize(IObjectResolver resolver) { }
     }
 }

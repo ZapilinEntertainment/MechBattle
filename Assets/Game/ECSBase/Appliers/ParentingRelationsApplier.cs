@@ -12,18 +12,34 @@ namespace ZE.MechBattle.Ecs
             public Entity ChildEntity;
             public float3 LocalPos;
             public quaternion LocalRot;
+            public bool RequestParentViewComponent;
         }
 
         private readonly Stash<ParentEntityComponent> _parents;
         private readonly Stash<LocalPositionComponent> _localPositions;
         private readonly Stash<LocalRotationComponent> _localRotation;
+        private readonly Stash<PositionComponent> _position;
+        private readonly Stash<RotationComponent> _rotation;
+
+        private readonly Stash<ViewContainerComponent> _viewContainers;
+        private readonly Stash<AwaitingParentViewLoadingTag> _awaitingViewLoadingTag;
+
+        private readonly TransformAspectHandler _transformHandler;
 
         [Inject]
-        public ParentingRelationsApplier(World world)
+        public ParentingRelationsApplier(World world, TransformAspectHandler transformAspectHandler)
         {
             _parents = world.GetStash<ParentEntityComponent>();
             _localPositions = world.GetStash<LocalPositionComponent>();
             _localRotation = world.GetStash<LocalRotationComponent>();
+
+            _position = world.GetStash<PositionComponent>();
+            _rotation = world.GetStash<RotationComponent>();
+
+            _viewContainers = world.GetStash<ViewContainerComponent>();
+            _awaitingViewLoadingTag = world.GetStash<AwaitingParentViewLoadingTag>();
+
+            _transformHandler = transformAspectHandler;
         }
 
         public void Apply(ExecutionProtocol protocol)
@@ -31,7 +47,12 @@ namespace ZE.MechBattle.Ecs
             _parents.Set(protocol.ChildEntity, new(protocol.ParentEntity));
             _localPositions.Set(protocol.ChildEntity, new() { Value = protocol.LocalPos});
             _localRotation.Set(protocol.ChildEntity, new() { Value = protocol.LocalRot});
+
+            _transformHandler.SyncPositionWithParent(protocol.ChildEntity, protocol.ParentEntity);
+
+            if (protocol.RequestParentViewComponent)
+                _awaitingViewLoadingTag.Set(protocol.ChildEntity);
         }
-    
+
     }
 }

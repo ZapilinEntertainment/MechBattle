@@ -2,26 +2,36 @@ using UnityEngine;
 
 namespace ZE.MechBattle
 {
-    public class TankView : SimpleView, IDamageableView
+    public class TankView : SimpleView, IUnitConfig, IComplexMonoView
     {
         [SerializeField] private Transform _tower;
         [SerializeField] private Transform _barrel;
-        [SerializeField] private float _barrelLength = 2f;
-        [Space]
-        [SerializeField] private string _destroyEffectKey = "tank_destroy";
-        [SerializeField] private Collider _collider;
-        [SerializeField] private DamageableEntityParameters _damageParameters;
-        [Space]
-        [SerializeField] private float _speed = 5f;
-        [SerializeField] private float _rotationSpeed = 30f;
-            
+        [SerializeField] private UnitConfig _unitConfig;
 
-        public string ViewDestroyEffectKey => _destroyEffectKey;
+        public bool TryGetWeaponData(out WeaponData weaponData) => _unitConfig.TryGetWeaponData(out weaponData);
 
-        public int[] GetColliderIds() => new int[1] {_collider.GetInstanceID()};
+        public bool TryGetPartByKey(ViewPartKey key, out IViewPart viewPart)
+        {
+            if (key.Type == ViewPartType.Tower)
+            {
+                viewPart = new ViewPartContainer(_tower);
+                return true;
+            }
 
-        public DamageableEntityParameters GetParameters() => _damageParameters;
-        public float Speed => _speed;
-        public float RotationSpeed => _rotationSpeed;
+            if (key.Type == ViewPartType.Barrel)
+            {
+                viewPart = new ViewPartContainer(_barrel);
+                return true;
+            }
+
+            viewPart = null;
+            return false;
+        }
+
+        public BehaviourKey BehaviourKey => _unitConfig.BehaviourKey;
+        public MovementCollisionAvoidancePriority CollisionAvoidancePriority => _unitConfig.CollisionAvoidancePriority;
+        public float TargetSearchRadius => _unitConfig.TargetSearchRadius;
+        public float MoveSpeed => _unitConfig.MoveSpeed;
+        public float MaxPrecisionAberration => 0.02f;
     }
 }

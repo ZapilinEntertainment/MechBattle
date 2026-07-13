@@ -22,10 +22,14 @@ namespace ZE.MechBattle
             _requests = _world.GetStash<ProjectileBuildRequest>();
         }
 
-        public void CreateProjectileRequest(string id, RigidTransform point, Entity shooter) =>
-            CreateProjectileRequest(_stringDict.GetStringKey(id), point, shooter);
+        public void CreateProjectileRequestById(string id, RigidTransform point, Entity shooter)
+        {
+            var idKey = _stringDict.StringToKey(id);
+            CreateProjectileRequestByKey(idKey, point, shooter);
+        }
+            
 
-        public void CreateProjectileRequest(int idKey, RigidTransform point, Entity shooter)
+        public void CreateProjectileRequestByKey(int idKey, RigidTransform point, Entity shooter)
         {
             var requestEntity = _world.CreateEntity();
             _requests.Set(requestEntity, new() { Point = point, IdKey = idKey, Shooter = shooter });

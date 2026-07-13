@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using VContainer;
+using VContainer.Unity;
 using Scellecs.Morpeh;
 using ZE.MechBattle.Navigation;
 
@@ -44,11 +45,15 @@ namespace ZE.MechBattle.Ecs
             builder.Register<FlowMapAssignmentList>(Lifetime.Scoped);
 
             builder.Register<IMovementCellsMap, MovementCellsMap>(Lifetime.Scoped).AsSelf();
+
+            builder.RegisterEntryPoint<NavigationMapInitializer>();
         }
 
         public void Initialize(IObjectResolver resolver)
         {
             _systemsConfigurator.Initialize(resolver);
         }
+
+        public void PostInitialize(IObjectResolver resolver) { }
     }
 }

@@ -9,53 +9,55 @@ namespace ZE.MechBattle
     public class UnitsFactory
     {
         private readonly World _world;
-        private readonly EntityConversionFactory _entityConversionFactory;
         private readonly TransformAspectHandler _transformAspectHandler;
         private readonly MonoViewFactory _viewFactory;
         private readonly StringDataDictionary _stringDataDictionary;
         private readonly StatesApplier _statesApplier;
+        private readonly ViewSynchronizationApplier _viewSyncApplier;
         private readonly IUnitConfigsList _unitConfigs;
+        private readonly WeaponFactory _weaponFactory;
 
         private readonly Stash<MoveSpeedComponent> _moveSpeeds;
-        private readonly Stash<RotationSpeedComponent> _rotationSpeeds;
         private readonly Stash<NavigationAgentComponent> _navigationAgents;
         private readonly Stash<MovementCollisionAvoidanceComponent> _movementCollisionAvoidanceComponents;
         private readonly Stash<TargetSearchRadiusComponent> _targetSearchRadiusComponents;
+        private readonly Stash<AimPrecisionComponent> _aimPrecisionComponents;
+        private readonly Stash<AttackDistanceComponent> _attackDistanceComponents;
 
         [Inject]
         public UnitsFactory(
-            EntityConversionFactory entityFactory, 
             World world, 
             TransformAspectHandler transformAspectHandler,
             MonoViewFactory viewFactory,
             StringDataDictionary stringDataDictionary,
             StatesApplier statesApplier,
-            IUnitConfigsList unitConfigsList)
+            ViewSynchronizationApplier viewSyncApplier,
+            IUnitConfigsList unitConfigsList,
+            WeaponFactory weaponFactory)
         {
             _world = world;
-            _entityConversionFactory = entityFactory;
             _transformAspectHandler = transformAspectHandler;
             _unitConfigs = unitConfigsList;
             _viewFactory = viewFactory;
             _stringDataDictionary = stringDataDictionary;
             _statesApplier = statesApplier;
+            _weaponFactory = weaponFactory;
+            _viewSyncApplier = viewSyncApplier;
 
             _moveSpeeds = world.GetStash<MoveSpeedComponent>();
-            _rotationSpeeds = world.GetStash<RotationSpeedComponent>();
             _navigationAgents = world.GetStash<NavigationAgentComponent>();
             _movementCollisionAvoidanceComponents = world.GetStash<MovementCollisionAvoidanceComponent>();
             _targetSearchRadiusComponents = world.GetStash<TargetSearchRadiusComponent>();
+            _aimPrecisionComponents = world.GetStash<AimPrecisionComponent>();
+            _attackDistanceComponents = world.GetStash<AttackDistanceComponent>();
         }
 
-        // todo: rework to universal version
+        // todo: rework to generic version
         public Entity Build(TankView view)
         {
-            var entity = _entityConversionFactory.ViewToEntity(view);
-            _navigationAgents.Add(entity);
-
-            _moveSpeeds.Set(entity, new() { Value = view.Speed});
-            _rotationSpeeds.Set(entity, new() { Value = view.RotationSpeed });  
-            _movementCollisionAvoidanceComponents.Add(entity, new(MovementCollisionAvoidancePriority.SmallUnit));
+            var entity = _world.CreateEntity();
+            _viewSyncApplier.Apply(entity, view);
+            Setup(entity, view);
 
             return entity;
         }
@@ -68,20 +70,40 @@ namespace ZE.MechBattle
                 return default;
             }
 
-            var viewKeyId = _stringDataDictionary.GetStringKey(unitConfig.ViewKey);
-            var entity = _viewFactory.BuildViewWithEntity<SimpleViewContainer>(viewKeyId);
+            var entity = _viewFactory.CreateViewReceiver(unitConfig.ViewId);
             _transformAspectHandler.MoveToPoint(entity, point);
 
-            _navigationAgents.Add(entity);
-            _movementCollisionAvoidanceComponents.Add(entity, new(unitConfig.CollisionAvoidancePriority));
-
-            _targetSearchRadiusComponents.Add(entity, new(unitConfig.TargetSearchRadius));
-
-            _statesApplier.ApplyState(entity, unitConfig.BehaviourKey, Ecs.States.StateKey.Idle);
-            
-            _moveSpeeds.Set(entity, new() {Value = unitConfig.MoveSpeed });
+            Setup(entity, unitConfig);           
+               
             return entity;
         }
     
+
+        private void Setup(Entity entity, IUnitConfig config) 
+        {
+            _navigationAgents.Add(entity);
+            _movementCollisionAvoidanceComponents.Add(entity, new(config.CollisionAvoidancePriority));
+
+            _targetSearchRadiusComponents.Add(entity, new(config.TargetSearchRadius));
+
+            _statesApplier.ApplyState(entity, config.BehaviourKey, Ecs.States.StateKey.Idle);
+
+            _moveSpeeds.Set(entity, new() { Value = config.MoveSpeed });
+
+            TryAttachWeapon(entity, config);
+
+        }
+
+        private void TryAttachWeapon(Entity unitEntity, IUnitConfig config)
+        {
+            if (!config.TryGetWeaponData(out var weaponData))
+                return;
+
+            var weaponEntity = _weaponFactory.CreateUnitWeapon(unitEntity, weaponData.Config, weaponData.AttachmentProtocol); 
+            _aimPrecisionComponents.Add(weaponEntity, new(config.MaxPrecisionAberration) );
+
+            var weaponConfig = weaponData.Config;
+            _attackDistanceComponents.Set(unitEntity, new(recommended: weaponConfig.RecommendedRange, max: weaponConfig.MaxRange));
+        }
     }
 }

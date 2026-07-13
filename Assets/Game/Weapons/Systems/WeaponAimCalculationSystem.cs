@@ -13,15 +13,14 @@ namespace ZE.MechBattle.Ecs {
         private Filter _aimingTowerWeaponsFilter;
         private Filter _aimingbarrelWeaponsFilter;
         private Filter _idleTowerWeaponsFilter;
-        private Filter _idlebarrelWeaponsFilter;
+        private Filter _idleBarrelWeaponsFilter;
 
         private Stash<AttackTargetComponent> _attackTargetComponent;
         private Stash<PositionComponent> _positions;
         private Stash<RotationComponent> _rotations;
-        private Stash<WeaponTowerAimTargetComponent> _towerAims;
-        private Stash<WeaponBarrelAimTargetComponent> _barrelAims;
+        private Stash<LocalTargetRotationComponent> _aims;
         private Stash<WeaponTowerComponent> _weaponTowers;
-        private Stash<WeaponBarrelComponent> _weaponbarrels;
+        private Stash<WeaponBarrelComponent> _weaponBarrels;
         private readonly TransformAspectHandler _transformAspectHandler;
 
         [Inject]
@@ -44,18 +43,17 @@ namespace ZE.MechBattle.Ecs {
             _idleTowerWeaponsFilter = World.Filter
                 .With<WeaponTowerStowTag>()
                 .Without<AttackTargetComponent>().Build();
-            _idlebarrelWeaponsFilter = World.Filter
+            _idleBarrelWeaponsFilter = World.Filter
                 .With<WeaponBarrelStowTag>()
                 .Without<AttackTargetComponent>().Build();
 
             _attackTargetComponent = World.GetStash<AttackTargetComponent>();   
             _positions = World.GetStash<PositionComponent>();
             _rotations = World.GetStash<RotationComponent>();
-            _towerAims = World.GetStash<WeaponTowerAimTargetComponent>();
-            _barrelAims = World.GetStash<WeaponBarrelAimTargetComponent>();
+            _aims = World.GetStash<LocalTargetRotationComponent>();
 
             _weaponTowers = World.GetStash<WeaponTowerComponent>();
-            _weaponbarrels = World.GetStash<WeaponBarrelComponent>();
+            _weaponBarrels = World.GetStash<WeaponBarrelComponent>();
         }
 
         public override void OnUpdate(float deltaTime) 
@@ -64,69 +62,58 @@ namespace ZE.MechBattle.Ecs {
 
             foreach (var weaponEntity in _aimingTowerWeaponsFilter)
             {
+                var towerEntity = _weaponTowers.Get(weaponEntity).TowerEntity;
                 var targetEntity = _attackTargetComponent.Get(weaponEntity).Entity;
                 var targetPos = _positions.Get(targetEntity).Value;
-                
-                var weaponLafetPos = _positions.Get(weaponEntity).Value;
-                var normalizedTargetDir = math.normalize(targetPos - weaponLafetPos);
 
-                _towerAims.Set(weaponEntity, new() { RadianValue = GetYaw(normalizedTargetDir)});
+                var weaponPoint = _transformAspectHandler.GetPoint(weaponEntity);
+                var targetLocalPos = MathExtensions.InverseTransformPoint(targetPos, weaponPoint.pos, weaponPoint.rot);
+                var normalizedTargetDir = math.normalize(new float3(targetLocalPos.x, 0f, targetLocalPos.z));
+
+                var targetRotation = quaternion.LookRotation(normalizedTargetDir, math.up());
+                _aims.Set(towerEntity, new() { Value = targetRotation });
             }
 
             foreach (var weaponEntity in _aimingbarrelWeaponsFilter)
             {
+                var barrelEntity = _weaponBarrels.Get(weaponEntity).BarrelEntity;
                 var targetEntity = _attackTargetComponent.Get(weaponEntity).Entity;
                 var targetPos = _positions.Get(targetEntity).Value;
 
-                var weaponLafetPos = _positions.Get(weaponEntity).Value;
-                var targetDir = targetPos - weaponLafetPos;
-                var barrelComponent = _weaponbarrels.Get(weaponEntity);
+                var towerComponent = _weaponTowers.Get(weaponEntity, out var hasTower);
+                var parentPoint = _transformAspectHandler.GetPoint(hasTower ? towerComponent.TowerEntity : weaponEntity);                
+                var localTargetPos = MathExtensions.InverseTransformPoint(targetPos, parentPoint.pos, parentPoint.rot);
 
-                if (!barrelComponent.YRotationPossible)
+                float3 normalizedTargetDir;
+                if (hasTower)
                 {
                     // only up\down
-                    var pitch = GetPitch(math.normalize(targetDir));
-                    _barrelAims.Set(weaponEntity, new() { RadianValueV2 = new float2(pitch, 0f) });
+                    var groundVectorLength = math.length(localTargetPos.xz);
+                    normalizedTargetDir = math.normalize(new float3(0f, localTargetPos.y, groundVectorLength));
                 }
                 else
                 {
                     //full aim
-                    var pitchYaw = GetPitchYawRotation(targetDir);
-                    _barrelAims.Set(weaponEntity, new() { RadianValueV2 = pitchYaw });
+                    normalizedTargetDir = math.normalize(localTargetPos);
                 }
+
+                var targetRotation = quaternion.LookRotation(normalizedTargetDir, math.up());
+                _aims.Set(barrelEntity, new() { Value = targetRotation});               
             }
 
 
 
             foreach (var weaponEntity in _idleTowerWeaponsFilter)
             {
-                _weaponTowers.Get(weaponEntity).RotationRadianValue = 0f;
+                var towerEntity = _weaponTowers.Get(weaponEntity).TowerEntity;
+                _aims.Set(towerEntity, new() { Value = quaternion.identity});
             }
 
-            foreach (var weaponEntity in _idlebarrelWeaponsFilter)
+            foreach (var weaponEntity in _idleBarrelWeaponsFilter)
             {
-                _weaponbarrels.Get(weaponEntity).RadianRotation = float2.zero;
+                var barrelEntity = _weaponBarrels.Get(weaponEntity).BarrelEntity;
+                _aims.Set(barrelEntity, new() { Value = quaternion.identity });
             }
-        }
-
-
-
-        // generated by GoogleAI
-        private float2 GetPitchYawRotation(float3 targetDir)
-        {
-            float3 normalizedDir = math.normalize(targetDir);            
-            return new float2(GetPitch(normalizedDir), GetYaw(normalizedDir));
-        }
-
-        private float GetPitch(float3 normalizedDir)
-        {
-            float xzLength = math.sqrt(normalizedDir.x * normalizedDir.x + normalizedDir.z * normalizedDir.z);
-            return math.atan2(normalizedDir.y, xzLength);            
-        }
-
-        private float GetYaw(float3 normalizedDir)
-        {
-            return math.atan2(normalizedDir.x, normalizedDir.z);
         }
     }
 }
