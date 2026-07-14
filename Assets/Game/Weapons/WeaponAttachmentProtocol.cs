@@ -7,6 +7,8 @@ namespace ZE.MechBattle
     public struct WeaponAttachmentProtocol
     {
         public float3 LocalPosition;
-        public quaternion LocalRotation;    
+        public float3 LocalRotationDegrees;    
+
+        public quaternion LocalRotation => quaternion.Euler(math.radians(LocalRotationDegrees));
     }
 }

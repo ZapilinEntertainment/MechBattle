@@ -12,7 +12,7 @@ namespace ZE.MechBattle.Ecs
     {
 
         [Inject]
-        public WeaponBarrelViewAssignSystem(ViewSynchronizationApplier viewPartSyncApplier, IViewContainersList viewContainersList) : base(viewPartSyncApplier, viewContainersList)
+        public WeaponBarrelViewAssignSystem(ViewSynchronizationApplier viewPartSyncApplier, IViewContainersPool viewContainersList) : base(viewPartSyncApplier, viewContainersList)
         {
         }
     }

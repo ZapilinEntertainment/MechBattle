@@ -59,6 +59,20 @@ namespace ZE.MechBattle.Ecs
         private void i_SetRotation(Entity entity, quaternion rotation) =>
             _rotations.Set(entity, new() { Value = rotation });
 
+        public void SetLocalRotation(Entity entity, quaternion localRotation)
+        {
+            var parentComponent = _parentEntities.Get(entity, out var parentExists);
+            if (!parentExists)
+            {
+                SetRotation(entity, localRotation);
+                return;
+            }
+
+            var localPositionComponent = _localPositions.Get(entity, out var localPosExists);
+            _localRotation.Set(entity, new() { Value = localRotation});
+            SyncPositionWithParent(entity, parentComponent.Value, localPosExists ? localPositionComponent.Value : float3.zero, localRotation);
+        }
+
         public void UpdatePoint(Entity entity, Transform transform)
         {
             SetPosition(entity, transform.position);
@@ -115,7 +129,7 @@ namespace ZE.MechBattle.Ecs
             return new(rotation, isPositionPresented ? parentPositionComponent.Value : float3.zero);
         }
 
-        public void SyncPositionWithParental(Entity childEntity)
+        public void SyncPositionWithParent(Entity childEntity)
         {
             var parent = _parentEntities.Get(childEntity, out var parentExists);
             if (!parentExists)
@@ -128,18 +142,31 @@ namespace ZE.MechBattle.Ecs
             SyncComponentsCommand.Execute<TriangularPosComponent>(childEntity, parentEntity, _triangularPositions);
             SyncComponentsCommand.Execute<HexCoordComponent>(childEntity, parentEntity, _hexCoordComponents);
 
-            var globalPoint = GetChildWorldPoint(childEntity);
-
-            MoveToPoint(childEntity, globalPoint);
-            // yes, ignore tripos & hexcoord local offset for child
-        }
-
-        private RigidTransform GetChildWorldPoint(Entity childEntity)
-        {
             var localPos = _localPositions.Get(childEntity).Value;
             var localRot = _localRotation.Get(childEntity).Value;
 
-            var parentEntity = _parentEntities.Get(childEntity).Value;
+            CalculateGlobalPos(childEntity, parentEntity, localPos, localRot);
+            
+        }
+
+        // yes, ignore tripos & hexcoord local offset for child
+
+        public void SyncPositionWithParent(Entity childEntity, Entity parentEntity, float3 localPos, quaternion localRot)
+        {
+            SyncComponentsCommand.Execute<TriangularPosComponent>(childEntity, parentEntity, _triangularPositions);
+            SyncComponentsCommand.Execute<HexCoordComponent>(childEntity, parentEntity, _hexCoordComponents);
+
+            CalculateGlobalPos(childEntity, parentEntity, localPos, localRot);
+        }
+
+        private void CalculateGlobalPos(Entity entity, Entity parent, float3 localPos, quaternion localRot) 
+        {
+            var globalPoint = LocalToWorld(localPos, localRot, parent);
+            MoveToPoint(entity, globalPoint);
+        }
+
+        private RigidTransform LocalToWorld(float3 localPos, quaternion localRot, Entity parentEntity)
+        {
             var parentPoint = GetPoint(parentEntity, randomRotationIfNone: false);
 
             var globalPos = parentPoint.pos + math.mul(parentPoint.rot, localPos);

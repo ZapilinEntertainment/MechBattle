@@ -25,7 +25,6 @@ namespace ZE.MechBattle.Ecs
         public void Apply(Entity entity, IMonoView view)
         {
             var transform = view.Transform;
-            transform.SetParent(null);
             var key = _transformAccessManager.RegisterTransform(transform);
             _transforms.Set(entity, new() { Key = key });
             _transformAspectHandler.UpdatePoint(entity, transform);

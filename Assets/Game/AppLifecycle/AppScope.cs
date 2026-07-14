@@ -77,7 +77,7 @@ namespace ZE.MechBattle.Ecs
         private void PrepareViews(IContainerBuilder builder)
         {
             builder.RegisterInstance<ViewContainer>(_viewContainerPrefab);
-            builder.RegisterComponentOnNewGameObject<ViewContainersPool>(Lifetime.Singleton, typeof(ViewContainersPool).ToString()).AsSelf().As<IViewContainersList>();
+            builder.RegisterComponentOnNewGameObject<ViewContainersPool>(Lifetime.Singleton, typeof(ViewContainersPool).ToString()).AsSelf().As<IViewContainersPool>();
         }
     }
 }

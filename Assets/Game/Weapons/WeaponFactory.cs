@@ -68,8 +68,6 @@ namespace ZE.MechBattle.Ecs
                 LocalRot = attachmentProtocol.LocalRotation,
                 RequestParentViewComponent = true
             });
-            weaponEntity.SetComponent<LocalTargetRotationComponent>(new() { Value = quaternion.AxisAngle(math.up(), math.radians(90f))});
-            weaponEntity.SetComponent<RotationSpeedComponent>(new(math.radians(1f)));
 
 
             if (weaponConfig.TryGetProjectileId(out var projectileId)) 

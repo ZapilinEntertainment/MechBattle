@@ -24,6 +24,8 @@ namespace ZE.MechBattle.Develop
         private Stash<LocalTargetRotationComponent> _localTargetRotationStash;
         private Stash<RotationSpeedComponent> _rotationSpeedStash;
         private Stash<TransformUpdatedTag> _transformUpdateTags;
+        private Stash<EntityDisposeTag> _disposeTags;
+        private Stash<DisposableViewComponent> _disposableViews;
 
         [ShowInInspector, ReadOnly] private Entity _tankEntity;
         [ShowInInspector, ReadOnly] private Entity _weaponEntity;
@@ -45,6 +47,8 @@ namespace ZE.MechBattle.Develop
             _localTargetRotationStash = world.GetStash<LocalTargetRotationComponent>();
             _rotationSpeedStash = world.GetStash<RotationSpeedComponent>();
             _transformUpdateTags = world.GetStash<TransformUpdatedTag>();
+            _disposeTags = world.GetStash<EntityDisposeTag>();
+            _disposableViews = world.GetStash<DisposableViewComponent>();
         }
 
         private void Start()
@@ -53,6 +57,7 @@ namespace ZE.MechBattle.Develop
 
             _tankEntity = _world.CreateEntity();
             _viewSyncApplier.Apply(_tankEntity, view);
+            _disposableViews.Set(_tankEntity, new(view.gameObject));
 
             _unitConfig.TryGetWeaponData(out var weaponData);
 
@@ -95,7 +100,6 @@ namespace ZE.MechBattle.Develop
 
             var rotationSpeed = math.radians( towerAttachmentProtocol.RotationSpeedDegrees);
             var barrelRotationSpeed = math.radians(barrelAttachmentProtocol.RotationSpeedDegrees);
-            _rotationSpeedStash.Set(_weaponEntity, new(rotationSpeed));
             _rotationSpeedStash.Set(_towerEntity, new(rotationSpeed));
             _rotationSpeedStash.Set(_barrelEntity, new(barrelRotationSpeed));
         }
@@ -111,18 +115,30 @@ namespace ZE.MechBattle.Develop
                     case TargetEntity.Barrel: targetEntity = _barrelEntity; break;
                 default: targetEntity = _tankEntity; break;
             }
-            var quaternion = Quaternion.Euler(_targetRotation);
-            if (_changingEntity != TargetEntity.Tank)
-                _localTargetRotationStash.Set(targetEntity, new() { Value = quaternion});
-            else 
-                _transformHandler.SetRotation(_tankEntity, quaternion);
 
+            var quaternion = Quaternion.Euler(_targetRotation);
+            if (_rotationSpeedStash.Has(targetEntity))
+            {
+                _localTargetRotationStash.Set(targetEntity, new() { Value = quaternion });
+            }                
+            else
+            {
+                _transformHandler.SetLocalRotation(targetEntity, quaternion);
+            }
+            _world.Commit();
         }
 
         [Button(nameof(UpdateTransforms)), EnableInPlayMode]
         private void UpdateTransforms()
         {
             _transformUpdateTags.Set(_tankEntity);
+        }
+
+        [Button(nameof(ResetTank)), EnableInPlayMode]
+        private void ResetTank()
+        {
+            _disposeTags.Set(_tankEntity);
+            Start();
         }
     }
 }

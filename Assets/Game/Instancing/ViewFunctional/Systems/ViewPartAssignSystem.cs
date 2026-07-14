@@ -17,10 +17,10 @@ namespace ZE.MechBattle.Ecs {
         private Filter _filter;
         private Stash<ViewContainerComponent> _viewContainers;
         
-        private readonly IViewContainersList _viewContainersList;
+        private readonly IViewContainersPool _viewContainersList;
 
         [Inject]
-        public ViewPartAssignSystem(ViewSynchronizationApplier viewSynchronizationApplier, IViewContainersList viewContainersList)
+        public ViewPartAssignSystem(ViewSynchronizationApplier viewSynchronizationApplier, IViewContainersPool viewContainersList)
         {
             ViewSyncApplier = viewSynchronizationApplier;
             _viewContainersList = viewContainersList;

@@ -31,11 +31,11 @@ namespace ZE.MechBattle.Ecs
         private Stash<ViewContainerComponent> _viewContainerComponents;
 
         private readonly ViewProviderFactory _viewProviderFactory;
-        private readonly IViewContainersList _viewContainersList;
+        private readonly IViewContainersPool _viewContainersList;
         private readonly List<ViewRequest> _executableRequests = new();
 
         [Inject]
-        public ViewRequestsHandleSystem(ViewProviderFactory viewProviderFactory, IViewContainersList viewContainersList)
+        public ViewRequestsHandleSystem(ViewProviderFactory viewProviderFactory, IViewContainersPool viewContainersList)
         {
             _viewProviderFactory = viewProviderFactory;
             _viewContainersList = viewContainersList;

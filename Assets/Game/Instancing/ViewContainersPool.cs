@@ -5,7 +5,7 @@ using UnityEngine.Pool;
 
 namespace ZE.MechBattle.Views
 {
-    public class ViewContainersPool : MonoBehaviour, IViewContainersList
+    public class ViewContainersPool : MonoBehaviour, IViewContainersPool
     {
         private ViewContainer _prefab;
         private ObjectPool<ViewContainer> _pool;
@@ -27,13 +27,18 @@ namespace ZE.MechBattle.Views
             return (container, id);
         }
 
-        public void Release(int id, ViewContainer container)
+        public void Release(int id)
         {
-            _pool.Release(container);
+            if (!_activeContainers.TryGetValue(id, out var viewContainer))
+                return;
+
             _activeContainers.Remove(id);
+
+            viewContainer.View?.Dispose();
+            _pool.Release(viewContainer);
         }
 
-        bool IViewContainersList.TryGetContainer(int id, out IViewContainer container)
+        bool IViewContainersPool.TryGetContainer(int id, out IViewContainer container)
         {
             if (TryGetContainer(id, out var rawContainer))
             {

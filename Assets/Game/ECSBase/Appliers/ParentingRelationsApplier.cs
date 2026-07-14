@@ -48,7 +48,7 @@ namespace ZE.MechBattle.Ecs
             _localPositions.Set(protocol.ChildEntity, new() { Value = protocol.LocalPos});
             _localRotation.Set(protocol.ChildEntity, new() { Value = protocol.LocalRot});
 
-            _transformHandler.SyncPositionWithParent(protocol.ChildEntity, protocol.ParentEntity);
+            _transformHandler.SyncPositionWithParent(protocol.ChildEntity, protocol.ParentEntity, protocol.LocalPos, protocol.LocalRot);
 
             if (protocol.RequestParentViewComponent)
                 _awaitingViewLoadingTag.Set(protocol.ChildEntity);

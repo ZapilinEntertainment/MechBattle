@@ -28,14 +28,15 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<ChildPointsUpdateSystem>(SystemGroupOrder.TransformUpdates);
             installer.AddSystem<TransformsSyncSystem>(SystemGroupOrder.TransformUpdates);
 
-            installer.AddSystem<ViewDestroyEffectSystem>(SystemGroupOrder.PostUpdate);            
+            installer.AddSystem<EntityDestructionDelaySystem>(SystemGroupOrder.DisposeTagsSharing);
+            installer.AddSystem<HierarchyDisposeSyncSystem>(SystemGroupOrder.DisposeTagsSharing);
 
-            installer.AddSystem<EntityDestructionDelaySystem>(SystemGroupOrder.Final);
-            installer.AddSystem<HierarchyDisposeSyncSystem>(SystemGroupOrder.Final);
-            installer.AddSystem<TransformsClearSystem>(SystemGroupOrder.Final);
-            installer.AddSystem<CollidersClearSystem>(SystemGroupOrder.Final);
-            installer.AddSystem<EntityDisposeSystem>(SystemGroupOrder.Final);
-            installer.AddSystem<UpdateTagsClearSystem>(SystemGroupOrder.Final);
+            installer.AddSystem<ViewDestroyEffectSystem>(SystemGroupOrder.DisposedObjectsOperations);            
+            installer.AddSystem<TransformsClearSystem>(SystemGroupOrder.DisposedObjectsOperations);
+            installer.AddSystem<CollidersClearSystem>(SystemGroupOrder.DisposedObjectsOperations);
+
+            installer.AddSystem<EntityDisposeSystem>(SystemGroupOrder.Dispose);
+            installer.AddSystem<UpdateTagsClearSystem>(SystemGroupOrder.Dispose);
         }
     }
 }
