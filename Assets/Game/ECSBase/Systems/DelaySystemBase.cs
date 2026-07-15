@@ -13,7 +13,7 @@ namespace ZE.MechBattle.Ecs
         private Filter _filter;
         protected Stash<T> _stash;
 
-        public void OnAwake()
+        public virtual void OnAwake()
         {
             _filter = World.Filter.With<T>().Build();
             _stash = World.GetStash<T>();
