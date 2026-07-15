@@ -64,7 +64,7 @@ namespace ZE.MechBattle.Ecs
             SetVfxExplosionComponent(entity, idkey, projectileData);
             SetExplosionComponent(entity, projectileData);
 
-            var shooterDamageComponent = _damage.Get(entity, out var haveDamage);
+            var shooterDamageComponent = _damage.Get(shooter, out var haveDamage);
             if (haveDamage) 
                 _damage.Set(entity, new() { DamageParameters = shooterDamageComponent.DamageParameters });     
 

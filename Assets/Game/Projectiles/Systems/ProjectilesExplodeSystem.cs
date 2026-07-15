@@ -137,6 +137,7 @@ namespace ZE.MechBattle.Ecs {
                     damageParameters: damageComponent.DamageParameters);
                 //UnityEngine.Debug.Log("request damage: " + damageComponent.DamageParameters.Value.ToString());
             }
+            //else UnityEngine.Debug.Log("not a damageable projectile");
         }
     }
 }

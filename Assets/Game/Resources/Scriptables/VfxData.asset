@@ -14,6 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ZE.MechBattle.VfxData
   _data:
     _serializedList:
+    - Key: tank_shot
+      Value:
+        Mode: 1
+        Prefab: {fileID: 4935063551114643291, guid: b2668637a98d3074eac62b5b59fcf178, type: 3}
+        EmitCount: 10
+        MaxInstancesCount: 0
+        PlayDuration: 2
     - Key: test_explosion
       Value:
         Mode: 0

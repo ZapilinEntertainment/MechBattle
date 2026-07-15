@@ -34,7 +34,7 @@ namespace ZE.MechBattle.Ecs {
             foreach (var entity in _filter)
             {
                 var containerId = _viewContainers.Get(entity).Id;
-                UnityEngine.Debug.Log($"entity {entity.Id}, container: {containerId}, {_viewContainersPool.TryGetContainer(containerId, out _)}");
+                //UnityEngine.Debug.Log($"entity {entity.Id}, container: {containerId}, {_viewContainersPool.TryGetContainer(containerId, out _)}");
                 if (!_viewContainersPool.TryGetContainer(containerId, out var viewContainer))
                     continue;
 

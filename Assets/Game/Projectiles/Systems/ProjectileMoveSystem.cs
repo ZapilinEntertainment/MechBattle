@@ -78,8 +78,6 @@ namespace ZE.MechBattle.Ecs {
 
                 if (count != 0)
                 {
-                    // TODO: do not use jobs when only few projectiles exists
-
                     var raycastCommands = new NativeArray<RaycastCommand>(count, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
 
                     for (var i = 0; i < count; i++)
