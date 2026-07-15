@@ -54,6 +54,7 @@ namespace ZE.MechBattle.Views
         private void OnRelease(ViewContainer viewContainer) 
         {
             viewContainer.transform.parent = transform;
+            viewContainer.gameObject.SetActive(false);
         }
 
         

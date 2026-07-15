@@ -62,6 +62,12 @@ namespace ZE.MechBattle
             return entity;
         }
 
+        public Entity Build(string unitId, RigidTransform point)
+        {
+            var id = _stringDataDictionary.StringToKey(unitId);
+            return Build(new UnitKey(id), point);
+        }
+
         public Entity Build(UnitKey unitKey, RigidTransform point)
         {
             if (!_unitConfigs.TryGetConfig(unitKey, out var unitConfig))

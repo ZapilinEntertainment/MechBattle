@@ -22,7 +22,9 @@ namespace ZE.MechBattle.Ecs {
         public override void OnAwake()
         {
             _filter = World.Filter
-                .With<LocalTargetRotationComponent>()
+                .With<AttackTargetComponent>()
+                .With<WeaponTowerComponent>()
+                .With<WeaponBarrelComponent>()
                 .With<AimPrecisionComponent>()
                 .Build();
 
@@ -49,6 +51,8 @@ namespace ZE.MechBattle.Ecs {
                 var towerInLimit = haveTower ? IsWeaponPartInLimit(towerComponent.TowerEntity, precisionComponent.PrecisionLimit) : true;
                 var barrelInLimit = haveBarrel ? IsWeaponPartInLimit(barrelComponent.BarrelEntity, precisionComponent.PrecisionLimit) : true;
 
+                //UnityEngine.Debug.Log($"tower: {math.angle(_localRotations.Get(towerComponent.TowerEntity).Value, _localTargetRotations.Get(towerComponent.TowerEntity).Value)}, barrelComponent: {math.angle(_localRotations.Get(barrelComponent.BarrelEntity).Value, _localTargetRotations.Get(barrelComponent.barrelEntity).Value)}");
+
                 precisionComponent.IsInsideLimit = towerInLimit & barrelInLimit;
             }
         }
@@ -57,7 +61,7 @@ namespace ZE.MechBattle.Ecs {
         {
             var localRotation = _localRotations.Get(weaponPartEntity).Value;
             var targetRotation = _localTargetRotations.Get(weaponPartEntity).Value;
-            return math.angle(localRotation, targetRotation) < limit;
+            return math.abs( math.angle(localRotation, targetRotation) - limit) < math.EPSILON;
         }
     }
 }

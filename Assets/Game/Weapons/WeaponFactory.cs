@@ -11,8 +11,8 @@ namespace ZE.MechBattle.Ecs
         private readonly StringDataDictionary _stringDictionary;
         private readonly Stash<WeaponRangeComponent> _ranges;
         private readonly Stash<DamageComponent> _damages;
-        private readonly Stash<WeaponComponent> _weaponComponents;
         private readonly Stash<WeaponUpdateComponent> _weaponUpdateComponents;
+        private readonly Stash<WeaponProjectileComponent> _weaponProjectileComponents;
         private readonly Stash<WeaponMuzzleEffectComponent> _muzzleEffects;
         private readonly Stash<WeaponTowerComponent> _weaponTowerComponents;
         private readonly Stash<WeaponBarrelComponent> _weaponBarrelComponents;
@@ -33,9 +33,9 @@ namespace ZE.MechBattle.Ecs
 
             _ranges = _world.GetStash<WeaponRangeComponent>();
             _damages = _world.GetStash<DamageComponent>();
-            _weaponComponents = world.GetStash<WeaponComponent>();
             _weaponUpdateComponents = world.GetStash<WeaponUpdateComponent>();
             _muzzleEffects = world.GetStash<WeaponMuzzleEffectComponent>();
+            _weaponProjectileComponents = world.GetStash<WeaponProjectileComponent>();
 
             _weaponTowerComponents = world.GetStash<WeaponTowerComponent>();
             _weaponBarrelComponents = world.GetStash<WeaponBarrelComponent>();
@@ -71,7 +71,7 @@ namespace ZE.MechBattle.Ecs
 
 
             if (weaponConfig.TryGetProjectileId(out var projectileId)) 
-                _weaponComponents.Add(weaponEntity, new(_stringDictionary.StringToKey(projectileId)));
+                _weaponProjectileComponents.Add(weaponEntity, new(_stringDictionary.StringToKey(projectileId)));
 
 
             if (weaponConfig.TryGetMuzzleEffectId(out var muzzleEffectId))

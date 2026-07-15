@@ -9,7 +9,9 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public readonly struct WeaponProjectileComponent : IComponent 
     {
-        public readonly int ProjectileId;
+        public readonly int ProjectileKey;
+
+        public WeaponProjectileComponent(int projectileKey) { ProjectileKey = projectileKey; }
     
     }
 }

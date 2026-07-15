@@ -670,13 +670,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0357aba204cf2c46adee734e3c33dd5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.TankAimTester
-  _tankViewPrefab: {fileID: 2916216253385644707, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
-  _unitConfig: {fileID: 11400000, guid: cc95fa461e26c9041ab2c442e12e04aa, type: 2}
+  _unitId: tank
   _changingEntity: 2
   _targetRotation:
     x: 0
     y: 25
     z: 0
+  _target: {fileID: 1791754253}
 --- !u!4 &133790323
 Transform:
   m_ObjectHideFlags: 0
@@ -689,7 +689,8 @@ Transform:
   m_LocalPosition: {x: -130.62, y: 0, z: -1.64188}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1791754253}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &252201649
@@ -6242,6 +6243,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1776215855}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1791754252
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1791754253}
+  m_Layer: 0
+  m_Name: TEST AIM
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1791754253
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1791754252}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -12.41, y: 3.44, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 133790323}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1846152337
 GameObject:
   m_ObjectHideFlags: 0
