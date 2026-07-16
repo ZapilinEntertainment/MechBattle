@@ -22,7 +22,9 @@ namespace ZE.MechBattle
         private readonly Stash<MovementCollisionAvoidanceComponent> _movementCollisionAvoidanceComponents;
         private readonly Stash<TargetSearchRadiusComponent> _targetSearchRadiusComponents;
         private readonly Stash<AimPrecisionComponent> _aimPrecisionComponents;
-        private readonly Stash<AttackDistanceComponent> _attackDistanceComponents;
+        private readonly Stash<WeaponComponent> _weaponComponents;
+        private readonly Stash<HealthComponent> _healthComponents;
+        private readonly Stash<DamageComponent> _damageComponents;
 
         [Inject]
         public UnitsFactory(
@@ -49,7 +51,9 @@ namespace ZE.MechBattle
             _movementCollisionAvoidanceComponents = world.GetStash<MovementCollisionAvoidanceComponent>();
             _targetSearchRadiusComponents = world.GetStash<TargetSearchRadiusComponent>();
             _aimPrecisionComponents = world.GetStash<AimPrecisionComponent>();
-            _attackDistanceComponents = world.GetStash<AttackDistanceComponent>();
+            _weaponComponents = world.GetStash<WeaponComponent>();
+            _healthComponents = world.GetStash<HealthComponent>();
+            _damageComponents = world.GetStash<DamageComponent>();
         }
 
         // todo: rework to generic version
@@ -96,6 +100,8 @@ namespace ZE.MechBattle
 
             _moveSpeeds.Set(entity, new() { Value = config.MoveSpeed });
 
+            _healthComponents.Set(entity, new(config.Health));
+
             TryAttachWeapon(entity, config);
 
         }
@@ -107,9 +113,8 @@ namespace ZE.MechBattle
 
             var weaponEntity = _weaponFactory.CreateUnitWeapon(unitEntity, weaponData.Config, weaponData.AttachmentProtocol); 
             _aimPrecisionComponents.Add(weaponEntity, new(config.MaxPrecisionAberration) );
-
-            var weaponConfig = weaponData.Config;
-            _attackDistanceComponents.Set(unitEntity, new(recommended: weaponConfig.RecommendedRange, max: weaponConfig.MaxRange));
+            _weaponComponents.Set(unitEntity, new(weaponEntity));
+            _damageComponents.Set(weaponEntity, new() { DamageParameters = new() { Value = config.Damage} });
         }
     }
 }

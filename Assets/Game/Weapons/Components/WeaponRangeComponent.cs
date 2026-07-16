@@ -13,6 +13,8 @@ namespace ZE.MechBattle.Ecs {
         public readonly float MaxRange;
         public readonly float RecommendedRange;
 
+        public float MaxRangeSq => MaxRange * MaxRange;
+
         public WeaponRangeComponent(float minRange, float maxRange, float recommendedRangePc)
         {
             MinRange = minRange;

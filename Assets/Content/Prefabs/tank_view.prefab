@@ -257,6 +257,7 @@ MonoBehaviour:
   _tower: {fileID: 974919391759065064}
   _barrel: {fileID: 6569825466417728463}
   _unitConfig: {fileID: 11400000, guid: cc95fa461e26c9041ab2c442e12e04aa, type: 2}
+  _collider: {fileID: 3025236635644781336}
 --- !u!1 &5361265750071927081
 GameObject:
   m_ObjectHideFlags: 0

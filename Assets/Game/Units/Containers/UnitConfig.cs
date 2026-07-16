@@ -6,6 +6,8 @@ namespace ZE.MechBattle
     [CreateAssetMenu(fileName = "UnitConfig", menuName = "Scriptable Objects/UnitConfig")]
     public class UnitConfig : ScriptableObject, IUnitConfig
     {
+        [field: SerializeField] public float Health { get; private set; }
+        [field: SerializeField] public float Damage { get; private set; }
         [field:SerializeField] public MovementCollisionAvoidancePriority CollisionAvoidancePriority { get; private set;} = MovementCollisionAvoidancePriority.SmallUnit;
         [field:SerializeField] public string ViewId { get; private set;}
         [field:SerializeField] public float TargetSearchRadius { get;private set;}
@@ -32,6 +34,8 @@ namespace ZE.MechBattle
     {
         BehaviourKey BehaviourKey { get;}
         MovementCollisionAvoidancePriority CollisionAvoidancePriority { get;}
+        float Health { get; }
+        float Damage { get; }
         float TargetSearchRadius { get;}
         float MoveSpeed { get;}
         float MaxPrecisionAberration { get;}

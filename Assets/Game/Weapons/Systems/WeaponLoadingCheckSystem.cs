@@ -11,18 +11,18 @@ namespace ZE.MechBattle.Ecs
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public sealed class WeaponReadyCheckSystem : IntervalUpdateSystemBase<WeaponUpdateComponent>, IWeaponShotCompletenessHandler
+    public sealed class WeaponLoadingCheckSystem : IntervalUpdateSystemBase<WeaponUpdateComponent>, IWeaponShotCompletenessHandler
     {
-        private Stash<ReadyToShotTag> _readyToShotTag;
+        private Stash<GunLoadedTag> _readyToShotTag;
 
-        public WeaponReadyCheckSystem(SceneFlagsManager flags) : base(flags)
+        public WeaponLoadingCheckSystem(SceneFlagsManager flags) : base(flags)
         {
         }
 
         public override void OnAwake()
         {
             base.OnAwake();
-            _readyToShotTag = World.GetStash<ReadyToShotTag>();
+            _readyToShotTag = World.GetStash<GunLoadedTag>();
         }
 
         public void OnWeaponShot(Entity entity)
@@ -38,6 +38,6 @@ namespace ZE.MechBattle.Ecs
 
         protected override FilterBuilder PrepareFilter() =>
             base.PrepareFilter()
-            .Without<ReadyToShotTag>();
+            .Without<GunLoadedTag>();
     }
 }

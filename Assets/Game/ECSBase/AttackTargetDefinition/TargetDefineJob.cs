@@ -13,7 +13,7 @@ namespace ZE.MechBattle.Ecs
     {
         public float HexEdgeLength;
         public int TrianglesPerEdge;
-        public NativeArray<PlayerRelationsMask> EnemiesMask;
+        [ReadOnly]public NativeArray<PlayerRelationsMask> EnemiesMask;
 
         [ReadOnly] public NativeList<Entity> Entities;
         [ReadOnly] public NativeParallelHashMap<IntTriangularPos, CellMovementData>.ReadOnly MovementCells;        

@@ -7,15 +7,14 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public struct HealthComponent : IComponent 
+    public readonly struct WeaponComponent : IComponent 
     {
-        public float CurrentValue;  
-        public readonly float MaxValue;
+        public readonly Entity Entity;
 
-        public HealthComponent(float maxValue)
+        public WeaponComponent(Entity entity)
         {
-            MaxValue = maxValue;
-            CurrentValue = MaxValue;
+            Entity = entity;
         }
+    
     }
 }

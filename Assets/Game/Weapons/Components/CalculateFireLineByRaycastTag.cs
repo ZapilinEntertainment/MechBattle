@@ -7,15 +7,8 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public struct HealthComponent : IComponent 
+    public struct CalculateFireLineByRaycastTag : IComponent 
     {
-        public float CurrentValue;  
-        public readonly float MaxValue;
-
-        public HealthComponent(float maxValue)
-        {
-            MaxValue = maxValue;
-            CurrentValue = MaxValue;
-        }
+    
     }
 }

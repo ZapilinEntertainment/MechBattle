@@ -37,13 +37,14 @@ namespace ZE.MechBattle.Develop
 
         private Stash<AttackTargetComponent> _attackTargetComponents;
         private Stash<PositionComponent> _positionComponents;
+        private Stash<AttackRangeReachedTag> _attackRangeReachedTag;
 
         [ShowInInspector, ReadOnly] private Entity _unitEntity;
         [ShowInInspector, ReadOnly] private Entity _weaponEntity;
         [ShowInInspector, ReadOnly] private Entity _towerEntity;
         [ShowInInspector, ReadOnly] private Entity _barrelEntity;
         private Entity _targetEntity;
- 
+
         [Inject]
         public void Inject(
             World world, 
@@ -69,6 +70,7 @@ namespace ZE.MechBattle.Develop
 
             _attackTargetComponents = world.GetStash<AttackTargetComponent>();
             _positionComponents = world.GetStash<PositionComponent>();
+            _attackRangeReachedTag = world.GetStash<AttackRangeReachedTag>();
         }
 
         private void Start()
@@ -148,6 +150,9 @@ namespace ZE.MechBattle.Develop
             _disposeTags.Set(_unitEntity);
             Start();
         }
+
+
+        // TODO: if target entity is out of range, tank won't respond, need warning
 
         [Button(nameof(AssignTarget)), EnableInPlayMode]
         private void AssignTarget()

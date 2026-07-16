@@ -838,12 +838,12 @@ Transform:
   m_GameObject: {fileID: 313219118}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 0, y: 0, z: 461}
+  m_LocalPosition: {x: 0, y: 0, z: 55.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2099627249}
   - {fileID: 726085659}
+  - {fileID: 2099627249}
   - {fileID: 1208458969}
   - {fileID: 407578439}
   m_Father: {fileID: 0}
@@ -1262,7 +1262,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &407578439
 Transform:
   m_ObjectHideFlags: 0
@@ -1441,7 +1441,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &459197457
 Transform:
   m_ObjectHideFlags: 0
@@ -1891,7 +1891,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &551744165
 Transform:
   m_ObjectHideFlags: 0
@@ -3111,7 +3111,7 @@ Transform:
   m_GameObject: {fileID: 726085658}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 157, y: 0, z: 0}
+  m_LocalPosition: {x: 151.9, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3131,7 +3131,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitsSpawner
   _playerId: 1
   _unitId: tank
-  _count: 5
+  _count: 3
   _spawnRadius: 50
   _interval: 3
   _initialDelay: 1
@@ -4377,7 +4377,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1208458969
 Transform:
   m_ObjectHideFlags: 0
@@ -5608,7 +5608,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1409060222
 Transform:
   m_ObjectHideFlags: 0
@@ -6404,7 +6404,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitsSpawner
   _playerId: 0
   _unitId: tank
-  _count: 5
+  _count: 3
   _spawnRadius: 50
   _interval: 3
   _initialDelay: 1
@@ -6615,7 +6615,7 @@ Transform:
   m_GameObject: {fileID: 1791754252}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 98.06, y: 23.44, z: 13.3}
+  m_LocalPosition: {x: 12.8, y: 8.4, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7390,7 +7390,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &2099627248
 MonoBehaviour:
   m_ObjectHideFlags: 0

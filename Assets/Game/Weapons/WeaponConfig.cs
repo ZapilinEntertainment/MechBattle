@@ -10,7 +10,6 @@ namespace ZE.MechBattle
         [field:SerializeField] public float MinRange { get; private set;}
         [field: SerializeField, Range(0,1)] public float RecommendedRangePc { get; private set; } = 0.8f;
         [field: SerializeField] public float MaxRange { get; private set; }
-        [field: SerializeField] public float Damage { get; private set; }
         [field: SerializeField] public float Cooldown { get; private set; }
         [field: SerializeField] public float3 ShotPoint { get; private set; }
     

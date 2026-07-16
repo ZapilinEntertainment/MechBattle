@@ -54,6 +54,9 @@ namespace ZE.MechBattle.Ecs
                 return default;
             }
 
+            if (_world.IsDisposed(shooter))
+                return default;
+
             var entity = _viewFactory.CreateViewReceiver(projectileData.ViewId);
             _transformAspectHandler.MoveToPoint(entity, point);
 

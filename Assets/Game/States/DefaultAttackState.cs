@@ -7,7 +7,7 @@ namespace ZE.MechBattle.Ecs.States
 {
     public class DefaultAttackState : StateHandler
     {
-        private readonly Stash<AttackDistanceComponent> _attackDistances;
+        private readonly Stash<AttackOpportunintyComponent> _attackOpportuninties;
         private readonly Stash<AttackTargetComponent> _attackTargets;
         private readonly Stash<PositionComponent> _positionComponents;
         private readonly MoveTargetApplier _moveTargetApplier;
@@ -16,9 +16,9 @@ namespace ZE.MechBattle.Ecs.States
         public DefaultAttackState(World world, MoveTargetApplier moveTargetApplier) 
         { 
             _moveTargetApplier = moveTargetApplier;
-            _attackDistances = world.GetStash<AttackDistanceComponent>();
             _attackTargets = world.GetStash<AttackTargetComponent>();
             _positionComponents = world.GetStash<PositionComponent>();
+            _attackOpportuninties = world.GetStash<AttackOpportunintyComponent>();
         }
 
         public override void Enter(Entity entity) { }
@@ -33,12 +33,11 @@ namespace ZE.MechBattle.Ecs.States
             if (!attackTargetExists)
                 return StateKey.Idle;
 
-            var entityPos = _positionComponents.Get(entity).Value;
-            var targetPos = _positionComponents.Get(attackTarget.Entity).Value;
-            var attackDistanceComponent = _attackDistances.Get(entity);
-            if (math.distancesq(entityPos, targetPos) > attackDistanceComponent.MaximumSq)
+            var attackOpportunityComponent = _attackOpportuninties.Get(entity, out var haveAttackOpportunity);
+            if (!haveAttackOpportunity || attackOpportunityComponent.Value == 0f)
             {
-                _moveTargetApplier.SetMoveTarget(entity, entityPos);
+                var targetPos = _positionComponents.Get(attackTarget.Entity).Value;
+                _moveTargetApplier.SetMoveTarget(entity, targetPos);
                 return StateKey.Move;
             }
                 

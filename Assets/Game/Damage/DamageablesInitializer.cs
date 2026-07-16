@@ -17,19 +17,16 @@ namespace ZE.MechBattle.Ecs {
         private Stash<ViewDestroyEffectComponent> _viewDestroyEffect;
 
         private readonly World _world;
-        private readonly CollidersTable _collidersTable;
         private readonly StringDataDictionary _stringDictionary;
         private readonly ViewSynchronizationApplier _viewSyncApplier;
 
         [Inject]
         public DamageablesInitializer(
             World world,
-            CollidersTable collidersTable, 
             StringDataDictionary strDict, 
             ViewSynchronizationApplier viewSyncApplier)
         {
             _world = world;
-            _collidersTable = collidersTable;
             _stringDictionary = strDict;
             _viewSyncApplier = viewSyncApplier;
         }
@@ -47,19 +44,15 @@ namespace ZE.MechBattle.Ecs {
             }
         }
 
+        // TODO: rewordk to damageables factory
         private void CreateDamageableEntity(IDamageableView view)
         {
             var entity = _world.CreateEntity();
             _viewSyncApplier.Apply(entity, view);
 
             var parameters = view.GetParameters();
-            _healthComponents.Set(entity, new() { CurrentValue = parameters.Health, MaxValue = parameters.Health});           
-            
-            var colliderIds = view.GetColliderIds();
-            foreach (var id in colliderIds)
-                _collidersTable.RegisterCollider(entity, id);
-            // colliders will be cleared from list by CollidersClearSystem
-            _collidersOwnerTag.Set(entity, new());
+            _healthComponents.Set(entity, new(parameters.Health));           
+
 
             var destroyEffectKey = view.ViewDestroyEffectKey;
             if (!string.IsNullOrEmpty(destroyEffectKey))

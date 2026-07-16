@@ -4,20 +4,26 @@ using Scellecs.Morpeh;
 
 namespace ZE.MechBattle.Ecs
 {
-    // builds Morpeh entities from existing on-scene views
+    // binds view and entity
     public class ViewSynchronizationApplier
     {
         private readonly World _world;
         private readonly TransformAccessManager _transformAccessManager;
         private readonly Stash<TransformComponent> _transforms;
         private readonly TransformAspectHandler _transformAspectHandler;
+        private readonly ColliderOwnityApplier _colliderOwnityApplier;
 
         [Inject]
-        public ViewSynchronizationApplier(TransformAccessManager accessManager, World world, TransformAspectHandler transformAspectHandler)
+        public ViewSynchronizationApplier(
+            TransformAccessManager accessManager, 
+            World world, 
+            TransformAspectHandler transformAspectHandler,
+            ColliderOwnityApplier colliderOwnityApplier)
         {
             _world = world;
             _transformAccessManager = accessManager;
             _transformAspectHandler = transformAspectHandler;
+            _colliderOwnityApplier = colliderOwnityApplier;
 
             _transforms = _world.GetStash<TransformComponent>();
         }
@@ -32,6 +38,8 @@ namespace ZE.MechBattle.Ecs
 #if UNITY_EDITOR
             view.name = $"entity {entity.Id}";
 #endif
+
+           _colliderOwnityApplier.CheckViewForColliders(entity, view);
         }
 
     }

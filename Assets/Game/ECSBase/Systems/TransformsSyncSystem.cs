@@ -41,6 +41,7 @@ namespace ZE.MechBattle.Ecs {
             _filter = World.Filter
                 .With<TransformComponent>()
                 .With<TransformUpdatedTag>()
+                .Without<EntityDisposeTag>()
                 .Build();
 
             _transforms = World.GetStash<TransformComponent>();

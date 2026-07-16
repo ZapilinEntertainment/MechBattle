@@ -63,7 +63,7 @@ namespace ZE.MechBattle.Ecs {
 
         private void OnEntityHealthIsZero(Entity entity)
         {
-            _entityDisposeTag.Add(entity);
+            _entityDisposeTag.Set(entity);
         }
     }
 }

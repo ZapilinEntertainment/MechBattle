@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4b1a49b5e0a60d4aa5a2b6079da0eec, type: 3}
   m_Name: tank
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitConfig
+  <Health>k__BackingField: 4
+  <Damage>k__BackingField: 2
   <CollisionAvoidancePriority>k__BackingField: 1
   <ViewId>k__BackingField: tank_view
   <TargetSearchRadius>k__BackingField: 600
@@ -25,9 +27,7 @@ MonoBehaviour:
         x: 0
         y: 0
         z: 0
-      LocalRotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
+      LocalRotationDegrees:
+        x: 0
+        y: 0
+        z: 0

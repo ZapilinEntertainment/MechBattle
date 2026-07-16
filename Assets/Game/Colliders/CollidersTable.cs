@@ -16,7 +16,7 @@ namespace ZE.MechBattle
         public void RegisterCollider(Entity colliderOwner, int key) 
         {
             _table[key] = colliderOwner;
-            //Debug.Log("registered: " + key.ToString());
+            //Debug.Log($"bind collider key {key} to entity {colliderOwner.Id}");
         }
         public void UnregisterCollider(int key) => _table.Remove(key);
         public void UnregisterAllColliders(Entity owner)

@@ -7,15 +7,12 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public struct HealthComponent : IComponent 
-    {
-        public float CurrentValue;  
-        public readonly float MaxValue;
 
-        public HealthComponent(float maxValue)
-        {
-            MaxValue = maxValue;
-            CurrentValue = MaxValue;
-        }
+    // describes how close entity to switch into attack state
+    // depends on distance to recommended distance ratio
+    // is gun loaded, is fireline clear
+    public struct AttackOpportunintyComponent : IComponent 
+    {
+        public float Value;    
     }
 }

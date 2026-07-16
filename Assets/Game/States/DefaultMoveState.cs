@@ -9,9 +9,9 @@ namespace ZE.MechBattle.Ecs.States
         private readonly MoveTargetApplier _moveTargetApplier;
         private readonly Stash<MoveTargetComponent> _moveTargets;
         private readonly Stash<AttackTargetComponent> _attackTargets;
-        private readonly Stash<TriangularPosComponent> _triangularPosComponents;
-        private readonly Stash<AttackDistanceComponent> _attackDistanceComponents;
-        private readonly Stash<PositionComponent> _positionComponents;
+        private readonly Stash<TriangularPosComponent> _triangularPosComponents;        
+        private readonly Stash<AttackOpportunintyComponent> _attackOpportuninties;
+
 
         [Inject]
         public DefaultMoveState(World world, MoveTargetApplier moveTargetApplier)
@@ -21,8 +21,7 @@ namespace ZE.MechBattle.Ecs.States
             _moveTargets = world.GetStash<MoveTargetComponent>();
             _attackTargets = world.GetStash<AttackTargetComponent>();
             _triangularPosComponents = world.GetStash<TriangularPosComponent>();
-            _attackDistanceComponents = world.GetStash<AttackDistanceComponent>();
-            _positionComponents = world.GetStash<PositionComponent>();
+            _attackOpportuninties = world.GetStash<AttackOpportunintyComponent>();
         }
 
         public override void Enter(Entity entity)
@@ -48,15 +47,11 @@ namespace ZE.MechBattle.Ecs.States
             var attackTargetComponent = _attackTargets.Get(entity, out var attackTargetExists);
             if (attackTargetExists)
             {
-                var targetEntity = attackTargetComponent.Entity;
-                var targetPos = _positionComponents.Get(targetEntity).Value;
-                var entityPos = _positionComponents.Get(entity).Value;
-
-                var attackDistanceSq = _attackDistanceComponents.Get(entity).RecommendedSq;
-                var isInsideAttackDistance = math.distancesq(targetPos, entityPos) < attackDistanceSq;
-                if (isInsideAttackDistance)
+                var attackOpportunintyComponent = _attackOpportuninties.Get(entity, out var attackOpportunityExists);
+                if (attackOpportunityExists && attackOpportunintyComponent.Value == 1f)
                     return StateKey.Attack;
 
+                var targetEntity = _attackTargets.Get(entity).Entity;
                 var targetTripos = _triangularPosComponents.Get(targetEntity).Value;
                 if (targetTripos != moveTargetComponent.TriangularPos)
                 {

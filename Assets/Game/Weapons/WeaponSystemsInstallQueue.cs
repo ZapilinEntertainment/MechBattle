@@ -6,10 +6,13 @@ namespace ZE.MechBattle.Ecs
     {
         protected override void Configure(ISystemsOperator installer)
         {
-            installer.AddSystemWithInterface<WeaponReadyCheckSystem, IWeaponShotCompletenessHandler>(SystemGroupOrder.WeaponUpdates);
+            installer.AddSystemWithInterface<WeaponLoadingCheckSystem, IWeaponShotCompletenessHandler>(SystemGroupOrder.WeaponUpdates);
             installer.AddSystem<ChildEntityAttackTargetSyncSystem>(SystemGroupOrder.WeaponUpdates);
+            installer.AddSystem<CheckAttackRangeSystem>(SystemGroupOrder.WeaponUpdates);
             installer.AddSystem<WeaponAimCalculationSystem>(SystemGroupOrder.WeaponUpdates);
+
             installer.AddSystem<AimCheckSystem>(SystemGroupOrder.WeaponUpdates);
+            installer.AddSystem<FiringLineRaycastCheckSystem>(SystemGroupOrder.WeaponUpdates);
 
             installer.AddSystem<WeaponAutoShotSystem>(SystemGroupOrder.WeaponUpdates);
             installer.AddSystem<WeaponShotPointCalculationSystem>(SystemGroupOrder.WeaponUpdates);

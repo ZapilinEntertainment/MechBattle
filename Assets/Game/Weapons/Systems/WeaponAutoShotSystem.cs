@@ -23,7 +23,8 @@ namespace ZE.MechBattle.Ecs
             _filter = World.Filter
                 .With<WeaponAutoShotTag>()
                 .With<AimPrecisionComponent>()
-                .With<ReadyToShotTag>()
+                .With<GunLoadedTag>()
+                .With<FireLineClearTag>()
                 .Without<EntityDisposeTag>()
                 .Without<WeaponFireTag>()
                 .Build();

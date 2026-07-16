@@ -40,8 +40,7 @@ namespace ZE.MechBattle.Ecs {
             {
                 var targetRotation = _localTargetRotations.Get(entity).Value;
                 var rotationSpeed = _rotationSpeeds.Get(entity).RadianValue;
-                if (_transformAspectHandler.RotateLocal(entity, targetRotation, rotationSpeed * deltaTime))
-                    _localTargetRotations.Remove(entity);
+                _transformAspectHandler.RotateLocal(entity, targetRotation, rotationSpeed * deltaTime);
             }
         }
     }

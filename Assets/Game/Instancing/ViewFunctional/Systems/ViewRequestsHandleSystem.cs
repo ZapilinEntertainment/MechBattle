@@ -30,15 +30,20 @@ namespace ZE.MechBattle.Ecs
         private Stash<ViewKeyComponent> _viewKeys;
         private Stash<ViewContainerComponent> _viewContainerComponents;
 
+        private readonly ColliderOwnityApplier _colliderOwnityApplier;
         private readonly ViewProviderFactory _viewProviderFactory;
         private readonly IViewContainersPool _viewContainersList;
         private readonly List<ViewRequest> _executableRequests = new();
 
         [Inject]
-        public ViewRequestsHandleSystem(ViewProviderFactory viewProviderFactory, IViewContainersPool viewContainersList)
+        public ViewRequestsHandleSystem(
+            ViewProviderFactory viewProviderFactory, 
+            IViewContainersPool viewContainersList,
+            ColliderOwnityApplier colliderOwnityApplier)
         {
             _viewProviderFactory = viewProviderFactory;
             _viewContainersList = viewContainersList;
+            _colliderOwnityApplier = colliderOwnityApplier;
         }
 
         public void OnAwake()
@@ -102,7 +107,14 @@ namespace ZE.MechBattle.Ecs
                 return;
             }
 
-            viewContainer.OnViewInstanced(request.Provider.GetView());
+            var view = request.Provider.GetView();
+            viewContainer.OnViewInstanced(view);
+
+            // note: there is difference with viewSyncApplier:
+            // at this moment view is already applied to entity, but it is container view
+            // this view is real visible view which can container (if it is mono, not a gizmo, handler or draw object)
+            if (view is IMonoView monoView) 
+                _colliderOwnityApplier.CheckViewForColliders(request.ReceiveEntity, monoView);
         }
     }
 }

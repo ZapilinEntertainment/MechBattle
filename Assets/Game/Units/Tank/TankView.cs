@@ -2,11 +2,12 @@ using UnityEngine;
 
 namespace ZE.MechBattle
 {
-    public class TankView : SimpleView, IUnitConfig, IComplexMonoView
+    public class TankView : SimpleView, IUnitConfig, IComplexMonoView, ISingleColliderView
     {
         [SerializeField] private Transform _tower;
         [SerializeField] private Transform _barrel;
         [SerializeField] private UnitConfig _unitConfig;
+        [SerializeField] private Collider _collider;
 
         public bool TryGetWeaponData(out WeaponData weaponData) => _unitConfig.TryGetWeaponData(out weaponData);
 
@@ -28,10 +29,15 @@ namespace ZE.MechBattle
             return false;
         }
 
+
+        public float Damage => _unitConfig.Damage;
+        public float Health => _unitConfig.Health;
         public BehaviourKey BehaviourKey => _unitConfig.BehaviourKey;
         public MovementCollisionAvoidancePriority CollisionAvoidancePriority => _unitConfig.CollisionAvoidancePriority;
         public float TargetSearchRadius => _unitConfig.TargetSearchRadius;
         public float MoveSpeed => _unitConfig.MoveSpeed;
         public float MaxPrecisionAberration => 0.02f;
+
+        public int ColliderInstanceId => _collider.GetInstanceID();
     }
 }

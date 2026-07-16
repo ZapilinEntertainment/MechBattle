@@ -35,6 +35,7 @@ namespace ZE.MechBattle
             builder.Register<DisposeTagApplier>(Lifetime.Scoped);
             builder.Register<ParentingRelationsApplier>(Lifetime.Scoped);
             builder.Register<ViewSynchronizationApplier>(Lifetime.Scoped);
+            builder.Register<ColliderOwnityApplier>(Lifetime.Scoped);
 
             builder.Register<MorpehSystemInstallHandler>(Lifetime.Scoped);
 

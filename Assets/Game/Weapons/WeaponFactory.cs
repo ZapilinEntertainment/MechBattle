@@ -23,6 +23,10 @@ namespace ZE.MechBattle.Ecs
 
         private readonly Stash<WeaponTowerViewRequestComponent> _requireTowerView;
         private readonly Stash<WeaponBarrelViewRequestComponent> _requireBarrelView;  
+        private readonly Stash<WeaponTowerStowTag> _towerStowTag;
+        private readonly Stash<WeaponBarrelStowTag> _barrelStowTag;
+
+        private readonly Stash<CalculateFireLineByRaycastTag> _raycastFirelinesTag;
 
         [Inject]
         public WeaponFactory(World world, ParentingRelationsApplier parentingRelationsApplier, StringDataDictionary stringDataDictionary)
@@ -32,7 +36,6 @@ namespace ZE.MechBattle.Ecs
             _stringDictionary = stringDataDictionary;
 
             _ranges = _world.GetStash<WeaponRangeComponent>();
-            _damages = _world.GetStash<DamageComponent>();
             _weaponUpdateComponents = world.GetStash<WeaponUpdateComponent>();
             _muzzleEffects = world.GetStash<WeaponMuzzleEffectComponent>();
             _weaponProjectileComponents = world.GetStash<WeaponProjectileComponent>();
@@ -46,6 +49,10 @@ namespace ZE.MechBattle.Ecs
 
             _requireTowerView = world.GetStash<WeaponTowerViewRequestComponent>();
             _requireBarrelView = world.GetStash<WeaponBarrelViewRequestComponent>();
+            _towerStowTag = world.GetStash<WeaponTowerStowTag>();
+            _barrelStowTag = world.GetStash<WeaponBarrelStowTag>();
+
+            _raycastFirelinesTag = world.GetStash<CalculateFireLineByRaycastTag>();
 
             _rotationSpeedComponents = world.GetStash<RotationSpeedComponent>();
         }
@@ -56,9 +63,9 @@ namespace ZE.MechBattle.Ecs
             UnityEngine.Debug.Log($"built weapon with id {weaponEntity.Id}");
 
             _ranges.Add(weaponEntity, new(weaponConfig.MinRange, weaponConfig.MaxRange, weaponConfig.RecommendedRangePc));
-            _damages.Add(weaponEntity, new() { DamageParameters = new() { Value = weaponConfig.Damage} });
             _weaponUpdateComponents.Add(weaponEntity, new(weaponConfig.Cooldown));
             _weaponAutoShotTags.Add(weaponEntity);
+            _raycastFirelinesTag.Add(weaponEntity);
 
             _parentingRelationsApplier.Apply(new()
             {
@@ -89,6 +96,7 @@ namespace ZE.MechBattle.Ecs
                 _requireTowerView.Add(towerEntity, new(towerAttachmentProtocol.ViewPartKey));
 
                 _weaponTowerComponents.Add(weaponEntity, new(towerEntity));
+                _towerStowTag.Add(towerEntity); // always for units
                 UnityEngine.Debug.Log($"built tower with id {towerEntity.Id}");
             }
             else
@@ -102,6 +110,7 @@ namespace ZE.MechBattle.Ecs
 
                 _requireBarrelView.Add(barrelEntity, new(barrelAttachmentProtocol.ViewPartKey));
                 _weaponBarrelComponents.Add(weaponEntity, new(barrelEntity));
+                _barrelStowTag.Add(barrelEntity);
 
                 UnityEngine.Debug.Log($"built barrel with id {barrelEntity.Id}");
             }

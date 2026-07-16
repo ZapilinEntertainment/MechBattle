@@ -42,10 +42,12 @@ namespace ZE.MechBattle.Ecs {
 
             _idleTowerWeaponsFilter = World.Filter
                 .With<WeaponTowerStowTag>()
-                .Without<AttackTargetComponent>().Build();
+                .Without<AttackTargetComponent>()
+                .Build();
             _idleBarrelWeaponsFilter = World.Filter
                 .With<WeaponBarrelStowTag>()
-                .Without<AttackTargetComponent>().Build();
+                .Without<AttackTargetComponent>()
+                .Build();
 
             _attackTargetComponent = World.GetStash<AttackTargetComponent>();   
             _positions = World.GetStash<PositionComponent>();
@@ -103,15 +105,13 @@ namespace ZE.MechBattle.Ecs {
 
 
 
-            foreach (var weaponEntity in _idleTowerWeaponsFilter)
+            foreach (var towerEntity in _idleTowerWeaponsFilter)
             {
-                var towerEntity = _weaponTowers.Get(weaponEntity).TowerEntity;
                 _aims.Set(towerEntity, new() { Value = quaternion.identity});
             }
 
-            foreach (var weaponEntity in _idleBarrelWeaponsFilter)
+            foreach (var barrelEntity in _idleBarrelWeaponsFilter)
             {
-                var barrelEntity = _weaponBarrels.Get(weaponEntity).BarrelEntity;
                 _aims.Set(barrelEntity, new() { Value = quaternion.identity });
             }
         }
