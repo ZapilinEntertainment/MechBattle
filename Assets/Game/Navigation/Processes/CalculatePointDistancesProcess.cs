@@ -50,6 +50,7 @@ namespace ZE.MechBattle
         private CalculatePointDistancesJob _job;
         private int2 _hexCoord;
         private int _portalId;
+        private JobHandle _activeJobHandle;
 
         public CalculatePointDistancesProcess(Allocator allocator, INavigationMap map)
         {
@@ -70,6 +71,7 @@ namespace ZE.MechBattle
         {
             PrepareJob(input);
             _job.Run();
+            _activeJobHandle = default;
 
             return FormResults();
         }
@@ -79,12 +81,16 @@ namespace ZE.MechBattle
         protected override JobHandle LaunchJob(CalculatePointDistancesLaunchData input)
         {
             PrepareJob(input);
-            return _job.Schedule();
+            _activeJobHandle = _job.Schedule();
+            return _activeJobHandle;
         }
 
         protected override void DisposeResources()
         {
 #if UNITY_EDITOR
+            if (!_activeJobHandle.IsCompleted)
+                UnityEngine.Debug.LogWarning($"{nameof(CalculatePointDistancesProcess)} is not yet completed");
+
             try
             {
                 FinalDispose();
@@ -103,8 +109,9 @@ namespace ZE.MechBattle
 
         private void FinalDispose() 
         {
+            _activeJobHandle.Complete();
             _activeCells.Dispose();
-            _cells.Dispose();
+            _cells.Dispose();            
         }
 
         private void PrepareJob(CalculatePointDistancesLaunchData input)

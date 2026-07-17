@@ -31,14 +31,9 @@ namespace ZE.Utils
             return FormResults();
         }
 
-        public async void Dispose()
+        public void Dispose()
         {
-            if (_isLaunched)
-            {
-                while (!_activeHandle.IsCompleted)
-                    await Awaitable.NextFrameAsync();
-            }
-            _activeHandle = default;
+            _activeHandle.Complete();
             DisposeResources();
         }
 

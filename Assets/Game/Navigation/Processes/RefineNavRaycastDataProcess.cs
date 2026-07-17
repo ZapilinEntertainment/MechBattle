@@ -18,6 +18,7 @@ namespace ZE.MechBattle.Navigation
         private readonly Allocator _allocator;
 
         private RefineNavRaycastDataJob _job;
+        private JobHandle _activeJobHandle;
 
         public RefineNavRaycastDataProcess(
             Allocator allocator,
@@ -64,7 +65,8 @@ namespace ZE.MechBattle.Navigation
         public JobHandle ScheduleJob(NavigationHexPosition hexPos)
         {
             _job.HexPos = hexPos;
-            return _job.ScheduleByRef(_trianglesPerHex, 32);
+            _activeJobHandle=  _job.ScheduleByRef(_trianglesPerHex, 32);
+            return _activeJobHandle;
         }
     
         public void Dispose()
@@ -88,6 +90,7 @@ namespace ZE.MechBattle.Navigation
 
         private void FinalDispose()
         {
+            _activeJobHandle.Complete();
             _refinedData.Dispose();
         }
     }

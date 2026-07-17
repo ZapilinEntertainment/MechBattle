@@ -60,7 +60,7 @@ namespace ZE.MechBattle.Ecs
             PrepareSuitablePositions(worldPos, protocol.SpawnRadius);
             var count = protocol.Count;           
 
-            UnityEngine.Debug.Log($"spawn {protocol.Count} entities for player {protocol.PlayerKey.Id}");
+            UnityEngine.Debug.Log($"spawn {count} entities for player {protocol.PlayerKey.Id}");
             while (count > 0 && _selectionList.ActiveItemsCount > 0)
             {
                 var randomValue = (float)_random.NextDouble();
@@ -82,10 +82,11 @@ namespace ZE.MechBattle.Ecs
         private void PrepareSuitablePositions(float3 pos, float radius)
         {
             _job.WorldPos = pos;
-            _job.RadiusInUnits = radius;            
+            _job.RadiusInUnits = radius;      
             _job.Run();
 
             _selectionList.Clear();
+            UnityEngine.Debug.Log($"resulted in  {_job.ResultList.Length} positions");
             foreach (var tripos in _jobResultsList)
             {
                 if (!_map.GetPassabilityData(tripos).IsPassable)

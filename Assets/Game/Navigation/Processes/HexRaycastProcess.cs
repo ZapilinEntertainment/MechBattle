@@ -24,6 +24,8 @@ namespace ZE.MechBattle
         private readonly Allocator _allocator;
 
         private bool _isDisposed = false;
+        private JobHandle _activeJobHandleA;
+        private JobHandle _activeJobHandleB;
 
         public CalculationProcessStage Stage { get;private set;}
 
@@ -85,6 +87,8 @@ namespace ZE.MechBattle
 
         private void FinalDispose()
         {
+            _activeJobHandleA.Complete();
+            _activeJobHandleB.Complete();
             _isPeakData.Dispose();
         }
 
@@ -99,6 +103,8 @@ namespace ZE.MechBattle
             // 1. raycast walkable & obstacle data
             var walkableDataHandle = _walkableSurfaceCaster.ScheduleCastJob(CurrentHexPosition);
             var obstacleDataHandle = _obstaclesCaster.ScheduleCastJob(CurrentHexPosition);
+            _activeJobHandleA = walkableDataHandle;
+            _activeJobHandleB = obstacleDataHandle;
             do
             {
                 await Awaitable.NextFrameAsync();
@@ -113,6 +119,7 @@ namespace ZE.MechBattle
             var hexCenter = CurrentHexPosition.TriangularCenterPos;
             HexDataLogic.FulfilPeakDataArray(_isPeakData, hexCenter, _hexRadius);
             var refineJobHandle = _refineProcess.ScheduleJob(CurrentHexPosition);
+            _activeJobHandleA = refineJobHandle;
             await WaitForJobHandle(refineJobHandle);
             refineJobHandle.Complete();
 
@@ -128,6 +135,7 @@ namespace ZE.MechBattle
 
             // 4. define cell zones
             var defineCellJobHandle = _defineCellZonesProcess.ScheduleJob(hexCenter, _prepareNavCellDataProcess.GetPassabilityDataSource());
+            _activeJobHandleA = defineCellJobHandle;
             await WaitForJobHandle(defineCellJobHandle);
             defineCellJobHandle.Complete();
 

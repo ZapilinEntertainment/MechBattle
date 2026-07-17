@@ -5,38 +5,41 @@ using Unity.Collections;
 
 namespace ZE.MechBattle.Navigation
 {
+    [BurstCompile]
+    public readonly struct SmallTriangleData
+    {
+        public readonly float2 WorldPos;
+        public readonly bool IsPeak;
+        public float3 WorldPosV3 => new float3(WorldPos.x, 0f, WorldPos.y);
+
+        public SmallTriangleData(float2 pos, bool isPeak)
+        {
+            WorldPos = pos;
+            IsPeak = isPeak;
+        }
+    }
+
+    // why protocol and no collection creation: multiple re-using in scenarios
+    [BurstCompile]
+    public struct TriangleSubdivisionProtocol
+    {
+        public float TriangleHeight;
+        public int RaycastTrianglesPerEdge;
+
+        public float SubdividedTriangleHeight => TriangleHeight / RaycastTrianglesPerEdge;
+
+        public NativeArray<SmallTriangleData> Centers;
+    }
+
     public static class SubdivideTriangleCommand
     {
         private const float ORTHOCENTER_CF = 2f * NavigationConstants.DIV_THREE; 
-
-        public readonly struct SmallTriangleData
-        {
-            public readonly float2 WorldPos;
-            public readonly bool IsPeak;
-            public float3 WorldPosV3 => new float3(WorldPos.x, 0f, WorldPos.y);
-
-            public SmallTriangleData(float2 pos, bool isPeak)
-            {
-                WorldPos = pos;
-                IsPeak = isPeak;
-            }
-        }
-
-        // why protocol and no collection creation: multiple re-using in scenarios
-        public struct TriangleSubdivisionProtocol
-        {
-            public float TriangleHeight;
-            public int RaycastTrianglesPerEdge;
-
-            public float SubdividedTriangleHeight => TriangleHeight / RaycastTrianglesPerEdge;
-
-            public NativeArray<SmallTriangleData> Centers;
-        }
 
         public static NativeArray<SmallTriangleData> CreateDataArray(int trianglesPerEdge, Allocator allocator) => 
             new NativeArray<SmallTriangleData>(trianglesPerEdge * trianglesPerEdge, allocator, NativeArrayOptions.UninitializedMemory);
 
 
+        [BurstCompile]
         public static void Execute(
              IntTriangularPos pos,
              TriangleSubdivisionProtocol protocol)

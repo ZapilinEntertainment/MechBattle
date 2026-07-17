@@ -41,7 +41,7 @@ namespace ZE.MechBattle.Navigation
         private readonly float _castingHeight;
         private readonly float _castingRayLength;
         private readonly float _hexEdgeSize;
-        private readonly NativeArray<SubdivideTriangleCommand.SmallTriangleData> _raycastPointsArray;
+        private readonly NativeArray<SmallTriangleData> _raycastPointsArray;
         private readonly QueryParameters _queryParameters;
 
         // final commands list

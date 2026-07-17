@@ -73,6 +73,8 @@ namespace ZE.MechBattle
 
         private void HandleNeighbours(IntTriangularPos pos, int zoneIndex)
         {
+            if (!Cells.ContainsKey(pos))
+                return;
             var data = Cells[pos];
             var newData = new CellData(data, zoneIndex);
             Cells[pos] = newData;

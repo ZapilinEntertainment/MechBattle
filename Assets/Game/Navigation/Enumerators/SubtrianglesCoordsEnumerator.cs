@@ -1,10 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Mathematics;
+using Unity.Burst;
 
 namespace ZE.MechBattle.Navigation
 {
-    public struct SubtrianglesCoordsEnumerator : IEnumerator<IntTriangularPos>, IEnumerable<IntTriangularPos>
+    [BurstCompile]
+    public struct SubtrianglesCoordsEnumerator
     {
         private readonly IntTriangularPos _pinnaclePos;
         private readonly int _trianglesPerEdge;
@@ -22,8 +22,6 @@ namespace ZE.MechBattle.Navigation
         
 
         public IntTriangularPos Current { get;private set; }
-
-        object IEnumerator.Current => Current;
 
         public SubtrianglesCoordsEnumerator(IntTriangularPos pinnaclePos, int trianglesPerEdge)
         {
@@ -86,8 +84,6 @@ namespace ZE.MechBattle.Navigation
         }
         public void Dispose() { }
 
-        SubtrianglesCoordsEnumerator GetEnumerator() => this;
-        IEnumerator<IntTriangularPos> IEnumerable<IntTriangularPos>.GetEnumerator() => this;
-        IEnumerator IEnumerable.GetEnumerator() => this;
+        public SubtrianglesCoordsEnumerator GetEnumerator() => this;
     }
 }

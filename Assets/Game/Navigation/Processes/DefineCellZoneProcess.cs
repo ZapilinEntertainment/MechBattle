@@ -11,6 +11,7 @@ namespace ZE.MechBattle
         private readonly NativeQueue<IntTriangularPos> _activeCells;
         private readonly NativeHashMap<IntTriangularPos, DefineCellZoneJob.CellData> _cells;
         private DefineCellZoneJob _job;
+        private JobHandle _activeHandle;
 
         public DefineCellZoneProcess(Allocator allocator, IUpdatableMap map)
         {
@@ -48,6 +49,7 @@ namespace ZE.MechBattle
 
         private void FinalDispose()
         {
+            _activeHandle.Complete();
             _activeCells.Dispose();
             _cells.Dispose();
         }
@@ -64,7 +66,8 @@ namespace ZE.MechBattle
                 _cells.Add(pos, new(passabilityData, isOpened: false, zoneIndex: 0));
             }
 
-            return _job.ScheduleByRef();
+            _activeHandle =  _job.ScheduleByRef();
+            return _activeHandle;
         }
 
         public int GetZoneIndex(IntTriangularPos pos) => _cells[pos].ZoneIndex;

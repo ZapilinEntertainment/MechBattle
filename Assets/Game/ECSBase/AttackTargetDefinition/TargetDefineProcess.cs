@@ -87,13 +87,19 @@ namespace ZE.MechBattle.Ecs
         {
             if (!_activeJobHandle.IsCompleted)
             {
+#if UNITY_EDITOR
+                UnityEngine.Debug.LogWarning($"{nameof(_job)} is not yet completed");
+#endif
                 do
                 {
                     await Awaitable.NextFrameAsync();
                 }
                 while (!_activeJobHandle.IsCompleted);
+#if UNITY_EDITOR
+                UnityEngine.Debug.LogWarning($"{nameof(_job)} finally stopped");
+#endif
             }
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
             try
             {
                 FinalDispose();

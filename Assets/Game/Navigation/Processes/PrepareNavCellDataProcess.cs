@@ -17,6 +17,7 @@ namespace ZE.MechBattle.Navigation
         private readonly NativeArray<CellHeightData> _cellHeightData;
         private readonly int _trianglesPerHex;
         private PrepareNavCellDataJob _prepareJob;
+        private JobHandle _activeJobHandle;
         private CalculateCellNeighboursMaskJob _calculateMaskJob;
 
 
@@ -80,6 +81,7 @@ namespace ZE.MechBattle.Navigation
             _flowCalculationCollections.ChangeHexPosAndReset(hexCenter);
             CurrentHexCenter = hexCenter;
             _prepareJob.Run(_trianglesPerHex);
+            _activeJobHandle = default;
 
             var dataProvider = _calculateMaskJob.CellDataProvider.ChangePassabilityData(_flowCalculationCollections.PassabilityData);
             _calculateMaskJob.CellDataProvider = dataProvider;
@@ -94,8 +96,9 @@ namespace ZE.MechBattle.Navigation
             var dataProvider = _calculateMaskJob.CellDataProvider.ChangePassabilityData(_flowCalculationCollections.PassabilityData);
             _calculateMaskJob.CellDataProvider = dataProvider;
 
-            var handleA =  _prepareJob.ScheduleByRef(_trianglesPerHex, innerloopBatchCount : 16);
-            return _calculateMaskJob.ScheduleByRef(_trianglesPerHex, innerloopBatchCount : 16, handleA);
+            _activeJobHandle = _prepareJob.ScheduleByRef(_trianglesPerHex, innerloopBatchCount : 16);
+            
+            return _calculateMaskJob.ScheduleByRef(_trianglesPerHex, innerloopBatchCount : 16, _activeJobHandle);
         }
     }
 }
