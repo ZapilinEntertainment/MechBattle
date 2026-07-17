@@ -11,19 +11,20 @@ namespace ZE.MechBattle.Ecs
         private readonly TransformAccessManager _transformAccessManager;
         private readonly Stash<TransformComponent> _transforms;
         private readonly TransformAspectHandler _transformAspectHandler;
-        private readonly ColliderOwnityApplier _colliderOwnityApplier;
+        private readonly FinalViewFunctionalApplier _finalViewFunctionalApplier;
 
         [Inject]
         public ViewSynchronizationApplier(
             TransformAccessManager accessManager, 
             World world, 
             TransformAspectHandler transformAspectHandler,
-            ColliderOwnityApplier colliderOwnityApplier)
+            ColliderOwnityApplier colliderOwnityApplier,
+            FinalViewFunctionalApplier finalViewFunctionalApplier)
         {
             _world = world;
             _transformAccessManager = accessManager;
             _transformAspectHandler = transformAspectHandler;
-            _colliderOwnityApplier = colliderOwnityApplier;
+            _finalViewFunctionalApplier = finalViewFunctionalApplier;
 
             _transforms = _world.GetStash<TransformComponent>();
         }
@@ -39,7 +40,7 @@ namespace ZE.MechBattle.Ecs
             view.name = $"entity {entity.Id}";
 #endif
 
-           _colliderOwnityApplier.CheckViewForColliders(entity, view);
+           _finalViewFunctionalApplier.CheckAndApply(entity, view);
         }
 
     }

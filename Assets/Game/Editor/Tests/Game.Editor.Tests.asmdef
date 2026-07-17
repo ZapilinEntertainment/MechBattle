@@ -1,0 +1,22 @@
+{
+    "name": "Game.Editor.Tests",
+    "rootNamespace": "ZE.MechBattle.Editor.Tests",
+    "references": [
+        "GUID:4fd4d9c605f4df640b2cb0a9571ccc5c",
+        "GUID:b98de3ec81ae3dd4caeeba0786cb6143",
+        "GUID:d8b63aba1907145bea998dd612889d6b",
+        "GUID:e0cd26848372d4e5c891c569017e11f1",
+        "GUID:2665a8d13d1b3f18800f46e256720795"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -46,7 +46,7 @@ namespace ZE.MechBattle.Ecs {
                 var speed = _moveSpeed.Get(entity).Value;
 
                 var endPos = MathExtensions.MoveTowards(position, waypointPosition, speed * deltaTime);
-                _nextPositionComponent.Set(entity, new(endPos, TriangularMath.WorldToTrianglePosInvertedHeight(endPos, _invertedTriangleHeight)));
+                _nextPositionComponent.Set(entity, new(endPos.xz, TriangularMath.WorldToTrianglePosInvertedHeight(endPos, _invertedTriangleHeight)));
 
                 //UnityEngine.Debug.Log($"entity {entity.Id} WMS SET: {position} / {endPos}");
             }

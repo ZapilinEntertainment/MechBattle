@@ -60,6 +60,7 @@ namespace ZE.MechBattle.Ecs
             PrepareSuitablePositions(worldPos, protocol.SpawnRadius);
             var count = protocol.Count;           
 
+            UnityEngine.Debug.Log($"spawn {protocol.Count} entities for player {protocol.PlayerKey.Id}");
             while (count > 0 && _selectionList.ActiveItemsCount > 0)
             {
                 var randomValue = (float)_random.NextDouble();
@@ -67,18 +68,21 @@ namespace ZE.MechBattle.Ecs
                 {
                     _spawnRequestFactory.CreateSpawnRequest(protocol.UnitKey, tripos, protocol.PlayerKey);
                     count--;
+                    UnityEngine.Debug.Log(tripos);
                 }
                 else
                 {
                     _selectionList.RestoreAllItemsAsActive();
                 }
+
+
             }
         }
 
         private void PrepareSuitablePositions(float3 pos, float radius)
         {
             _job.WorldPos = pos;
-            _job.RadiusInUnits = radius;
+            _job.RadiusInUnits = radius;            
             _job.Run();
 
             _selectionList.Clear();
@@ -89,6 +93,8 @@ namespace ZE.MechBattle.Ecs
 
                 _selectionList.Add(tripos);
             }
+
+            _job.ResultList.Clear();
         }
     }
 }

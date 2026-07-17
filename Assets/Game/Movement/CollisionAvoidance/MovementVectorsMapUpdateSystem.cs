@@ -53,20 +53,20 @@ namespace ZE.MechBattle.Ecs {
             foreach (var entity in _occupationCellsFilter)
             {
                 var avoidanceComponent = _avoidanceComponents.Get(entity);
-                var pos = _positionComponents.Get(entity).Value;
+                var pos = _positionComponents.Get(entity).Value.xz;
                 var currentTripos = _triangularPosComponents.Get(entity).Value;                
                
 
                 var nextPosComponent = _nextPositionComponents.Get(entity, out var haveNextPos);
-                float3 moveDir;
+                float2 moveDir;
                 if (haveNextPos)
                 {
-                    var nextPos = nextPosComponent.WorldPos;
+                    var nextPos = nextPosComponent.WorldPosXZ;
                     moveDir = nextPos - pos;
                 }
                 else
                 {
-                    moveDir = float3.zero;
+                    moveDir = float2.zero;
                 }
                
 
@@ -89,10 +89,10 @@ namespace ZE.MechBattle.Ecs {
             {
                 var avoidanceComponent = _avoidanceComponents.Get(entity);
                 var currentTripos = _triangularPosComponents.Get(entity).Value;
-                var pos = _positionComponents.Get(entity).Value;
+                var pos = _positionComponents.Get(entity).Value.xz;
 
                 var nextPosComponent = _nextPositionComponents.Get(entity);
-                var nextPos = nextPosComponent.WorldPos;
+                var nextPos = nextPosComponent.WorldPosXZ;
                 var moveDir = nextPos - pos;
 
                 var nextTripos = nextPosComponent.Tripos;

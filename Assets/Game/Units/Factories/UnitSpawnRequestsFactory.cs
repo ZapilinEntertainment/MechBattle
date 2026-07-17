@@ -21,6 +21,7 @@ namespace ZE.MechBattle.Ecs
         {
             var entity = _world.CreateEntity();
             _spawnRequests.Add(entity, new(unitKey, new CellPoint() { Tripos = tripos}, playerKey));
+
         }
     
     }

@@ -25,7 +25,10 @@ namespace ZE.MechBattle.Ecs.States
         {
             if (_moveTargets.Has(entity))
             {
-                UnityEngine.Debug.Log($"entity {entity.Id} move target is {_moveTargets.Get(entity).TriangularPos}");
+                #if UNITY_EDITOR
+                if (ZE.MechBattle.Navigation.NavigationLogger.Settings.HasFlag(ZE.MechBattle.Navigation.NavigationLogEvents.MoveTargetSet))
+                    UnityEngine.Debug.Log($"entity {entity.Id} move target is {_moveTargets.Get(entity).TriangularPos}");
+                #endif
                 return StateKey.Move;
             }
                 

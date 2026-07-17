@@ -29,6 +29,8 @@ namespace ZE.MechBattle
             builder.Register<UnitSpawnRequestsFactory>(Lifetime.Scoped);
             builder.Register<MultipointSpawnHandler>(Lifetime.Scoped);
 
+            builder.Register<FactionVisibleMarksApplier>(Lifetime.Scoped);
+
             builder.RegisterInstance<IUnitConfigsList, UnitConfigsList>(_unitConfigsList);
 
             _installQueue.InstallDependencies(builder);

@@ -15,6 +15,7 @@ namespace ZE.MechBattle
         private readonly List<IFeatureInstaller> _featureInstallers = new()
         {
             new MorpehInstaller(),
+            new FactionsFeatureInstaller(),
             new UnitsInstaller(),
             new GridOperationsInstaller(),
             new MonoViewFeatureInstaller(),
@@ -34,16 +35,15 @@ namespace ZE.MechBattle
             
             builder.Register<MechBuilder>(Lifetime.Scoped);
             builder.Register<PlayerFactory>(Lifetime.Scoped);            
-            builder.Register<SceneFlagsManager>(Lifetime.Scoped);
-
-            builder.Register<PlayerRelations>(Lifetime.Scoped);
-            builder.Register<IPlayersList, PlayersList>(Lifetime.Scoped);
+            builder.Register<SceneFlagsManager>(Lifetime.Scoped);            
 
             builder.Register<EcsTasksFactory>(Lifetime.Scoped);
             builder.Register<AwaitingTokensList>(Lifetime.Scoped);
 
             builder.Register<RestorablesList>(Lifetime.Scoped);
-            builder.Register<CollidersTable>(Lifetime.Scoped);                              
+            builder.Register<CollidersTable>(Lifetime.Scoped);             
+            
+            builder.Register<ColouredMaterialsDepot>(Lifetime.Scoped);
 
             var map = new NavigationMap(_mapSettings.ToStruct(), Unity.Collections.Allocator.Persistent);
             builder.RegisterInstance<INavigationMap, IUpdatableMap>(map);

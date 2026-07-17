@@ -97,7 +97,8 @@ namespace ZE.MechBattle.Ecs
 
                 _weaponTowerComponents.Add(weaponEntity, new(towerEntity));
                 _towerStowTag.Add(towerEntity); // always for units
-                UnityEngine.Debug.Log($"built tower with id {towerEntity.Id}");
+
+                //UnityEngine.Debug.Log($"built tower with id {towerEntity.Id}");
             }
             else
             {
@@ -112,7 +113,7 @@ namespace ZE.MechBattle.Ecs
                 _weaponBarrelComponents.Add(weaponEntity, new(barrelEntity));
                 _barrelStowTag.Add(barrelEntity);
 
-                UnityEngine.Debug.Log($"built barrel with id {barrelEntity.Id}");
+                //UnityEngine.Debug.Log($"built barrel with id {barrelEntity.Id}");
             }
 
             _weaponShotPoints.Add(weaponEntity, new(weaponConfig.ShotPoint));

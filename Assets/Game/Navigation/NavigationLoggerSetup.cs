@@ -16,6 +16,8 @@ namespace ZE.MechBattle.Navigation
         FlowMapAssigment = 1 << 5,
         TripathProgression = 1 << 6,
         EntityPortalPathStatuses = 1 << 7,
+        HexPathCleared = 1 << 8,
+        MoveTargetSet = 1 << 9,
     }
 
     public class NavigationLoggerSetup : MonoBehaviour

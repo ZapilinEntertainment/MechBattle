@@ -29,7 +29,6 @@ namespace ZE.MechBattle.Navigation.Tests
             {
                 TestContext.WriteLine(pos);
             }
-            return;
 
                 // make an outside zone
                 foreach (var pos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, hexRadius+1))

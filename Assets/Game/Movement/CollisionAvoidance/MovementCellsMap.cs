@@ -12,13 +12,13 @@ namespace ZE.MechBattle
     public readonly struct CellMovementData
     {
         public readonly Entity Entity;
-        public readonly float3 MoveVector; // zero if inner cell of occupation zone or entity is not moving
+        public readonly float2 MoveVector; // zero if inner cell of occupation zone or entity is not moving
         public readonly int ProjectionStepIndex; // 0 is current object position, 1+ is next pos projections
         public readonly MovementCollisionAvoidancePriority Priority;
 
         public bool IsRealOccupationCell => ProjectionStepIndex == 0; // other can be virtual = projection of move speed
 
-        public CellMovementData(Entity entity, MovementCollisionAvoidancePriority priority, float3 moveVector, int projectionIndex)
+        public CellMovementData(Entity entity, MovementCollisionAvoidancePriority priority, float2 moveVector, int projectionIndex)
         {
             Entity = entity;
             Priority = priority;

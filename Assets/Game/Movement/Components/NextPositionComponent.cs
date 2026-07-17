@@ -11,12 +11,12 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public readonly struct NextPositionComponent : IComponent 
     {
-        public readonly float3 WorldPos;    
+        public readonly float2 WorldPosXZ;    
         public readonly IntTriangularPos Tripos;
 
-        public NextPositionComponent(float3 worldPos, IntTriangularPos tripos)
+        public NextPositionComponent(float2 worldPosXZ, IntTriangularPos tripos)
         {
-            WorldPos = worldPos;
+            WorldPosXZ = worldPosXZ;
             Tripos = tripos;
         }
     }

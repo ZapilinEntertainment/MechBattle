@@ -75,7 +75,6 @@ namespace ZE.MechBattle.Navigation.Tests
                     var hitposTriangle = TriangularMath.WorldToTrianglePos(hitPos, triangleHeight);
                     Assert.AreEqual(pos, hitposTriangle, $"raycast out of triangle {index}:{pos}: {hitPos} : ray {i} defined tripos: {hitposTriangle}");
 
-                    continue;
                     if (hitposTriangle != pos)
                         TestContext.WriteLine($"raycast out of triangle {index}:{pos}: {hitPos} : ray {i} defined tripos: {hitposTriangle}");
                     else

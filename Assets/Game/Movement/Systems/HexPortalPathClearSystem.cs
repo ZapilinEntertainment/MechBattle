@@ -43,7 +43,12 @@ namespace ZE.MechBattle.Ecs
 
                 _clearTrianglePathTags.Set(entity);
 
-                UnityEngine.Debug.Log($"hex path data cleared for entity {entity.Id}");
+#if UNITY_EDITOR
+                if (ZE.MechBattle.Navigation.NavigationLogger.Settings.HasFlag(ZE.MechBattle.Navigation.NavigationLogEvents.HexPathCleared))
+                    UnityEngine.Debug.Log($"hex path data cleared for entity {entity.Id}");
+#endif
+
+
             }
         }
 

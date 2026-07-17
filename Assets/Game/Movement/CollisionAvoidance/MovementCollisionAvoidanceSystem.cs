@@ -46,8 +46,8 @@ namespace ZE.MechBattle.Ecs
             {
                 var nextPosComponent = _nextPositionComponents.Get(entity);
                 var nextTripos = nextPosComponent.Tripos;
-                var currentPos = _positionComponents.Get(entity).Value;
-                var moveDir = nextPosComponent.WorldPos - currentPos;
+                var currentPos = _positionComponents.Get(entity).Value.xz;
+                var moveDir = nextPosComponent.WorldPosXZ - currentPos;
 
                 if (!_vectorsList.TryGetValue(nextTripos, out var moveCell))
                 {
@@ -83,7 +83,7 @@ namespace ZE.MechBattle.Ecs
                 {
                     var moveCf = dot * math.lengthsq(moveDir);
                     var nextPos = currentPos + moveCf * moveDir;
-                    var resultingTripos = TriangularMath.WorldToTrianglePosInvertedHeight(nextPos, _invertedTriangleHeight);                                      
+                    var resultingTripos = TriangularMath.WorldToTrianglePosInvertedHeight(new float3(nextPos.x, 0f, nextPos.y), _invertedTriangleHeight);                                      
                     if (_vectorsList.TryGetValue(resultingTripos, out var alreadyOccupiedCell))
                     {
                         var currentTripos = _triangularPosComponents.Get(entity).Value;
@@ -101,7 +101,7 @@ namespace ZE.MechBattle.Ecs
         private void SearchForDetour(Entity entity)
         {
             //UnityEngine.Debug.Log($"need detour for {entity}");
-            var currentPos = _positionComponents.Get(entity).Value;
+            var currentPos = _positionComponents.Get(entity).Value.xz;
             var nextPosComponent = new NextPositionComponent(currentPos, _triangularPosComponents.Get(entity).Value);
             _nextPositionComponents.Set(entity, nextPosComponent);
             //UnityEngine.Debug.Log($"entity {entity.Id} CAS SET: {currentPos} / {nextPosComponent.WorldPos}");
@@ -110,7 +110,7 @@ namespace ZE.MechBattle.Ecs
         private void SolveYieldingCase(Entity entity, CellMovementData nextCellData)
         {
             //UnityEngine.Debug.Log($"solve yielding case for {entity}");
-            _nextPositionComponents.Set(entity, new(_positionComponents.Get(entity).Value, _triangularPosComponents.Get(entity).Value));
+            _nextPositionComponents.Set(entity, new(_positionComponents.Get(entity).Value.xz, _triangularPosComponents.Get(entity).Value));
         }
     }
 }

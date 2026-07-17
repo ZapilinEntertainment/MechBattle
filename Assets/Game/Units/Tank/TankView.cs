@@ -2,12 +2,13 @@ using UnityEngine;
 
 namespace ZE.MechBattle
 {
-    public class TankView : SimpleView, IUnitConfig, IComplexMonoView, ISingleColliderView
+    public class TankView : SimpleView, IUnitConfig, IComplexMonoView, ISingleColliderView, IFactionableView
     {
         [SerializeField] private Transform _tower;
         [SerializeField] private Transform _barrel;
         [SerializeField] private UnitConfig _unitConfig;
         [SerializeField] private Collider _collider;
+        [SerializeField] private Renderer _renderer;
 
         public bool TryGetWeaponData(out WeaponData weaponData) => _unitConfig.TryGetWeaponData(out weaponData);
 
@@ -29,6 +30,10 @@ namespace ZE.MechBattle
             return false;
         }
 
+        public void ApplyFactionMaterial(Material material)
+        {
+            _renderer.sharedMaterial = material;
+        }
 
         public float Damage => _unitConfig.Damage;
         public float Health => _unitConfig.Health;

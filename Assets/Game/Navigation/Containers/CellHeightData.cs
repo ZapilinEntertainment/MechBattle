@@ -1,7 +1,9 @@
 using Unity.Mathematics;
+using Unity.Burst;
 
 namespace ZE.MechBattle.Navigation
 {
+    [BurstCompile]
     public readonly struct CellHeightData : ICellHeightData
     {
         public readonly short AverageHeight;
@@ -71,6 +73,17 @@ namespace ZE.MechBattle.Navigation
                     default: return AverageHeight;
                 }
             }
+        }
+
+        public float GetHeightAtPoint(IntTriangularPos tripos, float3 localTripos)
+        {
+            // barycentric interpolation
+            var isPeak = tripos.IsPeak;
+            var pinnacleWeight = isPeak ? (localTripos.y - tripos.Y) : (tripos.Y - localTripos.y);
+            var leftBasisWeight = isPeak ? (localTripos.z - tripos.Z) : (localTripos.x - tripos.X);
+            var rightBasisWeight = isPeak ? (localTripos.x - tripos.X) : (localTripos.z - tripos.Z);
+
+            return pinnacleWeight * PinnacleHeight + leftBasisWeight * LeftBasisHeight + rightBasisWeight * RightBasisHeight;
         }
 
     }

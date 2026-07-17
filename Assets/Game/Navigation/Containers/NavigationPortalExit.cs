@@ -38,7 +38,7 @@ namespace ZE.MechBattle
                    Length == other.Length;
         }
 
-        public override bool Equals(object? obj)
+        public override bool Equals(object obj)
         {
             return obj is NavigationPortalExit other && Equals(other);
         }
