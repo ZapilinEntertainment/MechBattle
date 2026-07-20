@@ -17,15 +17,14 @@ namespace ZE.MechBattle.Navigation
         public NavigationHexPosition HexPos;
         public QueryParameters QueryParameters;
 
-        public NativeArray<SubdivideTriangleCommand.SmallTriangleData> RaycastPoints;
+        public NativeArray<SmallTriangleData> RaycastPoints;
         [WriteOnly] public NativeArray<RaycastCommand> RaycastCommands;
 
         public void Execute()
         {
-            // why Vector3: raycast command constructor use it
-            var direction = Vector3.down;
+            var direction = math.down();
 
-            var subdivisionProtocol = new SubdivideTriangleCommand.TriangleSubdivisionProtocol()
+            var subdivisionProtocol = new TriangleSubdivisionProtocol()
             {
                 Centers = RaycastPoints,
                 TriangleHeight = TriangleHeight,

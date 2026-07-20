@@ -16,43 +16,56 @@ namespace ZE.MechBattle
         }
     }
 
-    public abstract class HexUpdateRequestsList : IEnumerable<HexUpdateRequest>
+    public abstract class HexUpdateRequestsList
     {
-        public int Count => _updateRequests.Count;
-        private readonly Dictionary<int2, int> _updateRequests = new();
+        public int AwaitingCount => _awaitingRequests.Count;
+        public int CalculatingCount => _calculatingRequests.Count;
+        private readonly Dictionary<int2, int> _awaitingRequests = new();
+        private readonly Dictionary<int2, int> _calculatingRequests = new();
 
         public void AddRequest(int2 hexCoord, int hexVersion)
         {
-            if (!_updateRequests.TryGetValue(hexCoord, out var currentRequestedVersion) || hexVersion > currentRequestedVersion)
+            if (!_awaitingRequests.TryGetValue(hexCoord, out var currentRequestedVersion) || hexVersion > currentRequestedVersion)
             {
-                _updateRequests[hexCoord] = hexVersion;
+                _awaitingRequests[hexCoord] = hexVersion;
             }
         }
 
-        public void RemoveRequest(int2 hexCoord, int updateHexVersion)
+        public void CancelRequest(int2 hexCoord, int version)
         {
-            if (_updateRequests.TryGetValue(hexCoord, out var currentRequestVersion) && currentRequestVersion < updateHexVersion)
-            {
-                _updateRequests.Remove(hexCoord);
-            }
+            if (_awaitingRequests.TryGetValue(hexCoord, out var currentRequestedVersion) && version == currentRequestedVersion)
+                _awaitingRequests.Remove(hexCoord);
         }
 
-        public void RemoveActualRequest(int2 hexCoord) => _updateRequests.Remove(hexCoord);
-
-        public bool Contains(int2 hexCoord) => _updateRequests.ContainsKey(hexCoord);
-
-        protected void Clear() => _updateRequests.Clear();
-
-        #region IEnumerable
-        public IEnumerator<HexUpdateRequest> GetEnumerator()
+        public void OnRequestStartCalculating(int2 hexCoord, int hexVersion)
         {
-            foreach (var requestKvp in _updateRequests)
-            {
-                yield return new(requestKvp.Key, requestKvp.Value);
-            }
+            if (_awaitingRequests.TryGetValue(hexCoord, out var requestedHexVersion) && requestedHexVersion <= hexVersion)
+                _awaitingRequests.Remove(hexCoord);
+
+            if (!_calculatingRequests.TryGetValue(hexCoord, out var currentCalculatingVersion) || currentCalculatingVersion < hexVersion)
+                _calculatingRequests[hexCoord] = hexVersion;
         }
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-        #endregion
+        public void OnRequestCalculated(int2 hexCoord, int hexVersion)
+        {
+            if (_calculatingRequests.TryGetValue(hexCoord, out var currentCalculatingVersion) && currentCalculatingVersion <= hexVersion)
+                _calculatingRequests.Remove(hexCoord);
+        }
+
+        public void OnRequestCalculationStopped(int2 hexCoord, int hexVersion)
+        {
+            if (_calculatingRequests.TryGetValue(hexCoord, out var currentCalculatingVersion) && currentCalculatingVersion == hexVersion)
+                _calculatingRequests.Remove(hexCoord);
+        }
+
+        public bool Contains(int2 hexCoord) => _awaitingRequests.ContainsKey(hexCoord);
+
+        public void GetAwaitingRequestsList(List<HexUpdateRequest> awaitingRequestsList)
+        {
+            foreach (var awaitingRequest in _awaitingRequests)
+            {
+                awaitingRequestsList.Add(new(awaitingRequest.Key, awaitingRequest.Value));
+            }
+        }
     }
 }

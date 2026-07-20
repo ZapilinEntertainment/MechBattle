@@ -29,6 +29,7 @@ namespace ZE.MechBattle.Navigation
         private readonly int _trianglesPerHex;
 
         private GenerateFlowFieldJob _generateFlowFieldJob;
+        private JobHandle _activeJobHandle;
         private NativeList<IntTriangularPos> _zeroPositions;        
 
         public FlowMapCalculationProcess(Allocator allocator, INavigationMap map)
@@ -51,6 +52,7 @@ namespace ZE.MechBattle.Navigation
 
         protected override void DisposeResources()
         {
+            _activeJobHandle.Complete();
             _collections.Dispose();
         }
 
@@ -63,7 +65,8 @@ namespace ZE.MechBattle.Navigation
             PrepareExitCells();
             _generateFlowFieldJob.ExitDirection = exit.Edge;
             
-            return _generateFlowFieldJob.ScheduleByRef();
+            _activeJobHandle = _generateFlowFieldJob.ScheduleByRef();
+            return _activeJobHandle;
         }
 
         protected override FlowMapCalculationResults FormResults() => new(_generateFlowFieldJob, _trianglesPerHex);

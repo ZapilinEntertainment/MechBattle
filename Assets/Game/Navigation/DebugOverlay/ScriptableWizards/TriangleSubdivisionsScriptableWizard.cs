@@ -33,7 +33,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 
             var center = TriangularMath.TriangularToWorld(tripos, triangleHeight).xz;
             using var centersArray = SubdivideTriangleCommand.CreateDataArray(TrianglesPerEdge, Allocator.Temp);
-            var protocol = new SubdivideTriangleCommand.TriangleSubdivisionProtocol()
+            var protocol = new TriangleSubdivisionProtocol()
             {
                 Centers = centersArray,
                 RaycastTrianglesPerEdge = TrianglesPerEdge,

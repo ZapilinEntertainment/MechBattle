@@ -54,9 +54,6 @@ namespace ZE.MechBattle
 
         protected override void HandleResults(HexRaycastProcess process)
         {
-            if (process.WasStopped)
-                return;
-
             process.ApplyCalculatedData(process.CurrentHexPosition.TriangularCenterPos);
         }        
     }

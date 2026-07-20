@@ -50,6 +50,7 @@ namespace ZE.MechBattle
         private CalculatePointDistancesJob _job;
         private int2 _hexCoord;
         private int _portalId;
+        private JobHandle _activeJobHandle;
 
         public CalculatePointDistancesProcess(Allocator allocator, INavigationMap map)
         {
@@ -68,8 +69,11 @@ namespace ZE.MechBattle
 
         public CalculatePointDistancesResults Run(CalculatePointDistancesLaunchData input)
         {
-            PrepareJob(input);
+            if (!TryPrepareJob(input))
+                return default;
+
             _job.Run();
+            _activeJobHandle = default;
 
             return FormResults();
         }
@@ -78,36 +82,21 @@ namespace ZE.MechBattle
 
         protected override JobHandle LaunchJob(CalculatePointDistancesLaunchData input)
         {
-            PrepareJob(input);
-            return _job.Schedule();
+            if (!TryPrepareJob(input))
+                return default;
+
+            _activeJobHandle = _job.Schedule();
+            return _activeJobHandle;
         }
 
         protected override void DisposeResources()
         {
-#if UNITY_EDITOR
-            try
-            {
-                FinalDispose();
-            }
-            catch (Exception ex)
-            {
-                if (!ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
-                    UnityEngine.Debug.LogError(ex);
-            }
-            return;
-#else  
-
-            FinalDispose();       
-#endif            
-        }
-
-        private void FinalDispose() 
-        {
+            _activeJobHandle.Complete();
             _activeCells.Dispose();
             _cells.Dispose();
         }
 
-        private void PrepareJob(CalculatePointDistancesLaunchData input)
+        private bool TryPrepareJob(CalculatePointDistancesLaunchData input)
         {
             _hexCoord = input.HexCoord;
             _portalId = input.PortalId;
@@ -124,7 +113,13 @@ namespace ZE.MechBattle
             if (!_cells.ContainsKey(_job.ZeroPos))
             {
                 UnityEngine.Debug.LogError($"{_job.ZeroPos} is not in {_hexCoord} (portal {_portalId})");
-            }                
+                return false;
+            }    
+            
+            _job.Cells = _cells;
+            _job.ActiveCells = _activeCells;
+
+            return true;
         }
     }
 }

@@ -5,13 +5,7 @@ using Unity.Collections.LowLevel.Unsafe;
 
 namespace ZE.MechBattle.Navigation
 {
-    public interface IPassabilityDataSource
-    {
-        CellPassabilityData GetPassabilityData(int index);
-        CellPassabilityData GetPassabilityData(IntTriangularPos pos);
-    }
-
-    public class FlowFieldCalculationCollections : IDisposable, IPassabilityDataSource
+    public class FlowFieldCalculationCollections : IDisposable
     {
         public ref FlattenedHexList<CellPassabilityData> PassabilityData => ref _passabilityData;
         public NativeArray<FlowFieldCellCalculationData> CalculationData;

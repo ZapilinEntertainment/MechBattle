@@ -38,15 +38,14 @@ namespace ZE.MechBattle.Navigation
     public struct RefineNavRaycastDataJob : IJobParallelFor
     {
         // length: hex radius * hex radius * 6 * raycasts per triangle (triangle raycasts)
-        [ReadOnly] public NativeArray<RaycastHit>.ReadOnly WalkableHits;
-        [ReadOnly] public NativeArray<RaycastHit>.ReadOnly ObstacleHits;
+        [ReadOnly] public NativeArray<RaycastHit> WalkableHits;
+        [ReadOnly] public NativeArray<RaycastHit> ObstacleHits;
 
         // length: hex radius * hex radius * 6 (triangles)
         [ReadOnly] public NativeBitArray.ReadOnly IsPeakData;
         public NativeArray<RefinedTriangleRaycastData> RefinedData;
 
         public NavigationHexPosition HexPos;
-        public int HexRadius;
         public int RaycastsPerTriangle;
 
         public int PeakLeftBasisIndex;

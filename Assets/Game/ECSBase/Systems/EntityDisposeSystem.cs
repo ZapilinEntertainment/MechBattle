@@ -18,11 +18,13 @@ namespace ZE.MechBattle.Ecs {
 
         public void OnUpdate(float deltaTime) 
         {
-
             if (_filter.IsNotEmpty())
             {
                 foreach (var entity in _filter)
+                {
                     World.RemoveEntity(entity);
+                }
+                    
             }
         }
 

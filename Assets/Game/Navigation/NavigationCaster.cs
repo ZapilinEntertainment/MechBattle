@@ -5,6 +5,7 @@ using UnityEngine;
 using Unity.Jobs;
 using Unity.Collections;
 using Unity.Mathematics;
+using Unity.Burst;
 
 namespace ZE.MechBattle.Navigation
 {
@@ -19,20 +20,18 @@ namespace ZE.MechBattle.Navigation
         int TrianglesPerHexEdge { get; }
         float HexEdgeSize { get; }
         void CastHex(NavigationHexPosition hexPos);
-        Awaitable CastHexAsync(
-            NavigationHexPosition hexPos,
-            CancellationToken cancellationToken);
     }
 
     // support class for making casts
     public class NavigationCaster : INavigationCaster, IDisposable
     {
+
         public float TriangleHeight => _triangleHeight;
         public int RaycastResolution => _raycastTrianglesPerEdge;
         public int HexTrianglesCount => _hexTrianglesCount;
         public int TrianglesPerHexEdge => _trianglesPerHexEdge;
         public float HexEdgeSize => _hexEdgeSize;
-        public NativeArray<RaycastHit>.ReadOnly Results => _raycastResults.AsReadOnly();
+        public readonly int ResultsLength;
 
         private readonly int _trianglesPerHexEdge;
         private readonly int _raycastTrianglesPerEdge;
@@ -41,7 +40,7 @@ namespace ZE.MechBattle.Navigation
         private readonly float _castingHeight;
         private readonly float _castingRayLength;
         private readonly float _hexEdgeSize;
-        private readonly NativeArray<SubdivideTriangleCommand.SmallTriangleData> _raycastPointsArray;
+        private readonly NativeArray<SmallTriangleData> _raycastPointsArray;
         private readonly QueryParameters _queryParameters;
 
         // final commands list
@@ -50,8 +49,9 @@ namespace ZE.MechBattle.Navigation
         private readonly CancellationTokenSource _casterLifetimeCts = new();
 
         private bool _isDisposed = false;
+        private JobHandle _activeJobHandle;
 
-        public NavigationCaster(Allocator allocator, in MapSettings mapSettings, QueryParameters queryParameters) 
+        public NavigationCaster(Allocator allocator, MapSettings mapSettings, QueryParameters queryParameters) 
         { 
             _trianglesPerHexEdge = mapSettings.TrianglesPerHexEdge;
             _raycastTrianglesPerEdge = mapSettings.RaycastSubdivisionsPerEdge;
@@ -61,13 +61,13 @@ namespace ZE.MechBattle.Navigation
             _hexEdgeSize = mapSettings.HexEdgeSize;
             _queryParameters = queryParameters;
 
-            _hexTrianglesCount = TriangularMath.GetTrianglesCountInHex(mapSettings.TrianglesPerHexEdge);
-            var raycastCommandsCount = _hexTrianglesCount * _raycastTrianglesPerEdge * _raycastTrianglesPerEdge;
-            _raycastCommands = new NativeArray<RaycastCommand>(raycastCommandsCount, allocator);
-            _raycastResults = new NativeArray<RaycastHit>(raycastCommandsCount, allocator);
+            _hexTrianglesCount = mapSettings.TrianglesCountInHex;
+            ResultsLength = mapSettings.RaycastsPerHex;
+            _raycastCommands = new NativeArray<RaycastCommand>(ResultsLength, allocator);
+            _raycastResults = new NativeArray<RaycastHit>(ResultsLength, allocator);
 
-            var raycastsCount = _raycastTrianglesPerEdge * _raycastTrianglesPerEdge;
-            _raycastPointsArray = new (raycastsCount, allocator, NativeArrayOptions.UninitializedMemory);
+            var raycastsCountPerTriangle = _raycastTrianglesPerEdge * _raycastTrianglesPerEdge;
+            _raycastPointsArray = new (raycastsCountPerTriangle, allocator, NativeArrayOptions.UninitializedMemory);
         }
 
         public NavigationCaster(Allocator allocator, MapSettingsSO mapSettings, QueryParameters queryParameters ) : this(allocator, mapSettings.ToStruct(), queryParameters) { }
@@ -88,28 +88,6 @@ namespace ZE.MechBattle.Navigation
             };
         }
 
-        public async Awaitable CastHexAsync(
-            NavigationHexPosition hexPos,
-            CancellationToken cancellationToken)
-        {
-            if (_isDisposed)
-                throw new Exception("Caster disposed");
-
-            var castJobHandle = ScheduleCastJob(hexPos);
-
-            var ownToken = _casterLifetimeCts.Token;
-            while (!castJobHandle.IsCompleted)
-            {
-                await Awaitable.NextFrameAsync();
-            }
-            castJobHandle.Complete();
-
-            if (cancellationToken.IsCancellationRequested || ownToken.IsCancellationRequested)
-            {
-                Debug.LogWarning("Casting was cancelled before raycast job complete");
-            }
-        }
-
         public void CastHex(NavigationHexPosition hexPos)
         {
             if (_isDisposed)
@@ -121,12 +99,19 @@ namespace ZE.MechBattle.Navigation
 
         public JobHandle ScheduleCastJob(NavigationHexPosition hexPos)
         {
+            if (!_activeJobHandle.IsCompleted)
+                throw new Exception("caster is still busy");
+
+            //UnityEngine.Debug.Log($"start casting {hexPos.HexCoordinate}");
             var positionsJob = ConstructPositionsJob(hexPos, _trianglesPerHexEdge);           
-            var preparePositionsHandle = positionsJob.ScheduleByRef();
-            return RaycastCommand.ScheduleBatch(_raycastCommands, _raycastResults, 64, dependsOn: preparePositionsHandle);
+            var positionsHandle = positionsJob.Schedule();
+            //
+            var raycastHandle = RaycastCommand.ScheduleBatch(_raycastCommands, _raycastResults, 64,  dependsOn: positionsHandle);
+            _activeJobHandle = raycastHandle;
+            return _activeJobHandle;
         }
 
-
+        //
         public void Dispose()
         {
             if (_isDisposed)
@@ -137,28 +122,20 @@ namespace ZE.MechBattle.Navigation
             _casterLifetimeCts.Cancel();
             _casterLifetimeCts.Dispose();
 
-#if UNITY_EDITOR
-            try
-            {
-                FinalDispose();
-            }
-            catch (Exception ex)
-            {
-                if (!ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
-                    UnityEngine.Debug.LogError(ex);
-            }
-            return;
-#else  
-
-            FinalDispose();       
-#endif
-        }
-
-        private void FinalDispose()
-        {
             _raycastCommands.Dispose();
             _raycastPointsArray.Dispose();
             _raycastResults.Dispose();
+        }
+
+
+        public void GetResults(RaycastHit[] receiverArray)
+        {
+            // COMPLETE REQUIRED:
+            _activeJobHandle.Complete();
+            for (var i = 0; i < _raycastResults.Length; i++)
+            {
+                receiverArray[i] = _raycastResults[i];
+            }
         }
     }
 }

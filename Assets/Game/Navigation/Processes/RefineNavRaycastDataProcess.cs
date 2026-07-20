@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Unity.Jobs;
 using Unity.Collections;
@@ -9,28 +10,31 @@ namespace ZE.MechBattle.Navigation
     public class RefineNavRaycastDataProcess : IDisposable
     {
         public RefineNavRaycastDataJob TEST_Job => _job;
-        public NativeArray<RefinedTriangleRaycastData>.ReadOnly RefinedData => _refinedData.AsReadOnly();
         
         public readonly int Subdivisions;
         public readonly int RaycastsPerTriangle;
         private readonly int _trianglesPerHex;
-        private readonly NativeArray<RefinedTriangleRaycastData> _refinedData;
+        private readonly NativeArray<RefinedTriangleRaycastData> _refinedData;        
         private readonly Allocator _allocator;
 
         private RefineNavRaycastDataJob _job;
+        private JobHandle _activeJobHandle;
+        private NativeArray<RaycastHit> _walkableHits;
+        private NativeArray<RaycastHit> _obstacleHits;
 
         public RefineNavRaycastDataProcess(
             Allocator allocator,
-            in MapSettings mapSettings,
-            NativeBitArray.ReadOnly peakData,
-            NativeArray<RaycastHit>.ReadOnly walkableHits,
-            NativeArray<RaycastHit>.ReadOnly obstacleHits)
+            MapSettings mapSettings,
+            NativeBitArray.ReadOnly peakData)
         {
             _allocator = allocator;
-            var hexRadius = mapSettings.TrianglesPerHexEdge;
-            _trianglesPerHex = TriangularMath.GetTrianglesCountInHex(hexRadius);
+            _trianglesPerHex = mapSettings.TrianglesCountInHex;
 
             _refinedData = new NativeArray<RefinedTriangleRaycastData>(_trianglesPerHex, _allocator, NativeArrayOptions.UninitializedMemory);
+
+            var raycastCount = mapSettings.RaycastsPerHex;
+            _walkableHits = new NativeArray<RaycastHit>(raycastCount, allocator);
+            _obstacleHits = new NativeArray<RaycastHit>(raycastCount, allocator);
 
             Subdivisions = mapSettings.RaycastSubdivisionsPerEdge;
             var peakLeftBasisIndex = TrianglesToIndexFlattenedConverter.GetSubdivisionBasisIndex(false, true, Subdivisions);
@@ -42,7 +46,6 @@ namespace ZE.MechBattle.Navigation
 
             _job = new RefineNavRaycastDataJob()
             {
-                HexRadius = hexRadius,
                 RefinedData = _refinedData,
                 RaycastsPerTriangle = RaycastsPerTriangle,
                 IsPeakData = peakData,
@@ -52,8 +55,8 @@ namespace ZE.MechBattle.Navigation
                 ValleyLeftBasisIndex = valleyLeftBasisIndex,
                 ValleyRightBasisIndex = valleyRightBasisIndex,
 
-                WalkableHits = walkableHits,
-                ObstacleHits = obstacleHits,
+                WalkableHits = _walkableHits,
+                ObstacleHits = _obstacleHits,
 
                 MaxHeightDifference = mapSettings.MaxElevationDifference,
                 RansacIterationsCount = NavigationConstants.GetRansacIterationsCount(RaycastsPerTriangle),
@@ -61,34 +64,37 @@ namespace ZE.MechBattle.Navigation
             };
         }
 
-        public JobHandle ScheduleJob(NavigationHexPosition hexPos)
+        public JobHandle ScheduleJob(NavigationHexPosition hexPos, IReadOnlyList<RaycastHit> walkableResults, IReadOnlyList<RaycastHit> obstacleResults)
         {
+            if (!_activeJobHandle.IsCompleted)
+                throw new Exception("job still busy");
+
+            for (var i = 0; i < walkableResults.Count; i++)
+            {
+                _walkableHits[i] = walkableResults[i];
+                _obstacleHits[i] = obstacleResults[i];
+            }
+
             _job.HexPos = hexPos;
-            return _job.ScheduleByRef(_trianglesPerHex, 32);
+            _activeJobHandle=  _job.ScheduleByRef(_trianglesPerHex, 32);
+            return _activeJobHandle;
         }
     
         public void Dispose()
         {
-#if UNITY_EDITOR
-            try
-            {
-                FinalDispose();
-            }
-            catch (Exception ex)
-            {
-                if (!ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
-                    UnityEngine.Debug.LogError(ex);
-            }
-            return;
-#else  
-
-            FinalDispose();       
-#endif  
+            _activeJobHandle.Complete();
+            _refinedData.Dispose();
+            _walkableHits.Dispose();
+            _obstacleHits.Dispose();
         }
 
-        private void FinalDispose()
+        public void GetResults(RefinedTriangleRaycastData[] receiverArray) 
         {
-            _refinedData.Dispose();
+            _activeJobHandle.Complete();
+            for (var i = 0; i < _refinedData.Length;i++)
+            {
+                receiverArray[i] = _refinedData[i];
+            }
         }
     }
 }

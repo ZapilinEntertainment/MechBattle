@@ -60,7 +60,6 @@ namespace ZE.MechBattle.Ecs
         public Entity CreateUnitWeapon(Entity parentEntity, WeaponConfig weaponConfig, WeaponAttachmentProtocol attachmentProtocol)
         {
             var weaponEntity = _world.CreateEntity();
-            UnityEngine.Debug.Log($"built weapon with id {weaponEntity.Id}");
 
             _ranges.Add(weaponEntity, new(weaponConfig.MinRange, weaponConfig.MaxRange, weaponConfig.RecommendedRangePc));
             _weaponUpdateComponents.Add(weaponEntity, new(weaponConfig.Cooldown));
