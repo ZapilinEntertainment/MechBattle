@@ -52,9 +52,9 @@ namespace ZE.MechBattle.Ecs
             _job = new()
             {
                 HexEdgeLength = _hexEdgeLength,
-                TrianglesPerEdge = _trianglesPerHexEdge,
                 EnemiesMask = _relationMasks,
-                MovementCells = movementCellsMap.AsReadonlyMap()
+                MovementCells = movementCellsMap.AsReadonlyMap(),
+                TriangleHeight = map.TriangleHeight
             };
         }
 

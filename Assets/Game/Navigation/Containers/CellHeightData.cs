@@ -77,13 +77,10 @@ namespace ZE.MechBattle.Navigation
 
         public float GetHeightAtPoint(IntTriangularPos tripos, float3 localTripos)
         {
-            // barycentric interpolation
-            var isPeak = tripos.IsPeak;
-            var pinnacleWeight = isPeak ? (localTripos.y - tripos.Y) : (tripos.Y - localTripos.y);
-            var leftBasisWeight = isPeak ? (localTripos.z - tripos.Z) : (localTripos.x - tripos.X);
-            var rightBasisWeight = isPeak ? (localTripos.x - tripos.X) : (localTripos.z - tripos.Z);
-
-            return pinnacleWeight * PinnacleHeight + leftBasisWeight * LeftBasisHeight + rightBasisWeight * RightBasisHeight;
+            var vertexWeights = CellLogic.GetVertexWeights(tripos, localTripos);
+            return vertexWeights.PinnacleWeight * PinnacleHeight 
+                + vertexWeights.LeftBasisWeight * LeftBasisHeight 
+                + vertexWeights.RightBasisWeight * RightBasisHeight;
         }
 
     }

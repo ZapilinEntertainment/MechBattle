@@ -29,7 +29,7 @@ namespace ZE.MechBattle.Editor.Tests
         [SetUp]
         public void Setup()
         {
-            BurstCompiler.Options.EnableBurstCompilation = true;
+           // BurstCompiler.Options.EnableBurstCompilation = true;
             _world = World.Create();
             _map = PrepareTestingMap(Allocator.TempJob, 10);
             _relations = PrepareRelationsMask();
@@ -72,7 +72,7 @@ namespace ZE.MechBattle.Editor.Tests
       
 
         [TestCase(600, 0.01f), Performance]
-        public void UpdatePortalsBenchmarkTest(float targetSearchRadius, float spawnChance)
+        public void SearchTargetJobBenchmark(float targetSearchRadius, float spawnChance)
         {
             _targetSearchRadius = targetSearchRadius;
 
@@ -94,9 +94,9 @@ namespace ZE.MechBattle.Editor.Tests
             var job = new TargetDefineJob()
             {
                 HexEdgeLength = _map.HexEdgeLength,
-                TrianglesPerEdge = _map.TrianglesPerHexEdge,
                 EnemiesMask = _relations,
                 MovementCells = _movementCells.AsReadOnly(),
+                TriangleHeight = _map.TriangleHeight,
             };
 
             job.Entities = _entities;
