@@ -60,7 +60,7 @@ namespace ZE.MechBattle.Ecs
             PrepareSuitablePositions(worldPos, protocol.SpawnRadius);
             var count = protocol.Count;           
 
-            UnityEngine.Debug.Log($"spawn {count} entities for player {protocol.PlayerKey.Id}");
+            UnityEngine.Debug.Log($"spawn {count} entities for player {protocol.PlayerKey.Id} | selection list: {_selectionList.ActiveItemsCount} elements");
             while (count > 0 && _selectionList.ActiveItemsCount > 0)
             {
                 var randomValue = (float)_random.NextDouble();
@@ -74,8 +74,6 @@ namespace ZE.MechBattle.Ecs
                 {
                     _selectionList.RestoreAllItemsAsActive();
                 }
-
-
             }
         }
 

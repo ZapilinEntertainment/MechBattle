@@ -15,7 +15,9 @@ namespace ZE.MechBattle.Navigation
 
         private readonly FlowFieldCalculationCollections _flowCalculationCollections;        
         private readonly NativeArray<CellHeightData> _cellHeightData;
+        private readonly NativeArray<RefinedTriangleRaycastData> _refinedTriangleRaycastData;
         private readonly int _trianglesPerHex;
+
         private PrepareNavCellDataJob _prepareJob;
         private JobHandle _activeJobHandle;
         private CalculateCellNeighboursMaskJob _calculateMaskJob;
@@ -23,22 +25,21 @@ namespace ZE.MechBattle.Navigation
 
         public PrepareNavCellDataProcess(
             Allocator allocator, 
-            in MapSettings mapSettings,
-            NativeArray<RefinedTriangleRaycastData>.ReadOnly refinedData,
-            int raycastsPerTriangle)
+            MapSettings mapSettings)
         {
             _trianglesPerHex = TriangularMath.GetTrianglesCountInHex(mapSettings.TrianglesPerHexEdge);
 
             _flowCalculationCollections = FlowFieldCalculationCollections.CreateCollection(allocator, default, mapSettings);
             _cellHeightData = new NativeArray<CellHeightData>(_trianglesPerHex, allocator, NativeArrayOptions.UninitializedMemory);
+            _refinedTriangleRaycastData = new NativeArray<RefinedTriangleRaycastData>(IRefinedRaycastDataSource.GetArrayLength(mapSettings), allocator);
 
             _prepareJob = new PrepareNavCellDataJob()
             {
                 SetupData = _flowCalculationCollections.PassabilityDataInnerArray,
-                RefinedRaycastData = refinedData,
+                RefinedRaycastData = _refinedTriangleRaycastData,
                 ObstaclesPercentForLock = mapSettings.ObstaclesPercentForLock,
                 UnwalkableSurfacesPercentForLock = mapSettings.UnwalkableSurfacesPercentForLock,
-                SubdividedTrianglesCount = raycastsPerTriangle,
+                SubdividedTrianglesCount = mapSettings.RaycastSubdivisionsPerEdge,
                 HeightData = _cellHeightData,
             };
 
@@ -76,8 +77,9 @@ namespace ZE.MechBattle.Navigation
 
         
         // actually this is not a very complicated job
-        public void Run(IntTriangularPos hexCenter)
+        public void Run(IntTriangularPos hexCenter, IRefinedRaycastDataSource refinedDataSource)
         {
+            refinedDataSource.CopyRefinedRaycastDataInto(_refinedTriangleRaycastData);
             _flowCalculationCollections.ChangeHexPosAndReset(hexCenter);
             CurrentHexCenter = hexCenter;
             _prepareJob.Run(_trianglesPerHex);
@@ -88,8 +90,9 @@ namespace ZE.MechBattle.Navigation
             _calculateMaskJob.Run(_trianglesPerHex);
         }
 
-        public JobHandle ScheduleParallel(IntTriangularPos hexCenter)
+        public JobHandle ScheduleParallel(IntTriangularPos hexCenter, IRefinedRaycastDataSource refinedDataSource)
         {
+            refinedDataSource.CopyRefinedRaycastDataInto(_refinedTriangleRaycastData);
             _flowCalculationCollections.ChangeHexPosAndReset(hexCenter);
             CurrentHexCenter = hexCenter;
 

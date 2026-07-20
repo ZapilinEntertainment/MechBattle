@@ -9,7 +9,7 @@ namespace ZE.MechBattle.Navigation
     [BurstCompile]
     public struct PrepareNavCellDataJob : IJobParallelFor
     {
-        [ReadOnly] public NativeArray<RefinedTriangleRaycastData>.ReadOnly RefinedRaycastData;       
+        [ReadOnly] public NativeArray<RefinedTriangleRaycastData> RefinedRaycastData;       
         [WriteOnly] public NativeArray<CellPassabilityData> SetupData;
         [WriteOnly] public NativeArray<CellHeightData> HeightData;
 

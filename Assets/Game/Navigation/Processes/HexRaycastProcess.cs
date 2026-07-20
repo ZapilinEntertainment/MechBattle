@@ -44,8 +44,8 @@ namespace ZE.MechBattle
             var trianglesPerHex = TriangularMath.GetTrianglesCountInHex(_hexRadius);
             _isPeakData = new NativeBitArray(trianglesPerHex, _allocator, NativeArrayOptions.UninitializedMemory);
 
-            _refineProcess = new(_allocator, mapSettings, _isPeakData.AsReadOnly(), _walkableSurfaceCaster.Results, _obstaclesCaster.Results);
-            _prepareNavCellDataProcess = new(_allocator, mapSettings, _refineProcess.RefinedData, _refineProcess.RaycastsPerTriangle);
+            _refineProcess = new(_allocator, mapSettings, _isPeakData.AsReadOnly());
+            _prepareNavCellDataProcess = new(_allocator, mapSettings);
             _defineCellZonesProcess = new(_allocator, _map);
         }
 
@@ -118,7 +118,7 @@ namespace ZE.MechBattle
             // 2. refine raycasting data
             var hexCenter = CurrentHexPosition.TriangularCenterPos;
             HexDataLogic.FulfilPeakDataArray(_isPeakData, hexCenter, _hexRadius);
-            var refineJobHandle = _refineProcess.ScheduleJob(CurrentHexPosition);
+            var refineJobHandle = _refineProcess.ScheduleJob(CurrentHexPosition, _walkableSurfaceCaster, _obstaclesCaster );
             _activeJobHandleA = refineJobHandle;
             await WaitForJobHandle(refineJobHandle);
             refineJobHandle.Complete();
@@ -130,7 +130,7 @@ namespace ZE.MechBattle
                 // await WaitForJobHandle(prepareCellJobHandle);
                 // prepareCellJobHandle.Complete();
                 //if (_isDisposed | WasStopped) goto FORCE_COMPLETION;
-            _prepareNavCellDataProcess.Run(hexCenter);
+            _prepareNavCellDataProcess.Run(hexCenter, _refineProcess);
             
 
             // 4. define cell zones

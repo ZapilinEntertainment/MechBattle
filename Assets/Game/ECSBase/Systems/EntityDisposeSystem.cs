@@ -18,11 +18,14 @@ namespace ZE.MechBattle.Ecs {
 
         public void OnUpdate(float deltaTime) 
         {
-
             if (_filter.IsNotEmpty())
             {
                 foreach (var entity in _filter)
+                {
+                    UnityEngine.Debug.Log($"entity {entity.Id} disposed");
                     World.RemoveEntity(entity);
+                }
+                    
             }
         }
 

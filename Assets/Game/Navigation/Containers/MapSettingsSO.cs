@@ -25,13 +25,11 @@ namespace ZE.MechBattle.Navigation
         public MapSettings ToStruct() => new MapSettings(this);
     }
 
-    [Serializable]
-    public readonly struct MapSettings
+    public record MapSettings
     {
         public readonly int TrianglesPerHexEdge;
         public readonly float ObstaclesPercentForLock;
-        public readonly float UnwalkableSurfacesPercentForLock;
-        public readonly float TriangleHeight;
+        public readonly float UnwalkableSurfacesPercentForLock;        
         public readonly float MaxElevationDifference;
 
         public readonly float HexEdgeSize;
@@ -40,8 +38,12 @@ namespace ZE.MechBattle.Navigation
         public readonly float2 TopRightCorner;
         public readonly bool UnscannedSurfacesArePassable;
 
-        public readonly float TriangleEdgeSize;
+        public float TriangleEdgeSize { get;private set;}
+        public float TriangleHeight { get; private set; }
+        public int TrianglesCountInHex { get; private set; }
+        public int RaycastsPerHex { get; private set; }
         public static float4 GetDefaultMapBorders() => new float4(-500f,-500f, 500f, 500f);
+
 
         public const float DEFAULT_MAX_ELEVATION_DIFFERENCE = 5f;
         private const int RAYCAST_SUBDIVISIONS_PER_EDGE = 4;
@@ -58,10 +60,9 @@ namespace ZE.MechBattle.Navigation
             TopRightCorner = so.TopRightCorner;
             UnscannedSurfacesArePassable = so.UnscannedSurfacesArePassable;
 
-            TriangleEdgeSize = HexEdgeSize / TrianglesPerHexEdge;
-            TriangleHeight = TriangleEdgeSize * NavigationConstants.SQRT_OF_THREE_HALVED;
-
             MaxElevationDifference = so.MaxElevationDifference;
+
+            CalculateDerivedValues();
         }
 
         public MapSettings(
@@ -89,6 +90,20 @@ namespace ZE.MechBattle.Navigation
             TriangleHeight = TriangleEdgeSize * NavigationConstants.SQRT_OF_THREE_HALVED;
 
             MaxElevationDifference = maxElevationDifference;
+
+            TrianglesCountInHex = TriangularMath.GetTrianglesCountInHex(TrianglesPerHexEdge);
+            RaycastsPerHex = TrianglesCountInHex * RaycastSubdivisionsPerEdge * RaycastSubdivisionsPerEdge;
+
+            CalculateDerivedValues();
+        }
+
+        private void CalculateDerivedValues()
+        {
+            TriangleEdgeSize = HexEdgeSize / TrianglesPerHexEdge;
+            TriangleHeight = TriangleEdgeSize * NavigationConstants.SQRT_OF_THREE_HALVED;
+
+            TrianglesCountInHex = TriangularMath.GetTrianglesCountInHex(TrianglesPerHexEdge);
+            RaycastsPerHex = TrianglesCountInHex * RaycastSubdivisionsPerEdge * RaycastSubdivisionsPerEdge;
         }
 
         public static MapSettings Default => new(100f, 4, GetDefaultMapBorders(), true);
