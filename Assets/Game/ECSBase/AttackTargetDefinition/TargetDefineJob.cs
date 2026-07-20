@@ -35,10 +35,12 @@ namespace ZE.MechBattle.Ecs
             var entityPosition = PositionComponents.Get(entity).Value;     
             var entityOwnerId = AffiliationsStash.Get(entity).PlayerKey.Id;
             var entityEnemiesMask = EnemiesMask[entityOwnerId];
+            var closestDistanceSq = searchRadius * searchRadius;
 
             var closestVirtualHexCenter = HexLogic.GetClosestVirtualHexPos(entityPosition, TriangleHeight);
 
             // hex tris enumerator can enumerate any amount of tris from any VIRTUAL tripos (describes axis intersection, not contained triangle)
+            // note: it will be much cheaper, if we enumerate radially
             foreach (var tripos in new HexTrianglesEnumerator(closestVirtualHexCenter, searchRadiusInTriangles))
             {
                 if (!MovementCells.TryGetValue(tripos, out var cellData) || !cellData.IsRealOccupationCell)
@@ -52,8 +54,12 @@ namespace ZE.MechBattle.Ecs
                 if (!entityEnemiesMask.Contains(targetAffiliationComponent.PlayerKey))
                     continue;
 
-                closestEntity = targetEntity;
-                break;
+                var distanceSq = math.distancesq(entityPosition, PositionComponents.Get(targetEntity).Value);
+                if (distanceSq < closestDistanceSq)
+                {
+                    closestDistanceSq = distanceSq;
+                    closestEntity = targetEntity;
+                }
             }
 
             ref var attackTargetComponent = ref AttackTargets.Get(entity);

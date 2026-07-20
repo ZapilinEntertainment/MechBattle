@@ -23,7 +23,11 @@ namespace ZE.MechBattle.Ecs.States
 
         public override void Enter(Entity entity) { }
 
-        public override void Exit(Entity entity) { }
+        public override void Exit(Entity entity) 
+        { 
+            _attackTargets.Remove(entity);
+            _attackOpportuninties.Remove(entity);
+        }
 
         public override StateKey Update(Entity entity, float dt)
         {
