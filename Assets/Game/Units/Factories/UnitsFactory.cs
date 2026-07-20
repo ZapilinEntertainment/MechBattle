@@ -80,7 +80,6 @@ namespace ZE.MechBattle
                 return default;
             }
 
-            UnityEngine.Debug.Log("create unit");
             var entity = _viewFactory.CreateViewReceiver(unitConfig.ViewId);
             _transformAspectHandler.MoveToPoint(entity, point);
 

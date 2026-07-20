@@ -22,7 +22,6 @@ namespace ZE.MechBattle.Ecs {
             {
                 foreach (var entity in _filter)
                 {
-                    UnityEngine.Debug.Log($"entity {entity.Id} disposed");
                     World.RemoveEntity(entity);
                 }
                     

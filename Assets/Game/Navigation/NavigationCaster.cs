@@ -23,7 +23,7 @@ namespace ZE.MechBattle.Navigation
     }
 
     // support class for making casts
-    public class NavigationCaster : INavigationCaster, IDisposable, IRaycastDataSource
+    public class NavigationCaster : INavigationCaster, IDisposable
     {
 
         public float TriangleHeight => _triangleHeight;
@@ -31,6 +31,7 @@ namespace ZE.MechBattle.Navigation
         public int HexTrianglesCount => _hexTrianglesCount;
         public int TrianglesPerHexEdge => _trianglesPerHexEdge;
         public float HexEdgeSize => _hexEdgeSize;
+        public readonly int ResultsLength;
 
         private readonly int _trianglesPerHexEdge;
         private readonly int _raycastTrianglesPerEdge;
@@ -61,11 +62,12 @@ namespace ZE.MechBattle.Navigation
             _queryParameters = queryParameters;
 
             _hexTrianglesCount = mapSettings.TrianglesCountInHex;
-            _raycastCommands = new NativeArray<RaycastCommand>(mapSettings.RaycastsPerHex, allocator);
-            _raycastResults = new NativeArray<RaycastHit>(IRaycastDataSource.GetArrayLength(mapSettings), allocator);
+            ResultsLength = mapSettings.RaycastsPerHex;
+            _raycastCommands = new NativeArray<RaycastCommand>(ResultsLength, allocator);
+            _raycastResults = new NativeArray<RaycastHit>(ResultsLength, allocator);
 
-            var raycastsCount = _raycastTrianglesPerEdge * _raycastTrianglesPerEdge;
-            _raycastPointsArray = new (raycastsCount, allocator, NativeArrayOptions.UninitializedMemory);
+            var raycastsCountPerTriangle = _raycastTrianglesPerEdge * _raycastTrianglesPerEdge;
+            _raycastPointsArray = new (raycastsCountPerTriangle, allocator, NativeArrayOptions.UninitializedMemory);
         }
 
         public NavigationCaster(Allocator allocator, MapSettingsSO mapSettings, QueryParameters queryParameters ) : this(allocator, mapSettings.ToStruct(), queryParameters) { }
@@ -100,6 +102,7 @@ namespace ZE.MechBattle.Navigation
             if (!_activeJobHandle.IsCompleted)
                 throw new Exception("caster is still busy");
 
+            //UnityEngine.Debug.Log($"start casting {hexPos.HexCoordinate}");
             var positionsJob = ConstructPositionsJob(hexPos, _trianglesPerHexEdge);           
             var positionsHandle = positionsJob.Schedule();
             //
@@ -119,45 +122,19 @@ namespace ZE.MechBattle.Navigation
             _casterLifetimeCts.Cancel();
             _casterLifetimeCts.Dispose();
 
-#if UNITY_EDITOR
-            try
-            {
-                FinalDispose();
-            }
-            catch (Exception ex)
-            {
-                if (!ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
-                    UnityEngine.Debug.LogError(ex);
-            }
-            return;
-#else  
-
-            FinalDispose();       
-#endif
-        }
-
-        private void FinalDispose()
-        {
-            if (!_activeJobHandle.IsCompleted)
-            {
-                #if UNITY_EDITOR
-                UnityEngine.Debug.LogWarning("dispose, but caster is still busy");
-                #endif
-                _activeJobHandle.Complete();
-            }
-
             _raycastCommands.Dispose();
             _raycastPointsArray.Dispose();
             _raycastResults.Dispose();
         }
 
-        public void CopyRaycastDataInto(NativeArray<RaycastHit> receiver)
+
+        public void GetResults(RaycastHit[] receiverArray)
         {
             // COMPLETE REQUIRED:
             _activeJobHandle.Complete();
             for (var i = 0; i < _raycastResults.Length; i++)
             {
-                receiver[i] = _raycastResults[i];
+                receiverArray[i] = _raycastResults[i];
             }
         }
     }

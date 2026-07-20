@@ -96,7 +96,6 @@ namespace ZE.MechBattle.Ecs
 
         private void ExecuteRequest(ViewRequest request)
         {
-            UnityEngine.Debug.Log($"hanling entity{request.ReceiveEntity.Id} view");
             _requests.Remove(request.ReceiveEntity);
 
             var containerId = _viewContainerComponents.Get(request.ReceiveEntity).Id;

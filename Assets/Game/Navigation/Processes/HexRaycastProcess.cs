@@ -1,3 +1,4 @@
+using System.Threading;
 using UnityEngine;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -11,7 +12,6 @@ namespace ZE.MechBattle
     public class HexRaycastProcess : IProcess
     {
         public NavigationHexPosition CurrentHexPosition { get;private set; }
-        public bool WasStopped { get; private set; } = false;
 
         private readonly NavigationCaster _walkableSurfaceCaster;
         private readonly NavigationCaster _obstaclesCaster;
@@ -22,10 +22,18 @@ namespace ZE.MechBattle
         private readonly PrepareNavCellDataProcess _prepareNavCellDataProcess;
         private readonly DefineCellZoneProcess _defineCellZonesProcess;
         private readonly Allocator _allocator;
+        private readonly MapSettings _mapSettings;
+        
+        private readonly RaycastHit[] _walkableResults;
+        private readonly RaycastHit[] _obstacleResults;
+        private readonly RefinedTriangleRaycastData[] _refinedData;
+        private readonly CellHeightData[] _heightData;
+        private readonly int[] _zones;
+        private readonly CellPassabilityData[] _resultingPassabilityData;        
 
+        private CancellationTokenSource _cancellationTokenSource;
+        private JobHandle _activeJobHandle;
         private bool _isDisposed = false;
-        private JobHandle _activeJobHandleA;
-        private JobHandle _activeJobHandleB;
 
         public CalculationProcessStage Stage { get;private set;}
 
@@ -35,147 +43,175 @@ namespace ZE.MechBattle
         {
             _allocator = allocator;
             _map = map;
-            var mapSettings = _map.Settings;
-            _hexRadius = _map.Settings.TrianglesPerHexEdge;
+            _mapSettings = _map.Settings;
+            _hexRadius = _mapSettings.TrianglesPerHexEdge;
 
-            _walkableSurfaceCaster = new(_allocator, mapSettings, NavigationConstants.GetWalkableCastQueryParameters());
-            _obstaclesCaster = new (_allocator, mapSettings, NavigationConstants.GetObstacleCastQueryParameters());
+            _walkableSurfaceCaster = new(_allocator, _mapSettings, NavigationConstants.GetWalkableCastQueryParameters());
+            _obstaclesCaster = new (_allocator, _mapSettings, NavigationConstants.GetObstacleCastQueryParameters());
 
             var trianglesPerHex = TriangularMath.GetTrianglesCountInHex(_hexRadius);
             _isPeakData = new NativeBitArray(trianglesPerHex, _allocator, NativeArrayOptions.UninitializedMemory);
 
-            _refineProcess = new(_allocator, mapSettings, _isPeakData.AsReadOnly());
-            _prepareNavCellDataProcess = new(_allocator, mapSettings);
+            _refineProcess = new(_allocator, _mapSettings, _isPeakData.AsReadOnly());
+            _prepareNavCellDataProcess = new(_allocator, _mapSettings);
             _defineCellZonesProcess = new(_allocator, _map);
+
+            _cancellationTokenSource = new();
+
+            // transition array required for correct Burst work (problem with array handlers)
+            _walkableResults = new RaycastHit[_walkableSurfaceCaster.ResultsLength];
+            _obstacleResults = new RaycastHit[_obstaclesCaster.ResultsLength];
+            _refinedData = new RefinedTriangleRaycastData[_mapSettings.TrianglesCountInHex];
+            _heightData = new CellHeightData[_mapSettings.TrianglesCountInHex];
+            _zones = new int[_mapSettings.TrianglesCountInHex];
+            _resultingPassabilityData = new CellPassabilityData[_mapSettings.TrianglesCountInHex];
         }
 
-        public async void Dispose()
+        public void Dispose()
         {
-            _isDisposed = true;
+            if (_isDisposed)
+                return;
 
-            if (Stage == CalculationProcessStage.Calculating)
-            {
-                do
-                {
-                    await Awaitable.NextFrameAsync();
-                }
-                while (Stage == CalculationProcessStage.Calculating);
-            }
+            _isDisposed = true;
+            //UnityEngine.Debug.Log($"raycast process {GetHashCode()} start dispose");
+
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Dispose();
+            _activeJobHandle.Complete();
 
             _walkableSurfaceCaster.Dispose();
             _obstaclesCaster.Dispose();
             _refineProcess.Dispose();
             _prepareNavCellDataProcess.Dispose();
             _defineCellZonesProcess.Dispose();
-
-#if UNITY_EDITOR
-            try
-            {
-                FinalDispose();
-            }
-            catch (System.Exception ex)
-            {
-                if (!ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
-                    UnityEngine.Debug.LogError(ex);
-            }
-            return;
-#else  
-
-            FinalDispose();       
-#endif        
-        }
-
-        private void FinalDispose()
-        {
-            _activeJobHandleA.Complete();
-            _activeJobHandleB.Complete();
             _isPeakData.Dispose();
+
+            //UnityEngine.Debug.Log($"raycast process {GetHashCode()} disposed");
         }
 
+        // fixed with Google AI
         public async void LaunchAsync(int2 hexCoord)
         {
-            // NOTE: important to call handle.Complete() from here, not from other method
+            var cancellationToken = _cancellationTokenSource.Token;
 
-            WasStopped = false;
+            // 1. Do raycast for both walkable and obstacle layers
+            _activeJobHandle = CalculateRawCastData(hexCoord);
+            var continuation = await TryContinueExecution();
+            if (!continuation)
+                return;
+
+            // 2. Refine raw raycast data into triangles data (each triangle has multiple raycast points)
+            _activeJobHandle = RefineCastData();
+            continuation = await TryContinueExecution();
+            if (!continuation)
+                return;
+
+
+            // 3. Define cell zone index for each hex triangle
+
+            _activeJobHandle = DefineCellZones();
+            continuation = await TryContinueExecution();
+            if (!continuation)
+                return;
+
+            //_defineCellZonesProcess.GetResults(_zones);
+            FinalizeChain();            
+
+            //======
+
+            async Awaitable<bool> TryContinueExecution()
+            {
+                while (!_activeJobHandle.IsCompleted & !cancellationToken.IsCancellationRequested)
+                {
+                    await Awaitable.NextFrameAsync();
+                }
+                _activeJobHandle.Complete();
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    FinalizeChain();
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+        private JobHandle CalculateRawCastData(int2 hexCoord)
+        {
+            //UnityEngine.Debug.Log($"raycast process {GetHashCode()}: calculating raw cast data");
             Stage = CalculationProcessStage.Calculating;
             CurrentHexPosition = new NavigationHexPosition(hexCoord, _map);
 
-            // 1. raycast walkable & obstacle data
             var walkableDataHandle = _walkableSurfaceCaster.ScheduleCastJob(CurrentHexPosition);
             var obstacleDataHandle = _obstaclesCaster.ScheduleCastJob(CurrentHexPosition);
-            _activeJobHandleA = walkableDataHandle;
-            _activeJobHandleB = obstacleDataHandle;
-            do
-            {
-                await Awaitable.NextFrameAsync();
-            }
-            while (!walkableDataHandle.IsCompleted | !obstacleDataHandle.IsCompleted);
-            walkableDataHandle.Complete();
-            obstacleDataHandle.Complete();
+            return JobHandle.CombineDependencies(walkableDataHandle, obstacleDataHandle);
+        }
 
-            if (_isDisposed | WasStopped) goto FORCE_COMPLETION;
+        private JobHandle RefineCastData()
+        {
+            //UnityEngine.Debug.Log($"raycast process {GetHashCode()}: refine cast data");
+            _walkableSurfaceCaster.GetResults(_walkableResults);
+            _obstaclesCaster.GetResults(_obstacleResults);
 
-            // 2. refine raycasting data
             var hexCenter = CurrentHexPosition.TriangularCenterPos;
             HexDataLogic.FulfilPeakDataArray(_isPeakData, hexCenter, _hexRadius);
-            var refineJobHandle = _refineProcess.ScheduleJob(CurrentHexPosition, _walkableSurfaceCaster, _obstaclesCaster );
-            _activeJobHandleA = refineJobHandle;
-            await WaitForJobHandle(refineJobHandle);
-            refineJobHandle.Complete();
 
-            if (_isDisposed | WasStopped) goto FORCE_COMPLETION;
-
-            // 3. define passability and height for each nav cell
-                //var prepareCellJobHandle =  _prepareNavCellDataProcess.ScheduleParallel(hexCenter);
-                // await WaitForJobHandle(prepareCellJobHandle);
-                // prepareCellJobHandle.Complete();
-                //if (_isDisposed | WasStopped) goto FORCE_COMPLETION;
-            _prepareNavCellDataProcess.Run(hexCenter, _refineProcess);
-            
-
-            // 4. define cell zones
-            var defineCellJobHandle = _defineCellZonesProcess.ScheduleJob(hexCenter, _prepareNavCellDataProcess.GetPassabilityDataSource());
-            _activeJobHandleA = defineCellJobHandle;
-            await WaitForJobHandle(defineCellJobHandle);
-            defineCellJobHandle.Complete();
-
-            FORCE_COMPLETION:
-            Stage = CalculationProcessStage.Complete;
-            ProcessIteration++;            
+            return _refineProcess.ScheduleJob(CurrentHexPosition, _walkableResults, _obstacleResults);
         }
+
+        private JobHandle DefineCellZones()
+        {
+            //UnityEngine.Debug.Log($"raycast process {GetHashCode()}: define cell zones");
+            _activeJobHandle = default;
+            _refineProcess.GetResults(_refinedData);
+
+            var hexCenter = CurrentHexPosition.TriangularCenterPos;
+            _prepareNavCellDataProcess.Run(hexCenter, _refinedData);
+            _prepareNavCellDataProcess.GetResults(_resultingPassabilityData, _heightData);
+            return _defineCellZonesProcess.ScheduleJob(hexCenter, _resultingPassabilityData);
+        }
+
+        private void FinalizeChain()
+        {
+            _activeJobHandle = default;
+            Stage = CalculationProcessStage.Complete;
+            ProcessIteration++;
+        }
+
 
         public void ApplyCalculatedData(IntTriangularPos hexCenter)
         {
-            foreach (var tripos in new HexTrianglesEnumerator(hexCenter, _hexRadius))
-            {
-                var cellData = _map.GetNavigationCell(tripos);
-                cellData.HeightData = _prepareNavCellDataProcess.GetHeightData(tripos);
+            if (Stage != CalculationProcessStage.Cancelled) 
+            { 
+                var index = 0;
+                foreach (var tripos in new HexTrianglesEnumerator(hexCenter, _hexRadius))
+                {
+                    var cellData = _map.GetNavigationCell(tripos);
+                    cellData.HeightData = _heightData[index];
 
-                var calculatedPassabilitySource = _prepareNavCellDataProcess.GetPassabilityDataSource();                
-                var passability = calculatedPassabilitySource.GetPassabilityData(tripos);
-                passability.ZoneIndex = _defineCellZonesProcess.GetZoneIndex(tripos);                
-                cellData.Passability = passability;
-                _map.UpdateNavigationCell(tripos, cellData);
+                    var passability = _resultingPassabilityData[index];
+                    passability.ZoneIndex = _zones[index];                
+                    cellData.Passability = passability;
+
+                    _map.UpdateNavigationCell(tripos, cellData);
+
+                    index++;
+                }
+
+                var hex = _map.GetOrCreateUpdatableHex(CurrentHexPosition.HexCoordinate);
+                hex.UpdatePassabilityVersion();
+                //UnityEngine.Debug.Log($"hex calculated: {hex.HexCoordinate}");
             }
-
-            var hex = _map.GetOrCreateUpdatableHex(CurrentHexPosition.HexCoordinate);
-            hex.UpdatePassabilityVersion();
 
             Stage = CalculationProcessStage.Idle;
         }
 
         public void Stop()
         {
-            WasStopped = true;
-        }
-
-        private async Awaitable WaitForJobHandle(JobHandle handle)
-        {
-            do
-            {
-                await Awaitable.NextFrameAsync();
-            }
-            while (!handle.IsCompleted);
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Dispose();
+            _cancellationTokenSource = new();
+            Stage = CalculationProcessStage.Cancelled;
         }
     }
 }

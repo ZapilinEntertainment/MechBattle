@@ -46,22 +46,24 @@ namespace ZE.MechBattle.Navigation
 
         public static bool operator !=(IntTriangularPos a, IntTriangularPos b) => !(a == b);
 
-        public override bool Equals(object obj)
-        {
-            if (obj is null || GetType() != obj.GetType())
-            {
-                return false;
-            }
+        public override bool Equals(object obj) => obj is IntTriangularPos other && Equals(other);
 
-            var other = (IntTriangularPos)obj;
-            return Equals(other);
-        }
-
+        // corrected by GoogleAI
         public bool Equals(IntTriangularPos other) => DownLeft == other.DownLeft && Up == other.Up && DownRight == other.DownRight;
 
 
-        public override int GetHashCode() => 
-            HashCode.Combine(DownLeft * 11, Up * 17, DownRight * 23);
+        // corrected by GoogleAI
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = 17;
+                hash = hash * 31 + DownLeft;
+                hash = hash * 31 + Up;
+                hash = hash * 31 + DownRight;
+                return hash;
+            }
+        }
 
         // deepseek generated
         // use for vectors only!

@@ -21,6 +21,7 @@ namespace ZE.MechBattle.Ecs {
         private readonly UpdateEdgeExitsRequestsList _portalCalculationRequests;
         private readonly IUpdatableMap _map;
         private readonly ArrayPool<int2> _pool;
+        private readonly List<HexUpdateRequest> _awaitingRequestsList = new();
         private const int MAX_PROCESSES_COUNT = 4;
         
 
@@ -39,7 +40,7 @@ namespace ZE.MechBattle.Ecs {
         public void OnUpdate(float deltaTime) 
         {
             CheckActiveProcesses();            
-            HandleRequests();
+            HandleAwaitingRequests();
         }
 
         public void Dispose()
@@ -61,6 +62,7 @@ namespace ZE.MechBattle.Ecs {
                     var hexCoord = calculatingProcessKvp.Key;
                     clearList[clearCount++] = hexCoord;
                     _portalCalculationRequests.Add(hexCoord);
+                    _requestsList.OnRequestCalculated(token.HexCoord, token.HexVersion);
                 }                    
             }
 
@@ -77,26 +79,24 @@ namespace ZE.MechBattle.Ecs {
             _pool.Return(clearList);
         }
 
-        private void HandleRequests()
+        private void HandleAwaitingRequests()
         {
             var idleProcesses = _processesManager.UpdateAndGetIdleProcessesCount();   
             
-            var requestsCount = _requestsList.Count;
-            if (requestsCount == 0)
+            var requestsAwaitingCount = _requestsList.AwaitingCount;
+            if (requestsAwaitingCount == 0)
                 return;
 
-            var clearList = _pool.Rent(requestsCount);
-            var clearCount = 0;
-
-            foreach (var request in _requestsList)
+            _requestsList.GetAwaitingRequestsList(_awaitingRequestsList);
+            foreach (var awaitingRequest in _awaitingRequestsList)
             {
-                var hexCoord = request.HexCoord;
-                var requestHexVersion = request.HexPassabilityVersion;
+                var hexCoord = awaitingRequest.HexCoord;
+                var requestHexVersion = awaitingRequest.HexPassabilityVersion;
                 var currentHexVersion = _map.GetOrCreateHex(hexCoord).PassabilityVersion;
 
                 if (currentHexVersion > requestHexVersion)
                 {
-                    clearList[clearCount] = hexCoord;
+                    _requestsList.CancelRequest(hexCoord, requestHexVersion);
                     continue;
                 }
 
@@ -105,11 +105,13 @@ namespace ZE.MechBattle.Ecs {
                     // if process trying to calculate outdated version - stop it
                     if (token.HexVersion < requestHexVersion)
                     {
+                        _requestsList.OnRequestCalculationStopped(hexCoord, requestHexVersion);
                         _processesManager.StopProcess(token.ProcessIndex);
                     }      
                     else
                     {
-                        clearList[clearCount++] = hexCoord;
+                        // if already calculating = remove from awaiting too
+                        _requestsList.OnRequestStartCalculating(hexCoord, requestHexVersion);
                     }
                 }
                 else
@@ -117,7 +119,7 @@ namespace ZE.MechBattle.Ecs {
                     if (idleProcesses == 0)
                         continue;
 
-                    token = _processesManager.TryLaunchProcess(request);
+                    token = _processesManager.TryLaunchProcess(awaitingRequest);
                     if (!token.IsValid)
                     {
                         idleProcesses = 0;
@@ -126,20 +128,12 @@ namespace ZE.MechBattle.Ecs {
                     {
                         // can overwrite old outdated process
                         _calculatingProcesses[hexCoord] = token;
+                        _requestsList.OnRequestStartCalculating(hexCoord, requestHexVersion);
                         idleProcesses--;
                     }
-                    clearList[clearCount++] = hexCoord;
                 }
             }
-
-            if (clearCount != 0)
-            {
-                for (var i = 0; i < clearCount; i++)
-                {
-                    _requestsList.RemoveActualRequest(clearList[i]);
-                }
-            }
-            _pool.Return(clearList);
+            _awaitingRequestsList.Clear();
         }
     }
 }

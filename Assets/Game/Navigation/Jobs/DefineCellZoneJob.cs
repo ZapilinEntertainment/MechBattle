@@ -33,14 +33,15 @@ namespace ZE.MechBattle
             }
         }
 
-        public IntTriangularPos HexCenter;
+        public NativeArray<IntTriangularPos> HexTris;
         public NativeHashMap<IntTriangularPos, CellData> Cells;
         public NativeQueue<IntTriangularPos> ActiveCells;
 
         public void Execute()
         {
             var zoneIndex = 1;
-            while (TryDefineNextZone(out var newStartPos, zoneIndex))
+            var counter = 0;
+            while (TryDefineNextZone(out var newStartPos, zoneIndex) && counter < 1000)
             {
                 HandleNeighbours(newStartPos, zoneIndex);
                 while (ActiveCells.Count != 0)
@@ -50,17 +51,18 @@ namespace ZE.MechBattle
                 }
 
                 zoneIndex++;
+                counter++;
             }
         }
 
         private bool TryDefineNextZone(out IntTriangularPos newStartPos, int nextZoneIndex)
         {
-            foreach (var kvp in Cells)
+            foreach (var tripos in HexTris)
             {
-                var data = kvp.Value;
+                var data = Cells[tripos];
                 if (data.IsPassable && data.ZoneIndex == 0)
                 {
-                    newStartPos = kvp.Key;
+                    newStartPos = tripos;
                     //UnityEngine.Debug.Log($"start zone {nextZoneIndex} from {newStartPos}");
                     return true;
                 }
@@ -73,8 +75,7 @@ namespace ZE.MechBattle
 
         private void HandleNeighbours(IntTriangularPos pos, int zoneIndex)
         {
-            if (!Cells.ContainsKey(pos))
-                return;
+            // no check needed - always inside cells
             var data = Cells[pos];
             var newData = new CellData(data, zoneIndex);
             Cells[pos] = newData;

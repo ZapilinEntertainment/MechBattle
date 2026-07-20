@@ -22,11 +22,14 @@ namespace ZE.MechBattle
 
         public void Execute()
         {
-            var zeroData = Cells[ZeroPos];
-            zeroData.Distance = 0f;
-            Cells[ZeroPos] = zeroData;
+            if (Cells.TryGetValue(ZeroPos, out var zeroData))
+            {
+                zeroData.Distance = 0f;
+                Cells[ZeroPos] = zeroData;
 
-            HandleCell(ZeroPos);
+                HandleCell(ZeroPos);
+            }
+            
             while (ActiveCells.Count != 0) 
             {
                 HandleCell(ActiveCells.Dequeue());
@@ -35,7 +38,9 @@ namespace ZE.MechBattle
     
         private void HandleCell(IntTriangularPos pos)
         {
-            var data = Cells[pos];
+            if (!Cells.TryGetValue(pos, out var data))
+                return;
+
             data.IsOpened = true;
             Cells[pos] = data;
 

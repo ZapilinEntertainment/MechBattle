@@ -2,7 +2,7 @@ using System;
 
 namespace ZE.Utils
 {
-    public enum CalculationProcessStage : byte { Idle, Calculating, Complete }
+    public enum CalculationProcessStage : byte { Idle, Calculating, Complete,Cancelled }
 
     public interface IProcess : IDisposable
     {

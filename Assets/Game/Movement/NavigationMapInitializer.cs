@@ -43,16 +43,20 @@ namespace ZE.MechBattle.Ecs
         private async void WaitUntilAllMapRaycasted()
         {
             var token = _cts.Token;
+            var allRequestsExecuted = false;
             do
             {
                 await Awaitable.NextFrameAsync();
+                allRequestsExecuted = _hexRaycastRequests.AwaitingCount == 0 && _hexRaycastRequests.CalculatingCount == 0;
+                //UnityEngine.Debug.Log($"awaiting: {_hexRaycastRequests.AwaitingCount}, calculating: {_hexRaycastRequests.CalculatingCount}");
             }
-            while (!token.IsCancellationRequested && _hexRaycastRequests.Count != 0);
+            while (!(token.IsCancellationRequested | allRequestsExecuted));
 
             if (token.IsCancellationRequested)
                 return;
 
             _map.OnInitialized();
+            UnityEngine.Debug.Log("MAP CALCULATED");
         }
 
         

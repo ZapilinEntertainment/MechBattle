@@ -60,7 +60,6 @@ namespace ZE.MechBattle.Ecs
             PrepareSuitablePositions(worldPos, protocol.SpawnRadius);
             var count = protocol.Count;           
 
-            UnityEngine.Debug.Log($"spawn {count} entities for player {protocol.PlayerKey.Id} | selection list: {_selectionList.ActiveItemsCount} elements");
             while (count > 0 && _selectionList.ActiveItemsCount > 0)
             {
                 var randomValue = (float)_random.NextDouble();
@@ -68,7 +67,6 @@ namespace ZE.MechBattle.Ecs
                 {
                     _spawnRequestFactory.CreateSpawnRequest(protocol.UnitKey, tripos, protocol.PlayerKey);
                     count--;
-                    UnityEngine.Debug.Log(tripos);
                 }
                 else
                 {
@@ -84,7 +82,6 @@ namespace ZE.MechBattle.Ecs
             _job.Run();
 
             _selectionList.Clear();
-            UnityEngine.Debug.Log($"resulted in  {_job.ResultList.Length} positions");
             foreach (var tripos in _jobResultsList)
             {
                 if (!_map.GetPassabilityData(tripos).IsPassable)

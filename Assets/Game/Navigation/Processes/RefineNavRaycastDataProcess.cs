@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Unity.Jobs;
 using Unity.Collections;
@@ -6,20 +7,20 @@ using Unity.Collections.LowLevel.Unsafe;
 
 namespace ZE.MechBattle.Navigation
 {
-    public class RefineNavRaycastDataProcess : IDisposable, IRefinedRaycastDataSource
+    public class RefineNavRaycastDataProcess : IDisposable
     {
         public RefineNavRaycastDataJob TEST_Job => _job;
         
         public readonly int Subdivisions;
         public readonly int RaycastsPerTriangle;
         private readonly int _trianglesPerHex;
-        private readonly NativeArray<RefinedTriangleRaycastData> _refinedData;
-        private readonly NativeArray<RaycastHit> _walkableHits;
-        private readonly NativeArray<RaycastHit> _obstacleHits;
+        private readonly NativeArray<RefinedTriangleRaycastData> _refinedData;        
         private readonly Allocator _allocator;
 
         private RefineNavRaycastDataJob _job;
         private JobHandle _activeJobHandle;
+        private NativeArray<RaycastHit> _walkableHits;
+        private NativeArray<RaycastHit> _obstacleHits;
 
         public RefineNavRaycastDataProcess(
             Allocator allocator,
@@ -31,9 +32,9 @@ namespace ZE.MechBattle.Navigation
 
             _refinedData = new NativeArray<RefinedTriangleRaycastData>(_trianglesPerHex, _allocator, NativeArrayOptions.UninitializedMemory);
 
-            var hitsCount = IRaycastDataSource.GetArrayLength(mapSettings);
-            _walkableHits = new NativeArray<RaycastHit>(hitsCount, allocator);
-            _obstacleHits = new NativeArray<RaycastHit>(hitsCount, allocator);
+            var raycastCount = mapSettings.RaycastsPerHex;
+            _walkableHits = new NativeArray<RaycastHit>(raycastCount, allocator);
+            _obstacleHits = new NativeArray<RaycastHit>(raycastCount, allocator);
 
             Subdivisions = mapSettings.RaycastSubdivisionsPerEdge;
             var peakLeftBasisIndex = TrianglesToIndexFlattenedConverter.GetSubdivisionBasisIndex(false, true, Subdivisions);
@@ -63,13 +64,16 @@ namespace ZE.MechBattle.Navigation
             };
         }
 
-        public JobHandle ScheduleJob(NavigationHexPosition hexPos, IRaycastDataSource walkableHitSource, IRaycastDataSource obstacleHitSource)
+        public JobHandle ScheduleJob(NavigationHexPosition hexPos, IReadOnlyList<RaycastHit> walkableResults, IReadOnlyList<RaycastHit> obstacleResults)
         {
             if (!_activeJobHandle.IsCompleted)
                 throw new Exception("job still busy");
 
-            walkableHitSource.CopyRaycastDataInto(_walkableHits);
-            obstacleHitSource.CopyRaycastDataInto(_obstacleHits);
+            for (var i = 0; i < walkableResults.Count; i++)
+            {
+                _walkableHits[i] = walkableResults[i];
+                _obstacleHits[i] = obstacleResults[i];
+            }
 
             _job.HexPos = hexPos;
             _activeJobHandle=  _job.ScheduleByRef(_trianglesPerHex, 32);
@@ -78,35 +82,19 @@ namespace ZE.MechBattle.Navigation
     
         public void Dispose()
         {
-#if UNITY_EDITOR
-            try
-            {
-                FinalDispose();
-            }
-            catch (Exception ex)
-            {
-                if (!ZE.Utils.EditorPlaymodeLifetimeObject.IsQuitting)
-                    UnityEngine.Debug.LogError(ex);
-            }
-            return;
-#else  
-
-            FinalDispose();       
-#endif  
-        }
-
-        private void FinalDispose()
-        {
             _activeJobHandle.Complete();
             _refinedData.Dispose();
             _walkableHits.Dispose();
             _obstacleHits.Dispose();
         }
 
-        public void CopyRefinedRaycastDataInto(NativeArray<RefinedTriangleRaycastData> data) 
+        public void GetResults(RefinedTriangleRaycastData[] receiverArray) 
         {
             _activeJobHandle.Complete();
-            _refinedData.CopyTo(data);
+            for (var i = 0; i < _refinedData.Length;i++)
+            {
+                receiverArray[i] = _refinedData[i];
+            }
         }
     }
 }
