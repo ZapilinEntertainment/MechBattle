@@ -21,8 +21,7 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<SyncWithParentTargetTag> _syncTargetWithParent;
         private readonly Stash<RotationSpeedComponent> _rotationSpeedComponents;
 
-        private readonly Stash<WeaponTowerViewRequestComponent> _requireTowerView;
-        private readonly Stash<WeaponBarrelViewRequestComponent> _requireBarrelView;  
+        private readonly Stash<ViewPartRequestComponent> _viewPartRequests;
         private readonly Stash<WeaponTowerStowTag> _towerStowTag;
         private readonly Stash<WeaponBarrelStowTag> _barrelStowTag;
 
@@ -47,8 +46,7 @@ namespace ZE.MechBattle.Ecs
             _weaponAutoShotTags = world.GetStash<WeaponAutoShotTag>();
             _syncTargetWithParent = world.GetStash<SyncWithParentTargetTag>();
 
-            _requireTowerView = world.GetStash<WeaponTowerViewRequestComponent>();
-            _requireBarrelView = world.GetStash<WeaponBarrelViewRequestComponent>();
+            _viewPartRequests = world.GetStash<ViewPartRequestComponent>();
             _towerStowTag = world.GetStash<WeaponTowerStowTag>();
             _barrelStowTag = world.GetStash<WeaponBarrelStowTag>();
 
@@ -72,7 +70,7 @@ namespace ZE.MechBattle.Ecs
                 ChildEntity = weaponEntity,
                 LocalPos = attachmentProtocol.LocalPosition,
                 LocalRot = attachmentProtocol.LocalRotation,
-                RequestParentViewComponent = true
+                AwaitParentViewComponent = true
             });
 
 
@@ -92,7 +90,7 @@ namespace ZE.MechBattle.Ecs
             if (addTower)
             {
                 towerEntity = AttachWeaponPart(weaponEntity, towerAttachmentProtocol);
-                _requireTowerView.Add(towerEntity, new(towerAttachmentProtocol.ViewPartKey));
+                _viewPartRequests.Add(towerEntity, new(towerAttachmentProtocol.ViewPartKey));
 
                 _weaponTowerComponents.Add(weaponEntity, new(towerEntity));
                 _towerStowTag.Add(towerEntity); // always for units
@@ -108,7 +106,7 @@ namespace ZE.MechBattle.Ecs
             {
                 var barrelEntity = AttachWeaponPart(parentEntity: addTower ? towerEntity : weaponEntity, barrelAttachmentProtocol);
 
-                _requireBarrelView.Add(barrelEntity, new(barrelAttachmentProtocol.ViewPartKey));
+                _viewPartRequests.Add(barrelEntity, new(barrelAttachmentProtocol.ViewPartKey));
                 _weaponBarrelComponents.Add(weaponEntity, new(barrelEntity));
                 _barrelStowTag.Add(barrelEntity);
 
@@ -134,7 +132,7 @@ namespace ZE.MechBattle.Ecs
                 ParentEntity = parentEntity,
                 LocalPos = protocol.LocalPosition,
                 LocalRot = quaternion.identity,
-                RequestParentViewComponent = true
+                AwaitParentViewComponent = true
             });
 
             var rotationSpeedDegrees = protocol.RotationSpeedDegrees;

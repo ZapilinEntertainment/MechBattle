@@ -7,11 +7,10 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public readonly struct WeaponBarrelViewRequestComponent : IViewPartRequestComponent 
+    public struct MechChassisComponent : IComponent 
     {
-        private readonly ViewPartKey _key;
-        public ViewPartKey Key => _key;
-
-        public WeaponBarrelViewRequestComponent(ViewPartKey key) => _key = key;
+        public Entity ChassisRootEntity;
+        public LegDataContainer<Entity> LeftLeg;
+        public LegDataContainer<Entity> RightLeg;    
     }
 }

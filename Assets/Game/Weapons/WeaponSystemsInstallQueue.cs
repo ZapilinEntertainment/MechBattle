@@ -19,9 +19,6 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<WeaponMuzzleEffectCallSystem>(SystemGroupOrder.WeaponUpdates);
             installer.AddSystem<WeaponProjectilesCreateSystem>(SystemGroupOrder.WeaponUpdates);
             installer.AddSystem<WeaponStopFireSystem>(SystemGroupOrder.WeaponUpdates);
-
-            installer.AddSystem<WeaponTowerViewAssignSystem>(SystemGroupOrder.ViewsLoading);
-            installer.AddSystem<WeaponBarrelViewAssignSystem>(SystemGroupOrder.ViewsLoading);
         }
     }
 }

@@ -38,5 +38,14 @@ namespace ZE.MechBattle
             }
             _cachedAssets.Clear();
         }
+
+        public static async Awaitable<T> LoadAssetDirectly<T>(string assetKey) 
+        {
+            var handle = Addressables.LoadAssetAsync<T>(assetKey);
+            while (!handle.IsDone)
+                await Awaitable.NextFrameAsync();
+
+            return handle.Result;
+        }
     }
 }

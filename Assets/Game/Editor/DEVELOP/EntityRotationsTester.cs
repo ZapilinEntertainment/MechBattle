@@ -66,7 +66,7 @@ namespace ZE.MechBattle.Develop
 
             var parentView = new MonoView(_parent);
             _parentEntity = world.CreateEntity();
-            _viewSyncApplier.Apply(_parentEntity, parentView);
+            _viewSyncApplier.Apply(_parentEntity, parentView, applyViewPosition: false);
 
             _transitEntity = world.CreateEntity();
             _parentingRelationsApplier.Apply(new()
@@ -80,7 +80,7 @@ namespace ZE.MechBattle.Develop
 
             var childView = new MonoView(_child);
             _childEntity = world.CreateEntity();
-            _viewSyncApplier.Apply(_childEntity, childView);
+            _viewSyncApplier.Apply(_childEntity, childView, applyViewPosition: false);
             _rotationSpeedStash.Set(_childEntity, new(math.radians(_rotationSpeedDegrees)));
 
 
@@ -107,7 +107,7 @@ namespace ZE.MechBattle.Develop
         [Button(nameof(UpdateTransforms))]
         private void UpdateTransforms()
         {
-            _transformAspectHandler.UpdatePoint(_parentEntity, _parent.transform);
+            _transformAspectHandler.ApplyViewPositionToEntity(_parentEntity, _parent.transform);
         }
     }
 }

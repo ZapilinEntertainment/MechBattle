@@ -38,7 +38,7 @@ namespace ZE.MechBattle.Ecs
         {
             var containerData = _viewContainersPool.Get();
             var entity = _world.CreateEntity();
-            _viewSyncApplier.Apply(entity, containerData.container);            
+            _viewSyncApplier.Apply(entity, containerData.container, applyViewPosition: false);            
 
             _viewContainers.Add(entity, new(containerData.id));
             _viewRequests.Add(entity);

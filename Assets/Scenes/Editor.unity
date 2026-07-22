@@ -828,7 +828,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &313219119
 Transform:
   m_ObjectHideFlags: 0
@@ -4854,6 +4854,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1259888753}
+  - component: {fileID: 1259888766}
   - component: {fileID: 1259888758}
   - component: {fileID: 1259888759}
   - component: {fileID: 1259888754}
@@ -4881,7 +4882,7 @@ Transform:
   m_GameObject: {fileID: 1259888751}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -112.7, y: 0, z: 110.9}
+  m_LocalPosition: {x: 204.2, y: 0, z: 110.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4935,7 +4936,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1259888751}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0508f5c1d688d354ba74dc029c8da97f, type: 3}
   m_Name: 
@@ -4988,7 +4989,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1259888751}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 264bf5fe09f5b8e4c853ef0700a6f891, type: 3}
   m_Name: 
@@ -5032,11 +5033,32 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1259888751}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1d7eb1e63915f6a4187d02939b2602a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.MovementOccupationCellsDrawer
+--- !u!114 &1259888766
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259888751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d5683b03ca74dc44810ae838bc9229d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MechBattle::ZE.MechBattle.MechSpawnUtility
+  _position:
+    x: 204.2
+    y: 0
+    z: 110.9
+  _rotationDegrees:
+    x: 0
+    y: 180
+    z: 0
+  _playerId: 0
 --- !u!1 &1324568865
 GameObject:
   m_ObjectHideFlags: 0
@@ -7293,7 +7315,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1980566585
 Transform:
   m_ObjectHideFlags: 0

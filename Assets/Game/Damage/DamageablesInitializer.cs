@@ -44,11 +44,11 @@ namespace ZE.MechBattle.Ecs {
             }
         }
 
-        // TODO: rewordk to damageables factory
+        // TODO: rework to damageables factory
         private void CreateDamageableEntity(IDamageableView view)
         {
             var entity = _world.CreateEntity();
-            _viewSyncApplier.Apply(entity, view);
+            _viewSyncApplier.Apply(entity, view, applyViewPosition: true);
 
             var parameters = view.GetParameters();
             _healthComponents.Set(entity, new(parameters.Health));           

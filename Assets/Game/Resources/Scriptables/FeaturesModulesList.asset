@@ -22,6 +22,7 @@ MonoBehaviour:
   - rid: 82578227731628109
   - rid: 82578227731628110
   - rid: 82578227731628111
+  - rid: 82578231244619847
   references:
     version: 2
     RefIds:
@@ -51,4 +52,7 @@ MonoBehaviour:
       data: 
     - rid: 82578227731628111
       type: {class: StatesInstaller, ns: ZE.MechBattle.Ecs.States, asm: MechBattle}
+      data: 
+    - rid: 82578231244619847
+      type: {class: MechFeatureInstaller, ns: ZE.MechBattle, asm: MechBattle}
       data: 

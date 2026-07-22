@@ -3,7 +3,7 @@ using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle
 {
-    public class SimpleView : DisposableGameObject, IView
+    public class SimpleView : DisposableGameObject, IMonoView
     {
 
         public override void SetParent(Transform parent) 

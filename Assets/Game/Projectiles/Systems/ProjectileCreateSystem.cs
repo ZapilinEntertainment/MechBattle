@@ -6,38 +6,18 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public sealed class ProjectileCreateSystem : ISystem 
+    public sealed class ProjectileCreateSystem : EntityCreationSystemBase<ProjectileBuildRequest, ProjectilesFactory> 
     {
-        public World World { get; set;}
-        private Stash<ProjectileBuildRequest> _requests;
-        private Filter _requestsFilter;
-        private readonly ProjectilesFactory _factory;
-
         [Inject]
-        public ProjectileCreateSystem(ProjectilesFactory builder)
+        public ProjectileCreateSystem(ProjectilesFactory factory) : base(factory)
         {
-            _factory = builder;
         }
 
-        public void OnAwake() 
+        protected override bool TryExecuteRequest(Entity requestEntity)
         {
-            _requestsFilter = World.Filter.With<ProjectileBuildRequest>().Build();
-            _requests = World.GetStash<ProjectileBuildRequest>();
+            var data = RequestsStash.Get(requestEntity);
+            Factory.Build(data.IdKey, data.Point, data.Shooter);
+            return true;
         }
-
-        public void OnUpdate(float deltaTime) 
-        { 
-            if (_requestsFilter.IsNotEmpty())
-            {
-                foreach (var request in _requestsFilter)
-                {
-                    var data = _requests.Get(request);
-                    _factory.Build(data.IdKey, data.Point, data.Shooter);
-                    World.RemoveEntity(request);
-                }
-            }
-        }
-
-        public void Dispose() { }
     }
 }

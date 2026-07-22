@@ -73,17 +73,19 @@ namespace ZE.MechBattle.Ecs
             SyncPositionWithParent(entity, parentComponent.Value, localPosExists ? localPositionComponent.Value : float3.zero, localRotation);
         }
 
-        public void UpdatePoint(Entity entity, Transform transform)
+        public void ApplyViewPositionToEntity(Entity entity, Transform transform)
         {
             SetPosition(entity, transform.position);
             i_SetRotation(entity, transform.rotation);
             _updateTags.Set(entity);
         }
 
-        public void MoveToPoint(Entity entity, RigidTransform point)
+        public void MoveToPoint(Entity entity, RigidTransform point) => MoveToPoint(entity, point.pos, point.rot);
+
+        public void MoveToPoint(Entity entity, float3 position, quaternion rotation)
         {
-            SetPosition(entity, point.pos);
-            i_SetRotation(entity, point.rot);
+            SetPosition(entity, position);
+            i_SetRotation(entity, rotation);
         }
 
         public void Translate(Entity entity, float3 moveVector, Space space)

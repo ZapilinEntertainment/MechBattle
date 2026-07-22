@@ -10,6 +10,7 @@ namespace ZE.MechBattle.Ecs
         private readonly World _world;
         private readonly TransformAccessManager _transformAccessManager;
         private readonly Stash<TransformComponent> _transforms;
+        private readonly Stash<TransformUpdatedTag> _transformUpdatedTags;
         private readonly TransformAspectHandler _transformAspectHandler;
         private readonly FinalViewFunctionalApplier _finalViewFunctionalApplier;
 
@@ -27,16 +28,21 @@ namespace ZE.MechBattle.Ecs
             _finalViewFunctionalApplier = finalViewFunctionalApplier;
 
             _transforms = _world.GetStash<TransformComponent>();
+            _transformUpdatedTags = _world.GetStash<TransformUpdatedTag>();
         }
 
-        public void Apply(Entity entity, IMonoView view)
+        public void Apply(Entity entity, IMonoView view, bool applyViewPosition)
         {
             var transform = view.Transform;
             var key = _transformAccessManager.RegisterTransform(transform);
             _transforms.Set(entity, new() { Key = key });
-            _transformAspectHandler.UpdatePoint(entity, transform);
+            if (applyViewPosition) 
+                _transformAspectHandler.ApplyViewPositionToEntity(entity, transform);
+            else
+                _transformUpdatedTags.Set(entity);
 
 #if UNITY_EDITOR
+            //UnityEngine.Debug.Log($"bind transform {key} to entity {entity.Id}");
             view.name = $"entity {entity.Id}";
 #endif
 

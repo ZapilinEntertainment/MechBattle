@@ -55,7 +55,7 @@ namespace ZE.MechBattle.Ecs {
                 var fwd = math.normalize(targetPos - currentPos);
                 var rotation = quaternion.LookRotationSafe(fwd, math.up());
 
-                _handler.MoveToPoint(entity, new(rotation, targetPos));
+                _handler.MoveToPoint(entity, targetPos, rotation);
             }
             _nextPositions.RemoveAll();
         }

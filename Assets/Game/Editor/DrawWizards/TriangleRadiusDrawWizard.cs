@@ -18,7 +18,7 @@ namespace ZE.MechBattle.DrawWizards
         [SerializeField] private float _triangleEdgeSize = 10f;
         private List<TriangleVertices> _drawData = new();
 
-        [MenuItem("DEBUG/Draw Triangle Radius")]
+        [MenuItem("ZE.Navigation/Draw Triangle Radius")]
         static void OpenWizard()
         {
             DisplayWizard<TriangleRadiusDrawWizard>("Triangle Radius Draw Wizard", "Close", "Draw");

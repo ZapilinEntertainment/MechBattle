@@ -8,6 +8,7 @@ namespace ZE.MechBattle.Views
         {
             installer.AddSystem<ViewRequestsHandleSystem>(SystemGroupOrder.ViewsLoading);
             installer.AddSystem<UpdateChildViewLinkSystem>(SystemGroupOrder.ViewsLoading);
+            installer.AddSystem<ViewPartAssignSystem>(SystemGroupOrder.ViewsLoading);
 
             installer.AddSystem<ViewsDisposeSystem>(SystemGroupOrder.DisposedObjectsOperations);
         }

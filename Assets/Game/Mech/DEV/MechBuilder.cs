@@ -8,7 +8,7 @@ namespace ZE.MechBattle
         {
             var mech = new MechController();
             mech.Init();
-            var mechView = GameObject.FindFirstObjectByType<MechView>();
+            var mechView = GameObject.FindFirstObjectByType<TEST_MechView>();
 
             mech.RightWeapon = mechView.TEST_RightGun;
             mech.LeftWeapon = mechView.TEST_LeftGun;

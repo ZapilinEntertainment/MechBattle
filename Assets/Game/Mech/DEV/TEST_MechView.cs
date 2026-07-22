@@ -6,7 +6,7 @@ using ZE.MechBattle.Weapons;
 
 namespace ZE.MechBattle
 {
-    public class MechView : MonoBehaviour
+    public class TEST_MechView : MonoBehaviour
     {
         public MechWeapon TEST_LeftGun;
         public MechWeapon TEST_RightGun;

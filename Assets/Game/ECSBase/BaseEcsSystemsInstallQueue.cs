@@ -6,11 +6,11 @@ namespace ZE.MechBattle.Ecs
     {
         protected override void Configure(ISystemsOperator installer)
         {
-            installer.AddSystem<InitialDelaySystem>(SystemGroupOrder.Initialization); 
+            installer.AddSystem<InitialDelaySystem>(SystemGroupOrder.EarlyUpdate); 
 
             // ATTENTION: TargetDefineSystem and next TargetValidation are in different systems group
             // because target define system launches a job with World.Handle
-            installer.AddSystem<AttackTargetDefineSystem>(SystemGroupOrder.Initialization);
+            installer.AddSystem<AttackTargetDefineSystem>(SystemGroupOrder.EarlyUpdate);
 
             installer.AddSystem<AttackTargetValidationSystem>(SystemGroupOrder.Default);
             installer.AddSystem<VfxCreateSystem>(SystemGroupOrder.Default);

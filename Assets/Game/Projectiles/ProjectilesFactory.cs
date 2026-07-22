@@ -5,7 +5,7 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Ecs
 {
-    public class ProjectilesFactory
+    public class ProjectilesFactory : IEntityCreationFactory
     {
         private readonly World _world;
         private readonly MonoViewFactory _viewFactory;

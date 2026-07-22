@@ -7,6 +7,9 @@ namespace ZE.MechBattle
         Undefined = 0,
         Tower,
         Barrel,
-    
+        ChassisRoot,
+        Hip,
+        Ankle,
+        Foot    
     }
 }

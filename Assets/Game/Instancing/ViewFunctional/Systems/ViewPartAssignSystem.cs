@@ -3,15 +3,17 @@ using Unity.IL2CPP.CompilerServices;
 using VContainer;
 
 namespace ZE.MechBattle.Ecs {
+
+    // this systems assign discrete parts of view to exact entities (ex.: tank barrel \ tower). 
+
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public abstract class ViewPartAssignSystem<ViewPartRequestTag, ViewLoadingTag> : ISystem  
-        where ViewPartRequestTag : struct, IViewPartRequestComponent
-        where ViewLoadingTag : struct, IComponent
+    public class ViewPartAssignSystem : ISystem  
     {
         public World World { get; set;}
-        protected Stash<ViewPartRequestTag> Stash;
+        protected Stash<ViewPartRequestComponent> Requests;
+        protected Stash<AwaitingParentViewLoadingTag> AwaitingTags;
         protected readonly ViewSynchronizationApplier ViewSyncApplier;
 
         private Filter _filter;
@@ -28,10 +30,15 @@ namespace ZE.MechBattle.Ecs {
 
         public virtual void OnAwake() 
         {
-            _filter = PrepareFilter().Build();
+            _filter = World.Filter
+            .With<ViewPartRequestComponent>()
+            .With<ViewContainerComponent>()
+            .Without<AwaitingParentViewLoadingTag>()
+            .Build();
 
             _viewContainers = World.GetStash<ViewContainerComponent>();
-            Stash = World.GetStash<ViewPartRequestTag>();
+            Requests = World.GetStash<ViewPartRequestComponent>();
+            AwaitingTags = World.GetStash<AwaitingParentViewLoadingTag>();
         }
 
         public void OnUpdate(float deltaTime) 
@@ -50,7 +57,7 @@ namespace ZE.MechBattle.Ecs {
                 }
                 else
                 {
-                    var key = Stash.Get(entity).Key;
+                    var key = Requests.Get(entity).Key;
                     var view = viewContainer.View;
                     if (view is IComplexMonoView complexView && complexView.TryGetPartByKey(key, out var viewPart))
                         OnPartFound(entity, viewPart);
@@ -59,19 +66,14 @@ namespace ZE.MechBattle.Ecs {
 #endif
                 }
 
-                Stash.Remove(entity);
+                Requests.Remove(entity);
             }
         }
 
         public void Dispose() { }
-
-        protected virtual FilterBuilder PrepareFilter() => World.Filter
-            .With<ViewPartRequestTag>()
-            .With<ViewContainerComponent>()
-            .Without<ViewLoadingTag>();
-        protected virtual void OnPartFound(Entity entity, IViewPart part)
+        protected void OnPartFound(Entity entity, IViewPart part)
         {
-            ViewSyncApplier.Apply(entity, part);
+            ViewSyncApplier.Apply(entity, part, applyViewPosition: false);
         }
     }
 }

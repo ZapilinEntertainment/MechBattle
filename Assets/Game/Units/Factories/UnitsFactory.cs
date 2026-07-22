@@ -6,7 +6,7 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle
 {
-    public class UnitsFactory
+    public class UnitsFactory : IEntityCreationFactory
     {
         private readonly World _world;
         private readonly TransformAspectHandler _transformAspectHandler;
@@ -60,7 +60,7 @@ namespace ZE.MechBattle
         public Entity Build(TankView view)
         {
             var entity = _world.CreateEntity();
-            _viewSyncApplier.Apply(entity, view);
+            _viewSyncApplier.Apply(entity, view, applyViewPosition: true);
             Setup(entity, view);
 
             return entity;

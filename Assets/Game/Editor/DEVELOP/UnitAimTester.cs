@@ -98,7 +98,7 @@ namespace ZE.MechBattle.Develop
 
             //
             _targetEntity = _world.CreateEntity();
-            _viewSyncApplier.Apply(_targetEntity, new ViewPartContainer(_target));
+            _viewSyncApplier.Apply(_targetEntity, new ViewPartContainer(_target), applyViewPosition: false);
         }
 
         private void Update()

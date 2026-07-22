@@ -12,7 +12,7 @@ namespace ZE.MechBattle.Ecs
             public Entity ChildEntity;
             public float3 LocalPos;
             public quaternion LocalRot;
-            public bool RequestParentViewComponent;
+            public bool AwaitParentViewComponent;
         }
 
         private readonly Stash<ParentEntityComponent> _parents;
@@ -21,7 +21,6 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<PositionComponent> _position;
         private readonly Stash<RotationComponent> _rotation;
 
-        private readonly Stash<ViewContainerComponent> _viewContainers;
         private readonly Stash<AwaitingParentViewLoadingTag> _awaitingViewLoadingTag;
 
         private readonly TransformAspectHandler _transformHandler;
@@ -36,7 +35,6 @@ namespace ZE.MechBattle.Ecs
             _position = world.GetStash<PositionComponent>();
             _rotation = world.GetStash<RotationComponent>();
 
-            _viewContainers = world.GetStash<ViewContainerComponent>();
             _awaitingViewLoadingTag = world.GetStash<AwaitingParentViewLoadingTag>();
 
             _transformHandler = transformAspectHandler;
@@ -50,7 +48,7 @@ namespace ZE.MechBattle.Ecs
 
             _transformHandler.SyncPositionWithParent(protocol.ChildEntity, protocol.ParentEntity, protocol.LocalPos, protocol.LocalRot);
 
-            if (protocol.RequestParentViewComponent)
+            if (protocol.AwaitParentViewComponent)
                 _awaitingViewLoadingTag.Set(protocol.ChildEntity);
         }
 
