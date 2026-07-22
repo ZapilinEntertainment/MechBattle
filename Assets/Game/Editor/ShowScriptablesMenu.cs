@@ -11,6 +11,9 @@ namespace ZE.MechBattle.Editor
         private const string SCRIPTABLES_MENU = "Scriptables/";
         private const string SCRIPTABLES_FOLDER = "Scriptables/";
 
+        [MenuItem(SCRIPTABLES_MENU + "Features")]
+        private static void SelectFeatureModulesList() => SelectScriptable<FeaturesModulesList>();
+
         [MenuItem(SCRIPTABLES_MENU + "ProjectilesData")]        
         private static void SelectProjectilesData() => SelectScriptable<ProjectilesData>();
 
@@ -47,32 +50,25 @@ namespace ZE.MechBattle.Editor
 
                 try
                 {
-                    // 3. Через рефлексию находим активное окно ProjectBrowser и вызываем вход в папку
                     Type projectBrowserType = Type.GetType("UnityEditor.ProjectBrowser,UnityEditor");
-
-                    // Находим последнее активное окно Project
                     var lastProjectBrowser = projectBrowserType.GetField("s_LastInteractedProjectBrowser",
                         System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public).GetValue(null);
 
                     if (lastProjectBrowser == null)
                     {
-                        // Если окон нет, принудительно открываем одно
                         lastProjectBrowser = EditorWindow.GetWindow(projectBrowserType);
                     }
 
-                    // Находим приватный метод перехода в папку
                     var showFolderContentsMethod = projectBrowserType.GetMethod("ShowFolderContents",
                         System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
-                    // Вызываем метод, передавая ID папки
                     showFolderContentsMethod.Invoke(lastProjectBrowser, new object[] { folderObj.GetInstanceID(), true });
                 }
                 catch (Exception e)
                 {
-                    // Если рефлексия не сработала, используем безопасный стандартный фокус (он выделит ее снаружи)
                     Selection.activeObject = folderObj;
                     EditorGUIUtility.PingObject(folderObj);
-                    Debug.LogWarning($"Не удалось войти внутрь папки через ShowFolderContents: {e.Message}");
+                    Debug.LogWarning($"Cannot enter ShowFolderContents: {e.Message}");
                 }
             }    
         }

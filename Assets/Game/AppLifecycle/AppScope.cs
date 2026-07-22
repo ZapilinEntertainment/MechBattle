@@ -10,46 +10,50 @@ using ZE.Flags;
 
 namespace ZE.MechBattle.Ecs
 {
+    // app scope ->
+    // AppAsyncEntryPoint (loading resouces for session scope) ->
+    // session scope ->
+    // SessionAsyncEntryPoint(loading resources for scene scope) ->
+    // scene scope
+
+    // most views are lazy-loading (adding empty container and then load view afterwards)
+
     public class AppScope : LifetimeScope
     {
         [SerializeField] private Camera _mainCamera;
         [SerializeField] private MechGameUIRoot _uiRootPrefab;
         [SerializeField] private ViewContainer _viewContainerPrefab;
-        private readonly List<IFeatureInstaller> _globalFeatureInstallers = new()
-        {
-            new WorkersInstaller()
-        };
-        
+        [SerializeField] private FeaturesModulesList _modules;
 
         protected override void Configure(IContainerBuilder builder)
         {
-            foreach (var featureInstaller in _globalFeatureInstallers)
-                featureInstaller.PreloadResources(null);
+            foreach (var module in _modules.Modules)
+            {
+                if (module is IAppFeatureScopeInstaller appScopeInstaller)
+                    appScopeInstaller.AppScopeInstall(builder);
+            }
+            builder.RegisterInstance<FeaturesModulesList>(_modules);
 
-            builder.Register<AssetsManager>(Lifetime.Singleton);
-
+            // pre-setted values (serialized)
             var cameraController = new CameraController(_mainCamera);
             builder.RegisterInstance(cameraController);
             builder.RegisterComponentInNewPrefab(_uiRootPrefab, Lifetime.Singleton).As<IUILinesParent>().As<UiRoot>();
-            builder.Register<WindowsManager>(Lifetime.Singleton);
-
-            builder.Register<StringDataDictionary>(Lifetime.Singleton);
-            builder.Register<AppFlagsManager>(Lifetime.Singleton);
-
-            builder.Register<VfxManager>(Lifetime.Singleton);
-            builder.Register<VfxEffectPlayersFactory>(Lifetime.Singleton);            
-            builder.Register<ViewProviderFactory>(Lifetime.Scoped);
-
             PrepareViews(builder);
 
-            foreach (var installer in _globalFeatureInstallers)
-            {
-                installer.InstallDependencies(builder);
-            }
-
+            // global managers with no resource dependencies
+            builder.Register<AssetsManager>(Lifetime.Singleton);
+            builder.Register<WindowsManager>(Lifetime.Singleton);
+            builder.Register<StringDataDictionary>(Lifetime.Singleton);
+            builder.Register<AppFlagsManager>(Lifetime.Singleton);
+            builder.Register<VfxManager>(Lifetime.Singleton);
+            builder.Register<VfxEffectPlayersFactory>(Lifetime.Singleton);
+            builder.Register<ViewProviderFactory>(Lifetime.Singleton);
             RegisterScriptables(builder);
 
-            builder.RegisterEntryPoint<AppBootstrap>();          
+            // start loading heavy resources:
+            builder.RegisterEntryPoint<AppAsyncEntryPoint>();
+
+           // UnityEngine.Debug.Log("app scope configured");
         }
 
         private void RegisterScriptables(IContainerBuilder builder)
@@ -66,12 +70,6 @@ namespace ZE.MechBattle.Ecs
 
             RegisterScriptable<ProjectilesData>();
             RegisterScriptable<VfxData>();            
-        }
-
-        private void Start()
-        {
-            foreach (var installer in _globalFeatureInstallers) 
-                installer.Initialize(Container);
         }
 
         private void PrepareViews(IContainerBuilder builder)

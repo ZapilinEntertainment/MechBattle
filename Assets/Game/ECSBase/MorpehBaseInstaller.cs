@@ -7,19 +7,12 @@ using VContainer.Unity;
 
 namespace ZE.MechBattle
 {
-    public class MorpehInstaller : IFeatureInstaller
+    public class MorpehBaseInstaller : EcsFeatureInstaller<BaseEcsSystemsInstallQueue>, ISceneFeaturePostInitializer
     {
-        private readonly List<IFeatureInstaller> _localInstallers = new()
+        public override void SceneScopeInstall(IContainerBuilder builder)
         {
-            new BaseEcsSystemsInstallQueue(),
-            new MovementSystemsInstaller(),
-            new StatesInstaller()            
-        };
+            base.SceneScopeInstall(builder);
 
-        public void PreloadResources(IObjectResolver globalContainerResolver) { }
-
-        public void InstallDependencies(IContainerBuilder builder)
-        {
             builder.Register<World>(_ => CreateWorld(), Lifetime.Scoped);
 
             builder.Register<ProjectileRequestsFactory>(Lifetime.Scoped);
@@ -35,37 +28,30 @@ namespace ZE.MechBattle
             builder.Register<DisposeTagApplier>(Lifetime.Scoped);
             builder.Register<ParentingRelationsApplier>(Lifetime.Scoped);
             builder.Register<ViewSynchronizationApplier>(Lifetime.Scoped);
-            builder.Register<ColliderOwnityApplier>(Lifetime.Scoped);          
+            builder.Register<ColliderOwnityApplier>(Lifetime.Scoped);
 
             builder.Register<MorpehSystemInstallHandler>(Lifetime.Scoped);
-
-            foreach (var installer in _localInstallers)
-                installer.InstallDependencies(builder);
-
-
 
             builder.RegisterEntryPoint<DamageablesInitializer>();
         }
 
-        public void Initialize(IObjectResolver resolver)
-        {
-            foreach (var installer in _localInstallers)
-                installer.Initialize(resolver);            
-        }
-
-        public void PostInitialize(IObjectResolver resolver)
+        void ISceneFeaturePostInitializer.OnSceneContainerPostBuilt(IObjectResolver resolver)
         {
             var handler = resolver.Resolve<MorpehSystemInstallHandler>();
             handler.ApplySystems();
         }
 
-        private static World CreateWorld()
+        private World CreateWorld()
         {
             var world = World.Create();
             // NOTE: NECESSARY!
             world.UpdateByUnity = true;
             //UnityEngine.Debug.Log($"registered: {world.GetHashCode()}");
             return world;
-        }       
+        }
+
+        protected override BaseEcsSystemsInstallQueue CreateQueue() => new();
+
+        
     }
 }

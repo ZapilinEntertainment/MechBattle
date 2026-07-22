@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 755136a202e491145b359f34769b7c64, type: 3}
+  m_Name: FeaturesModulesList
+  m_EditorClassIdentifier: MechBattle::FeaturesModulesList
+  _modules:
+  - rid: 82578227731628103
+  - rid: 82578227731628104
+  - rid: 82578227731628105
+  - rid: 82578227731628106
+  - rid: 82578227731628107
+  - rid: 82578227731628108
+  - rid: 82578227731628109
+  - rid: 82578227731628110
+  - rid: 82578227731628111
+  references:
+    version: 2
+    RefIds:
+    - rid: 82578227731628103
+      type: {class: MorpehBaseInstaller, ns: ZE.MechBattle, asm: MechBattle}
+      data: 
+    - rid: 82578227731628104
+      type: {class: FactionsFeatureInstaller, ns: ZE.MechBattle, asm: MechBattle}
+      data: 
+    - rid: 82578227731628105
+      type: {class: GridOperationsInstaller, ns: ZE.MechBattle, asm: MechBattle}
+      data: 
+    - rid: 82578227731628106
+      type: {class: MonoViewFeatureInstaller, ns: ZE.MechBattle, asm: MechBattle}
+      data: 
+    - rid: 82578227731628107
+      type: {class: UnitsInstaller, ns: ZE.MechBattle, asm: MechBattle}
+      data: 
+    - rid: 82578227731628108
+      type: {class: WeaponFeatureInstaller, ns: ZE.MechBattle, asm: MechBattle}
+      data: 
+    - rid: 82578227731628109
+      type: {class: WorkersInstaller, ns: ZE.MechBattle, asm: MechBattle}
+      data: 
+    - rid: 82578227731628110
+      type: {class: MovementSystemsInstaller, ns: ZE.MechBattle.Ecs, asm: MechBattle}
+      data: 
+    - rid: 82578227731628111
+      type: {class: StatesInstaller, ns: ZE.MechBattle.Ecs.States, asm: MechBattle}
+      data: 

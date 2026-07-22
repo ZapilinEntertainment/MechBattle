@@ -5,11 +5,10 @@ using VContainer.Unity;
 
 namespace ZE.MechBattle
 {
-    public class WorkersInstaller : IFeatureInstaller
+    public class WorkersInstaller : IFeatureModule, IAppFeatureScopeInstaller
     {
-        public void PreloadResources(IObjectResolver globalContainerResolver) { }
 
-        public void InstallDependencies(IContainerBuilder builder)
+        public void AppScopeInstall(IContainerBuilder builder)
         {
             // IMPORTANT: do not use AsImplementedInterfaces() for ITickable - it will double every instance on resolve
             void RegisterWorker<T>() where T : Worker => builder.Register<T>(Lifetime.Transient);
@@ -17,8 +16,5 @@ namespace ZE.MechBattle
             RegisterWorker<AimWorker>();
             RegisterWorker<PlayerInterfaceWorker>();
         }
-
-        public void Initialize(IObjectResolver resolver) { }
-        public void PostInitialize(IObjectResolver resolver) { }
     }
 }

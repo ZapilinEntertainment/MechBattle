@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace ZE.MechBattle.Ecs
 {
-    public class MovementSystemsConfigurator : FeatureSystemsInstallQueue
+    public class MovementSystemsInstallQueue : FeatureSystemsInstallQueue
     {
         protected override void Configure(ISystemsOperator installer)
         {

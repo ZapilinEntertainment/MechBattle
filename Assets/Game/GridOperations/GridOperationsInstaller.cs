@@ -2,17 +2,12 @@ using VContainer;
 
 namespace ZE.MechBattle
 {
-    public class GridOperationsInstaller : IFeatureInstaller
+    public class GridOperationsInstaller : IFeatureModule, ISceneFeatureScopeInstaller
     {
-        public void InstallDependencies(IContainerBuilder builder)
+
+        void ISceneFeatureScopeInstaller.SceneScopeInstall(IContainerBuilder builder)
         {
             builder.Register<INavigationGridHandler, NavigationGridHandler>(Lifetime.Scoped);
         }
-
-        public void Initialize(IObjectResolver resolver) { }
-
-        public void PreloadResources(IObjectResolver globalContainerResolver) { }
-
-        public void PostInitialize(IObjectResolver resolver) { }
     }
 }

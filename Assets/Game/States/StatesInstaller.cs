@@ -3,7 +3,7 @@ using VContainer;
 
 namespace ZE.MechBattle.Ecs.States
 {
-    public class StatesInstaller : IFeatureInstaller
+    public class StatesInstaller : IFeatureModule, ISceneFeatureScopeInstaller, ISceneFeatureInitializer
     { 
         public static Dictionary<StateUpdateSystem.StateHandlerKey, StateHandler> PrepareStatesList(IObjectResolver resolver)
         {
@@ -29,9 +29,7 @@ namespace ZE.MechBattle.Ecs.States
             return dict;
         }
 
-        public void PreloadResources(IObjectResolver globalContainerResolver) { }
-
-        public void InstallDependencies(IContainerBuilder builder)
+        void ISceneFeatureScopeInstaller.SceneScopeInstall(IContainerBuilder builder)
         {
             builder.Register<StatesApplier>(Lifetime.Scoped);
 
@@ -42,12 +40,10 @@ namespace ZE.MechBattle.Ecs.States
             builder.Register<StateUpdateSystem>(Lifetime.Scoped);
         }
 
-        public void Initialize(IObjectResolver resolver)
+        void ISceneFeatureInitializer.OnSceneContainerBuilt(IObjectResolver resolver)
         {
-           var systemsResolver = resolver.Resolve<MorpehSystemInstallHandler>();
+            var systemsResolver = resolver.Resolve<MorpehSystemInstallHandler>();
             systemsResolver.AddSystem<StateUpdateSystem>(SystemGroupOrder.RegularUpdate);
         }
-
-        public void PostInitialize(IObjectResolver resolver) { }
     }
 }

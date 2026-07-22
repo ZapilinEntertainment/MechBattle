@@ -24,9 +24,9 @@ namespace ZE.MechBattle
             var name = config.name;
             var id = _stringDictionary.StringToKey(name);
             _dictionary.Add(id, config);
+            //UnityEngine.Debug.Log($"registered config {name} as id {id}, keys count: {_dictionary.Count}");
         }
 
         public bool TryGetConfig(UnitKey key, out UnitConfig config) => _dictionary.TryGetValue(key.Id, out config);
-
     }
 }

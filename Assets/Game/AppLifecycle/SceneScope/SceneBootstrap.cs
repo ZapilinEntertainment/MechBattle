@@ -7,7 +7,7 @@ using ZE.MechBattle.UI;
 
 namespace ZE.MechBattle
 {
-    public class SceneBootstrap : IStartable, IDisposable, IInitializable
+    public class SceneBootstrap : IStartable, IDisposable
     {
         private readonly CompositeDisposable _lifetimeObject = new();
         private readonly SessionData _sessionData;
@@ -23,11 +23,6 @@ namespace ZE.MechBattle
             _sessionData = sessionData;
             _objectResolver = objectResolver;
             _playerFactory = playerFactory;
-        }
-
-        public void Initialize()
-        {
-            //MorpehInstaller.OnSceneDependenciesResolved(_objectResolver);
         }
 
         public void Start()

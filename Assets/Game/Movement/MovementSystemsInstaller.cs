@@ -7,16 +7,11 @@ using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle.Ecs
 {
-    public class MovementSystemsInstaller : IFeatureInstaller
+    public class MovementSystemsInstaller : EcsFeatureInstaller<MovementSystemsInstallQueue>
     {
-        private MovementSystemsConfigurator _systemsConfigurator = new();
-
-
-        public void PreloadResources(IObjectResolver globalContainerResolver) { }
-
-        public void InstallDependencies(IContainerBuilder builder)
+        public override void SceneScopeInstall(IContainerBuilder builder)
         {
-            _systemsConfigurator.InstallDependencies(builder);
+            base.SceneScopeInstall(builder);
 
             builder.Register<TransformAspectHandler>(Lifetime.Scoped);
 
@@ -49,11 +44,6 @@ namespace ZE.MechBattle.Ecs
             builder.RegisterEntryPoint<NavigationMapInitializer>();
         }
 
-        public void Initialize(IObjectResolver resolver)
-        {
-            _systemsConfigurator.Initialize(resolver);
-        }
-
-        public void PostInitialize(IObjectResolver resolver) { }
+        protected override MovementSystemsInstallQueue CreateQueue() => new();
     }
 }

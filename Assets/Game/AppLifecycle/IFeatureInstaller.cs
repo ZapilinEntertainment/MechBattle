@@ -1,13 +1,19 @@
 using VContainer;
 
-namespace ZE.MechBattle
+public interface IFeatureInstaller
 {
-    public interface IFeatureInstaller
-    {
-        void PreloadResources(IObjectResolver globalContainerResolver);
-        void InstallDependencies(IContainerBuilder builder);
-        void Initialize(IObjectResolver resolver);
-        void PostInitialize(IObjectResolver resolver);
+}
 
-    }
+public interface IAppFeatureScopeInstaller : IFeatureInstaller
+{
+    void AppScopeInstall(IContainerBuilder builder);
+}
+
+public interface ISessionFeatureScopeInstaller : IFeatureInstaller
+{
+    void SessionScopeInstall(IContainerBuilder builder);
+}
+public interface ISceneFeatureScopeInstaller : IFeatureInstaller
+{
+    void SceneScopeInstall(IContainerBuilder builder);
 }

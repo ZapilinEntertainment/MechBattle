@@ -76,8 +76,5 @@ namespace ZE.MechBattle.Ecs
         {
             Configure(new SystemsInitializer(resolver));
         }
-
-        public void PreloadResources(IObjectResolver globalContainerResolver) { }
-        public void PostInitialize(IObjectResolver resolver) { }
     }
 }

@@ -6,25 +6,15 @@ using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle
 {
-    public class MonoViewFeatureInstaller : IFeatureInstaller
+    public class MonoViewFeatureInstaller : EcsFeatureInstaller<MonoViewFeatureSystemsQueue>, ISceneFeatureInitializer
     {
-        private MonoViewFeatureSystemsQueue _systemsQueue = new();
+        protected override MonoViewFeatureSystemsQueue CreateQueue() => new();
 
-        public void InstallDependencies(IContainerBuilder builder)
+        public override void OnSceneContainerBuilt(IObjectResolver resolver)
         {
-            _systemsQueue.InstallDependencies(builder);
-        }
-
-        public void Initialize(IObjectResolver resolver)
-        {
-            _systemsQueue.Initialize(resolver);
-
+            base.OnSceneContainerBuilt(resolver);
             var world = resolver.Resolve<World>();
             world.GetStash<DisposableViewComponent>().AsDisposable();
         }
-
-        public void PostInitialize(IObjectResolver resolver) { }
-
-        public void PreloadResources(IObjectResolver globalContainerResolver) { }
     }
 }
