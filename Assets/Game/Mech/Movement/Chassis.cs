@@ -9,13 +9,11 @@ namespace ZE.MechBattle
         public readonly float AnkleLength;
         public readonly float HipsDistance;
         public readonly Transform Transform;
-        public float LegLength => AnkleLength + HipsDistance;
-
-        public Chassis(Transform transform, float hipLength, float ankleLength, float hipsDistance)
+        public Chassis(Transform transform, ChassisSettings chassisSettings)
         {
-            HipLength = hipLength;
-            AnkleLength= ankleLength;
-            HipsDistance= hipsDistance;
+            HipLength = chassisSettings.HipLength;
+            AnkleLength= chassisSettings.AnkleLength;
+            HipsDistance= chassisSettings.HipsDistance;
             Transform = transform;
         }
     }

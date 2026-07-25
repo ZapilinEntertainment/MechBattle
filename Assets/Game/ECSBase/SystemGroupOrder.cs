@@ -5,7 +5,8 @@ namespace ZE.MechBattle
     // note that is not similar to unity events order. In case of using events, use suitable interfaces: ex. IFixedSystem
     public enum SystemGroupOrder : byte { 
         EarlyUpdate = 0, 
-        MechSystems = 1,
+        MechSystemsCalculation = 1,
+        MechSystemsApplication,
         Default, 
         RegularUpdate, 
         WeaponUpdates, 

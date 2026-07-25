@@ -6,8 +6,10 @@ namespace ZE.MechBattle
 {
     public class MechChassisDataWriter : ScriptableWizard
     {
+        [SerializeField] private StepSettings _stepSettings;
         public MechView mechView;
         public MechChassisData targetData;
+        private int _lastStepSettingsSource;
         private const string DATA_PATH = "Game/Resources/Scriptables/MechChassisData";
 
         private void OnWizardCreate()
@@ -20,7 +22,7 @@ namespace ZE.MechBattle
 
             var success = true;
             targetData ??= CreateNewData();
-            success = targetData.TryUpdateData(mechView);
+            success = targetData.TryUpdateData(mechView, _stepSettings);
 
             if (success)
             {
@@ -61,9 +63,25 @@ namespace ZE.MechBattle
             {
                 errorString = "";
                 if (targetData != null)
+                {
+                    var sourceId = targetData.GetInstanceID();
+                    if (sourceId != _lastStepSettingsSource)
+                    {
+                        _stepSettings = targetData.StepSettings;
+                        _lastStepSettingsSource = sourceId;
+                    }                        
                     createButtonName = "Update Data";
+                }                    
                 else
+                {
+                    _stepSettings = default;
+                    if (_lastStepSettingsSource != -1)
+                    {
+                        _stepSettings = default;
+                        _lastStepSettingsSource = -1;
+                    }
                     createButtonName = "Create Data";
+                }
             }
         }
 

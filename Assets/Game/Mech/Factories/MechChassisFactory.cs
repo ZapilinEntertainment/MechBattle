@@ -10,8 +10,11 @@ namespace ZE.MechBattle
         private readonly World _world;
         private readonly ParentingRelationsApplier _parentingRelationsApplier;
         private readonly MechChassisData _mechChassisData;
+
         private readonly Stash<MechChassisComponent> _chassisComponents;
-        private readonly Stash<ViewPartRequestComponent> _viewPartsRequestComponent;
+        private readonly Stash<ViewPartRequestComponent> _viewPartsRequestComponents;
+        private readonly Stash<ChassisSettingsComponent> _stepSettingsComponents;
+        private readonly Stash<InitialLocalPosition> _initLocalPositions;
 
         [Inject]
         public MechChassisFactory(
@@ -25,7 +28,9 @@ namespace ZE.MechBattle
             _parentingRelationsApplier = parentingRelationsApplier;
 
             _chassisComponents = _world.GetStash<MechChassisComponent>();
-            _viewPartsRequestComponent = _world.GetStash<ViewPartRequestComponent>();
+            _viewPartsRequestComponents = _world.GetStash<ViewPartRequestComponent>();
+            _stepSettingsComponents = _world.GetStash<ChassisSettingsComponent>();
+            _initLocalPositions = _world.GetStash<InitialLocalPosition>();
         }
     
         public void Build(Entity mechEntity)
@@ -39,26 +44,34 @@ namespace ZE.MechBattle
                 LocalRot = _mechChassisData.ChassisRootLocalPoint.rot,
                 AwaitParentViewComponent = true
             });
-            _viewPartsRequestComponent.Add(chassisRootEntity, new(ViewPartType.ChassisRoot));
+            _viewPartsRequestComponents.Add(chassisRootEntity, new(ViewPartType.ChassisRoot));
 
+            var leftLegContainer = CreateLeg(_mechChassisData, chassisRootEntity, isRight: false);
+            var rightLegContainer = CreateLeg(_mechChassisData, chassisRootEntity, isRight: true);
             _chassisComponents.Set(mechEntity, new()
             {
                 ChassisRootEntity = chassisRootEntity,
-                LeftLeg = CreateLeg(_mechChassisData.LeftLegLocalPoints, chassisRootEntity, isRight: false),
-                RightLeg = CreateLeg(_mechChassisData.RightLegLocalPoints, chassisRootEntity, isRight: true),
+                LeftLeg = leftLegContainer,
+                RightLeg = rightLegContainer,
             });
+            _stepSettingsComponents.Set(chassisRootEntity, new(_mechChassisData.ChassisSettings, _mechChassisData.StepSettings, _mechChassisData.FootSize));
+
+            // save foot default local pos in chassis space
+            _initLocalPositions.Set(leftLegContainer.Foot, new(_mechChassisData.LeftFootDefaultLocalPos));
+            _initLocalPositions.Set(rightLegContainer.Foot, new(_mechChassisData.RightFootDefaultLocalPos));
         }
 
-        private LegDataContainer<Entity> CreateLeg(LegDataContainer<RigidTransform> legData, Entity chassisRootEntity, bool isRight)
+        private LegDataContainer<Entity> CreateLeg(MechChassisData chassisData, Entity chassisRootEntity, bool isRight)
         {
+            var legData = isRight ? chassisData.LeftLegLocalPoints : chassisData.RightLegLocalPoints;
             var hipEntity = CreateLegPartEntity(legData.Hip, chassisRootEntity);
             var ankleEntity = CreateLegPartEntity(legData.Ankle, hipEntity);
             var footEntity = CreateLegPartEntity(legData.Foot, ankleEntity);
 
             var index = isRight ? 1 : 0;
-            _viewPartsRequestComponent.Add(hipEntity, new(ViewPartType.Hip, index));
-            _viewPartsRequestComponent.Add(ankleEntity, new(ViewPartType.Ankle, index));
-            _viewPartsRequestComponent.Add(footEntity, new(ViewPartType.Foot, index));
+            _viewPartsRequestComponents.Add(hipEntity, new(ViewPartType.Hip, index));
+            _viewPartsRequestComponents.Add(ankleEntity, new(ViewPartType.Ankle, index));
+            _viewPartsRequestComponents.Add(footEntity, new(ViewPartType.Foot, index));
 
             return new()
             {

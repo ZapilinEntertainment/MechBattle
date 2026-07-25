@@ -1,0 +1,20 @@
+﻿<Solution>
+  <Project Path="UnityUIExtensions.csproj" />
+  <Project Path="ZE.Navigation.csproj" />
+  <Project Path="MechBattle.csproj" />
+  <Project Path="ZE.MechBattle.Navigation.DebugOverlay.csproj" />
+  <Project Path="AYellowpaper.SerializedCollections.csproj" />
+  <Project Path="ZE.FlagService.csproj" />
+  <Project Path="ZE.Utils.csproj" />
+  <Project Path="ZE.Navigation.EditorTests.csproj" />
+  <Project Path="UnityUIExtensions.editor.csproj" />
+  <Project Path="AYellowpaper.SerializedCollections.Editor.csproj" />
+  <Project Path="ZE.MechBattle.Develop.csproj" />
+  <Project Path="ZE.UiService.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="ZE.WorkerService.csproj" />
+  <Project Path="Assembly-CSharp-firstpass.csproj" />
+  <Project Path="DrawWizards.csproj" />
+  <Project Path="Game.Editor.Tests.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
+</Solution>

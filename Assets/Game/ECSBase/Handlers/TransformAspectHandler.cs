@@ -167,7 +167,7 @@ namespace ZE.MechBattle.Ecs
             MoveToPoint(entity, globalPoint);
         }
 
-        private RigidTransform LocalToWorld(float3 localPos, quaternion localRot, Entity parentEntity)
+        public RigidTransform LocalToWorld(float3 localPos, quaternion localRot, Entity parentEntity)
         {
             var parentPoint = GetPoint(parentEntity, randomRotationIfNone: false);
 

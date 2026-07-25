@@ -28,6 +28,7 @@ namespace ZE.MechBattle.Navigation
         float InvertedTriangleHeight => 1f/ TriangleHeight;
         float HexEdgeLength { get; }
         float MaxElevationDifference { get; }
+        float TriangleEdgeSize => Settings.TriangleEdgeSize;
         IReadOnlyCollection<int2> HexCoords { get; }
         IReadOnlyCollection<INavigationHex> Hexes { get; }
         MapSettings Settings { get; }

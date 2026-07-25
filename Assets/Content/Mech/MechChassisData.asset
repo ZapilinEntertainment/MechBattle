@@ -23,71 +23,7 @@ MonoBehaviour:
       x: 0
       y: 0
       z: 0
-  <LeftLegLocalPoints>k__BackingField:
-    Hip:
-      rot:
-        value:
-          x: 0.7071068
-          y: 0
-          z: 0
-          w: 0.7071068
-      pos:
-        x: -4
-        y: 20.78268
-        z: 0
-    Ankle:
-      rot:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 1
-      pos:
-        x: 0
-        y: -0.49999905
-        z: 6.772134
-    Foot:
-      rot:
-        value:
-          x: -0.7071068
-          y: -0
-          z: -0
-          w: 0.7071068
-      pos:
-        x: 0
-        y: 0
-        z: 14.010549
-  <RightLegLocalPoints>k__BackingField:
-    Hip:
-      rot:
-        value:
-          x: 0.7071068
-          y: 0
-          z: 0
-          w: 0.7071068
-      pos:
-        x: 4
-        y: 20.78268
-        z: 0
-    Ankle:
-      rot:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 1
-      pos:
-        x: 0
-        y: -0.49999905
-        z: 6.772131
-    Foot:
-      rot:
-        value:
-          x: -0.7071068
-          y: -0
-          z: -0
-          w: 0.7071068
-      pos:
-        x: 0
-        y: 0
-        z: 14.010551
+  <FootSize>k__BackingField:
+    x: 0
+    y: 0
+  _unlockEditing: 0

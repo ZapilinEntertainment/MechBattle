@@ -14,5 +14,6 @@ namespace ZE.MechBattle
         public Transform Ankle => _ankle;
         public Transform Foot => _foot;
 
+        public LegDataContainer<Transform> ToContainer() => new() { Hip = _hip, Ankle = _ankle, Foot = _foot };
     }
 }

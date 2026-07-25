@@ -1,4 +1,3 @@
-using UnityEngine;
 using Unity.Mathematics;
 
 namespace ZE.MechBattle.MechMovement
@@ -10,12 +9,12 @@ namespace ZE.MechBattle.MechMovement
         {
             get
             {
-                var dir = Vector3.Lerp(StartPoint.pos, _targetPosXZ, Settings.SpeedCurve.Evaluate(Progress));
-                var riseHeight = Settings.StepRaiseHeight * Settings.HeightCurve.Evaluate(Progress);
-                var height = Mathf.Lerp(StartPoint.pos.y, TargetPoint.pos.y, Progress) + riseHeight;
-                dir.y = Mathf.Clamp(height, _minHeight, _maxHeight + Settings.StepRaiseHeight);
+                var dir = math.lerp(StartPoint.pos, _targetPosXZ, Settings.EvaluateSpeedCf(Progress));
+                var riseHeight = Settings.StepRaiseHeight * Settings.EvaluateHeightCf(Progress);
+                var height = math.lerp(StartPoint.pos.y, TargetPoint.pos.y, Progress) + riseHeight;
+                dir.y = math.clamp(height, _minHeight, _maxHeight + Settings.StepRaiseHeight);
 
-                var rot = Quaternion.Slerp(StartPoint.rot, TargetPoint.rot, Progress);
+                var rot = math.slerp(StartPoint.rot, TargetPoint.rot, Progress);
                 return new(rot, dir);
             }
         }
@@ -39,7 +38,7 @@ namespace ZE.MechBattle.MechMovement
             var startPos = StartPoint.pos;
             var targetPos = TargetPoint.pos;
             var dir = targetPos - startPos;
-            var planeProjection = dir.ProjectOnPlane(Vector3.up);
+            var planeProjection = dir.ProjectOnPlane(math.up());
             _targetPosXZ = startPos + planeProjection;
 
             if (startPos.y > targetPos.y)
@@ -68,7 +67,7 @@ namespace ZE.MechBattle.MechMovement
 
         public StepFrame Update(float deltaTime)
         {
-            var progress = Mathf.MoveTowards(Progress, 1f, deltaTime / Settings.Duration);
+            var progress = MathExtensions.MoveTowards(Progress, 1f, deltaTime / Settings.Duration);
             return new StepFrame(this, progress);
         }
     }

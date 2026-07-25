@@ -1,5 +1,6 @@
 using UnityEngine;
 using Unity.Mathematics;
+using TriInspector;
 
 namespace ZE.MechBattle.MechMovement
 {
@@ -8,10 +9,9 @@ namespace ZE.MechBattle.MechMovement
         [SerializeField] private LegView _leftLegView;
         [SerializeField] private LegView _rightLegView;
         [Space]
-        [Range(0, 0.99f)][SerializeField] private float _defaultChassisHeight = 0.93f;
-        [Range(0, 0.99f)][SerializeField] private float _minStepChassisHeight = 0.9f;
-        [Range(0.1f, 1f)][SerializeField] private float _stepLengthCf = 1f;
+     
         [SerializeField] private StepSettings _stepSettings;
+        [ShowInInspector, ReadOnly] private ChassisSettings _chassisSettings;
 
         private bool _isProcessingStep = false;
         private bool _leftLegTurn = false;
@@ -22,27 +22,21 @@ namespace ZE.MechBattle.MechMovement
         private IGroundCaster _groundCaster;
         private LegController _leftLeg;
         private LegController _rightLeg;
-        private float LegLength => _chassis.LegLength;
-        private float StepLength => _maxStepLength * _stepLengthCf;
-        private float MaxHeightDelta => _chassis.AnkleLength;
-
-        // note: smooth, but can be too slow for small fast mechs
-        private float ChassisRotationSpeed => _stepSettings.MaxSteerAngle / (_stepSettings.Duration * 1.5f);
-        private float _maxStepLength;
+        
 
         private void Start()
         {
-            var hipLength = Vector3.Distance(_leftLegView.Hip.position, _leftLegView.Ankle.position);
-            var ankleLength = Vector3.Distance(_leftLegView.Ankle.position, _leftLegView.Foot.position);
-            var hipsDistance = Vector3.Distance(_leftLegView.Hip.position, _rightLegView.Hip.position);
-            _chassis = new(transform: transform, hipLength: hipLength, ankleLength: ankleLength, hipsDistance: hipsDistance);
+            _chassisSettings = CalculateChassisSettingsCommand.Execute(
+                    _leftLegView.ToContainer(),
+                    _rightLegView.ToContainer(),
+                    _stepSettings);
+
+            _chassis = new(transform, _chassisSettings);
 
             _leftLeg = new (_leftLegView,  _chassis);
             _rightLeg = new(_rightLegView,  _chassis);
 
             _groundCaster = new PhysicsGroundCaster();
-
-            _maxStepLength = math.sin(_minStepChassisHeight * math.PI * 0.5f) * ankleLength;
         }
 
         private void Update()
@@ -94,7 +88,7 @@ namespace ZE.MechBattle.MechMovement
                         nextPoint = DefineFootNextPosition(_rightLeg, _leftLeg);
                     }
 
-                    _stepFrame = new StepFrame(prevPoint, nextPoint, _stepSettings);
+                    //_stepFrame = new StepFrame(prevPoint, nextPoint, _stepSettings.ToStruct());
                     if (math.lengthsq(prevPoint.pos - nextPoint.pos) < math.EPSILON * math.EPSILON 
                         && math.angle(prevPoint.rot, nextPoint.rot) < math.EPSILON)
                     {
@@ -110,7 +104,7 @@ namespace ZE.MechBattle.MechMovement
             var defaultLocalPos = movingLeg.DefaultFootLocalPosition;
             var backLegLocalPos = _chassis.Transform.InverseTransformPoint(backLeg.CurrentFootPosition);
             backLegLocalPos.y = 0;
-            var stepLength = StepLength;
+            var stepLength = _chassisSettings.StepLength;
 
             var moveDirection = Vector3.forward;
             var rotation = Quaternion.identity;
@@ -146,10 +140,11 @@ namespace ZE.MechBattle.MechMovement
             }
             else
             {
-                if (hipsDir.sqrMagnitude > _maxStepLength * _maxStepLength)
+                var maxStepLength = _chassisSettings.MaxStepLength;
+                if (hipsDir.sqrMagnitude > maxStepLength * maxStepLength)
                 {
                     // outside of max step circle
-                    var intersection = backLegLocalPos + _maxStepLength * hipsDir.normalized;
+                    var intersection = backLegLocalPos + maxStepLength * hipsDir.normalized;
                     var iv = intersection - startPos;
                     if (iv.sqrMagnitude > stepLength * stepLength)
                         iv = stepLength * iv.normalized;
@@ -174,14 +169,15 @@ namespace ZE.MechBattle.MechMovement
         {
             var dir = leftFootPoint.pos - rightFootPoint.pos;
             var halfDist = math.length(dir) * 0.5f;
-            var height = math.sqrt(LegLength * LegLength - halfDist * halfDist) * _defaultChassisHeight;
+            var legLength = _chassisSettings.LegLength;
+            var height = math.sqrt(legLength * legLength - halfDist * halfDist) * _stepSettings.DefaultChassisHeight;
             transform.position = rightFootPoint.pos + halfDist * math.normalize(dir)+ new float3(0f, height, 0f);
 
             var targetRotation = Quaternion.Lerp(rightFootPoint.rot, leftFootPoint.rot,  _steerValue * 0.5f + 0.5f);
             var targetForward = targetRotation * Vector3.forward;
             // cabin zero inclining
             targetRotation = Quaternion.LookRotation(targetForward, Vector3.up);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, ChassisRotationSpeed * dt);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, _chassisSettings.ChassisRotationSpeed * dt);
         }
 
         private RigidTransform AdjustNextStepAccordingToHeight(Vector3 targetFootPos, Vector3 moveVectorLocal, LegController leg)
@@ -194,7 +190,7 @@ namespace ZE.MechBattle.MechMovement
 
             var deltaHeight = leg.DefaultFootLocalPosition.y - _chassis.Transform.InverseTransformPoint(point.Position).y;
 
-            if (math.abs(deltaHeight) > MaxHeightDelta)
+            if (math.abs(deltaHeight) > _chassisSettings.MaxHeightDelta)
             {
                 var startFootPos = currentLegPoint.pos;
                 var projectedStart = new float2(startFootPos.x,  startFootPos.z);

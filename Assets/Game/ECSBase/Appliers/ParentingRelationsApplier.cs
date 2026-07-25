@@ -13,13 +13,13 @@ namespace ZE.MechBattle.Ecs
             public float3 LocalPos;
             public quaternion LocalRot;
             public bool AwaitParentViewComponent;
+            public bool SaveInitLocalPos;
         }
 
         private readonly Stash<ParentEntityComponent> _parents;
         private readonly Stash<LocalPositionComponent> _localPositions;
         private readonly Stash<LocalRotationComponent> _localRotation;
-        private readonly Stash<PositionComponent> _position;
-        private readonly Stash<RotationComponent> _rotation;
+        private readonly Stash<InitialLocalPosition> _initLocalPositions;
 
         private readonly Stash<AwaitingParentViewLoadingTag> _awaitingViewLoadingTag;
 
@@ -31,9 +31,7 @@ namespace ZE.MechBattle.Ecs
             _parents = world.GetStash<ParentEntityComponent>();
             _localPositions = world.GetStash<LocalPositionComponent>();
             _localRotation = world.GetStash<LocalRotationComponent>();
-
-            _position = world.GetStash<PositionComponent>();
-            _rotation = world.GetStash<RotationComponent>();
+            _initLocalPositions = world.GetStash<InitialLocalPosition>();
 
             _awaitingViewLoadingTag = world.GetStash<AwaitingParentViewLoadingTag>();
 
@@ -42,14 +40,23 @@ namespace ZE.MechBattle.Ecs
 
         public void Apply(ExecutionProtocol protocol)
         {
-            _parents.Set(protocol.ChildEntity, new(protocol.ParentEntity));
-            _localPositions.Set(protocol.ChildEntity, new() { Value = protocol.LocalPos});
-            _localRotation.Set(protocol.ChildEntity, new() { Value = protocol.LocalRot});
+            var existingGrandparentComponent = _parents.Get(protocol.ParentEntity, out var grandparentExists);
+            var childEntity = protocol.ChildEntity;
 
-            _transformHandler.SyncPositionWithParent(protocol.ChildEntity, protocol.ParentEntity, protocol.LocalPos, protocol.LocalRot);
+            if (grandparentExists && existingGrandparentComponent.Value == childEntity)
+                throw new System.Exception("parent bond creation error");
+
+            _parents.Set(childEntity, new(protocol.ParentEntity));
+            _localPositions.Set(childEntity, new() { Value = protocol.LocalPos});
+            _localRotation.Set(childEntity, new() { Value = protocol.LocalRot});
+
+            _transformHandler.SyncPositionWithParent(childEntity, protocol.ParentEntity, protocol.LocalPos, protocol.LocalRot);
 
             if (protocol.AwaitParentViewComponent)
-                _awaitingViewLoadingTag.Set(protocol.ChildEntity);
+                _awaitingViewLoadingTag.Set(childEntity);
+
+            if (protocol.SaveInitLocalPos)
+                _initLocalPositions.Set(childEntity,new(protocol.LocalPos));
         }
 
     }
