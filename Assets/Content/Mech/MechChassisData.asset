@@ -24,6 +24,98 @@ MonoBehaviour:
       y: 0
       z: 0
   <FootSize>k__BackingField:
-    x: 0
-    y: 0
+    x: 7
+    y: 7
+  <LeftLegLocalPoints>k__BackingField:
+    Hip:
+      rot:
+        value:
+          x: 0.7071068
+          y: 0
+          z: 0
+          w: 0.7071068
+      pos:
+        x: -4
+        y: 20.78268
+        z: 0
+    Ankle:
+      rot:
+        value:
+          x: 0
+          y: 0
+          z: 0
+          w: 1
+      pos:
+        x: 0
+        y: -0.49999905
+        z: 6.772134
+    Foot:
+      rot:
+        value:
+          x: -0.7071068
+          y: -0
+          z: -0
+          w: 0.7071068
+      pos:
+        x: 0
+        y: 0
+        z: 14.010549
+  <RightLegLocalPoints>k__BackingField:
+    Hip:
+      rot:
+        value:
+          x: 0.7071068
+          y: 0
+          z: 0
+          w: 0.7071068
+      pos:
+        x: 4
+        y: 20.78268
+        z: 0
+    Ankle:
+      rot:
+        value:
+          x: 0
+          y: 0
+          z: 0
+          w: 1
+      pos:
+        x: 0
+        y: -0.49999905
+        z: 6.772131
+    Foot:
+      rot:
+        value:
+          x: -0.7071068
+          y: -0
+          z: -0
+          w: 0.7071068
+      pos:
+        x: 0
+        y: 0
+        z: 14.010551
+  <StepSettings>k__BackingField:
+    Duration: 0.75
+    StepRaiseHeight: 4
+    MaxSteerAngle: 30
+    DefaultChassisHeight: 0.93
+    MinStepChassisHeight: 0.99
+    StepLengthCf: 1
+  <LeftFootDefaultLocalPos>k__BackingField:
+    x: -4
+    y: -0.0000038146973
+    z: -0.5
+  <RightFootDefaultLocalPos>k__BackingField:
+    x: 4
+    y: -0.0000038146973
+    z: -0.5
+  <ChassisSettings>k__BackingField:
+    HipLength: 6.790568
+    AnkleLength: 14.01055
+    HipsDistance: 8
+    LegLength: 22.01055
+    StepLength: 14.008821
+    MaxHeightDelta: 14.01055
+    MaxStepLength: 14.008821
+    ChassisRotationSpeed: 26.666666
   _unlockEditing: 0

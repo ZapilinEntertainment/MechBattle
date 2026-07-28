@@ -9,12 +9,12 @@ namespace ZE.MechBattle
     {
         [field:SerializeField] public RigidTransform ChassisRootLocalPoint { get;private set; }
         [field:SerializeField] public float2 FootSize { get; private set; }
-        [ShowInInspector, EnableIf(nameof(_unlockEditing))] public LegDataContainer<RigidTransform> LeftLegLocalPoints { get; private set; }
-        [ShowInInspector, EnableIf(nameof(_unlockEditing))] public LegDataContainer<RigidTransform> RightLegLocalPoints { get; private set; }
-        [ShowInInspector, EnableIf(nameof(_unlockEditing))] public StepSettings StepSettings { get; private set; }
-        [ShowInInspector, EnableIf(nameof(_unlockEditing))] public float3 LeftFootDefaultLocalPos { get; private set; }
-        [ShowInInspector, EnableIf(nameof(_unlockEditing))] public float3 RightFootDefaultLocalPos { get; private set; }
-        [ShowInInspector, EnableIf(nameof(_unlockEditing))] public ChassisSettings ChassisSettings { get; private set; }
+        [field: SerializeField, EnableIf(nameof(_unlockEditing))] public LegDataContainer<RigidTransform> LeftLegLocalPoints { get; private set; }
+        [field: SerializeField, EnableIf(nameof(_unlockEditing))] public LegDataContainer<RigidTransform> RightLegLocalPoints { get; private set; }
+        [field: SerializeField, EnableIf(nameof(_unlockEditing))] public StepSettings StepSettings { get; private set; }
+        [field: SerializeField, EnableIf(nameof(_unlockEditing))] public float3 LeftFootDefaultLocalPos { get; private set; }
+        [field: SerializeField, EnableIf(nameof(_unlockEditing))] public float3 RightFootDefaultLocalPos { get; private set; }
+        [field: SerializeField, EnableIf(nameof(_unlockEditing))] public ChassisSettings ChassisSettings { get; private set; }
         [SerializeField] private bool _unlockEditing = false;
 
         public bool TryUpdateData(MechView mechView, StepSettings stepSettings)
