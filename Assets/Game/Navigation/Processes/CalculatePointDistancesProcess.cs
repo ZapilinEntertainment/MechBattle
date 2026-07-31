@@ -91,9 +91,17 @@ namespace ZE.MechBattle
 
         protected override void DisposeResources()
         {
-            _activeJobHandle.Complete();
-            _activeCells.Dispose();
-            _cells.Dispose();
+#if UNITY_EDITOR
+            try
+            {
+#endif
+                _activeJobHandle.Complete();
+                _activeCells.Dispose();
+                _cells.Dispose();
+#if UNITY_EDITOR
+            }
+            catch { }
+#endif
         }
 
         private bool TryPrepareJob(CalculatePointDistancesLaunchData input)

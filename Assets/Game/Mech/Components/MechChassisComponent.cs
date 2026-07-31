@@ -10,7 +10,6 @@ namespace ZE.MechBattle.Ecs {
     [BurstCompile]
     public struct MechChassisComponent : IComponent 
     {
-        public Entity ChassisRootEntity;
         public LegDataContainer<Entity> LeftLeg;
         public LegDataContainer<Entity> RightLeg;    
     }

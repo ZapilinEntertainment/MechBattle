@@ -1,6 +1,5 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
-using Unity.Mathematics;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -9,7 +8,6 @@ namespace ZE.MechBattle.Ecs {
     public sealed class LocalRotationTargetingSystem : PausableSystem
     {
         private Filter _filter;
-        private Stash<LocalRotationComponent> _localRotations;
         private Stash<LocalTargetRotationComponent> _localTargetRotations;
         private Stash<RotationSpeedComponent> _rotationSpeeds;
         private readonly TransformAspectHandler _transformAspectHandler;
@@ -26,7 +24,6 @@ namespace ZE.MechBattle.Ecs {
                 .With<LocalTargetRotationComponent>()
                 .Build();
 
-            _localRotations = World.GetStash<LocalRotationComponent>();
             _localTargetRotations = World.GetStash<LocalTargetRotationComponent>();
             _rotationSpeeds = World.GetStash<RotationSpeedComponent>();
         }

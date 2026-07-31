@@ -11,8 +11,6 @@ namespace ZE.MechBattle.Ecs {
     {
         public readonly bool IsFinished => Progress == 1f;
 
-        public bool LeftLegTurn;
         public float Progress;
-        public RigidTransform CurrentPoint;
     }
 }

@@ -37,6 +37,7 @@ namespace ZE.MechBattle
             _activeHandle.Complete();
             _activeCells.Dispose();
             _cells.Dispose();
+            _hexTris.Dispose();
         }
 
         public JobHandle ScheduleJob(IntTriangularPos hexCenter, CellPassabilityData[] hexCellPassabilityData)

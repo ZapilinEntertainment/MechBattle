@@ -31,12 +31,12 @@ namespace ZE.MechBattle.Navigation
             return new(pinnacle, leftBasis, rightBasis);
         }
 
-        public TriangleVertices ApplyHeights(CellHeightData heights)
+        public TriangleVertices ApplyHeights(CellHeightData heights, float offset = 0.01f)
         {
             var pinnacle = new float3(PinnaclePos.x, heights.PinnacleHeight, PinnaclePos.z);
             var leftBasis = new float3(LeftBasisPos.x, heights.LeftBasisHeight, LeftBasisPos.z);
             var rightBasis = new float3(RightBasisPos.x, heights.RightBasisHeight, RightBasisPos.z);
-            return new(pinnacle + 0.01f, leftBasis + 0.01f, rightBasis + 0.01f);
+            return new(pinnacle + offset, leftBasis + offset, rightBasis + offset);
         }
 
         public TriangleVertices AddHeight(float value)

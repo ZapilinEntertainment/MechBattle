@@ -15,6 +15,7 @@ namespace ZE.MechBattle
         private readonly Stash<ViewPartRequestComponent> _viewPartsRequestComponents;
         private readonly Stash<ChassisSettingsComponent> _stepSettingsComponents;
         private readonly Stash<InitialLocalPosition> _initLocalPositions;
+        private readonly Stash<MechActiveLegValueComponent> _activeLegValues;
 
         [Inject]
         public MechChassisFactory(
@@ -31,6 +32,7 @@ namespace ZE.MechBattle
             _viewPartsRequestComponents = _world.GetStash<ViewPartRequestComponent>();
             _stepSettingsComponents = _world.GetStash<ChassisSettingsComponent>();
             _initLocalPositions = _world.GetStash<InitialLocalPosition>();
+            _activeLegValues = _world.GetStash<MechActiveLegValueComponent>();
         }
     
         public void Build(Entity mechEntity)
@@ -48,22 +50,26 @@ namespace ZE.MechBattle
 
             var leftLegContainer = CreateLeg(_mechChassisData, chassisRootEntity, isRight: false);
             var rightLegContainer = CreateLeg(_mechChassisData, chassisRootEntity, isRight: true);
-            _chassisComponents.Set(mechEntity, new()
+            _chassisComponents.Set(chassisRootEntity, new()
             {
-                ChassisRootEntity = chassisRootEntity,
                 LeftLeg = leftLegContainer,
                 RightLeg = rightLegContainer,
             });
-            _stepSettingsComponents.Set(chassisRootEntity, new(_mechChassisData.ChassisSettings, _mechChassisData.StepSettings, _mechChassisData.FootSize));
+            _stepSettingsComponents.Add(chassisRootEntity, new(_mechChassisData.ChassisSettings, _mechChassisData.StepSettings, _mechChassisData.FootSize));
 
             // save foot default local pos in chassis space
-            _initLocalPositions.Set(leftLegContainer.Foot, new(_mechChassisData.LeftFootDefaultLocalPos));
-            _initLocalPositions.Set(rightLegContainer.Foot, new(_mechChassisData.RightFootDefaultLocalPos));
+            _initLocalPositions.Add(leftLegContainer.Foot, new(_mechChassisData.LeftFootDefaultLocalPos));
+            _initLocalPositions.Add(rightLegContainer.Foot, new(_mechChassisData.RightFootDefaultLocalPos));
+            _activeLegValues.Add(chassisRootEntity);
+
+            chassisRootEntity.SetComponent<MechInputComponent>(new() { SpeedValue = 1f});
+
+            UnityEngine.Debug.Log($"mech entity {mechEntity.Id}, chassis entity {chassisRootEntity.Id}");
         }
 
         private LegDataContainer<Entity> CreateLeg(MechChassisData chassisData, Entity chassisRootEntity, bool isRight)
         {
-            var legData = isRight ? chassisData.LeftLegLocalPoints : chassisData.RightLegLocalPoints;
+            var legData = isRight ? chassisData.RightLegLocalPoints : chassisData.LeftLegLocalPoints;
             var hipEntity = CreateLegPartEntity(legData.Hip, chassisRootEntity);
             var ankleEntity = CreateLegPartEntity(legData.Ankle, hipEntity);
             var footEntity = CreateLegPartEntity(legData.Foot, ankleEntity);

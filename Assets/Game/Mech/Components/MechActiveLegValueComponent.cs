@@ -7,8 +7,10 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public struct MechMovingTag : IComponent 
+    public struct MechActiveLegValueComponent : IComponent 
     {
-    
+        // describes which leg will be active next
+        // it is possible to use as mask to non-binary leg mechs
+        public int Value;
     }
 }

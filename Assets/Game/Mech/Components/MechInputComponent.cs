@@ -11,6 +11,8 @@ namespace ZE.MechBattle.Ecs {
     public struct MechInputComponent : IComponent 
     {
         public float SpeedValue;
-        public float SteerValue;    
+        public float SteerValue;
+
+        public bool Idle => SpeedValue == 0f && SteerValue == 0f;
     }
 }

@@ -66,37 +66,11 @@ namespace ZE.MechBattle.Navigation
             }
         }
 
-        [BurstCompile] 
-        public static TriangleVertices GetRaycastCenters(IntTriangularPos pos, float triangleEdgeSize, int raycastsPerEdge)
+        [BurstCompile]
+        public static TriangleVertices Execute(IntTriangularPos pos, float triangleHeight, CellHeightData heightData)
         {
-            var height = TriangularMath.GetTriangleHeight(triangleEdgeSize);
-            var center = TriangularMath.TriangularToWorld(pos, height).xz;
-            var isPeak = pos.IsPeak;
-
-            
-            var h1 = height * NavigationConstants.DIV_THREE;
-            var h2 = h1 * 2f;
-            var halfEdge = triangleEdgeSize * 0.5f;
-
-            var sh2 = h2  / raycastsPerEdge;
-            var leftDir = new float2(-halfEdge, h1 * (isPeak ? -1 : 1));
-            leftDir -= sh2 * math.normalize(leftDir);
-
-
-            if (isPeak)
-            {
-                return TriangleVertices.ConstructWithDefaultHeight(
-                    pinnacle: center + new float2(0, h2 - sh2),
-                    leftBasis: center + leftDir,
-                    rightBasis: center + new float2(-leftDir.x, leftDir.y));
-            }
-            else
-            {
-                return TriangleVertices.ConstructWithDefaultHeight(
-                    pinnacle: center + new float2(0, -h2 + sh2),
-                    rightBasis: center + new float2(-leftDir.x, leftDir.y),
-                    leftBasis: center + leftDir);
-            }
+            var originalVertices = Execute(pos, triangleHeight, offset: 0f);
+            return originalVertices.ApplyHeights(heightData, offset: 0f);
         }
     }
 }

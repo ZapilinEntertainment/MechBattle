@@ -207,6 +207,7 @@ namespace ZE.MechBattle.Navigation
         public static float3 WorldToTriangular(float3 pos, double triangleHeight)
         {
             var p = (double3)pos;
+            p.y = 0f;
 
             var vX = math.dot(p, (double3)DirX) / triangleHeight;
             var vY = math.dot(p, (double3)DirY) / triangleHeight;

@@ -11,7 +11,6 @@ namespace ZE.MechBattle.Navigation
     {
         public IntTriangularPos Current => _sectorEnumerator.Current;
         private readonly int _radius;
-        private readonly int _trisPerSector;
         private readonly IntTriangularPos _center;
 
         private int _sectorIndex;
@@ -22,7 +21,6 @@ namespace ZE.MechBattle.Navigation
         {
             _center = center;
             _radius = radius;
-            _trisPerSector = _radius * _radius;
 
             _sectorIndex = default;
             _sectorEnumerator = default;

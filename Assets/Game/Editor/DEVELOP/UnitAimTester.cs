@@ -132,7 +132,7 @@ namespace ZE.MechBattle.Develop
             }                
             else
             {
-                _transformHandler.SetLocalRotation(targetEntity, quaternion);
+                _transformHandler.SetLocalRotationAndSync(targetEntity, quaternion);
             }
             _world.Commit();
         }

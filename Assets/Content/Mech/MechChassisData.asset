@@ -21,7 +21,7 @@ MonoBehaviour:
         w: 1
     pos:
       x: 0
-      y: 0
+      y: 20.7
       z: 0
   <FootSize>k__BackingField:
     x: 7
@@ -31,12 +31,12 @@ MonoBehaviour:
       rot:
         value:
           x: 0.7071068
-          y: 0
-          z: 0
+          y: -0
+          z: -0
           w: 0.7071068
       pos:
         x: -4
-        y: 20.78268
+        y: 0.08267975
         z: 0
     Ankle:
       rot:
@@ -65,12 +65,12 @@ MonoBehaviour:
       rot:
         value:
           x: 0.7071068
-          y: 0
-          z: 0
+          y: -0
+          z: -0
           w: 0.7071068
       pos:
         x: 4
-        y: 20.78268
+        y: 0.08267975
         z: 0
     Ankle:
       rot:
@@ -95,7 +95,7 @@ MonoBehaviour:
         y: 0
         z: 14.010551
   <StepSettings>k__BackingField:
-    Duration: 0.75
+    Duration: 3
     StepRaiseHeight: 4
     MaxSteerAngle: 30
     DefaultChassisHeight: 0.93
@@ -103,11 +103,11 @@ MonoBehaviour:
     StepLengthCf: 1
   <LeftFootDefaultLocalPos>k__BackingField:
     x: -4
-    y: -0.0000038146973
+    y: -20.700005
     z: -0.5
   <RightFootDefaultLocalPos>k__BackingField:
     x: 4
-    y: -0.0000038146973
+    y: -20.700005
     z: -0.5
   <ChassisSettings>k__BackingField:
     HipLength: 6.790568
@@ -117,5 +117,5 @@ MonoBehaviour:
     StepLength: 14.008821
     MaxHeightDelta: 14.01055
     MaxStepLength: 14.008821
-    ChassisRotationSpeed: 26.666666
+    ChassisRotationSpeed: 4
   _unlockEditing: 0

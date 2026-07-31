@@ -1,6 +1,7 @@
 using UnityEngine;
 using VContainer;
 using ZE.MechBattle.Ecs;
+using ZE.MechBattle.MechMovement;
 
 namespace ZE.MechBattle
 {
@@ -14,6 +15,7 @@ namespace ZE.MechBattle
             builder.Register<MechFactory>(Lifetime.Scoped);
             builder.Register<MechCreateRequestsFactory>(Lifetime.Scoped);
             builder.Register<MechChassisFactory>(Lifetime.Scoped);
+            builder.Register<MechMovementHandler>(Lifetime.Scoped);
         }
 
         async Awaitable<IResourceBinder> ISessionAsyncResourceLoader.LoadSessionResourcesAsync(IObjectResolver resolver)

@@ -10,7 +10,7 @@ using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle.Ecs
 {
-    public class MultipointSpawnHandler
+    public class MultipointSpawnHandler : IDisposable
     {
         public struct ExecutionProtocol
         {
@@ -31,7 +31,6 @@ namespace ZE.MechBattle.Ecs
         }
 
         private readonly INavigationMap _map;
-        private readonly ShrinkingList<IntTriangularPos> _positionsList = new();
         private readonly NativeList<IntTriangularPos> _jobResultsList = new();
         private readonly ShrinkingList<IntTriangularPos> _selectionList = new();
         private readonly System.Random _random;
@@ -51,6 +50,11 @@ namespace ZE.MechBattle.Ecs
 
             _jobResultsList = new(Allocator.Persistent);
             _job = new() { TriangleHeight = _map.TriangleHeight, ResultList = _jobResultsList};
+        }
+
+        public void Dispose()
+        {
+            _jobResultsList.Dispose();
         }
 
         public void Handle(ExecutionProtocol protocol)

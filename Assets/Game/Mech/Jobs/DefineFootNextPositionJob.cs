@@ -10,29 +10,27 @@ using ReadOnly = Unity.Collections.ReadOnlyAttribute;
 
 namespace ZE.MechBattle
 {
+
     [BurstCompile]
     public struct DefineFootNextPositionJob : IJobParallelFor
     {
         [ReadOnly] public NativeFilter Filter;
-        [ReadOnly] public NativeStash<MechChassisComponent> ChassisComponents;
-        [ReadOnly] public NativeStash<StepProgressionComponent> StepProgression;
         [ReadOnly] public NativeStash<InitialLocalPosition> LocalPositions;
         [ReadOnly] public NativeStash<ChassisSettingsComponent> StepSettings;
         [ReadOnly] public NativeStash<MechInputComponent> Input;
         [ReadOnly] public NativeStash<PositionComponent> Positions;
         [ReadOnly] public NativeStash<RotationComponent> Rotations;
+        [ReadOnly] public NativeStash<NextStepPositionCalculationRequest> Requests;
         public NativeStash<StepTargetPointComponent> StepTargets;
 
         public void Execute(int index)
         {
-            var chassisEntity = Filter[index];
-            var chassisComponent = ChassisComponents.Get(chassisEntity);
-            var useLeftLeg = StepProgression.Get(chassisEntity).LeftLegTurn;
+            var activeLegEntity = Filter[index];
+            var calculationRequest = Requests.Get(activeLegEntity);
+            var backLegEntity = calculationRequest.OtherLeg;
+            var chassisEntity = calculationRequest.ChassisEntity;
 
-            var moveLegEntity = useLeftLeg ? chassisComponent.LeftLeg.Foot : chassisComponent.RightLeg.Foot;
-            var backLegEntity = useLeftLeg ? chassisComponent.RightLeg.Foot : chassisComponent.LeftLeg.Foot;
-
-            var moveLegLocalPos = LocalPositions.Get(moveLegEntity).Value;
+            var moveLegLocalPos = LocalPositions.Get(activeLegEntity).Value;
             var backLegLocalPos = LocalPositions.Get(backLegEntity).Value;
 
             backLegLocalPos.y = 0;
@@ -101,7 +99,7 @@ namespace ZE.MechBattle
                 moveDirection *= -1f;
 
             var nextPosWorld = ChassisToWorld(chassisEntity, nextFootLocalPos);
-            StepTargets.Get(chassisEntity).Value = nextPosWorld;
+            StepTargets.Get(activeLegEntity).Value = nextPosWorld;
         }
 
         private RigidTransform ChassisToWorld(Entity chassisEntity, float3 localPos )

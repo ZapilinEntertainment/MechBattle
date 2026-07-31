@@ -18,7 +18,7 @@ namespace ZE.MechBattle
         {
             var tripos = TriangularMath.WorldToTrianglePos(WorldPos, TriangleHeight);
             var virtualHexCenter = GetClosestVertexTriposCommand.Execute(WorldPos, TriangleHeight, tripos);
-            var radius = (int)math.round(RadiusInUnits / TriangleHeight)+1;
+            var radius = MathExtensions.UnitsRadiusToTriangular(RadiusInUnits, TriangleHeight);
 
             var unitsRadiusSq = RadiusInUnits * RadiusInUnits;
             foreach (var pos in new HexTrianglesEnumerator(virtualHexCenter, radius))

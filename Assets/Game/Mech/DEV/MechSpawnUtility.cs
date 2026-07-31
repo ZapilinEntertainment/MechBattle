@@ -18,7 +18,7 @@ namespace ZE.MechBattle
             _requestsFactory = requestsFactory;
         }
 
-        [Button("Spawn mech")]
+        [Button, EnableInPlayMode]
         private void SpawnMech()
         {
             var playerKey = new PlayerKey(_playerId);

@@ -40,6 +40,7 @@ namespace ZE.MechBattle.Ecs {
         {
             if (_childEntities.IsEmpty())
                 return;
+            //UnityEngine.Debug.Log($"iteration {_iterationNumber}");
             foreach (var entity in _childEntities)
             {
                 if (_operatedEntities.Contains(entity))
@@ -68,6 +69,7 @@ namespace ZE.MechBattle.Ecs {
             var stampIterationComponent = _stampComponents.Get(entity, out var stampExists);
             if (!stampExists || stampIterationComponent.LastSyncIteration != _iterationNumber)
             {
+                //UnityEngine.Debug.Log($"updated entity {entity.Id}");
                 _transformAspectHandler.SyncPositionWithParent(entity, parentComponent.Value);
                 _stampComponents.Set(entity, new() { LastSyncIteration = _iterationNumber });
             }                

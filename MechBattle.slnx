@@ -12,9 +12,9 @@
   <Project Path="ZE.MechBattle.Develop.csproj" />
   <Project Path="ZE.UiService.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="Game.Editor.Tests.csproj" />
   <Project Path="ZE.WorkerService.csproj" />
   <Project Path="Assembly-CSharp-firstpass.csproj" />
   <Project Path="DrawWizards.csproj" />
-  <Project Path="Game.Editor.Tests.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
 </Solution>

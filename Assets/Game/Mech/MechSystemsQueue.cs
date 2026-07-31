@@ -7,9 +7,15 @@ namespace ZE.MechBattle
         protected override void Configure(ISystemsOperator installer)
         {
             installer.AddSystem<MechInstanceSystem>(SystemGroupOrder.MechSystemsCalculation);
-            installer.AddSystem<StepDataSetupSystem>(SystemGroupOrder.MechSystemsCalculation);
+            installer.AddSystem<MechInitializationSystem>(SystemGroupOrder.MechSystemsCalculation);
+            installer.AddSystem<MechMovementPrepareSystem>(SystemGroupOrder.MechSystemsCalculation);
             installer.AddSystemWithInterface<NextStepCellsCalculationSystem, IMechStepsAffectionMap>(SystemGroupOrder.MechSystemsCalculation);
-            installer.AddSystem<MechStepApplicationSystem>(SystemGroupOrder.MechSystemsApplication);
+
+            installer.AddSystem<TargetStepPositionCheckSystem>(SystemGroupOrder.MechSystemsApplication);
+            installer.AddSystem<StartChassisMovementSystem>(SystemGroupOrder.MechSystemsApplication);
+            installer.AddSystem<StepProgressionSystem>(SystemGroupOrder.MechSystemsApplication);
+            installer.AddSystem<StepInterpolationSystem>(SystemGroupOrder.MechSystemsApplication);
+
         }
     }
 }

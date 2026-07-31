@@ -51,6 +51,7 @@ namespace ZE.MechBattle.Navigation
         {
             _flowCalculationCollections.Dispose();
             _cellHeightData.Dispose();
+            _refinedTriangleRaycastData.Dispose();
         }
 
         
