@@ -41,6 +41,7 @@ namespace ZE.MechBattle.MechMovement
             var position = rightFootPoint.pos + halfDist * math.normalize(dir) + new float3(0f, height, 0f);
 
             var rotation = math.slerp(rightFootPoint.rot, leftFootPoint.rot, steerValue * 0.5f + 0.5f);
+            // todo: add steer to rotation
             var targetForward = math.mul(rotation, math.forward());
             rotation = quaternion.LookRotation(targetForward,math.up());
 

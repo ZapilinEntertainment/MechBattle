@@ -15,7 +15,7 @@ namespace ZE.MechBattle
         private readonly Stash<ViewPartRequestComponent> _viewPartsRequestComponents;
         private readonly Stash<ChassisSettingsComponent> _stepSettingsComponents;
         private readonly Stash<InitialLocalPosition> _initLocalPositions;
-        private readonly Stash<MechActiveLegValueComponent> _activeLegValues;
+        private readonly Stash<MechActiveLegValueComponent> _activeLegs;
 
         [Inject]
         public MechChassisFactory(
@@ -32,7 +32,7 @@ namespace ZE.MechBattle
             _viewPartsRequestComponents = _world.GetStash<ViewPartRequestComponent>();
             _stepSettingsComponents = _world.GetStash<ChassisSettingsComponent>();
             _initLocalPositions = _world.GetStash<InitialLocalPosition>();
-            _activeLegValues = _world.GetStash<MechActiveLegValueComponent>();
+            _activeLegs = _world.GetStash<MechActiveLegValueComponent>();
         }
     
         public void Build(Entity mechEntity)
@@ -60,9 +60,9 @@ namespace ZE.MechBattle
             // save foot default local pos in chassis space
             _initLocalPositions.Add(leftLegContainer.Foot, new(_mechChassisData.LeftFootDefaultLocalPos));
             _initLocalPositions.Add(rightLegContainer.Foot, new(_mechChassisData.RightFootDefaultLocalPos));
-            _activeLegValues.Add(chassisRootEntity);
 
             chassisRootEntity.SetComponent<MechInputComponent>(new() { SpeedValue = 1f});
+            _activeLegs.Add(chassisRootEntity, new() { Value = 0 });
 
             UnityEngine.Debug.Log($"mech entity {mechEntity.Id}, chassis entity {chassisRootEntity.Id}");
         }

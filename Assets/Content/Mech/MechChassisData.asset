@@ -101,6 +101,7 @@ MonoBehaviour:
     DefaultChassisHeight: 0.93
     MinStepChassisHeight: 0.99
     StepLengthCf: 1
+    ChassisMovementShiftPc: 0.351
   <LeftFootDefaultLocalPos>k__BackingField:
     x: -4
     y: -20.700005

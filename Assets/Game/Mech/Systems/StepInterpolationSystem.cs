@@ -48,37 +48,56 @@ namespace ZE.MechBattle.Ecs {
         {
             foreach (var chassisEntity in _filter)
             {
-                InterpolateChassis(chassisEntity);
+                UpdatePositions(chassisEntity);
             }
         }
 
         public void Dispose() { }
 
-        private void InterpolateChassis(Entity chassisEntity)
+        private void UpdatePositions(Entity chassisEntity)
         {
             var progress = _stepProgression.Get(chassisEntity).Progress;
-            var chassisPoint = InterpolateEntity(chassisEntity, progress);
-            TranslateAndRotateMechWithChassis(chassisEntity, chassisPoint);
 
             var chassisComponent = _mechChassis.Get(chassisEntity);
             var leftFoot = chassisComponent.LeftLeg.Foot;
             var rightFoot = chassisComponent.RightLeg.Foot;
             var stepSettings = _settings.Get(chassisEntity).StepSettings;
-            var activeLeg = _activeLegs.Get(chassisEntity).Value;
-            var leftFootPoint = activeLeg == 0 ? InterpolateFoot(leftFoot, progress, stepSettings) : _startPoints.Get(leftFoot).Value;
-            var rightFootPoint = activeLeg == 1 ? InterpolateFoot(rightFoot, progress, stepSettings) : _startPoints.Get(rightFoot).Value;
 
-            PositionLegParts(chassisComponent.LeftLeg, leftFootPoint, _settings.Get(leftFoot));
-            PositionLegParts(chassisComponent.RightLeg, rightFootPoint, _settings.Get(rightFoot));
+            var activeLegIndex = _activeLegs.Get(chassisEntity).Value;
+            RigidTransform leftFootPoint;
+            RigidTransform rightFootPoint;
+            if (activeLegIndex == 0)
+            {
+                leftFootPoint = InterpolateFoot(leftFoot, progress, stepSettings);
+                rightFootPoint = _startPoints.Get(rightFoot).Value;
+            }
+            else
+            {
+                leftFootPoint = _startPoints.Get(leftFoot).Value;
+                rightFootPoint = InterpolateFoot(rightFoot, progress, stepSettings);
+            }
+
+            var activeFootPos = activeLegIndex == 0 ? leftFootPoint.pos : rightFootPoint.pos;
+            var chassisPoint = InterpolateChassis(chassisEntity, activeFootPos, stepSettings, progress);
+            TranslateAndRotateMechWithChassis(chassisEntity, chassisPoint);
+
+            PositionLegParts(chassisComponent.LeftLeg, chassisPoint, leftFootPoint, _settings.Get(leftFoot));
+            PositionLegParts(chassisComponent.RightLeg, chassisPoint, rightFootPoint, _settings.Get(rightFoot));
+
+            
         }
 
-        private RigidTransform InterpolateEntity(Entity entity, float lerpValue)
+        private RigidTransform InterpolateChassis(Entity chassisEntity, float3 activeFootPos, StepSettings stepSettings, float lerpValue)
         {
-            var start = _startPoints.Get(entity).Value;
-            var end = _targetPoints.Get(entity).Value;
-            var result = MathExtensions.Lerp(start, end, lerpValue);
+            var start = _startPoints.Get(chassisEntity).Value;
+            var end = _targetPoints.Get(chassisEntity).Value;
+            var chassisPoint = MathExtensions.Lerp(start, end, lerpValue);
+
+            activeFootPos.y = chassisPoint.pos.y;
+            chassisPoint.pos = math.lerp(chassisPoint.pos, activeFootPos,  stepSettings.EvaluateChassisHorizontalShift(lerpValue));
+
             //UnityEngine.Debug.Log($"{start.pos} -> {end.pos} |{lerpValue}| = {result.pos}");
-            return result;
+            return chassisPoint;
         }
 
         private RigidTransform InterpolateFoot(Entity entity, float lerpValue, StepSettings stepSettings)
@@ -93,13 +112,14 @@ namespace ZE.MechBattle.Ecs {
             return result;
         }
 
-        private void PositionLegParts(LegDataContainer<Entity> leg, RigidTransform footPoint, ChassisSettingsComponent settingsComponent)
+        private void PositionLegParts(LegDataContainer<Entity> leg, RigidTransform chassisRootTransform, RigidTransform footPoint, ChassisSettingsComponent settingsComponent)
         {
             var hip = leg.Hip;
             var hipLength = settingsComponent.ChassisSettings.HipLength;
             var ankleLength = settingsComponent.ChassisSettings.AnkleLength;
 
-            var hipWorldPos = _transformAspectHandler.GetPosition(hip);
+            var hipWorldPos = _transformAspectHandler.LocalToWorld(hip, chassisRootTransform.pos, chassisRootTransform.rot).pos;
+
             var dir = footPoint.pos - hipWorldPos;
             var directLength = math.length(dir);
             var a = hipLength * hipLength + directLength * directLength - ankleLength * ankleLength;
