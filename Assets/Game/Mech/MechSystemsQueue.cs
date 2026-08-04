@@ -8,6 +8,9 @@ namespace ZE.MechBattle
         {
             installer.AddSystem<MechInstanceSystem>(SystemGroupOrder.MechSystemsCalculation);
             installer.AddSystem<MechInitializationSystem>(SystemGroupOrder.MechSystemsCalculation);
+            installer.AddSystem<MechInputSyncSystem>(SystemGroupOrder.MechSystemsCalculation);
+
+            installer.AddSystem<MechIdleStandReturnCheckSystem>(SystemGroupOrder.MechSystemsCalculation);
             installer.AddSystem<MechMovementPrepareSystem>(SystemGroupOrder.MechSystemsCalculation);
             installer.AddSystemWithInterface<NextStepCellsCalculationSystem, IMechStepsAffectionMap>(SystemGroupOrder.MechSystemsCalculation);
 
@@ -15,7 +18,7 @@ namespace ZE.MechBattle
             installer.AddSystem<StartChassisMovementSystem>(SystemGroupOrder.MechSystemsApplication);
             installer.AddSystem<StepProgressionSystem>(SystemGroupOrder.MechSystemsApplication);
             installer.AddSystem<StepInterpolationSystem>(SystemGroupOrder.MechSystemsApplication);
-
+            installer.AddSystem<MechMovementClearSystem>(SystemGroupOrder.MechSystemsApplication);
         }
     }
 }

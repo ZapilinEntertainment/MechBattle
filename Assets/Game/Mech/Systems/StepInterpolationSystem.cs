@@ -37,8 +37,6 @@ namespace ZE.MechBattle.Ecs {
 
         public void OnAwake() 
         {
-            Application.targetFrameRate = 30;
-
             _filter = World.Filter
                 .With<MechChassisComponent>()
                 .With<StepInitialPointsPreparedTag>()
@@ -91,14 +89,6 @@ namespace ZE.MechBattle.Ecs {
 
             PositionLegParts(chassisComponent.LeftLeg, chassisPoint, leftFootPoint, _settings.Get(leftFoot));
             PositionLegParts(chassisComponent.RightLeg, chassisPoint, rightFootPoint, _settings.Get(rightFoot));
-
-            if (progress == 1f)
-            {
-                chassisEntity.RemoveComponent<StepInitialPointsPreparedTag>();
-                _stepProgression.Remove(chassisEntity);
-
-                _mechHandler.SwitchActiveFoot(chassisEntity);
-            }
         }
 
         private RigidTransform InterpolateChassis(Entity chassisEntity, float3 activeFootPos, StepSettings stepSettings, float lerpValue)
@@ -109,7 +99,7 @@ namespace ZE.MechBattle.Ecs {
             var chassisPoint = MathExtensions.Lerp(start, end, lerpValue);
             chassisPoint = _mechInterpolator.CalculateShiftedChassisPoint(chassisEntity, chassisPoint, stepSettings, lerpValue);
             
-            MessageBroker.Publish(new DrawPointMessage(chassisPoint.pos, $"{lerpValue}: {chassisPoint.pos}"));
+           // MessageBroker.Publish(new DrawPointMessage(chassisPoint.pos, $"{lerpValue}: {chassisPoint.pos}"));
             return chassisPoint;
         }
 

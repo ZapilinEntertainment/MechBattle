@@ -1,18 +1,14 @@
 using Scellecs.Morpeh;
+using UnityEngine;
 using Unity.IL2CPP.CompilerServices;
-using Unity.Burst;
 
 namespace ZE.MechBattle.Ecs {
     [System.Serializable]
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    [BurstCompile]
-    public struct MechInputComponent : IComponent 
+    public struct ReturnToIdlePosTag : IComponent 
     {
-        public float SpeedValue;
-        public float SteerValue;
-
-        public bool IsIdle => SpeedValue == 0f && SteerValue == 0f;
+    
     }
 }

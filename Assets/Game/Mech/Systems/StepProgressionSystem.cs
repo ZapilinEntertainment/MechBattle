@@ -1,5 +1,6 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
+using Unity.Mathematics;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -11,8 +12,7 @@ namespace ZE.MechBattle.Ecs {
         private Filter _filter;
         private Stash<StepProgressionComponent> _stepProgressions;
         private Stash<ChassisSettingsComponent> _chassisSettings;
-        private Stash<StepInitialPointsPreparedTag> _mechMovementTags;
-        private Stash<MechActiveLegValueComponent> _activeLeg;
+        private Stash<MechInputComponent> _mechInput;
 
         public void OnAwake() 
         {
@@ -23,23 +23,14 @@ namespace ZE.MechBattle.Ecs {
 
             _stepProgressions = World.GetStash<StepProgressionComponent>();
             _chassisSettings = World.GetStash<ChassisSettingsComponent>();
-            _mechMovementTags = World.GetStash<StepInitialPointsPreparedTag>();
-            _activeLeg = World.GetStash<MechActiveLegValueComponent>();
+            _mechInput = World.GetStash<MechInputComponent>();
         }
 
         public void OnUpdate(float deltaTime) 
         {
             foreach (var chassisEntity in _filter)
             {
-                var reachedEnd = UpdateProgression(chassisEntity, deltaTime);
-                //if (reachedEnd)
-                //{
-                //    _mechMovementTags.Remove(chassisEntity);
-                //    _stepProgressions.Remove(chassisEntity);
-
-                //    ref var activeLegComponent = ref _activeLeg.Get(chassisEntity);
-                //    activeLegComponent.Value = activeLegComponent.Value == 0 ? 1 : 0;
-                //}
+                UpdateProgression(chassisEntity, deltaTime);
             }
         }
 
@@ -49,8 +40,10 @@ namespace ZE.MechBattle.Ecs {
         {
             ref var progressionComponent = ref _stepProgressions.Get(chassisEntity);
             var settings = _chassisSettings.Get(chassisEntity);
-
-            var progress = MathExtensions.MoveTowards(progressionComponent.Progress, 1f, dt / settings.StepSettings.Duration);
+            var inputCf = _mechInput.Get(chassisEntity).SpeedValue;
+            inputCf = math.clamp(math.abs(inputCf), MechConstants.MIN_SHORT_STEP_CF, 1f);
+            var duration = settings.StepSettings.Duration * math.abs(inputCf);
+            var progress = MathExtensions.MoveTowards(progressionComponent.Progress, 1f, dt / duration);
 
             progressionComponent.Progress = progress;
             return progress == 1f;            

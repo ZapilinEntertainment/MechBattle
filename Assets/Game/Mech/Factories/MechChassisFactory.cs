@@ -35,7 +35,7 @@ namespace ZE.MechBattle
             _activeLegs = _world.GetStash<MechActiveLegValueComponent>();
         }
     
-        public void Build(Entity mechEntity)
+        public Entity Build(Entity mechEntity)
         {
             var chassisRootEntity = _world.CreateEntity();
             _parentingRelationsApplier.Apply(new()
@@ -61,10 +61,10 @@ namespace ZE.MechBattle
             _initLocalPositions.Add(leftLegContainer.Foot, new(_mechChassisData.LeftFootDefaultLocalPos));
             _initLocalPositions.Add(rightLegContainer.Foot, new(_mechChassisData.RightFootDefaultLocalPos));
 
-            chassisRootEntity.SetComponent<MechInputComponent>(new() { SpeedValue = 1f});
             _activeLegs.Add(chassisRootEntity, MechActiveLegValueComponent.Idle);
 
             UnityEngine.Debug.Log($"mech entity {mechEntity.Id}, chassis entity {chassisRootEntity.Id}");
+            return chassisRootEntity;
         }
 
         private LegDataContainer<Entity> CreateLeg(MechChassisData chassisData, Entity chassisRootEntity, bool isRight)

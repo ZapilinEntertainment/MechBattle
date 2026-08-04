@@ -10,7 +10,6 @@ using ReadOnly = Unity.Collections.ReadOnlyAttribute;
 
 namespace ZE.MechBattle
 {
-
     [BurstCompile]
     public struct DefineFootNextPositionJob : IJobParallelFor
     {
@@ -65,7 +64,7 @@ namespace ZE.MechBattle
             var startPos = math.mul(rotation, moveLegLocalPos);
             startPos.y = 0f;
 
-            var isStartingMovement = math.abs(moveLegLocalPos.z) < 1f && math.abs(backLegLocalPos.z) < 0.1f;
+            var isStartingMovement = math.abs(moveLegLocalPos.z) < 0.1f && math.abs(backLegLocalPos.z) < 0.1f;
             var currentStepLength = isStartingMovement ? stepLength * 0.5f : stepLength;
 
             var nextFootLocalPos = startPos + input.SpeedValue * currentStepLength * moveDirection;
