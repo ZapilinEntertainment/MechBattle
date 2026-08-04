@@ -95,13 +95,14 @@ MonoBehaviour:
         y: 0
         z: 14.010551
   <StepSettings>k__BackingField:
-    Duration: 3
-    StepRaiseHeight: 4
+    Duration: 1
+    StepRaiseHeight: 2
     MaxSteerAngle: 30
+    VerticalWobblingHeight: 1
     DefaultChassisHeight: 0.93
     MinStepChassisHeight: 0.99
     StepLengthCf: 1
-    ChassisMovementShiftPc: 0.351
+    ChassisMovementShiftPc: 0.1
   <LeftFootDefaultLocalPos>k__BackingField:
     x: -4
     y: -20.700005

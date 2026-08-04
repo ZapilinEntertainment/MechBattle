@@ -1,6 +1,7 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
 using Unity.Mathematics;
+using UnityEngine;
 using VContainer;
 using ZE.MechBattle.MechMovement;
 
@@ -21,16 +22,23 @@ namespace ZE.MechBattle.Ecs {
 
         private readonly TransformAspectHandler _transformAspectHandler;
         private readonly MechMovementHandler _mechHandler;
+        private readonly MechInterpolator _mechInterpolator;
 
         [Inject]
-        public StepInterpolationSystem(TransformAspectHandler transformAspectHandler, MechMovementHandler mechHandler)
+        public StepInterpolationSystem(
+            TransformAspectHandler transformAspectHandler, 
+            MechMovementHandler mechHandler, 
+            MechInterpolator mechInterpolator)
         {
             _transformAspectHandler = transformAspectHandler;
             _mechHandler = mechHandler;
+            _mechInterpolator = mechInterpolator;
         }
 
         public void OnAwake() 
         {
+            Application.targetFrameRate = 30;
+
             _filter = World.Filter
                 .With<MechChassisComponent>()
                 .With<StepInitialPointsPreparedTag>()
@@ -84,19 +92,24 @@ namespace ZE.MechBattle.Ecs {
             PositionLegParts(chassisComponent.LeftLeg, chassisPoint, leftFootPoint, _settings.Get(leftFoot));
             PositionLegParts(chassisComponent.RightLeg, chassisPoint, rightFootPoint, _settings.Get(rightFoot));
 
-            
+            if (progress == 1f)
+            {
+                chassisEntity.RemoveComponent<StepInitialPointsPreparedTag>();
+                _stepProgression.Remove(chassisEntity);
+
+                _mechHandler.SwitchActiveFoot(chassisEntity);
+            }
         }
 
         private RigidTransform InterpolateChassis(Entity chassisEntity, float3 activeFootPos, StepSettings stepSettings, float lerpValue)
         {
             var start = _startPoints.Get(chassisEntity).Value;
             var end = _targetPoints.Get(chassisEntity).Value;
+
             var chassisPoint = MathExtensions.Lerp(start, end, lerpValue);
-
-            activeFootPos.y = chassisPoint.pos.y;
-            chassisPoint.pos = math.lerp(chassisPoint.pos, activeFootPos,  stepSettings.EvaluateChassisHorizontalShift(lerpValue));
-
-            //UnityEngine.Debug.Log($"{start.pos} -> {end.pos} |{lerpValue}| = {result.pos}");
+            chassisPoint = _mechInterpolator.CalculateShiftedChassisPoint(chassisEntity, chassisPoint, stepSettings, lerpValue);
+            
+            MessageBroker.Publish(new DrawPointMessage(chassisPoint.pos, $"{lerpValue}: {chassisPoint.pos}"));
             return chassisPoint;
         }
 
@@ -112,6 +125,7 @@ namespace ZE.MechBattle.Ecs {
             return result;
         }
 
+        // corrected by Google AI
         private void PositionLegParts(LegDataContainer<Entity> leg, RigidTransform chassisRootTransform, RigidTransform footPoint, ChassisSettingsComponent settingsComponent)
         {
             var hip = leg.Hip;
@@ -119,59 +133,92 @@ namespace ZE.MechBattle.Ecs {
             var ankleLength = settingsComponent.ChassisSettings.AnkleLength;
 
             var hipWorldPos = _transformAspectHandler.LocalToWorld(hip, chassisRootTransform.pos, chassisRootTransform.rot).pos;
-
             var dir = footPoint.pos - hipWorldPos;
             var directLength = math.length(dir);
-            var a = hipLength * hipLength + directLength * directLength - ankleLength * ankleLength;
-            var b = 2 * hipLength * directLength;
-            var cosA = a / b;
 
-            var x = cosA * hipLength;
-            var y = math.sqrt(math.abs(hipLength * hipLength - x * x));
-
-            var right = MathExtensions.GetRightVector(footPoint);
-            var upVector = math.cross(dir, right);
-            var middlePoint = hipWorldPos + x * math.normalize(dir) + y * math.normalize(upVector);
-
-            var hipDir = math.normalize(middlePoint - hipWorldPos);
-
-            // todo: Need investigation and fix!
-            if (math.lengthsq(hipDir) == math.EPSILON)
+            if (directLength < 0.001f)
                 return;
 
-            upVector = math.normalize(math.cross(hipDir, right));
-            _transformAspectHandler.SetGlobalRotationAndSyncLocal(hip, quaternion.LookRotation(hipDir, upVector));
+            var maxLength = (hipLength + ankleLength) * 0.999f;
+            if (directLength > maxLength)
+            {
+                dir = (dir / directLength) * maxLength;
+                directLength = maxLength;
+            }
 
+            var a = hipLength * hipLength + directLength * directLength - ankleLength * ankleLength;
+            var b = 2f * hipLength * directLength;
+
+            var cosA = math.clamp(a / b, -1f, 1f);
+
+            var x = cosA * hipLength;
+            var y = math.sqrt(math.max(0f, hipLength * hipLength - x * x)); 
+
+            var right = math.mul(chassisRootTransform.rot, math.left());
+
+            var upVector = math.normalize(math.cross(right, dir));
+
+            var dirNormalized = dir / directLength;
+            var middlePoint = hipWorldPos + (x * dirNormalized) + (y * upVector);
+
+            var hipDir = middlePoint - hipWorldPos;
+            if (math.lengthsq(hipDir) < 0.0001f)
+                return;
+
+            hipDir = math.normalize(hipDir);
+            var hipUp = math.normalize(math.cross(hipDir, right));
+
+            _transformAspectHandler.SetGlobalRotationAndSyncLocal(hip, quaternion.LookRotation(hipDir, hipUp));
 
             var ankle = leg.Ankle;
-            var ankleDir = math.normalize(footPoint.pos - middlePoint);
-            upVector = math.cross(ankleDir, right);
-            _transformAspectHandler.SetGlobalTransformAndSyncLocal(ankle, new(quaternion.LookRotation(ankleDir, upVector), middlePoint));
+            var ankleDir = footPoint.pos - middlePoint;
+            if (math.lengthsq(ankleDir) > 0.0001f)
+            {
+                ankleDir = math.normalize(ankleDir);
+                var ankleUp = math.normalize(math.cross(ankleDir, right));
+                _transformAspectHandler.SetGlobalTransformAndSyncLocal(ankle, new(quaternion.LookRotation(ankleDir, ankleUp), middlePoint));
+            }
 
             _transformAspectHandler.SetGlobalTransformAndSyncLocal(leg.Foot, footPoint);
         }
+
 
         // generated by Google AI
         private void TranslateAndRotateMechWithChassis(Entity chassisEntity, RigidTransform targetChassisTransform)
         {
             var currentChassisTransform = _transformAspectHandler.GetPoint(chassisEntity);
-            quaternion rotationDelta = math.mul(targetChassisTransform.rot, math.conjugate(currentChassisTransform.rot));
-
             var mechEntity = _mechHandler.GetMechEntity(chassisEntity);
             var currentMechTransform = _transformAspectHandler.GetPoint(mechEntity);
 
-            float3 mechToChassisOffset = currentMechTransform.pos - currentChassisTransform.pos;
-            float3 rotatedMechOffset = math.mul(rotationDelta, mechToChassisOffset);
+            // 1. Вычисляем дельту поворота шасси
+            quaternion rotationDelta = math.mul(targetChassisTransform.rot, math.conjugate(currentChassisTransform.rot));
 
-            float3 mechPosAfterRotation = currentChassisTransform.pos + rotatedMechOffset;
+            // 2. Находим смещение меха относительно шасси
+            float3 localOffset = currentMechTransform.pos - currentChassisTransform.pos;
 
-            float3 translationDelta = targetChassisTransform.pos - currentChassisTransform.pos;
-            float3 finalMechGlobalPosition = mechPosAfterRotation + translationDelta;
-
+            // 3. Вычисляем новые глобальные координаты меха
+            float3 finalMechGlobalPosition = targetChassisTransform.pos + math.mul(rotationDelta, localOffset);
             quaternion finalMechGlobalRotation = math.mul(rotationDelta, currentMechTransform.rot);
 
+            // 4. ПЕРЕСЧЕТ: Локальные координаты шасси относительно нового состояния меха
+            // Инвертируем новый поворот меха, чтобы перейти в его локальное пространство
+            quaternion inverseMechRot = math.conjugate(finalMechGlobalRotation);
+
+            // Вектор от меха к шасси в глобальном пространстве
+            float3 globalChassisToMechVector = targetChassisTransform.pos - finalMechGlobalPosition;
+
+            // Поворачиваем вектор в локальное пространство меха
+            float3 chassisLocalPosInMechSpace = math.mul(inverseMechRot, globalChassisToMechVector);
+
+            // Локальный поворот шасси относительно меха
+            quaternion chassisLocalRotInMechSpace = math.mul(inverseMechRot, targetChassisTransform.rot);
+
+            // 5. Применяем глобальные изменения к меху
             _transformAspectHandler.MoveToPoint(mechEntity, finalMechGlobalPosition, finalMechGlobalRotation);
+            _transformAspectHandler.SetLocalTransform(chassisEntity, new RigidTransform(chassisLocalRotInMechSpace,chassisLocalPosInMechSpace));
         }
+
+
 
     }
 }

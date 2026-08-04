@@ -1,6 +1,7 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
 using VContainer;
+using ZE.MechBattle.MechMovement;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -16,13 +17,20 @@ namespace ZE.MechBattle.Ecs {
         private Stash<NextStepPositionCalculationRequest> _calculationRequests;
         private Stash<MechInputComponent> _inputComponents;
         private Stash<StepInitialPointsPreparedTag> _startPointTags;
-        private Stash<MechActiveLegValueComponent> _activeLegs;
+
         private readonly TransformAspectHandler _transformAspectHandler;
+        private readonly MechInterpolator _mechInterpolator;
+        private readonly MechMovementHandler _mechHandler;
 
         [Inject]
-        public MechMovementPrepareSystem(TransformAspectHandler transformAspectHandler)
+        public MechMovementPrepareSystem(
+            TransformAspectHandler transformAspectHandler, 
+            MechInterpolator mechInterpolator,
+            MechMovementHandler mechHandler)
         {
             _transformAspectHandler = transformAspectHandler;
+            _mechInterpolator = mechInterpolator;
+            _mechHandler = mechHandler;
         }
 
         public void OnAwake() 
@@ -39,7 +47,6 @@ namespace ZE.MechBattle.Ecs {
             _calculationRequests = World.GetStash<NextStepPositionCalculationRequest>();
             _inputComponents = World.GetStash<MechInputComponent>();
             _startPointTags = World.GetStash<StepInitialPointsPreparedTag>();
-            _activeLegs = World.GetStash<MechActiveLegValueComponent>();
         }
 
         public void OnUpdate(float deltaTime) 
@@ -51,16 +58,15 @@ namespace ZE.MechBattle.Ecs {
                     continue;
 
                 var chassisComponent = _chassisComponents.Get(chassisEntity);
+                var rightFoot = chassisComponent.RightLeg.Foot;
+                var leftFoot = chassisComponent.LeftLeg.Foot;
+                PrepareChassisStartPoint(chassisEntity, chassisComponent);
+                SaveStartPoint(leftFoot);
+                SaveStartPoint(rightFoot);
 
-                SaveStartPoint(chassisEntity);
-                SaveStartPoint(chassisComponent.LeftLeg.Foot);
-                SaveStartPoint(chassisComponent.RightLeg.Foot);
-
-                //UnityEngine.Debug.Log($"start points: chassis: {_startPoints.Get(chassisEntity).Value.pos.xz}, left foot: {_startPoints.Get(chassisComponent.LeftLeg.Foot).Value.pos.xz}, right foot: {_startPoints.Get(chassisComponent.RightLeg.Foot).Value.pos.xz}");
-
-                var activeLegIndex = _activeLegs.Get(chassisEntity).Value;
-                var activeLeg = activeLegIndex == 0 ? chassisComponent.LeftLeg.Foot : chassisComponent.RightLeg.Foot;
-                var backLeg = activeLegIndex == 0 ? chassisComponent.RightLeg.Foot : chassisComponent.LeftLeg.Foot;
+                var legs = _mechHandler.GetFoots(chassisEntity );
+                var activeLeg = legs.activeFoot;
+                var backLeg = legs.backFoot;
 
                 _calculationRequests.Set(activeLeg, new(chassisEntity, backLeg));
                 _endPoints.Set(activeLeg);
@@ -77,6 +83,13 @@ namespace ZE.MechBattle.Ecs {
         {
             var point = _transformAspectHandler.GetPoint(entity);
             _startPoints.Set(entity, new() { Value = point });
+        }
+
+        private void PrepareChassisStartPoint(Entity chassisEntity, MechChassisComponent chassisComponent)
+        {
+            var chassisPoint = _mechInterpolator.GetChassisStartPoint(chassisEntity, chassisComponent);
+            _startPoints.Set(chassisEntity, new() { Value = chassisPoint });
+            //UnityEngine.Debug.Log($"chassis start: {chassisPoint.pos}");
         }
     }
 }

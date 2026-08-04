@@ -23,7 +23,8 @@ namespace ZE.MechBattle
         [ReadOnly] public NativeStash<NextStepPositionCalculationRequest> Requests;
         public NativeStash<StepTargetPointComponent> StepTargets;
 
-        // changed by Google AI (replaced chassis-dependent calculations to central point)
+        // enhanced by Google AI (replaced chassis-dependent calculations to central point)
+        // added first step check by Deepseek
         public void Execute(int index)
         {
             var activeLegEntity = Filter[index];
@@ -64,7 +65,10 @@ namespace ZE.MechBattle
             var startPos = math.mul(rotation, moveLegLocalPos);
             startPos.y = 0f;
 
-            var nextFootLocalPos = startPos + input.SpeedValue * stepLength * moveDirection;
+            var isStartingMovement = math.abs(moveLegLocalPos.z) < 1f && math.abs(backLegLocalPos.z) < 0.1f;
+            var currentStepLength = isStartingMovement ? stepLength * 0.5f : stepLength;
+
+            var nextFootLocalPos = startPos + input.SpeedValue * currentStepLength * moveDirection;
             var hipsDir = nextFootLocalPos - backLegLocalPos;
             var mindistance = chassisSettings.HipsDistance * 0.8f;
             var hipsDirLenSq = math.lengthsq(hipsDir);
@@ -74,8 +78,9 @@ namespace ZE.MechBattle
             {
                 var intersection = backLegLocal + distance * hipsDirNormalized;
                 var iv = intersection - startPos;
-                if (math.lengthsq(iv) > stepLength * stepLength)
-                    iv = stepLength * math.normalize(iv);
+                var maxStepLength = isStartingMovement ? stepLength * 0.5f : stepLength;
+                if (math.lengthsq(iv) > maxStepLength * maxStepLength)
+                    iv = maxStepLength * math.normalize(iv);
                 nextFootPos = startPos + iv;
                 moveDir = math.normalize(iv);
             }
@@ -103,8 +108,5 @@ namespace ZE.MechBattle
 
             StepTargets.Get(activeLegEntity).Value = nextPosWorld;
         }
-
-
-
     }
 }

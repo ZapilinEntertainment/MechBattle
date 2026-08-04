@@ -32,15 +32,14 @@ namespace ZE.MechBattle.Ecs {
             foreach (var chassisEntity in _filter)
             {
                 var reachedEnd = UpdateProgression(chassisEntity, deltaTime);
-                if (reachedEnd)
-                {
-                    _mechMovementTags.Remove(chassisEntity);
-                    _stepProgressions.Remove(chassisEntity);
+                //if (reachedEnd)
+                //{
+                //    _mechMovementTags.Remove(chassisEntity);
+                //    _stepProgressions.Remove(chassisEntity);
 
-                    ref var activeLegComponent = ref _activeLeg.Get(chassisEntity);
-                    activeLegComponent.Value = activeLegComponent.Value == 0 ? 1 : 0;
-                }
-                    
+                //    ref var activeLegComponent = ref _activeLeg.Get(chassisEntity);
+                //    activeLegComponent.Value = activeLegComponent.Value == 0 ? 1 : 0;
+                //}
             }
         }
 

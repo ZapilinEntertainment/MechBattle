@@ -62,7 +62,7 @@ namespace ZE.MechBattle
             _initLocalPositions.Add(rightLegContainer.Foot, new(_mechChassisData.RightFootDefaultLocalPos));
 
             chassisRootEntity.SetComponent<MechInputComponent>(new() { SpeedValue = 1f});
-            _activeLegs.Add(chassisRootEntity, new() { Value = 0 });
+            _activeLegs.Add(chassisRootEntity, MechActiveLegValueComponent.Idle);
 
             UnityEngine.Debug.Log($"mech entity {mechEntity.Id}, chassis entity {chassisRootEntity.Id}");
         }

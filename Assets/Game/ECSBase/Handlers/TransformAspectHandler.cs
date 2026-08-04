@@ -56,6 +56,9 @@ namespace ZE.MechBattle.Ecs
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void i_SetPosition(Entity entity, float3 position) => _positions.Set(entity, new() { Value = position });
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void i_SetLocalPosition(Entity entity, float3 position) => _localPositions.Set(entity, new() { Value = position });
+
         public quaternion GetRotation(Entity entity) => _rotations.Get(entity).Value;
         public void SetRotation(Entity entity, quaternion rotation)
         {
@@ -75,9 +78,13 @@ namespace ZE.MechBattle.Ecs
         private void i_SetRotation(Entity entity, quaternion rotation) =>
             _rotations.Set(entity, new() { Value = rotation });
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void i_SetLocalRotation(Entity entity, quaternion rotation) =>
+       _localRotation.Set(entity, new() { Value = rotation });
+
         public void SetLocalRotation(Entity entity, quaternion localRotation)
         {
-            _localRotation.Set(entity, new() { Value = localRotation });
+            i_SetLocalRotation(entity, localRotation);
             AddUpdateTag(entity);
         }
 
@@ -93,6 +100,13 @@ namespace ZE.MechBattle.Ecs
             _localRotation.Set(entity, new() { Value = localRotation });
             var localPositionComponent = _localPositions.Get(entity, out var localPosExists);
             SyncPositionWithParent(entity, parentComponent.Value, localPosExists ? localPositionComponent.Value : float3.zero, localRotation);
+        }
+
+        public void SetLocalTransform(Entity entity, RigidTransform transform)
+        {
+            i_SetLocalPosition(entity, transform.pos);
+            i_SetLocalRotation(entity, transform.rot);
+            AddUpdateTag(entity);
         }
 
 

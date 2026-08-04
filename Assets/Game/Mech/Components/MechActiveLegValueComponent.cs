@@ -12,5 +12,10 @@ namespace ZE.MechBattle.Ecs {
         // describes which leg will be active next
         // it is possible to use as mask to non-binary leg mechs
         public int Value;
+        public bool IsIdle => Value == INVALID_VALUE;
+
+        private const int INVALID_VALUE = -1;
+
+        public static MechActiveLegValueComponent Idle => new() { Value = INVALID_VALUE };
     }
 }

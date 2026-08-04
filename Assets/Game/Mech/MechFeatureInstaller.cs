@@ -16,6 +16,7 @@ namespace ZE.MechBattle
             builder.Register<MechCreateRequestsFactory>(Lifetime.Scoped);
             builder.Register<MechChassisFactory>(Lifetime.Scoped);
             builder.Register<MechMovementHandler>(Lifetime.Scoped);
+            builder.Register<MechInterpolator>(Lifetime.Scoped);
         }
 
         async Awaitable<IResourceBinder> ISessionAsyncResourceLoader.LoadSessionResourcesAsync(IObjectResolver resolver)

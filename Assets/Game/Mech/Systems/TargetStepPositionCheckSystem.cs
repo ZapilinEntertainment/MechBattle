@@ -74,7 +74,7 @@ namespace ZE.MechBattle.Ecs {
                 var rot = GetChassisRotation(entity, plane);                
 
                 stepTarget.Value = new(rot, pos);
-                //UnityEngine.Debug.Log($"next point calculated: {pos}, plane: {plane}");
+                //UnityEngine.Debug.Log($"next point calculated on entity {entity.Id}: {pos}, plane: {plane}");
             }
 
             _affectionData.Clear();

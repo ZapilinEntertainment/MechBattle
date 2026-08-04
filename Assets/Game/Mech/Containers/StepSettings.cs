@@ -10,6 +10,7 @@ namespace ZE.MechBattle
         public float Duration;
         public float StepRaiseHeight;
         public float MaxSteerAngle;
+        public float VerticalWobblingHeight;
         [Range(0, 0.99f)] public float DefaultChassisHeight;// = 0.93f;
         [Range(0, 0.99f)] public float MinStepChassisHeight;// = 0.9f;
         [Range(0.1f, 1f)] public float StepLengthCf;// = 1f;
@@ -17,6 +18,7 @@ namespace ZE.MechBattle
 
         public float EvaluateHeightCf(float pc) => 4 * pc * (1 - pc);
         public float EvaluateSpeedCf(float pc) => pc * pc;
-        public float EvaluateChassisHorizontalShift(float pc) => pc * pc * ChassisMovementShiftPc;
+        public float EvaluateChassisHorizontalWobbling(float pc) => pc * pc ;
+        public float EvaluateChassisVerticalWobbling(float pc) => math.sin(pc * math.PI);
     }
 }

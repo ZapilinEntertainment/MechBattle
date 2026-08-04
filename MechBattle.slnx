@@ -8,8 +8,8 @@
   <Project Path="ZE.Utils.csproj" />
   <Project Path="ZE.Navigation.EditorTests.csproj" />
   <Project Path="UnityUIExtensions.editor.csproj" />
-  <Project Path="AYellowpaper.SerializedCollections.Editor.csproj" />
   <Project Path="ZE.MechBattle.Develop.csproj" />
+  <Project Path="AYellowpaper.SerializedCollections.Editor.csproj" />
   <Project Path="ZE.UiService.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Game.Editor.Tests.csproj" />

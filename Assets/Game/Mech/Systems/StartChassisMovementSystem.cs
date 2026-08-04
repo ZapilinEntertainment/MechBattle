@@ -19,12 +19,12 @@ namespace ZE.MechBattle.Ecs {
 
         private Stash<StepTargetPointComponent> _targetPoints;
         private Stash<MechInputComponent> _input;
-        private readonly MechMovementHandler _mechMovementHandler;
+        private readonly MechInterpolator _mechInterpolator;
 
         [Inject]
-        public StartChassisMovementSystem(MechMovementHandler mechMovementHandler)
+        public StartChassisMovementSystem(MechInterpolator mechInterpolator)
         {
-            _mechMovementHandler = mechMovementHandler;
+            _mechInterpolator = mechInterpolator;
         }
 
         public void OnAwake() 
@@ -70,18 +70,11 @@ namespace ZE.MechBattle.Ecs {
 
         private void SetChassisTargetPos(Entity chassisEntity, MechChassisComponent chassisComponent)
         {
-            var leftFoot = chassisComponent.LeftLeg.Foot;
-            var rightFoot = chassisComponent.RightLeg.Foot;
-
-            var leftFootPoint = _targetPoints.Get(leftFoot).Value;
-            var rightFootPoint = _targetPoints.Get(rightFoot).Value;
-
             var steer = _input.Get(chassisEntity).SteerValue;
-
-            var chassisTargetPoint = _mechMovementHandler.CalculateChassisTargetPos(chassisEntity, leftFootPoint, rightFootPoint, steer);
-            _targetPoints.Set(chassisEntity, new() { Value = chassisTargetPoint});
-
-            //UnityEngine.Debug.Log($"next chassis pos: {chassisTargetPoint.pos.xz}, left foot: {leftFoot.GetComponent<StepStartPointComponent>().Value.pos.xz} -> {leftFootPoint.pos.xz}, right foot: {rightFoot.GetComponent<StepStartPointComponent>().Value.pos.xz} -> {rightFootPoint.pos.xz}");
+            var targetTransform = _mechInterpolator.GetChassisTargetPos(chassisEntity, chassisComponent, steer);
+            _targetPoints.Set(chassisEntity, new() { Value = targetTransform });
+           
+            //UnityEngine.Debug.Log($"next chassis pos: {targetTransform.pos.xz}");
         }
     }
 }
