@@ -31,15 +31,11 @@ namespace ZE.MechBattle.MechMovement
             var chassisPoint = CalculateChassisPointByLegs(
                 chassisEntity,
                 _transformAspectHandler.GetPoint(chassisComponent.LeftLeg.Foot),
-                _transformAspectHandler.GetPoint(chassisComponent.RightLeg.Foot),
-                steerValue: 0f);
-
-            chassisPoint.rot = _transformAspectHandler.GetRotation(chassisEntity);
-
+                _transformAspectHandler.GetPoint(chassisComponent.RightLeg.Foot));
             return chassisPoint;
         }
 
-        public RigidTransform GetChassisTargetPos(Entity chassisEntity, MechChassisComponent chassisComponent, float steerValue)
+        public RigidTransform GetChassisTargetTransform(Entity chassisEntity, MechChassisComponent chassisComponent)
         {
             var leftFoot = chassisComponent.LeftLeg.Foot;
             var rightFoot = chassisComponent.RightLeg.Foot;
@@ -47,7 +43,7 @@ namespace ZE.MechBattle.MechMovement
             var leftFootPoint = _targetPoints.Get(leftFoot).Value;
             var rightFootPoint = _targetPoints.Get(rightFoot).Value;
 
-            var chassisTargetPoint = CalculateChassisPointByLegs(chassisEntity, leftFootPoint, rightFootPoint, steerValue);
+            var chassisTargetPoint = CalculateChassisPointByLegs(chassisEntity, leftFootPoint, rightFootPoint);
             return chassisTargetPoint;
 
         }
@@ -93,7 +89,7 @@ namespace ZE.MechBattle.MechMovement
             return chassisPoint;
         }
 
-        private RigidTransform CalculateChassisPointByLegs(Entity chassisEntity, RigidTransform leftFootPoint, RigidTransform rightFootPoint, float steerValue)
+        private RigidTransform CalculateChassisPointByLegs(Entity chassisEntity, RigidTransform leftFootPoint, RigidTransform rightFootPoint)
         {
             var settings = _chassisSettings.Get(chassisEntity);
             var chassisSettings = settings.ChassisSettings;
@@ -105,11 +101,11 @@ namespace ZE.MechBattle.MechMovement
             var height = math.sqrt(legLength * legLength - halfDist * halfDist) * stepSettings.DefaultChassisHeight;
             var position = rightFootPoint.pos + halfDist * math.normalize(dir) + new float3(0f, height, 0f);
 
-            var rotation = math.slerp(rightFootPoint.rot, leftFootPoint.rot, steerValue * 0.5f + 0.5f);
-            // todo: add steer to rotation
-            var targetForward = math.mul(rotation, math.forward());
-            rotation = quaternion.LookRotation(targetForward, math.up());
-
+            var barycenter = math.lerp(leftFootPoint.pos, rightFootPoint.pos, 0.5f);
+            var rightFootPos = rightFootPoint.pos;
+            var right = math.normalize(rightFootPoint.pos.xz - barycenter.xz);
+            var chassisForward = math.cross(new float3(right.x, 0f, right.y), math.up());
+            var rotation = math.normalize(quaternion.LookRotation(chassisForward, math.up()));
             return new(rotation, position);
         }
     }

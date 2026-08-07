@@ -53,6 +53,13 @@ namespace ZE.MechBattle.MechMovement
             return (activeFoot, backFoot);
         }
 
+        public Entity GetActiveFootEntity(Entity chassisEntity)
+        {
+            var activeLegIndex = _activeLegs.Get(chassisEntity).Value;
+            var component = _chassisComponents.Get(chassisEntity);
+            return activeLegIndex == 0 ? component.LeftLeg.Foot : component.RightLeg.Foot;
+        }
+
         public Entity GetActiveFootEntity(Entity chassisEntity, int activeLegIndex)
         {
             var component = _chassisComponents.Get(chassisEntity);

@@ -21,10 +21,13 @@ namespace ZE.MechBattle.Ecs {
         private Stash<MechInputComponent> _input;
         private readonly MechInterpolator _mechInterpolator;
 
+        private StepDrawer TEST_StepDrawer;
+
         [Inject]
-        public StartChassisMovementSystem(MechInterpolator mechInterpolator)
+        public StartChassisMovementSystem(MechInterpolator mechInterpolator, StepDrawer stepDrawer)
         {
             _mechInterpolator = mechInterpolator;
+            TEST_StepDrawer = stepDrawer;
         }
 
         public void OnAwake() 
@@ -61,6 +64,7 @@ namespace ZE.MechBattle.Ecs {
                 }
 
                 SetChassisTargetPos(chassisEntity, chassisComponent);
+                TEST_StepDrawer.DrawStep(chassisEntity);
                 _stepProgressions.Add(chassisEntity);
 
             }
@@ -70,11 +74,10 @@ namespace ZE.MechBattle.Ecs {
 
         private void SetChassisTargetPos(Entity chassisEntity, MechChassisComponent chassisComponent)
         {
-            var steer = _input.Get(chassisEntity).SteerValue;
-            var targetTransform = _mechInterpolator.GetChassisTargetPos(chassisEntity, chassisComponent, steer);
+            var targetTransform = _mechInterpolator.GetChassisTargetTransform(chassisEntity, chassisComponent);
             _targetPoints.Set(chassisEntity, new() { Value = targetTransform });
            
-            //UnityEngine.Debug.Log($"next chassis pos: {targetTransform.pos.xz}");
+            //UnityEngine.Debug.Log($"next chassis pos: {targetTransform.pos} : {math.degrees(math.Euler(targetTransform.rot))}");
         }
     }
 }

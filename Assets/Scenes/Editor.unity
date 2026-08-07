@@ -5308,10 +5308,10 @@ MonoBehaviour:
     y: 180
     z: 0
   _playerId: 0
-  _assumingDirectControl: 1
+  _assumingDirectControl: 0
   _input:
     SpeedValue: 0
-    SteerValue: 0
+    SteerValue: 1
 --- !u!114 &1259888767
 MonoBehaviour:
   m_ObjectHideFlags: 0

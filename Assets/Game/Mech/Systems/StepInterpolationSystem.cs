@@ -1,7 +1,6 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
 using Unity.Mathematics;
-using UnityEngine;
 using VContainer;
 using ZE.MechBattle.MechMovement;
 
@@ -98,8 +97,8 @@ namespace ZE.MechBattle.Ecs {
 
             var chassisPoint = MathExtensions.Lerp(start, end, lerpValue);
             chassisPoint = _mechInterpolator.CalculateShiftedChassisPoint(chassisEntity, chassisPoint, stepSettings, lerpValue);
-            
-           // MessageBroker.Publish(new DrawPointMessage(chassisPoint.pos, $"{lerpValue}: {chassisPoint.pos}"));
+            //UnityEngine.Debug.Log($"interpolated chassis point: {chassisPoint.pos} : {math.degrees(math.Euler(chassisPoint.rot))}");
+            // MessageBroker.Publish(new DrawPointMessage(chassisPoint.pos, $"{lerpValue}: {chassisPoint.pos}"));
             return chassisPoint;
         }
 
@@ -112,6 +111,7 @@ namespace ZE.MechBattle.Ecs {
             var result = MathExtensions.Lerp(start, end, lerpValue);
             result.pos = result.pos + additionalHeight * math.up();
             //UnityEngine.Debug.Log($"{start.pos} -> {end.pos} |{lerpValue}| = {result.pos}");
+            // MessageBroker.Publish(new DrawPointMessage(result.pos, string.Empty));            
             return result;
         }
 
@@ -142,7 +142,7 @@ namespace ZE.MechBattle.Ecs {
             var cosA = math.clamp(a / b, -1f, 1f);
 
             var x = cosA * hipLength;
-            var y = math.sqrt(math.max(0f, hipLength * hipLength - x * x)); 
+            var y = math.sqrt(math.max(0f, hipLength * hipLength - x * x));
 
             var right = math.mul(chassisRootTransform.rot, math.left());
 
@@ -180,35 +180,30 @@ namespace ZE.MechBattle.Ecs {
             var mechEntity = _mechHandler.GetMechEntity(chassisEntity);
             var currentMechTransform = _transformAspectHandler.GetPoint(mechEntity);
 
-            // 1. Вычисляем дельту поворота шасси
-            quaternion rotationDelta = math.mul(targetChassisTransform.rot, math.conjugate(currentChassisTransform.rot));
+            quaternion rotationDelta = math.normalizesafe(math.mul(targetChassisTransform.rot, math.conjugate(currentChassisTransform.rot)));
 
-            // 2. Находим смещение меха относительно шасси
             float3 localOffset = currentMechTransform.pos - currentChassisTransform.pos;
 
-            // 3. Вычисляем новые глобальные координаты меха
             float3 finalMechGlobalPosition = targetChassisTransform.pos + math.mul(rotationDelta, localOffset);
             quaternion finalMechGlobalRotation = math.mul(rotationDelta, currentMechTransform.rot);
 
-            // 4. ПЕРЕСЧЕТ: Локальные координаты шасси относительно нового состояния меха
-            // Инвертируем новый поворот меха, чтобы перейти в его локальное пространство
             quaternion inverseMechRot = math.conjugate(finalMechGlobalRotation);
 
-            // Вектор от меха к шасси в глобальном пространстве
-            float3 globalChassisToMechVector = targetChassisTransform.pos - finalMechGlobalPosition;
 
-            // Поворачиваем вектор в локальное пространство меха
+            float3 globalChassisToMechVector = targetChassisTransform.pos - finalMechGlobalPosition;
             float3 chassisLocalPosInMechSpace = math.mul(inverseMechRot, globalChassisToMechVector);
 
-            // Локальный поворот шасси относительно меха
             quaternion chassisLocalRotInMechSpace = math.mul(inverseMechRot, targetChassisTransform.rot);
 
-            // 5. Применяем глобальные изменения к меху
+            finalMechGlobalRotation = math.normalizesafe(finalMechGlobalRotation);
+
             _transformAspectHandler.MoveToPoint(mechEntity, finalMechGlobalPosition, finalMechGlobalRotation);
             _transformAspectHandler.SetLocalTransform(chassisEntity, new RigidTransform(chassisLocalRotInMechSpace,chassisLocalPosInMechSpace));
+
+            if (!MathExtensions.IsQuaternionNormalized(finalMechGlobalRotation))
+            {
+                UnityEngine.Debug.LogError($"mech rotation failed, chassis rot: current{currentChassisTransform.rot}, target: {targetChassisTransform.rot}, inverted: {math.conjugate(currentChassisTransform.rot)}");
+            }
         }
-
-
-
     }
 }

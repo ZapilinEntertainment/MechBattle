@@ -6,6 +6,9 @@ using System.Runtime.CompilerServices;
 public static class MathExtensions
 {
     [BurstCompile]
+    public static bool IsQuaternionNormalized(quaternion rot) => math.abs(math.lengthsq(rot) - 1.0f) < 0.0001f;
+
+    [BurstCompile]
     public static RigidTransform Lerp(RigidTransform pointA, RigidTransform pointB, float t)
     {
         t = math.clamp(t, 0f, 1f);

@@ -5,6 +5,7 @@ using Unity.IL2CPP.CompilerServices;
 using ZE.MechBattle.Navigation;
 using Unity.Mathematics;
 using ZE.MechBattle.MechMovement;
+using UnityEngine;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -32,6 +33,7 @@ namespace ZE.MechBattle.Ecs {
         private readonly List<OrientedPoint> _orientedPointsList = new(INITIAL_CAPACITY);
         private readonly List<float> _heightsList = new(INITIAL_CAPACITY);
         private const int INITIAL_CAPACITY = 32;
+
 
         [Inject]
         public TargetStepPositionCheckSystem(
@@ -71,9 +73,8 @@ namespace ZE.MechBattle.Ecs {
 
                 ref var stepTarget = ref _stepTargets.Get(entity);
                 var pos = MathExtensions.ProjectPointOnPlane(stepTarget.Value.pos, plane);
-                var rot = GetChassisRotation(entity, plane);                
-
-                stepTarget.Value = new(rot, pos);
+                // var rot = GetChassisRotation(entity, plane);                
+                stepTarget.Value = new(stepTarget.Value.rot, pos);
                 //UnityEngine.Debug.Log($"next point calculated on entity {entity.Id}: {pos}, plane: {plane}");
             }
 

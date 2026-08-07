@@ -17,6 +17,10 @@ namespace ZE.MechBattle
             builder.Register<MechChassisFactory>(Lifetime.Scoped);
             builder.Register<MechMovementHandler>(Lifetime.Scoped);
             builder.Register<MechInterpolator>(Lifetime.Scoped);
+
+#if UNITY_EDITOR
+            builder.Register<StepDrawer>(Lifetime.Scoped);
+#endif
         }
 
         async Awaitable<IResourceBinder> ISessionAsyncResourceLoader.LoadSessionResourcesAsync(IObjectResolver resolver)

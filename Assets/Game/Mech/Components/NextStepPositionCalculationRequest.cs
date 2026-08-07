@@ -9,12 +9,12 @@ namespace ZE.MechBattle.Ecs {
     public readonly struct NextStepPositionCalculationRequest : IComponent 
     {
         public readonly Entity ChassisEntity;
-        public readonly Entity OtherLeg;
+        public readonly Entity BackLeg;
 
-        public NextStepPositionCalculationRequest(Entity chassisEntity, Entity otherLeg)
+        public NextStepPositionCalculationRequest(Entity chassisEntity, Entity backLeg)
         {
             ChassisEntity = chassisEntity;
-            OtherLeg = otherLeg;
+            BackLeg = backLeg;
         }
     }
 }
