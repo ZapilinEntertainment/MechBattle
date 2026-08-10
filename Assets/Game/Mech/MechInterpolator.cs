@@ -28,24 +28,36 @@ namespace ZE.MechBattle.MechMovement
 
         public RigidTransform GetChassisStartPoint(Entity chassisEntity, MechChassisComponent chassisComponent)
         {
-            var chassisPoint = CalculateChassisPointByLegs(
-                chassisEntity,
-                _transformAspectHandler.GetPoint(chassisComponent.LeftLeg.Foot),
-                _transformAspectHandler.GetPoint(chassisComponent.RightLeg.Foot));
-            return chassisPoint;
+            //var chassisPoint = CalculateChassisPointByLegs(
+            //    chassisEntity,
+            //    _transformAspectHandler.GetPoint(chassisComponent.LeftLeg.Foot),
+            //    _transformAspectHandler.GetPoint(chassisComponent.RightLeg.Foot));
+            //return chassisPoint;
+
+            var foots = _mechHandler.GetFoots(chassisEntity);
+            // IMPORTANT: active foot and back foot are inverted here (counts as for previous step)
+            return CalculateChassisPointByActiveLeg(
+                chassisEntity, 
+                _transformAspectHandler.GetPoint(foots.backFoot), 
+                _transformAspectHandler.GetPoint(foots.activeFoot));
         }
 
         public RigidTransform GetChassisTargetTransform(Entity chassisEntity, MechChassisComponent chassisComponent)
         {
-            var leftFoot = chassisComponent.LeftLeg.Foot;
-            var rightFoot = chassisComponent.RightLeg.Foot;
+            //var leftFoot = chassisComponent.LeftLeg.Foot;
+            //var rightFoot = chassisComponent.RightLeg.Foot;
 
-            var leftFootPoint = _targetPoints.Get(leftFoot).Value;
-            var rightFootPoint = _targetPoints.Get(rightFoot).Value;
+            //var leftFootPoint = _targetPoints.Get(leftFoot).Value;
+            //var rightFootPoint = _targetPoints.Get(rightFoot).Value;
 
-            var chassisTargetPoint = CalculateChassisPointByLegs(chassisEntity, leftFootPoint, rightFootPoint);
-            return chassisTargetPoint;
+            //var chassisTargetPoint = CalculateChassisPointByLegs(chassisEntity, leftFootPoint, rightFootPoint);
+            //return chassisTargetPoint;
 
+            var foots = _mechHandler.GetFoots(chassisEntity);
+            var activeFootTarget = _targetPoints.Get(foots.activeFoot).Value;
+            var backFootTarget = _targetPoints.Get(foots.backFoot).Value;
+
+            return CalculateChassisPointByActiveLeg(chassisEntity, activeFootTarget, backFootTarget);
         }
 
         public RigidTransform CalculateShiftedChassisPoint(
@@ -106,6 +118,25 @@ namespace ZE.MechBattle.MechMovement
             var right = math.normalize(rightFootPoint.pos.xz - barycenter.xz);
             var chassisForward = math.cross(new float3(right.x, 0f, right.y), math.up());
             var rotation = math.normalize(quaternion.LookRotation(chassisForward, math.up()));
+            return new(rotation, position);
+        }
+
+        private RigidTransform CalculateChassisPointByActiveLeg(Entity chassisEntity, RigidTransform activeFootPoint, RigidTransform backFootPoint)
+        {
+            var settings = _chassisSettings.Get(chassisEntity);
+            var chassisSettings = settings.ChassisSettings;
+            var stepSettings = settings.StepSettings;          
+
+            var dir = activeFootPoint.pos - backFootPoint.pos;
+            var halfDist = math.length(dir) * 0.5f;
+            var legLength = chassisSettings.LegLength;
+            var height = math.sqrt(legLength * legLength - halfDist * halfDist) * stepSettings.DefaultChassisHeight;
+            var position = backFootPoint.pos + halfDist * math.normalize(dir) + new float3(0f, height, 0f);
+
+            // note: dont forget about foot inclining
+            var fwd = math.mul(activeFootPoint.rot, math.forward());
+            fwd = MathExtensions.ProjectOnPlane(fwd, math.up());
+            var rotation = math.normalize(quaternion.LookRotation(fwd, math.up()));
             return new(rotation, position);
         }
     }
