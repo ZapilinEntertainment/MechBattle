@@ -10,7 +10,7 @@ using ReadOnly = Unity.Collections.ReadOnlyAttribute;
 
 namespace ZE.MechBattle
 {
-    [BurstCompile]
+    //[BurstCompile]
     public struct DefineFootNextPositionJob : IJobParallelFor
     {
         [ReadOnly] public NativeFilter Filter;
@@ -41,40 +41,74 @@ namespace ZE.MechBattle
             var stepLength = chassisSettings.StepLength;
 
             // calculating next step
-
-            var barycenter = math.lerp(backLegWorldPos, moveLegWorldPos, 0.5f);
-            barycenter.y = 0f;
-            var moveLegDir = moveLegWorldPos - barycenter;
             var chassisRotation = Rotations.Get(chassisEntity).Value;
 
             var steerRotation = input.SteerValue == 0f ? quaternion.identity : quaternion.AxisAngle(math.up(), math.radians( input.SteerValue * stepSettings.MaxSteerAngle));
-            moveLegDir = math.mul(steerRotation, moveLegDir);
             var resultingRotation = math.mul(chassisRotation, steerRotation);
-            var resultingPos = barycenter + moveLegDir + math.mul(resultingRotation, stepLength * input.SpeedValue * math.forward());
+            var hipsDistance = chassisSettings.HipLength;
 
-            // check resulting position
-            var dir = resultingPos.xz - backLegWorldPos.xz;
-            var minDist = chassisSettings.HipsDistance;
-            var maxDist = 1.5f * chassisSettings.HipsDistance;
-            var dirSq = math.lengthsq(dir);
-            if (dirSq < minDist * minDist)
-            {
-                dir = math.normalizesafe(dir);
-                dir *= minDist;
-            }
-            else
-            {
-                if (dirSq > maxDist * maxDist)
-                {
-                    dir = math.normalizesafe(dir);
-                    dir *= maxDist;
-                }
-            }
-            resultingPos = backLegWorldPos + new float3(dir.x, 0f, dir.y);
+            var legOffsetDir = moveLegWorldPos - backLegWorldPos;
+            legOffsetDir = math.mul(steerRotation, legOffsetDir);            
+            var moveLegNextStepVector = math.mul(resultingRotation, stepLength * input.SpeedValue * math.forward());
+            var resultingPos = backLegWorldPos + legOffsetDir + moveLegNextStepVector;
 
+            // correct resulting pos (not too close to back leg, but not too far either)             
+            resultingPos = CorrectStepVector(backLegWorldPos, moveLegWorldPos, resultingPos, hipsDistance*1.5f, hipsDistance * 2f);
             // ----------------
 
             StepTargets.Get(activeLegEntity).Value = new RigidTransform(resultingRotation, resultingPos);
         }
+
+        // logic by Google AI
+        private float3 CorrectStepVector(float3 backlegPos, float3 activeLegPos, float3 targetPos, float minDist, float maxDist)
+        {
+            var originalMoveVector = targetPos - activeLegPos;
+            var originalLength = math.length(originalMoveVector);
+
+            if (math.lengthsq(originalMoveVector) < math.EPSILON)
+                return activeLegPos;
+
+            // 1. Calculate next step dir
+            var centerDir = targetPos - backlegPos;
+            var distTToCenter = math.length(centerDir);
+
+            float3 correctedTargetPos;
+
+            if (distTToCenter < 0.001f)
+            {
+                // target pos is too close to other leg
+                var dir = math.normalizesafe(activeLegPos - backlegPos);
+                correctedTargetPos = backlegPos + minDist * dir;
+            }
+            else
+            {
+                var clampedDist = math.clamp(distTToCenter, minDist, maxDist);
+                correctedTargetPos = backlegPos + (centerDir / distTToCenter) * clampedDist;
+            }
+
+            //2. Validate 
+            var correctedMoveDir = correctedTargetPos - activeLegPos;
+            var correctedLength = math.length(correctedMoveDir);
+
+            if (correctedLength < 0.001f)
+            {
+                return activeLegPos;
+            }
+
+            if (correctedLength - originalLength > 0.01f)
+            {
+                correctedTargetPos = activeLegPos + (correctedMoveDir / correctedLength) * originalLength;
+                correctedMoveDir = correctedTargetPos - activeLegPos;
+            }
+
+            var dotResult = math.dot(math.normalize(originalMoveVector), math.normalize(correctedMoveDir));
+            if (dotResult <= 0.0f)
+            {
+                return activeLegPos;
+            }
+
+            return correctedTargetPos;
+        }
+
     }
 }

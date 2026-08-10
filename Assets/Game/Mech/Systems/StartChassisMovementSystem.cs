@@ -20,14 +20,16 @@ namespace ZE.MechBattle.Ecs {
         private Stash<StepTargetPointComponent> _targetPoints;
         private Stash<MechInputComponent> _input;
         private readonly MechInterpolator _mechInterpolator;
-
+        private readonly MechMovementHandler _mechHandler;
+ 
         private StepDrawer TEST_StepDrawer;
 
         [Inject]
-        public StartChassisMovementSystem(MechInterpolator mechInterpolator, StepDrawer stepDrawer)
+        public StartChassisMovementSystem(MechInterpolator mechInterpolator, StepDrawer stepDrawer, MechMovementHandler mechHandler)
         {
             _mechInterpolator = mechInterpolator;
             TEST_StepDrawer = stepDrawer;
+            _mechHandler = mechHandler;
         }
 
         public void OnAwake() 

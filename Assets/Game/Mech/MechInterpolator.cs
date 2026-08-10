@@ -57,7 +57,7 @@ namespace ZE.MechBattle.MechMovement
             var activeFootTarget = _targetPoints.Get(foots.activeFoot).Value;
             var backFootTarget = _targetPoints.Get(foots.backFoot).Value;
 
-            return CalculateChassisPointByActiveLeg(chassisEntity, activeFootTarget, backFootTarget);
+            return CalculateChassisPointByActiveLeg(chassisEntity, activeFootTarget, backFootTarget );
         }
 
         public RigidTransform CalculateShiftedChassisPoint(

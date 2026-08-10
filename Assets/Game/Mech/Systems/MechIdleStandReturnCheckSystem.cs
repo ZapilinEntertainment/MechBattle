@@ -38,7 +38,7 @@ namespace ZE.MechBattle.Ecs {
             {
                 if (_mechHandler.IsStandPoseMovementRequired(chassisEntity))
                 {
-                    _returnToIdleTags.Set(chassisEntity);
+                    //_returnToIdleTags.Set(chassisEntity);
                 }
             }
             _checkIdleTags.RemoveAll();
