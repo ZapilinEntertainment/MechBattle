@@ -10,7 +10,7 @@ using ReadOnly = Unity.Collections.ReadOnlyAttribute;
 
 namespace ZE.MechBattle
 {
-    //[BurstCompile]
+    [BurstCompile]
     public struct DefineFootNextPositionJob : IJobParallelFor
     {
         [ReadOnly] public NativeFilter Filter;
@@ -52,8 +52,24 @@ namespace ZE.MechBattle
             var moveLegNextStepVector = math.mul(resultingRotation, stepLength * input.SpeedValue * math.forward());
             var resultingPos = backLegWorldPos + legOffsetDir + moveLegNextStepVector;
 
+            var minDist = hipsDistance * stepSettings.MinStepRadiusCf;
+            var maxDist = hipsDistance * stepSettings.MaxStepRadiusCf;
+
             // correct resulting pos (not too close to back leg, but not too far either)             
-            resultingPos = CorrectStepVector(backLegWorldPos, moveLegWorldPos, resultingPos, hipsDistance*1.5f, hipsDistance * 2f);
+            resultingPos = CorrectStepVector(backLegWorldPos, moveLegWorldPos, resultingPos, minDist, maxDist);
+            // correct also in local space (otherwise step lengths will be different)
+            var invertedRotation = math.conjugate(resultingRotation);
+            var localResultingPos = math.mul(invertedRotation, resultingPos - backLegWorldPos);
+            if (input.SpeedValue == 0f)
+            {
+                localResultingPos.z = 0f;
+            }
+            else
+            {
+                var limit = minDist * stepSettings.MaxZOffsetCf;
+                localResultingPos.z = math.clamp(localResultingPos.z, -limit, limit);
+            }            
+            resultingPos = backLegWorldPos + math.mul(resultingRotation, localResultingPos);
             // ----------------
 
             StepTargets.Get(activeLegEntity).Value = new RigidTransform(resultingRotation, resultingPos);
@@ -109,6 +125,5 @@ namespace ZE.MechBattle
 
             return correctedTargetPos;
         }
-
     }
 }

@@ -103,6 +103,9 @@ MonoBehaviour:
     MinStepChassisHeight: 0.99
     StepLengthCf: 1
     ChassisMovementShiftPc: 0.1
+    MinStepRadiusCf: 1.5
+    MaxStepRadiusCf: 2
+    MaxZOffsetCf: 0.7
   <LeftFootDefaultLocalPos>k__BackingField:
     x: -4
     y: -20.700005

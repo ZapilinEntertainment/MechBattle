@@ -18,18 +18,17 @@ namespace ZE.MechBattle.Ecs {
         private Stash<StepProgressionComponent> _stepProgressions;
 
         private Stash<StepTargetPointComponent> _targetPoints;
-        private Stash<MechInputComponent> _input;
         private readonly MechInterpolator _mechInterpolator;
-        private readonly MechMovementHandler _mechHandler;
  
-        private StepDrawer TEST_StepDrawer;
+       // private StepDrawer TEST_StepDrawer;
 
         [Inject]
-        public StartChassisMovementSystem(MechInterpolator mechInterpolator, StepDrawer stepDrawer, MechMovementHandler mechHandler)
+        public StartChassisMovementSystem(MechInterpolator mechInterpolator
+            //, StepDrawer stepDrawer
+            )
         {
             _mechInterpolator = mechInterpolator;
-            TEST_StepDrawer = stepDrawer;
-            _mechHandler = mechHandler;
+           // TEST_StepDrawer = stepDrawer;
         }
 
         public void OnAwake() 
@@ -45,7 +44,6 @@ namespace ZE.MechBattle.Ecs {
             _stepProgressions = World.GetStash<StepProgressionComponent>();
 
             _targetPoints = World.GetStash<StepTargetPointComponent>();
-            _input = World.GetStash<MechInputComponent>();
         }
 
         public void OnUpdate(float deltaTime) 
@@ -66,7 +64,7 @@ namespace ZE.MechBattle.Ecs {
                 }
 
                 SetChassisTargetPos(chassisEntity, chassisComponent);
-                TEST_StepDrawer.DrawStep(chassisEntity);
+               // TEST_StepDrawer.DrawStep(chassisEntity);
                 _stepProgressions.Add(chassisEntity);
 
             }
