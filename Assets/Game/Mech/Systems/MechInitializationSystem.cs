@@ -49,7 +49,7 @@ namespace ZE.MechBattle.Ecs {
                     SyncComponentsCommand.Execute(chassisComponent.LeftLeg.Foot, chassisEntity, _chassisSettings);
                     SyncComponentsCommand.Execute(chassisComponent.RightLeg.Foot, chassisEntity, _chassisSettings);
 
-                    UnityEngine.Debug.Log($"chassis {chassisEntity.Id} initialized");
+                    //UnityEngine.Debug.Log($"chassis {chassisEntity.Id} initialized");
                 }
                     
             }

@@ -63,7 +63,7 @@ namespace ZE.MechBattle
 
             _activeLegs.Add(chassisRootEntity, MechActiveLegValueComponent.Idle);
 
-            UnityEngine.Debug.Log($"mech entity {mechEntity.Id}, chassis entity {chassisRootEntity.Id}");
+            //UnityEngine.Debug.Log($"mech entity {mechEntity.Id}, chassis entity {chassisRootEntity.Id}");
             return chassisRootEntity;
         }
 

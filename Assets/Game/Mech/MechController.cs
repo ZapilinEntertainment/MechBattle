@@ -5,7 +5,7 @@ using ZE.MechBattle.Weapons;
 
 namespace ZE.MechBattle
 {
-    // todo: create player / mech dictionary, change to mech controller factory binding
+    [Obsolete]
     public class MechController : IDisposable
     {
         public readonly CompositeDisposable LifetimeObject = new();

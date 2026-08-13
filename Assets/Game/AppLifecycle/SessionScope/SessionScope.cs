@@ -13,7 +13,7 @@ namespace ZE.MechBattle
             builder.RegisterEntryPoint<SessionAsyncEntryPoint>();
             gameObject.name = nameof(SessionScope);
 
-            //UnityEngine.Debug.Log("session scope configured");
+            UnityEngine.Debug.Log("session scope configured");
         }
 
         protected override void FeatureInitialize(ISessionFeatureInitializer initializer, IObjectResolver resolver) =>

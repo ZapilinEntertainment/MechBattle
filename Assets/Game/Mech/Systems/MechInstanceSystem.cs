@@ -7,10 +7,12 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public sealed class MechInstanceSystem : EntityCreationSystemBase<MechInstanceRequestComponent, MechFactory>
     {
+        private readonly PlayerHandler _playerHandler;
         private Stash<PlayerAffiliationComponent> _affiliations;
 
-        public MechInstanceSystem(MechFactory factory) : base(factory)
+        public MechInstanceSystem(MechFactory factory, PlayerHandler playerHandler) : base(factory)
         {
+            _playerHandler = playerHandler;
         }
 
         public override void OnAwake()
@@ -22,8 +24,11 @@ namespace ZE.MechBattle.Ecs {
         protected override bool TryExecuteRequest(Entity requestEntity)
         {
             var request = RequestsStash.Get(requestEntity);
-            var entity = Factory.Build(request.Position, request.Rotation);
-            _affiliations.Set(entity, new(request.PlayerKey));
+            var mechEntity = Factory.Build(request.Position, request.Rotation);
+
+            _affiliations.Set(mechEntity, new(request.PlayerKey));
+            if (request.AssumingDirectControl)
+                _playerHandler.AssumingVehicleControl(mechEntity, request.PlayerKey);
             return true;
         }
     }

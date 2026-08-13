@@ -4,9 +4,11 @@ using VContainer;
 using TriInspector;
 using Scellecs.Morpeh;
 using ZE.MechBattle.Ecs;
+using System;
 
 namespace ZE.MechBattle
 {
+    [Obsolete]
     public class MechSpawnUtility : MonoBehaviour
     {
         [SerializeField] private float3 _position;
@@ -35,7 +37,7 @@ namespace ZE.MechBattle
         {
             var playerKey = new PlayerKey(_playerId);
             var rotation = quaternion.Euler(math.radians(_rotationDegrees));
-            _requestsFactory.CreateRequest(new(playerKey, _position, rotation));
+            _requestsFactory.CreateRequest(new(playerKey, _position, rotation, true));
         }
 
         private void Update()

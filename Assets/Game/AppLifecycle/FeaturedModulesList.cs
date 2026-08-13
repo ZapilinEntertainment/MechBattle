@@ -11,7 +11,7 @@ public sealed class FeaturesModulesList : ScriptableObject
     [SerializeReference]
     [ValidateInput(nameof(ValidateNoDuplicateReferences))]
     private List<IFeatureModule> _modules = new();
-
+    //---
     public IReadOnlyList<IFeatureModule> Modules => _modules;
 
     private TriValidationResult ValidateNoDuplicateReferences()

@@ -3,7 +3,8 @@ using UnityEngine;
 using Unity.Mathematics;
 using Unity.IL2CPP.CompilerServices;
 
-namespace ZE.MechBattle.Ecs {
+namespace ZE.MechBattle.Ecs 
+{
     [System.Serializable]
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
@@ -11,14 +12,16 @@ namespace ZE.MechBattle.Ecs {
     public readonly struct MechInstanceRequestComponent : IComponent 
     {
         public readonly PlayerKey PlayerKey;
+        public readonly bool AssumingDirectControl;
         public readonly float3 Position;
         public readonly quaternion Rotation;
 
-        public MechInstanceRequestComponent(PlayerKey playerKey, float3 position, quaternion rotation)
+        public MechInstanceRequestComponent(PlayerKey playerKey, float3 position, quaternion rotation, bool directControl)
         {
             PlayerKey = playerKey;
             Position = position;
             Rotation = rotation;
+            AssumingDirectControl = directControl;
         }
     
     }

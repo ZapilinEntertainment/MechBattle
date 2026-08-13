@@ -5,7 +5,8 @@ using ZE.MechBattle.MechMovement;
 
 namespace ZE.MechBattle
 {
-    public class MechFeatureInstaller : EcsFeatureInstaller<MechSystemsQueue>, ISessionAsyncResourceLoader
+    [System.Serializable]
+    public class MechFeatureInstaller : EcsFeatureModule<MechSystemsQueue>, ISessionAsyncResourceLoader
     {
         protected override MechSystemsQueue CreateQueue() => new();
 

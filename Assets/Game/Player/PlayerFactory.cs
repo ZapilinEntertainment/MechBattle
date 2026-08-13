@@ -1,38 +1,59 @@
-using VContainer;
 using Scellecs.Morpeh;
-using R3;
+using Unity.Mathematics;
+using VContainer;
+using ZE.MechBattle.Ecs;
 
-namespace ZE.MechBattle
+namespace ZE.MechBattle.PlayerData
 {
     public class PlayerFactory
     {
-        private readonly MechBuilder _mechBuilder;
+        private int _nextPlayerId = 1;
         private readonly World _world;
-        private readonly IObjectResolver _resolver;
+        private readonly MechCreateRequestsFactory _mechRequestsFactory;
+        private readonly PlayersList _playersList;
+        private readonly Stash<PlayerComponent> _playerComponents;
 
         [Inject]
-        public PlayerFactory(MechBuilder mechBuilder, IObjectResolver resolver, World world)
+        public PlayerFactory(
+            World world, 
+            MechCreateRequestsFactory mechRequestsFactory, 
+            IPlayersList playersList)
         {
-            _mechBuilder = mechBuilder;
-            _resolver = resolver;
             _world = world;
+            _playerComponents = world.GetStash<PlayerComponent>();
+
+            _mechRequestsFactory = mechRequestsFactory;
+            _playersList = playersList as PlayersList;
         }
 
-        public Player CreateLocalPlayer()
+        //public Player CreateLocalPlayer()
+        //{
+        //    var player = new LocalPlayer(_world);
+
+        //    var mech = _mechBuilder.Build();
+        //    mech.AddTo(player.LifetimeObject);            
+
+        //    var designator = _resolver.Resolve<AimWorker>();
+        //    designator.AddTo(player.LifetimeObject);          
+        //    designator.Start();
+
+        //    player.SetDesignator(designator);
+        //    player.SetMech(mech);            
+
+        //    return player;
+        //}    
+
+        public Entity CreateLocalPlayer(RigidTransform spawnPoint)
         {
-            var player = new LocalPlayer(_world);
+            var playerEntity = _world.CreateEntity();
+            var id = _nextPlayerId++;
+            _playerComponents.Add(playerEntity, new(id));
+            var playerKey = new PlayerKey(id);
+            _playersList.AddPlayerEntity(playerKey, playerEntity);
 
-            var mech = _mechBuilder.Build();
-            mech.AddTo(player.LifetimeObject);            
-
-            var designator = _resolver.Resolve<AimWorker>();
-            designator.AddTo(player.LifetimeObject);          
-            designator.Start();
-
-            player.SetDesignator(designator);
-            player.SetMech(mech);            
-
-            return player;
-        }    
+            _mechRequestsFactory.CreateRequest(new(playerKey, spawnPoint.pos, spawnPoint.rot, directControl: true));
+            // todo: addEntityComponentAppearTracker for camera following
+            return playerEntity;
+        }
     }
 }

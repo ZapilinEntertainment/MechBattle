@@ -7,7 +7,8 @@ using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle.Ecs
 {
-    public class MovementSystemsInstaller : EcsFeatureInstaller<MovementSystemsInstallQueue>
+    [System.Serializable]
+    public class MovementSystemsInstaller : EcsFeatureModule<MovementSystemsInstallQueue>
     {
         public override void SceneScopeInstall(IContainerBuilder builder)
         {

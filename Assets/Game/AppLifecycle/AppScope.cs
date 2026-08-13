@@ -7,6 +7,7 @@ using ZE.MechBattle.UI;
 using ZE.MechBattle.Vfx;
 using ZE.MechBattle.Views;
 using ZE.Flags;
+using System.IO;
 
 namespace ZE.MechBattle.Ecs
 {
@@ -20,7 +21,6 @@ namespace ZE.MechBattle.Ecs
 
     public class AppScope : LifetimeScope
     {
-        [SerializeField] private Camera _mainCamera;
         [SerializeField] private MechGameUIRoot _uiRootPrefab;
         [SerializeField] private ViewContainer _viewContainerPrefab;
         [SerializeField] private FeaturesModulesList _modules;
@@ -34,9 +34,7 @@ namespace ZE.MechBattle.Ecs
             }
             builder.RegisterInstance<FeaturesModulesList>(_modules);
 
-            // pre-setted values (serialized)
-            var cameraController = new CameraController(_mainCamera);
-            builder.RegisterInstance(cameraController);
+            // pre-setted values (serialized)            
             builder.RegisterComponentInNewPrefab(_uiRootPrefab, Lifetime.Singleton).As<IUILinesParent>().As<UiRoot>();
             PrepareViews(builder);
 
@@ -53,7 +51,7 @@ namespace ZE.MechBattle.Ecs
             // start loading heavy resources:
             builder.RegisterEntryPoint<AppAsyncEntryPoint>();
 
-           // UnityEngine.Debug.Log("app scope configured");
+            UnityEngine.Debug.Log("app scope configured");
         }
 
         private void RegisterScriptables(IContainerBuilder builder)
@@ -61,7 +59,7 @@ namespace ZE.MechBattle.Ecs
             void RegisterScriptable<T>() where T : ScriptableObject 
             {
                 var typeString = typeof(T).Name;
-                var scriptable = Resources.Load<T>(DirectoryConstants.SCRIPTABLES_FOLDER + typeString);
+                var scriptable = Resources.Load<T>(Path.Combine(DirectoryConstants.SCRIPTABLES_FOLDER, typeString));
                 if (scriptable == null)
                     Debug.LogError($"{DirectoryConstants.SCRIPTABLES_FOLDER} {typeString} not found");
                 else

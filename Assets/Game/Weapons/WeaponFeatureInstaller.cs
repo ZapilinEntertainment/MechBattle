@@ -3,7 +3,8 @@ using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle
 {
-    public class WeaponFeatureInstaller : EcsFeatureInstaller<WeaponSystemsInstallQueue>
+    [System.Serializable]
+    public class WeaponFeatureInstaller : EcsFeatureModule<WeaponSystemsInstallQueue>
     {
 
         public override void SceneScopeInstall(IContainerBuilder builder)

@@ -1,13 +1,12 @@
-using System.Collections.Generic;
-using VContainer;
 using Scellecs.Morpeh;
-using ZE.MechBattle.Ecs;
-using ZE.MechBattle.Ecs.States;
+using VContainer;
 using VContainer.Unity;
+using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle
 {
-    public class MorpehBaseInstaller : EcsFeatureInstaller<BaseEcsSystemsInstallQueue>, ISceneFeaturePostInitializer
+    [System.Serializable]
+    public class MorpehFeatureBase : EcsFeatureModule<BaseEcsSystemsInstallQueue>, ISceneFeaturePostInitializer
     {
         public override void SceneScopeInstall(IContainerBuilder builder)
         {
@@ -31,6 +30,7 @@ namespace ZE.MechBattle
             builder.Register<ColliderOwnityApplier>(Lifetime.Scoped);
 
             builder.Register<MorpehSystemInstallHandler>(Lifetime.Scoped);
+            builder.Register<LifetimeTrackingManager>(Lifetime.Scoped);
 
             builder.RegisterEntryPoint<DamageablesInitializer>();
         }

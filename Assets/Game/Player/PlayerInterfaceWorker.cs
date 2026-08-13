@@ -1,7 +1,6 @@
 using UnityEngine;
-using ZE.Workers;
 using ZE.UiService;
-using R3;
+using ZE.Workers;
 
 namespace ZE.MechBattle.UI
 {
@@ -10,7 +9,6 @@ namespace ZE.MechBattle.UI
         private readonly SessionData _sessionData;
         private readonly WindowsManager _windows;
         private readonly CameraController _cameraController;
-        private readonly UiRoot _uiRoot;
         private readonly IUILinesParent _linesParent;
 
         private UIAimWindow _aimWindow;
@@ -48,11 +46,6 @@ namespace ZE.MechBattle.UI
         {
             _windows.HideWindow(_aimWindow);
             base.Dispose();
-        }
-
-        private void OnTargetDataChanged()
-        {
-
         }
     }
 }

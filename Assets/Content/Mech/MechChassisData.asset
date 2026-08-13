@@ -95,7 +95,7 @@ MonoBehaviour:
         y: 0
         z: 14.010551
   <StepSettings>k__BackingField:
-    Duration: 3
+    Duration: 1
     StepRaiseHeight: 2
     MaxSteerAngle: 30
     VerticalWobblingHeight: 1

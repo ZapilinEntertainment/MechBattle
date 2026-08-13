@@ -1,7 +1,9 @@
+using System;
 using UnityEngine;
 
 namespace ZE.MechBattle
 {
+    [Obsolete]
     public class MechBuilder
     {
         public MechController Build()

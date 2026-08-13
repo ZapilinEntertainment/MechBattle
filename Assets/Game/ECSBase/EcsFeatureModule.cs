@@ -2,13 +2,14 @@ using VContainer;
 
 namespace ZE.MechBattle.Ecs
 {
-    public abstract class EcsFeatureInstaller<InstallQueueType> : IFeatureModule, ISceneFeatureScopeInstaller, ISceneFeatureInitializer
+    [System.Serializable]
+    public abstract class EcsFeatureModule<InstallQueueType> : IFeatureModule, ISceneFeatureScopeInstaller, ISceneFeatureInitializer
         where InstallQueueType : FeatureSystemsInstallQueue
     {
         private readonly InstallQueueType _queueInstaller;
         protected abstract InstallQueueType CreateQueue();
 
-        public EcsFeatureInstaller()
+        public EcsFeatureModule()
         {
             _queueInstaller = CreateQueue();
         }

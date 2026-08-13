@@ -2,6 +2,7 @@ using VContainer;
 
 namespace ZE.MechBattle
 {
+    [System.Serializable]
     public class GridOperationsInstaller : IFeatureModule, ISceneFeatureScopeInstaller
     {
 

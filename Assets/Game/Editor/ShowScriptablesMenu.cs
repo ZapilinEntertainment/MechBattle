@@ -8,28 +8,31 @@ namespace ZE.MechBattle.Editor
 {
     public static class ShowScriptablesMenu
     {
-        private const string SCRIPTABLES_MENU = "Scriptables/";
-        private const string SCRIPTABLES_FOLDER = "Scriptables/";
+        private const string SCRIPTABLES_MENU = DirectoryConstants.SCRIPTABLES_FOLDER;
+        private const string SCRIPTABLES_FOLDER = SCRIPTABLES_MENU;
 
-        [MenuItem(SCRIPTABLES_MENU + "Features")]
+        [MenuItem(SCRIPTABLES_MENU + "/Features")]
         private static void SelectFeatureModulesList() => SelectScriptable<FeaturesModulesList>();
 
-        [MenuItem(SCRIPTABLES_MENU + "ProjectilesData")]        
+        [MenuItem(SCRIPTABLES_MENU + "/ProjectilesData")]        
         private static void SelectProjectilesData() => SelectScriptable<ProjectilesData>();
 
-        [MenuItem(SCRIPTABLES_MENU + "VfxData")]
+        [MenuItem(SCRIPTABLES_MENU + "/VfxData")]
         private static void SelectVfxData() => SelectScriptable<VfxData>();
+        [MenuItem(SCRIPTABLES_MENU + "/CameraSettings")]
+        private static void SelectCameraSettings() => SelectScriptable<CameraSettings>();
 
-        [MenuItem(SCRIPTABLES_MENU + "Open Unit Configs")]
+
+        [MenuItem(SCRIPTABLES_MENU + "/Open Unit Configs")]
         private static void OpenUnitConfigs() => OpenFolder("UnitConfigs");
 
-        [MenuItem(SCRIPTABLES_MENU + "Open Weapon Configs")]
+        [MenuItem(SCRIPTABLES_MENU + "/Open Weapon Configs")]
         private static void OpenWeaponConfigs() => OpenFolder("WeaponConfigs");
 
         private static void SelectScriptable<T>() where T : ScriptableObject
         {
             var name = typeof(T).Name;
-            T asset = UnityEditor.AssetDatabase.LoadAssetAtPath<T>($"Assets/Game/Resources/Scriptables/{name}.asset");
+            T asset = UnityEditor.AssetDatabase.LoadAssetAtPath<T>($"Assets/Game/Resources/{SCRIPTABLES_FOLDER}/{name}.asset");
             if (asset == null)
                 UnityEngine.Debug.LogError(name + " scriptable not exist");
             else
@@ -38,7 +41,7 @@ namespace ZE.MechBattle.Editor
 
         private static void OpenFolder(string folderName) 
         {
-            var folderPath = "Assets/Game/Resources/" + folderName;
+            var folderPath = $"Assets/Game/Resources/{SCRIPTABLES_FOLDER}/{folderName}";
             UnityEngine.Object folderObj = AssetDatabase.LoadAssetAtPath<DefaultAsset>(folderPath);
 
             if (folderObj == null)

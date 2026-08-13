@@ -1,17 +1,15 @@
-using System.Collections.Generic;
-using VContainer.Unity;
-using VContainer;
-using Scellecs.Morpeh;
-using ZE.MechBattle.Views;
-using ZE.MechBattle.Navigation;
-using UnityEngine;
 using Unity.Collections;
+using UnityEngine;
+using VContainer;
+using VContainer.Unity;
+using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle
 {
     public class SceneScope : FeaturedScopeBase<ISceneFeatureScopeInstaller, ISceneFeatureInitializer, ISceneFeaturePostInitializer>
     {
         [SerializeField] private MapSettingsSO _mapSettings;
+        [SerializeField] private LevelSettingsObject _levelSettings;
 
         protected override void Configure(IContainerBuilder builder)
         {
@@ -20,9 +18,6 @@ namespace ZE.MechBattle
 
             builder.Register<SessionData>(Lifetime.Scoped);
             builder.Register<TransformAccessManager>(Lifetime.Scoped);
-
-            builder.Register<MechBuilder>(Lifetime.Scoped);
-            builder.Register<PlayerFactory>(Lifetime.Scoped);
             builder.Register<SceneFlagsManager>(Lifetime.Scoped);
 
             builder.Register<EcsTasksFactory>(Lifetime.Scoped);
@@ -37,10 +32,11 @@ namespace ZE.MechBattle
             builder.RegisterInstance<INavigationMap, IUpdatableMap>(map);
             builder.Register(resolver => new NavigationMapController(map), Lifetime.Scoped);
 
+            builder.RegisterInstance(_levelSettings);
 
             builder.RegisterEntryPoint<SceneBootstrap>();
 
-            //UnityEngine.Debug.Log("scene scope configured");
+            UnityEngine.Debug.Log("scene scope configured");
         }
 
         protected override void FeatureInitialize(ISceneFeatureInitializer initializer, IObjectResolver resolver) =>

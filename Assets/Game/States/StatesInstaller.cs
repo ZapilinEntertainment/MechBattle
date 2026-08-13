@@ -3,6 +3,7 @@ using VContainer;
 
 namespace ZE.MechBattle.Ecs.States
 {
+    [System.Serializable]
     public class StatesInstaller : IFeatureModule, ISceneFeatureScopeInstaller, ISceneFeatureInitializer
     { 
         public static Dictionary<StateUpdateSystem.StateHandlerKey, StateHandler> PrepareStatesList(IObjectResolver resolver)

@@ -23,6 +23,17 @@ namespace ZE.Flags
         public IDisposable Subscribe<T>(Action<bool> onNext) where T : IFlag =>
             GetOrCreateAgent<T>().Subscribe(onNext);
 
+        // composited by GoogleAI
+        public IDisposable Subscribe<T>(Action<T> onNext) where T : IFlag
+        {
+            var agent = GetOrCreateAgent<T>() as FlagAgent<T>;
+            return agent.FlagActiveProperty 
+                .Where(isActive => isActive) 
+                .Select(_ => GetFirstFlag<T>()) 
+                .Subscribe(onNext); 
+        }
+
+
         public T AddFlag<T>() where T : IFlag
         {
             var instance = Activator.CreateInstance<T>();
@@ -42,6 +53,12 @@ namespace ZE.Flags
         public IDisposable AddTemporalFlag<T>() where T : IFlag
         {
             var flag = AddFlag<T>();
+            return Disposable.Create(() => this.RemoveFlag(flag));
+        }
+
+        public IDisposable AddTemporalFlag<T>(T flag) where T : IFlag
+        {
+            AddFlag(flag);
             return Disposable.Create(() => this.RemoveFlag(flag));
         }
 

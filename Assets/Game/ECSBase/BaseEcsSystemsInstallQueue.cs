@@ -35,6 +35,7 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<TransformsClearSystem>(SystemGroupOrder.DisposedObjectsOperations);
             installer.AddSystem<CollidersClearSystem>(SystemGroupOrder.DisposedObjectsOperations);
 
+            installer.AddSystem<LifetimeTrackingSystem>(SystemGroupOrder.Dispose);
             installer.AddSystem<EntityDisposeSystem>(SystemGroupOrder.Dispose);
             installer.AddSystem<UpdateTagsClearSystem>(SystemGroupOrder.Dispose);
         }

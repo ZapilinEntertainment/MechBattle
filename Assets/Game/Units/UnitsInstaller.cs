@@ -5,7 +5,8 @@ using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle
 {
-    public class UnitsInstaller : EcsFeatureInstaller<UnitSystemsInstallQueue>, ISessionFeatureScopeInstaller, ISessionFeatureInitializer
+    [System.Serializable]
+    public class UnitsInstaller : EcsFeatureModule<UnitSystemsInstallQueue>, ISessionFeatureScopeInstaller, ISessionFeatureInitializer
     {
 
         public override void SceneScopeInstall(IContainerBuilder builder)

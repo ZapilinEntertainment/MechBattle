@@ -1,12 +1,21 @@
+using AYellowpaper.SerializedCollections;
+using Unity.Cinemachine;
 using UnityEngine;
 
 namespace ZE.MechBattle
 {
-    public class MechView : SimpleView, IComplexMonoView
+    public class MechView : SimpleView, IComplexMonoView, ICameraPointView
     {
         [field:SerializeField] public Transform ChassisRoot { get; private set; }
         [field:SerializeField] public LegDataContainer<Transform> LeftLeg { get; private set; }
         [field: SerializeField] public LegDataContainer<Transform> RightLeg { get; private set; }
+        [SerializeField] private SerializedDictionary<CameraMode, CinemachineCamera> _cameraPoints;
+
+        public void ActivateVirtualCamera(CameraMode cameraMode)
+        {
+            if (_cameraPoints.TryGetValue(cameraMode, out var cinCamera))
+                cinCamera.enabled = true;
+        }
 
         public bool TryGetPartByKey(ViewPartKey key, out IViewPart viewPart)
         {
