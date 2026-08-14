@@ -26,9 +26,16 @@ namespace ZE.MechBattle
 
         async Awaitable<IResourceBinder> ISessionAsyncResourceLoader.LoadSessionResourcesAsync(IObjectResolver resolver)
         {
-            const string viewKey = DevelopConstants.DEFAULT_MECH_VIEW_ID + "_chassis_data";
+            const string viewKey = DevelopConstants.DEFAULT_MECH_ID + "_chassis_data";
             var mechChassisData = await AssetsManager.LoadAssetDirectly<MechChassisData>(viewKey);
-            return new KeyedResourceBinding<MechChassisData,string>(mechChassisData, DevelopConstants.DEFAULT_MECH_VIEW_ID);
+
+            const string configKey = DevelopConstants.DEFAULT_MECH_ID + "_config";
+            var mechConfigData = await AssetsManager.LoadAssetDirectly<MechConfig>(configKey);
+
+            var compositeBinder = new CompositeResourceBinder();
+            compositeBinder.Add(new KeyedResourceBinding<MechChassisData, string>(mechChassisData, DevelopConstants.DEFAULT_MECH_ID));
+            compositeBinder.Add(new KeyedResourceBinding<MechConfig, string>(mechConfigData, DevelopConstants.DEFAULT_MECH_ID));
+            return compositeBinder;
         }
     }
 }

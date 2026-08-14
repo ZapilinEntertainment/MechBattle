@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6655062516119415071}
   - component: {fileID: 3487369243504637517}
   m_Layer: 0
-  m_Name: Cabin
+  m_Name: UpperPart
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: 190190453716271626}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.87, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -34,7 +34,7 @@ Transform:
   - {fileID: 6145354192885375054}
   - {fileID: 5394993112705043836}
   - {fileID: 7432795979757113332}
-  m_Father: {fileID: 6880024056680983571}
+  m_Father: {fileID: 1808818559306698104}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &3487369243504637517
 MonoBehaviour:
@@ -236,6 +236,7 @@ Transform:
   - {fileID: 3585674388181082966}
   - {fileID: 2126931391955772957}
   - {fileID: 5458216981201034390}
+  - {fileID: 6655062516119415071}
   m_Father: {fileID: 6880024056680983571}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &773698301406848832
@@ -353,7 +354,7 @@ Transform:
   m_GameObject: {fileID: 1498159648088016972}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 8.83, y: 1.7299986, z: -0.39999962}
+  m_LocalPosition: {x: 8.83, y: 4.7199984, z: -0.39999962}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -520,6 +521,7 @@ MonoBehaviour:
     Hip: {fileID: 5458216981201034390}
     Ankle: {fileID: 7913355261670966772}
     Foot: {fileID: 8831921794388861062}
+  _upperPart: {fileID: 6655062516119415071}
   _cameraPoints:
     _serializedList:
     - Key: 0
@@ -729,7 +731,7 @@ Transform:
   m_GameObject: {fileID: 2282268252444714073}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 2.99, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1218,7 +1220,7 @@ Transform:
   m_GameObject: {fileID: 4895932062001224087}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 4.1532965, z: 3.7007523}
+  m_LocalPosition: {x: 0, y: 7.1432962, z: 3.7007523}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1269,7 +1271,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5458216981201034390}
-  - component: {fileID: 4627735679005170129}
   m_Layer: 0
   m_Name: Hip.R
   m_TagString: Untagged
@@ -1294,21 +1295,6 @@ Transform:
   - {fileID: 7913355261670966772}
   m_Father: {fileID: 1808818559306698104}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
---- !u!114 &4627735679005170129
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5245818910241602019}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fca76e2401d31284c82cc1d0e8e5119b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ZE.MechBattle.LegView
-  _hip: {fileID: 5458216981201034390}
-  _ankle: {fileID: 7913355261670966772}
-  _foot: {fileID: 8831921794388861062}
 --- !u!1 &5376657876111662355
 GameObject:
   m_ObjectHideFlags: 0
@@ -1371,7 +1357,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1808818559306698104}
-  - {fileID: 6655062516119415071}
   m_Father: {fileID: 1383486564609431260}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6263020314211873556
@@ -1489,7 +1474,7 @@ Transform:
   m_GameObject: {fileID: 6391833075893252837}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -8.83, y: 1.7299986, z: -0.39999962}
+  m_LocalPosition: {x: -8.83, y: 4.7199984, z: -0.39999962}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1686,7 +1671,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2126931391955772957}
-  - component: {fileID: 3794039498760741308}
   m_Layer: 0
   m_Name: Hip.L
   m_TagString: Untagged
@@ -1711,21 +1695,6 @@ Transform:
   - {fileID: 251163898169250575}
   m_Father: {fileID: 1808818559306698104}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
---- !u!114 &3794039498760741308
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7153125759436026568}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fca76e2401d31284c82cc1d0e8e5119b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ZE.MechBattle.LegView
-  _hip: {fileID: 2126931391955772957}
-  _ankle: {fileID: 8265073631669886406}
-  _foot: {fileID: 4640497250366690715}
 --- !u!1 &7652924880846761802
 GameObject:
   m_ObjectHideFlags: 0

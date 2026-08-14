@@ -1,10 +1,11 @@
 using VContainer;
+using ZE.MechBattle.Ecs;
 using ZE.MechBattle.PlayerData;
 
 namespace ZE.MechBattle
 {
     [System.Serializable]
-    public class PlayerFeatureModule : IFeatureModule, ISceneFeatureScopeInstaller, ISceneFeatureInitializer, IAppFeatureScopeInstaller
+    public class PlayerFeatureModule : EcsFeatureModule<PlayerSystemsInstallQueue>, ISceneFeatureScopeInstaller, ISceneFeatureInitializer, IAppFeatureScopeInstaller
     {
         void IAppFeatureScopeInstaller.AppScopeInstall(IContainerBuilder builder)
         {
@@ -12,7 +13,8 @@ namespace ZE.MechBattle
         }
 
         void ISceneFeatureScopeInstaller.SceneScopeInstall(IContainerBuilder builder)
-        { 
+        {
+            base.SceneScopeInstall(builder);
             builder.Register<IPlayersList, PlayersList>(Lifetime.Scoped);
             builder.Register<PlayerHandler>(Lifetime.Scoped);
             builder.Register<PlayerFactory>(Lifetime.Scoped);            
@@ -20,6 +22,7 @@ namespace ZE.MechBattle
 
         void ISceneFeatureInitializer.OnSceneContainerBuilt(IObjectResolver resolver)
         {
+            base.OnSceneContainerBuilt(resolver);
             var playerFactory = resolver.Resolve<PlayerFactory>();
             var levelSettings = resolver.Resolve<LevelSettingsObject>();
 
@@ -30,6 +33,6 @@ namespace ZE.MechBattle
             playerInitializer.StartTracking(localPlayerEntity);
         }
 
-       
+        protected override PlayerSystemsInstallQueue CreateQueue() => new();
     }
 }

@@ -1,6 +1,7 @@
 using AYellowpaper.SerializedCollections;
 using Unity.Cinemachine;
 using UnityEngine;
+using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle
 {
@@ -9,6 +10,8 @@ namespace ZE.MechBattle
         [field:SerializeField] public Transform ChassisRoot { get; private set; }
         [field:SerializeField] public LegDataContainer<Transform> LeftLeg { get; private set; }
         [field: SerializeField] public LegDataContainer<Transform> RightLeg { get; private set; }
+
+        [SerializeField] private Transform _upperPart;
         [SerializeField] private SerializedDictionary<CameraMode, CinemachineCamera> _cameraPoints;
 
         public void ActivateVirtualCamera(CameraMode cameraMode)
@@ -27,6 +30,11 @@ namespace ZE.MechBattle
 
             switch(key.Type) 
             {
+                case ViewPartType.UpperPart:
+                    {
+                        viewPart = new ViewPartContainer(_upperPart);
+                        return true;
+                    }
                 case ViewPartType.ChassisRoot:
                     {
                         viewPart = new ViewPartContainer(ChassisRoot);

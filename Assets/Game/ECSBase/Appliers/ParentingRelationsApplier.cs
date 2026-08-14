@@ -13,13 +13,16 @@ namespace ZE.MechBattle.Ecs
             public float3 LocalPos;
             public quaternion LocalRot;
             public bool AwaitParentViewComponent;
+            public ViewPartKey ViewPartKey;
             public bool SaveInitLocalPos;
         }
 
+        private readonly World _world;
         private readonly Stash<ParentEntityComponent> _parents;
         private readonly Stash<LocalPositionComponent> _localPositions;
         private readonly Stash<LocalRotationComponent> _localRotation;
         private readonly Stash<InitialLocalPosition> _initLocalPositions;
+        private readonly Stash<ViewPartRequestComponent> _viewPartsRequestComponents;
 
         private readonly Stash<AwaitingParentViewLoadingTag> _awaitingViewLoadingTag;
 
@@ -28,12 +31,14 @@ namespace ZE.MechBattle.Ecs
         [Inject]
         public ParentingRelationsApplier(World world, TransformAspectHandler transformAspectHandler)
         {
-            _parents = world.GetStash<ParentEntityComponent>();
-            _localPositions = world.GetStash<LocalPositionComponent>();
-            _localRotation = world.GetStash<LocalRotationComponent>();
-            _initLocalPositions = world.GetStash<InitialLocalPosition>();
+            _world = world;
+            _parents = _world.GetStash<ParentEntityComponent>();
+            _localPositions = _world.GetStash<LocalPositionComponent>();
+            _localRotation = _world.GetStash<LocalRotationComponent>();
+            _initLocalPositions = _world.GetStash<InitialLocalPosition>();
 
-            _awaitingViewLoadingTag = world.GetStash<AwaitingParentViewLoadingTag>();
+            _awaitingViewLoadingTag = _world.GetStash<AwaitingParentViewLoadingTag>();
+            _viewPartsRequestComponents = _world.GetStash<ViewPartRequestComponent>();
 
             _transformHandler = transformAspectHandler;
         }
@@ -55,8 +60,28 @@ namespace ZE.MechBattle.Ecs
             if (protocol.AwaitParentViewComponent)
                 _awaitingViewLoadingTag.Set(childEntity);
 
+            if (protocol.ViewPartKey.IsValid)
+                _viewPartsRequestComponents.Set(childEntity, new(protocol.ViewPartKey));
+
             if (protocol.SaveInitLocalPos)
                 _initLocalPositions.Set(childEntity,new(protocol.LocalPos));
+        }
+
+        public Entity CreateChildEntityForViewPart(RigidTransform point, Entity parent, ViewPartKey viewPartKey)
+        {
+            var entity = _world.CreateEntity();
+            Apply(new()
+            {
+                ParentEntity = parent,
+                ChildEntity = entity,
+
+                AwaitParentViewComponent = true,
+                ViewPartKey = viewPartKey,
+
+                LocalPos = point.pos,
+                LocalRot = point.rot,
+            });
+            return entity;
         }
 
     }

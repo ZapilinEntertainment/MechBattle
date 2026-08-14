@@ -15,13 +15,18 @@ MonoBehaviour:
   m_GroupName: Default Local Group
   m_GUID: 6c5704f5df2d7114f90cdd11ed36b47a
   m_SerializeEntries:
+  - m_GUID: 0f89c853498a9cb46ba634b2adca87b6
+    m_Address: default_mech_config
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 59dee270a0342cf439c0a694a2c30d5d
     m_Address: tank_projectile
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 84307a654c2bd7f40a64f99fd58b55e7
-    m_Address: mech_view
+    m_Address: default_mech_view
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -31,7 +36,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a1b3b67b4ce60394ebcf287ffb9eca5c
-    m_Address: mech_view_chassis_data
+    m_Address: default_mech_chassis_data
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

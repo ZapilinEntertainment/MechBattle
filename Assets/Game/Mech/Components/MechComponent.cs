@@ -9,10 +9,12 @@ namespace ZE.MechBattle.Ecs {
     public readonly struct MechComponent : IComponent 
     {
         public readonly Entity ChassisEntity;
+        public readonly Entity UpperPartEntity;
 
-        public MechComponent(Entity chassisEntity)
+        public MechComponent(Entity chassisEntity, Entity upperPartEntity)
         {
             ChassisEntity = chassisEntity;
+            UpperPartEntity = upperPartEntity;
         }
     
     }

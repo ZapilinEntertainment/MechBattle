@@ -202,6 +202,13 @@ namespace ZE.MechBattle.Ecs
             return rotationFinished;
         }
 
+        public void RotateLocal(Entity entity, quaternion rotationStep)
+        {
+            ref var localRotationComponent = ref _localRotation.Get(entity);
+            localRotationComponent.Value = math.mul(localRotationComponent.Value, rotationStep);
+            AddUpdateTag(entity);
+        }
+
         public RigidTransform GetPoint(Entity entity, bool randomRotationIfNone = true)
         {
             var parentPositionComponent = _positions.Get(entity, out var isPositionPresented);

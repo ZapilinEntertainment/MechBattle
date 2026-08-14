@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace ZE.MechBattle
 {
     public enum ViewPartType : byte
@@ -10,6 +8,7 @@ namespace ZE.MechBattle
         ChassisRoot,
         Hip,
         Ankle,
-        Foot    
+        Foot,
+        UpperPart,
     }
 }
