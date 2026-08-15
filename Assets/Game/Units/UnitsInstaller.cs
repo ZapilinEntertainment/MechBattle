@@ -1,3 +1,4 @@
+using System.IO;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -40,7 +41,7 @@ namespace ZE.MechBattle
 
         private void LoadUnitConfigs(IObjectResolver resolver)
         {
-            var unitConfigs = Resources.LoadAll<UnitConfig>("UnitConfigs");
+            var unitConfigs = Resources.LoadAll<UnitConfig>(Path.Combine(DirectoryConstants.SCRIPTABLES_FOLDER, "UnitConfigs"));
             var unitConfigsList = resolver.Resolve<IUnitConfigsList>() as UnitConfigsList;
             foreach (var unitConfig in unitConfigs)
             {

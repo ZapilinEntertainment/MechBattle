@@ -5,6 +5,7 @@ using R3;
 
 namespace ZE.Workers
 {
+    // IMPORTANT: do not use AsImplementedInterfaces() for ITickable - it will double every instance on resolve
     public abstract class Worker : IDisposable
     {
         protected enum Status : byte { Created = 0, Working, Disposed}

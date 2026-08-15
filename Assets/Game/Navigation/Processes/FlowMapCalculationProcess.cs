@@ -54,6 +54,14 @@ namespace ZE.MechBattle.Navigation
         {
             _activeJobHandle.Complete();
             _collections.Dispose();
+            try
+            {
+                _zeroPositions.Dispose();
+            }
+            catch
+            {
+                // editor can dispose this list too early
+            }
         }
 
         protected override JobHandle LaunchJob(FlowMapProcessLaunchProtocol protocol)

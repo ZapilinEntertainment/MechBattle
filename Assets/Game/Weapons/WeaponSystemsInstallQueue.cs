@@ -8,7 +8,8 @@ namespace ZE.MechBattle.Ecs
         {
             installer.AddSystemWithInterface<WeaponLoadingCheckSystem, IWeaponShotCompletenessHandler>(SystemGroupOrder.WeaponUpdates);
             installer.AddSystem<ChildEntityAttackTargetSyncSystem>(SystemGroupOrder.WeaponUpdates);
-            installer.AddSystem<CheckAttackRangeSystem>(SystemGroupOrder.WeaponUpdates);
+            installer.AddSystem<WeaponTargetPositionSetSystem>(SystemGroupOrder.WeaponUpdates);
+            installer.AddSystem<CheckAttackRangeSystem>(SystemGroupOrder.WeaponUpdates);            
             installer.AddSystem<WeaponAimCalculationSystem>(SystemGroupOrder.WeaponUpdates);
 
             installer.AddSystem<AimCheckSystem>(SystemGroupOrder.WeaponUpdates);

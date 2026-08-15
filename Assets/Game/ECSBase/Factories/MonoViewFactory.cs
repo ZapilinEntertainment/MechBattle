@@ -38,15 +38,21 @@ namespace ZE.MechBattle.Ecs
         {
             var containerData = _viewContainersPool.Get();
             var entity = _world.CreateEntity();
-            _viewSyncApplier.Apply(entity, containerData.container, applyViewPosition: false);            
+            MakeViewReceiver(entity, viewId);
+
+            return entity;
+        }
+
+        public void MakeViewReceiver(Entity entity, string viewId)
+        {
+            var containerData = _viewContainersPool.Get();
+            _viewSyncApplier.Apply(entity, containerData.container, applyViewPosition: false);
 
             _viewContainers.Add(entity, new(containerData.id));
             _viewRequests.Add(entity);
 
-            var viewKey = new ViewKey() { IdKey = _stringDataDict.StringToKey(viewId)};
+            var viewKey = new ViewKey() { IdKey = _stringDataDict.StringToKey(viewId) };
             _viewKeyComponents.Add(entity, new(viewKey));
-
-            return entity;
         }
     }
 }

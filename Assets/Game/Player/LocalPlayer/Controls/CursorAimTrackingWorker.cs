@@ -1,16 +1,14 @@
-using System;
+using R3;
 using UnityEngine;
 using ZE.Workers;
-using R3;
-using VContainer.Unity;
 
 namespace ZE.MechBattle
 {
-    public class AimWorker : Worker, ITargetDesignator
+    public class CursorAimTrackingWorker : Worker, ITargetDesignator
     {
         private Camera _camera;
 
-        public AimWorker(CameraController cameraController) 
+        public CursorAimTrackingWorker(CameraController cameraController) 
         {
             _camera = cameraController.Camera;
         }
@@ -39,6 +37,12 @@ namespace ZE.MechBattle
             {
                 _targetDataProperty.Value = new(ray.GetPoint(GameConstants.AIM_RAY_LENGTH));
             }
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            _targetDataProperty.Dispose();
         }
     }
 }

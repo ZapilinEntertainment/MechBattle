@@ -9,12 +9,18 @@ namespace ZE.MechBattle
         private readonly SceneFlagsManager _sceneFlags;
         private readonly LifetimeTrackingManager _lifetimeTrackingManager;
         private readonly Stash<ViewLoadRequestTag> _viewLoadRequests;
+        private readonly PlayerUiInitializer _uiInitializer;
         private Entity _vehicleEntity;
 
-        public LocalPlayerInitializer(World world, SceneFlagsManager sceneFlags, LifetimeTrackingManager lifetimeTrackingManager) : base(world)
+        public LocalPlayerInitializer(
+            World world, 
+            SceneFlagsManager sceneFlags, 
+            LifetimeTrackingManager lifetimeTrackingManager,
+            PlayerUiInitializer playerUiInitializer) : base(world)
         {
             _sceneFlags = sceneFlags;
             _lifetimeTrackingManager = lifetimeTrackingManager;
+            _uiInitializer = playerUiInitializer;
             _viewLoadRequests = world.GetStash<ViewLoadRequestTag>();
         }
 
@@ -33,6 +39,8 @@ namespace ZE.MechBattle
             var lifetimeObject = _lifetimeTrackingManager.GetEntityLifetimeObject(Entity);
             var flag = new LocalPlayerViewInstancedFlag(Entity, _vehicleEntity);
             lifetimeObject.Add(_sceneFlags.AddTemporalFlag(flag));
+
+            //_uiInitializer.Activate(Entity);
         }
     }
 }

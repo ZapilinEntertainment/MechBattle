@@ -1,6 +1,8 @@
 using VContainer;
 using ZE.MechBattle.Ecs;
 using ZE.MechBattle.PlayerData;
+using ZE.MechBattle.UI;
+using ZE.Workers;
 
 namespace ZE.MechBattle
 {
@@ -10,6 +12,7 @@ namespace ZE.MechBattle
         void IAppFeatureScopeInstaller.AppScopeInstall(IContainerBuilder builder)
         {
             builder.Register<LocalPlayerInitializer>(Lifetime.Transient);
+            builder.Register<PlayerUiInitializer>(Lifetime.Transient);
         }
 
         void ISceneFeatureScopeInstaller.SceneScopeInstall(IContainerBuilder builder)
@@ -17,7 +20,10 @@ namespace ZE.MechBattle
             base.SceneScopeInstall(builder);
             builder.Register<IPlayersList, PlayersList>(Lifetime.Scoped);
             builder.Register<PlayerHandler>(Lifetime.Scoped);
-            builder.Register<PlayerFactory>(Lifetime.Scoped);            
+            builder.Register<PlayerFactory>(Lifetime.Scoped);
+            
+            RegisterWorker<CursorAimTrackingWorker>(builder);
+            RegisterWorker<PlayerInterfaceWorker>(builder);
         }
 
         void ISceneFeatureInitializer.OnSceneContainerBuilt(IObjectResolver resolver)
@@ -34,5 +40,9 @@ namespace ZE.MechBattle
         }
 
         protected override PlayerSystemsInstallQueue CreateQueue() => new();
+
+
+        // IMPORTANT: do not use AsImplementedInterfaces() for ITickable - it will double every instance on resolve
+        void RegisterWorker<T>(IContainerBuilder builder) where T : Worker => builder.Register<T>(Lifetime.Transient);
     }
 }

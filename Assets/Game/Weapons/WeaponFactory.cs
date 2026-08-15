@@ -55,21 +55,36 @@ namespace ZE.MechBattle.Ecs
             _rotationSpeedComponents = world.GetStash<RotationSpeedComponent>();
         }
 
-        public Entity CreateUnitWeapon(Entity parentEntity, WeaponConfig weaponConfig, WeaponAttachmentProtocol attachmentProtocol)
+        public struct WeaponCreationProtocol
+        {
+            public Entity ParentEntity;
+            public WeaponConfig WeaponConfig;
+            public WeaponAttachmentProtocol AttachmentProtocol;
+
+            public bool UseAutoShot;
+            public bool UseAutoStow;
+            public bool SyncTargetWithParent;
+        }
+
+        public Entity CreateWeapon(WeaponCreationProtocol protocol)
         {
             var weaponEntity = _world.CreateEntity();
+            var weaponConfig = protocol.WeaponConfig;
 
             _ranges.Add(weaponEntity, new(weaponConfig.MinRange, weaponConfig.MaxRange, weaponConfig.RecommendedRangePc));
             _weaponUpdateComponents.Add(weaponEntity, new(weaponConfig.Cooldown));
-            _weaponAutoShotTags.Add(weaponEntity);
-            _raycastFirelinesTag.Add(weaponEntity);
+            if (protocol.UseAutoShot)
+            {
+                _weaponAutoShotTags.Add(weaponEntity);
+                _raycastFirelinesTag.Add(weaponEntity);
+            }            
 
             _parentingRelationsApplier.Apply(new()
             {
-                ParentEntity = parentEntity,
+                ParentEntity = protocol.ParentEntity,
                 ChildEntity = weaponEntity,
-                LocalPos = attachmentProtocol.LocalPosition,
-                LocalRot = attachmentProtocol.LocalRotation,
+                LocalPos = protocol.AttachmentProtocol.LocalPosition,
+                LocalRot = protocol.AttachmentProtocol.LocalRotation,
                 AwaitParentViewComponent = true
             });
 
@@ -93,7 +108,8 @@ namespace ZE.MechBattle.Ecs
                 _viewPartRequests.Add(towerEntity, new(towerAttachmentProtocol.ViewPartKey));
 
                 _weaponTowerComponents.Add(weaponEntity, new(towerEntity));
-                _towerStowTag.Add(towerEntity); // always for units
+                if (protocol.UseAutoStow) 
+                    _towerStowTag.Add(towerEntity); 
 
                 //UnityEngine.Debug.Log($"built tower with id {towerEntity.Id}");
             }
@@ -108,16 +124,17 @@ namespace ZE.MechBattle.Ecs
 
                 _viewPartRequests.Add(barrelEntity, new(barrelAttachmentProtocol.ViewPartKey));
                 _weaponBarrelComponents.Add(weaponEntity, new(barrelEntity));
-                _barrelStowTag.Add(barrelEntity);
+
+                if (protocol.UseAutoStow)
+                    _barrelStowTag.Add(barrelEntity);
 
                 //UnityEngine.Debug.Log($"built barrel with id {barrelEntity.Id}");
             }
 
             _weaponShotPoints.Add(weaponEntity, new(weaponConfig.ShotPoint));
 
-            if (weaponConfig.SyncTargetWithParent)
+            if (protocol.SyncTargetWithParent)
                 _syncTargetWithParent.Add(weaponEntity);
-
             
 
             return weaponEntity;

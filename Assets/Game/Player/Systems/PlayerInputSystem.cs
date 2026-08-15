@@ -64,6 +64,8 @@ namespace ZE.MechBattle.Ecs {
                 var rotationStep = quaternion.AxisAngle(math.up(), deltaTime * cabinRotationValue * rotationSpeed);
                 _transformAspectHandler.RotateLocal(_upperPartEntity, rotationStep);
             }           
+
+
         }
 
         public void Dispose()

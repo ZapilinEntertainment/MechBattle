@@ -20,6 +20,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4831dea7172b6c14c88ee1a568184ec8
+    m_Address: default_mech_gun_config
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 59dee270a0342cf439c0a694a2c30d5d
     m_Address: tank_projectile
     m_ReadOnly: 0

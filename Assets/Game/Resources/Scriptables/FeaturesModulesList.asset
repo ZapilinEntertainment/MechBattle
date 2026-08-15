@@ -20,7 +20,6 @@ MonoBehaviour:
   - rid: 6586387193149522012
   - rid: 6586387193149522014
   - rid: 6586387193149522015
-  - rid: 6586387193149522016
   - rid: 6586387193149522017
   - rid: 6586387193149522018
   - rid: 6586387211017519175
@@ -51,9 +50,6 @@ MonoBehaviour:
       data: 
     - rid: 6586387193149522015
       type: {class: WeaponFeatureInstaller, ns: ZE.MechBattle, asm: MechBattle}
-      data: 
-    - rid: 6586387193149522016
-      type: {class: WorkersInstaller, ns: ZE.MechBattle, asm: MechBattle}
       data: 
     - rid: 6586387193149522017
       type: {class: MovementSystemsInstaller, ns: ZE.MechBattle.Ecs, asm: MechBattle}

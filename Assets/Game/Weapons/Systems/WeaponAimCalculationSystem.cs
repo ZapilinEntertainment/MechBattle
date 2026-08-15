@@ -15,9 +15,7 @@ namespace ZE.MechBattle.Ecs {
         private Filter _idleTowerWeaponsFilter;
         private Filter _idleBarrelWeaponsFilter;
 
-        private Stash<AttackTargetComponent> _attackTargetComponent;
-        private Stash<PositionComponent> _positions;
-        private Stash<RotationComponent> _rotations;
+        private Stash<WeaponTargetPositionComponent> _targetPositions;
         private Stash<LocalTargetRotationComponent> _aims;
         private Stash<WeaponTowerComponent> _weaponTowers;
         private Stash<WeaponBarrelComponent> _weaponBarrels;
@@ -33,11 +31,11 @@ namespace ZE.MechBattle.Ecs {
         {
             _aimingTowerWeaponsFilter = World.Filter
                 .With<WeaponTowerComponent>()
-                .With<AttackTargetComponent>()
+                .With<WeaponTargetPositionComponent>()
                 .Build();
             _aimingbarrelWeaponsFilter = World.Filter
                 .With<WeaponBarrelComponent>()
-                .With<AttackTargetComponent>()
+                .With<WeaponTargetPositionComponent>()
                 .Build();
 
             _idleTowerWeaponsFilter = World.Filter
@@ -49,9 +47,7 @@ namespace ZE.MechBattle.Ecs {
                 .Without<AttackTargetComponent>()
                 .Build();
 
-            _attackTargetComponent = World.GetStash<AttackTargetComponent>();   
-            _positions = World.GetStash<PositionComponent>();
-            _rotations = World.GetStash<RotationComponent>();
+            _targetPositions = World.GetStash<WeaponTargetPositionComponent>();
             _aims = World.GetStash<LocalTargetRotationComponent>();
 
             _weaponTowers = World.GetStash<WeaponTowerComponent>();
@@ -65,8 +61,7 @@ namespace ZE.MechBattle.Ecs {
             foreach (var weaponEntity in _aimingTowerWeaponsFilter)
             {
                 var towerEntity = _weaponTowers.Get(weaponEntity).TowerEntity;
-                var targetEntity = _attackTargetComponent.Get(weaponEntity).Entity;
-                var targetPos = _positions.Get(targetEntity).Value;
+                var targetPos = _targetPositions.Get(weaponEntity).Value;
 
                 var weaponPoint = _transformAspectHandler.GetPoint(weaponEntity);
                 var targetLocalPos = MathExtensions.InverseTransformPoint(targetPos, weaponPoint.pos, weaponPoint.rot);
@@ -79,8 +74,7 @@ namespace ZE.MechBattle.Ecs {
             foreach (var weaponEntity in _aimingbarrelWeaponsFilter)
             {
                 var barrelEntity = _weaponBarrels.Get(weaponEntity).BarrelEntity;
-                var targetEntity = _attackTargetComponent.Get(weaponEntity).Entity;
-                var targetPos = _positions.Get(targetEntity).Value;
+                var targetPos = _targetPositions.Get(weaponEntity).Value;
 
                 var towerComponent = _weaponTowers.Get(weaponEntity, out var hasTower);
                 var parentPoint = _transformAspectHandler.GetPoint(hasTower ? towerComponent.TowerEntity : weaponEntity);                

@@ -1,7 +1,6 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
 using VContainer;
-using Unity.Mathematics;
 
 namespace ZE.MechBattle.Ecs
 {

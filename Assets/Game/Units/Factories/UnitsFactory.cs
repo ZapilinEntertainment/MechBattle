@@ -76,7 +76,7 @@ namespace ZE.MechBattle
         {
             if (!_unitConfigs.TryGetConfig(unitKey, out var unitConfig))
             {
-                UnityEngine.Debug.LogError($"no config for {unitKey.Id}");
+                UnityEngine.Debug.LogError($"no config for {_stringDataDictionary.GetStringByKey(unitKey.Id)}");
                 return default;
             }
 
@@ -111,7 +111,16 @@ namespace ZE.MechBattle
             if (!config.TryGetWeaponData(out var weaponData))
                 return;
 
-            var weaponEntity = _weaponFactory.CreateUnitWeapon(unitEntity, weaponData.Config, weaponData.AttachmentProtocol); 
+            var weaponEntity = _weaponFactory.CreateWeapon(new()
+            {
+                ParentEntity = unitEntity,
+                WeaponConfig = weaponData.Config,
+                AttachmentProtocol = weaponData.AttachmentProtocol,
+
+                UseAutoStow = true,
+                UseAutoShot = true,
+                SyncTargetWithParent = true
+            });
             _aimPrecisionComponents.Add(weaponEntity, new(config.MaxPrecisionAberration) );
             _weaponComponents.Set(unitEntity, new(weaponEntity));
             _damageComponents.Set(weaponEntity, new() { DamageParameters = new() { Value = config.Damage} });

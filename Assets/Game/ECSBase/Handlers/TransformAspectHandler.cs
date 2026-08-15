@@ -36,6 +36,13 @@ namespace ZE.MechBattle.Ecs
             _parentEntities = world.GetStash<ParentEntityComponent>();
         }
 
+        public bool TryGetPosition(Entity entity, out float3 position)
+        {
+            var positionComponent = _positions.Get(entity, out var positionExists);
+            position = positionComponent.Value;
+            return positionExists;
+        }
+
         public float3 GetPosition(Entity entity) => _positions.Get(entity).Value;
         public float3 GetLocalPosition(Entity entity) => _localPositions.Get(entity).Value;
         public float3 GetForward(Entity entity)

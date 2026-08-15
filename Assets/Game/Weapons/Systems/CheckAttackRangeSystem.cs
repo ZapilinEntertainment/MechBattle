@@ -12,16 +12,16 @@ namespace ZE.MechBattle.Ecs {
         private Filter _checkFilter;
         private Filter _disableFilter;
         private Stash<WeaponRangeComponent> _ranges;
-        private Stash<AttackTargetComponent> _attackTargets;
+        private Stash<WeaponTargetPositionComponent> _weaponTargetPositions;
         private Stash<PositionComponent> _positions;
         private Stash<AttackRangeReachedTag> _attackRangeReachedTags;
 
         public void OnAwake() 
         {
-            _checkFilter = World.Filter.With<WeaponRangeComponent>().With<AttackTargetComponent>().Build();
-            _disableFilter = World.Filter.With<AttackRangeReachedTag>().Without<AttackTargetComponent>().Build();
+            _checkFilter = World.Filter.With<WeaponRangeComponent>().With<WeaponTargetPositionComponent>().Build();
+            _disableFilter = World.Filter.With<AttackRangeReachedTag>().Without<WeaponTargetPositionComponent>().Build();
 
-            _attackTargets = World.GetStash<AttackTargetComponent>();
+            _weaponTargetPositions = World.GetStash<WeaponTargetPositionComponent>();
             _attackRangeReachedTags = World.GetStash<AttackRangeReachedTag>();
             _ranges = World.GetStash<WeaponRangeComponent>();
             _positions = World.GetStash<PositionComponent>();
@@ -31,8 +31,7 @@ namespace ZE.MechBattle.Ecs {
         {
             foreach (var entity in _checkFilter)
             {
-                var attackTarget = _attackTargets.Get(entity).Entity;
-                var targetPos = _positions.Get(attackTarget).Value;
+                var targetPos = _weaponTargetPositions.Get(entity).Value;
                 var entityPos = _positions.Get(entity).Value;
                 var distSq = math.distancesq(entityPos, targetPos);
                 var isInRange = distSq < _ranges.Get(entity).MaxRangeSq;

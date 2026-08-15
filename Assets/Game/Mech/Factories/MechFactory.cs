@@ -10,8 +10,11 @@ namespace ZE.MechBattle
         private readonly MechChassisFactory _chassisFactory;
         private readonly MonoViewFactory _viewFactory;
         private readonly TransformAspectHandler _transformAspectHandler;
-        private readonly ParentingRelationsApplier _parentingRelationsApplier;
-        private readonly MechConfig _mechConfig;
+        private readonly ParentingRelationsApplier _parentingRelationsApplier;        
+        private readonly WeaponFactory _weaponFactory;
+
+        private readonly MechConfig TEMP_mechConfig;
+        private readonly WeaponConfig TEMP_weaponConfig;
 
         private readonly Stash<MechComponent> _mechComponents;
         private readonly Stash<RotationSpeedComponent> _rotationSpeed;
@@ -24,13 +27,18 @@ namespace ZE.MechBattle
             MechChassisFactory chassisFactory,
             World world,
             ParentingRelationsApplier parentingRelationsApplier,
-            [Key(DevelopConstants.DEFAULT_MECH_ID)] MechConfig mechConfig)
+            WeaponFactory weaponFactory,
+            [Key(DevelopConstants.DEFAULT_MECH_ID)] MechConfig mechConfig,
+            [Key(DevelopConstants.DEFAULT_MECH_GUN_ID)] WeaponConfig weaponConfig)
         {
             _viewFactory = viewFactory;
             _transformAspectHandler = transformAspectHandler;
             _chassisFactory = chassisFactory;
-            _parentingRelationsApplier = parentingRelationsApplier;
-            _mechConfig = mechConfig;
+            _parentingRelationsApplier = parentingRelationsApplier;            
+            _weaponFactory = weaponFactory;
+
+            TEMP_mechConfig = mechConfig;
+            TEMP_weaponConfig = weaponConfig;
 
             _mechComponents = world.GetStash<MechComponent>();
             _rotationSpeed = world.GetStash<RotationSpeedComponent>();
@@ -56,8 +64,31 @@ namespace ZE.MechBattle
                parent,
                new(ViewPartType.UpperPart));
 
-            _rotationSpeed.Set(upperPartEntity, new(_mechConfig.UpperPartRotationSpeedRadians));
+            _rotationSpeed.Set(upperPartEntity, new(TEMP_mechConfig.UpperPartRotationSpeedRadians));
+
+            InstallEquipmentIntoSlot(upperPartEntity, TEMP_mechConfig, MechSlot.MainWeaponLeft, DevelopConstants.DEFAULT_MECH_GUN_ID);
+            InstallEquipmentIntoSlot(upperPartEntity, TEMP_mechConfig, MechSlot.MainWeaponRight, DevelopConstants.DEFAULT_MECH_GUN_ID);
             return upperPartEntity;
+        }
+
+        private Entity InstallEquipmentIntoSlot(Entity parent, MechConfig mechConfig, MechSlot slot, string equipmentId)
+        {
+            // todo: different types of equipment, not only weapons
+            if (!mechConfig.TryGetSlotInfo(slot, out var slotInfo))
+            {
+                //UnityEngine.Debug.LogError($"no {slot} slot available");
+                return default;
+            }
+
+            var weaponEntity = _weaponFactory.CreateWeapon(new()
+            {
+                WeaponConfig = TEMP_weaponConfig,
+                ParentEntity = parent,
+                AttachmentProtocol = slotInfo.AttachmentProtocol,
+            });
+            _viewFactory.MakeViewReceiver(weaponEntity, equipmentId + "_view");
+
+            return weaponEntity;
         }
     }
 }
