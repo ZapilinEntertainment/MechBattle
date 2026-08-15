@@ -18,6 +18,7 @@ namespace ZE.MechBattle
 
         private readonly Stash<MechComponent> _mechComponents;
         private readonly Stash<RotationSpeedComponent> _rotationSpeed;
+        private readonly Stash<MechWeaponsComponent> _mechWeapons;
         
 
         [Inject]
@@ -42,6 +43,7 @@ namespace ZE.MechBattle
 
             _mechComponents = world.GetStash<MechComponent>();
             _rotationSpeed = world.GetStash<RotationSpeedComponent>();
+            _mechWeapons = world.GetStash<MechWeaponsComponent>();
         }
 
         public Entity Build(float3 position, quaternion rotation)
@@ -50,14 +52,14 @@ namespace ZE.MechBattle
             _transformAspectHandler.MoveToPoint(mechEntity, position, rotation);
 
             var chassisEntity = _chassisFactory.Build(mechEntity);
-            var upperPartEntity = BuildUpperPart(chassisEntity);
+            var upperPartEntity = BuildUpperPart(chassisEntity, mechEntity);
 
             _mechComponents.Add(mechEntity, new(chassisEntity, upperPartEntity));            
 
             return mechEntity;
         }
 
-        private Entity BuildUpperPart(Entity parent)
+        private Entity BuildUpperPart(Entity parent, Entity mechEntity)
         {
             var upperPartEntity = _parentingRelationsApplier.CreateChildEntityForViewPart(
                new(quaternion.identity, float3.zero),
@@ -66,8 +68,10 @@ namespace ZE.MechBattle
 
             _rotationSpeed.Set(upperPartEntity, new(TEMP_mechConfig.UpperPartRotationSpeedRadians));
 
-            InstallEquipmentIntoSlot(upperPartEntity, TEMP_mechConfig, MechSlot.MainWeaponLeft, DevelopConstants.DEFAULT_MECH_GUN_ID);
-            InstallEquipmentIntoSlot(upperPartEntity, TEMP_mechConfig, MechSlot.MainWeaponRight, DevelopConstants.DEFAULT_MECH_GUN_ID);
+            var mainWeaponLeft = InstallEquipmentIntoSlot(upperPartEntity, TEMP_mechConfig, MechSlot.MainWeaponLeft, DevelopConstants.DEFAULT_MECH_GUN_ID);
+            var mainWeaponRight = InstallEquipmentIntoSlot(upperPartEntity, TEMP_mechConfig, MechSlot.MainWeaponRight, DevelopConstants.DEFAULT_MECH_GUN_ID);
+            _mechWeapons.Add(mechEntity, new() { MainWeaponLeft = mainWeaponLeft, MainWeaponRight = mainWeaponRight });
+
             return upperPartEntity;
         }
 
@@ -80,12 +84,16 @@ namespace ZE.MechBattle
                 return default;
             }
 
+            const float TEMP_Damage = 10f;
+
             var weaponEntity = _weaponFactory.CreateWeapon(new()
             {
                 WeaponConfig = TEMP_weaponConfig,
                 ParentEntity = parent,
                 AttachmentProtocol = slotInfo.AttachmentProtocol,
                 SyncTargetWithParent = true,
+
+                DamageParameters = new(TEMP_Damage)
             });
             _viewFactory.MakeViewReceiver(weaponEntity, equipmentId + "_view");
 

@@ -1,45 +1,62 @@
 using System;
-using UnityEngine;
-using R3;
-using ZE.MechBattle.Weapons;
+using Scellecs.Morpeh;
+using ZE.MechBattle.Ecs;
+using Unity.Mathematics;
 
 namespace ZE.MechBattle
 {
-    [Obsolete]
     public class MechController : IDisposable
     {
-        public readonly CompositeDisposable LifetimeObject = new();
-        public MechWeapon RightWeapon;
-        public MechWeapon LeftWeapon;
+        private readonly Entity _mechEntity;
+        private readonly Entity _upperPartEntity;
+        private readonly World _world;
+        private readonly TransformAspectHandler _transformAspectHandler;
 
-        public void Init()
+        private Stash<MechInputComponent> _input;
+        private Stash<RotationSpeedComponent> _rotationSpeed;
+        private Stash<WeaponTargetPositionComponent> _weaponTargetPositions;
+        private Stash<WeaponFireTag> _fireTags;
+        private Stash<MechWeaponsComponent> _mechWeapons;
+
+        public MechController(World world, TransformAspectHandler transformAspectHandler, Entity mechEntity)
         {
-            Observable.EveryUpdate()
-                .Where(_ => Input.GetMouseButtonDown(0))
-                .Subscribe(_ => Fire())
-                .AddTo(LifetimeObject);
+            _world = world;
+            _transformAspectHandler = transformAspectHandler;
+
+            _mechEntity = mechEntity;
+            var mechComponents = _world.GetStash<MechComponent>();
+
+            _upperPartEntity = mechComponents.Get(_mechEntity).UpperPartEntity;
+
+            _input = _world.GetStash<MechInputComponent>();
+            _mechWeapons = _world.GetStash<MechWeaponsComponent>();
+            _weaponTargetPositions = _world.GetStash<WeaponTargetPositionComponent>();
+            _fireTags = _world.GetStash<WeaponFireTag>();
+            _rotationSpeed = _world.GetStash<RotationSpeedComponent>();
         }
 
-        public void SetPlayerAffinity(Player player)
-        {
-            RightWeapon.SetPlayerAffinity(player.EcsEntity);
-            RightWeapon.SetDesignator(player.TargetDesignator);
+        public void Dispose() { }
 
-            LeftWeapon.SetPlayerAffinity(player.EcsEntity);
-            LeftWeapon.SetDesignator(player.TargetDesignator);
+        public void SetControls(float speed, float steer) => _input.Set(_mechEntity, new() { SpeedValue = speed, SteerValue = steer });
+
+        public void SetUpperPartRotation(float rotationValue, float deltaTime)
+        {
+            var rotationSpeed = _rotationSpeed.Get(_upperPartEntity).RadianValue;
+            var rotationStep = quaternion.AxisAngle(math.up(), deltaTime * rotationValue * rotationSpeed);
+            _transformAspectHandler.RotateLocal(_upperPartEntity, rotationStep);
         }
 
-        public void Fire()
+        public void SetMainWeaponsTarget(float3 pos) =>
+            _weaponTargetPositions.Set(_upperPartEntity, new() { Value = pos });
+
+        public void FireMainWeapon()
         {
-            RightWeapon.Fire();
-            LeftWeapon.Fire();
+            var weapons = _mechWeapons.Get(_mechEntity);
+            if (!_world.IsDisposed(weapons.MainWeaponLeft))
+                _fireTags.Set(weapons.MainWeaponLeft);
+
+            if (!_world.IsDisposed(weapons.MainWeaponRight))
+                _fireTags.Set(weapons.MainWeaponRight);
         }
-
-        public void Dispose()
-        {
-            LifetimeObject.Dispose();
-        }       
-
-        public MechWeapon[] GetWeapons() => new MechWeapon[2] { LeftWeapon, RightWeapon };
     }
 }

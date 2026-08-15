@@ -26,23 +26,6 @@ namespace ZE.MechBattle.PlayerData
             _playersList = playersList as PlayersList;
         }
 
-        //public Player CreateLocalPlayer()
-        //{
-        //    var player = new LocalPlayer(_world);
-
-        //    var mech = _mechBuilder.Build();
-        //    mech.AddTo(player.LifetimeObject);            
-
-        //    var designator = _resolver.Resolve<AimWorker>();
-        //    designator.AddTo(player.LifetimeObject);          
-        //    designator.Start();
-
-        //    player.SetDesignator(designator);
-        //    player.SetMech(mech);            
-
-        //    return player;
-        //}    
-
         public Entity CreateLocalPlayer(RigidTransform spawnPoint)
         {
             var playerEntity = _world.CreateEntity();

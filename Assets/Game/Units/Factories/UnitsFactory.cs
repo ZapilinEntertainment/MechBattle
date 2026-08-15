@@ -24,7 +24,7 @@ namespace ZE.MechBattle
         private readonly Stash<AimPrecisionComponent> _aimPrecisionComponents;
         private readonly Stash<UnitWeaponComponent> _weaponComponents;
         private readonly Stash<HealthComponent> _healthComponents;
-        private readonly Stash<DamageComponent> _damageComponents;
+       
 
         [Inject]
         public UnitsFactory(
@@ -53,7 +53,6 @@ namespace ZE.MechBattle
             _aimPrecisionComponents = world.GetStash<AimPrecisionComponent>();
             _weaponComponents = world.GetStash<UnitWeaponComponent>();
             _healthComponents = world.GetStash<HealthComponent>();
-            _damageComponents = world.GetStash<DamageComponent>();
         }
 
         // todo: rework to generic version
@@ -119,11 +118,12 @@ namespace ZE.MechBattle
 
                 UseAutoStow = true,
                 UseAutoShot = true,
-                SyncTargetWithParent = true
+                SyncTargetWithParent = true,
+
+                DamageParameters = new(config.Damage)
             });
             _aimPrecisionComponents.Add(weaponEntity, new(config.MaxPrecisionAberration) );
             _weaponComponents.Set(unitEntity, new(weaponEntity));
-            _damageComponents.Set(weaponEntity, new() { DamageParameters = new() { Value = config.Damage} });
         }
     }
 }

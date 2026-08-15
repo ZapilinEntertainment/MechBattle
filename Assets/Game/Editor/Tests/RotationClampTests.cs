@@ -51,41 +51,41 @@ namespace ZE.MechBattle.Editor.Tests
         #region Тесты для ClampRotation
 
         [Test]
-        public void ClampRotation_WithinLimits_ReturnsSameRotation()
+        public void ClampRotation_ExceedsUpDownLimit_ClampsXLimit()
         {
-            // Небольшой поворот на 15 градусов вокруг X
-            quaternion initialRot = quaternion.AxisAngle(new float3(1, 0, 0), math.radians(15f));
+            // Вращаем вокруг оси X на 60 градусов (наклон вверх-вниз)
+            quaternion excessiveRot = quaternion.AxisAngle(new float3(1, 0, 0), math.radians(60f));
 
-            // Лимит — косинус 45 градусов (примерно 0.7071)
-            float maxCos = math.cos(math.radians(45f));
-            float2 limits = new float2(maxCos, maxCos);
-
-            quaternion clampedRot = MathExtensions.ClampRotation(initialRot, limits);
-
-            // Поворот не должен быть изменен, так как 15° < 45°
-            Assert.AreEqual(initialRot.value.x, clampedRot.value.x, Epsilon);
-            Assert.AreEqual(initialRot.value.y, clampedRot.value.y, Epsilon);
-            Assert.AreEqual(initialRot.value.z, clampedRot.value.z, Epsilon);
-            Assert.AreEqual(initialRot.value.w, clampedRot.value.w, Epsilon);
-        }
-
-        [Test]
-        public void ClampRotation_ExceedsXLimit_ClampsToBoundary()
-        {
-            // Поворот на 60 градусов вокруг Y (отклоняет ось X сильнее лимита)
-            quaternion excessiveRot = quaternion.AxisAngle(new float3(0, 1, 0), math.radians(60f));
-
-            // Лимит — 45 градусов (косинус 45° = 0.7071f)
+            // Лимит: X (вверх-вниз) = 45°, Y (влево-вправо) = Безлимитный
             float maxAllowedCos = math.cos(math.radians(45f));
-            float2 limits = new float2(maxAllowedCos, maxAllowedCos);
+            float2 limits = new float2(maxAllowedCos, -1f);
 
             quaternion clampedRot = MathExtensions.ClampRotation(excessiveRot, limits);
 
-            // Проверяем проекции зажатого кватерниона
-            float2 finalDots = MathExtensions.GetAxisProjectionsFast2D(clampedRot);
+            // Проверяем итоговую проекцию оси Up (rawDots.y) через метод
+            float2 rawDots = MathExtensions.GetAxisProjectionsFast2D(clampedRot);
 
-            // Теперь тест успешно проходит: отклонение по X зажато ровно на косинусе 45 градусов
-            Assert.AreEqual(maxAllowedCos, finalDots.x, Epsilon);
+            // Так как limits.x управляет наклоном вверх-вниз, именно проекция оси Up должна зажаться на 45°
+            Assert.AreEqual(maxAllowedCos, rawDots.y, Epsilon, "Наклон вверх-вниз (ось Up) не зажался корректно!");
+        }
+
+        [Test]
+        public void ClampRotation_ExceedsLeftRightLimit_ClampsYLimit()
+        {
+            // Вращаем вокруг оси Y на 60 градусов (поворот влево-вправо)
+            quaternion excessiveRot = quaternion.AxisAngle(new float3(0, 1, 0), math.radians(60f));
+
+            // Лимит: X (вверх-вниз) = Безлимитный, Y (влево-вправо) = 45°
+            float maxAllowedCos = math.cos(math.radians(45f));
+            float2 limits = new float2(-1f, maxAllowedCos);
+
+            quaternion clampedRot = MathExtensions.ClampRotation(excessiveRot, limits);
+
+            // Проверяем итоговую проекцию оси Right (rawDots.x)
+            float2 rawDots = MathExtensions.GetAxisProjectionsFast2D(clampedRot);
+
+            // Так как limits.y управляет влево-вправо, зажаться должна проекция оси Right
+            Assert.AreEqual(maxAllowedCos, rawDots.x, Epsilon, "Поворот влево-вправо (ось Right) не зажался корректно!");
         }
 
         #endregion

@@ -18,12 +18,8 @@ namespace ZE.MechBattle.Ecs {
         private readonly CursorAimTrackingWorker _aimWorker;
 
         private bool _playerVehiclePresented = false;
-        private Entity _vehicleEntity;
-        private Entity _upperPartEntity;
-        private Stash<MechInputComponent> _input;
-        private Stash<MechComponent> _mechComponents;
-        private Stash<RotationSpeedComponent> _rotationSpeed;
-        private Stash<WeaponTargetPositionComponent> _weaponTargetPositions;
+        private MechController _mechController;
+        
 
         [Inject]
         public PlayerInputSystem(
@@ -45,11 +41,6 @@ namespace ZE.MechBattle.Ecs {
 
         public void OnAwake() 
         {
-            _input = World.GetStash<MechInputComponent>();
-            _mechComponents = World.GetStash<MechComponent>();
-            _rotationSpeed = World.GetStash<RotationSpeedComponent>();
-            _weaponTargetPositions = World.GetStash<WeaponTargetPositionComponent>();
-
             _aimWorker.Start();
         }
 
@@ -61,38 +52,38 @@ namespace ZE.MechBattle.Ecs {
             // chassis
             var steer = Input.GetAxisRaw("Horizontal");
             var speed = Input.GetAxisRaw("Vertical");
-            _input.Set(_vehicleEntity, new() { SpeedValue = speed, SteerValue = steer });
+            _mechController.SetControls(speed, steer);
 
             // upper part
             var cabinLeft = Input.GetKey(KeyCode.Q);
             var cabinRight = Input.GetKey(KeyCode.E);
             var cabinRotationValue = cabinLeft ? -1f : (cabinRight ? 1f : 0f);
             if (cabinRotationValue != 0f)
-            {
-                var rotationSpeed = _rotationSpeed.Get(_upperPartEntity).RadianValue;
-                var rotationStep = quaternion.AxisAngle(math.up(), deltaTime * cabinRotationValue * rotationSpeed);
-                _transformAspectHandler.RotateLocal(_upperPartEntity, rotationStep);
-            }
+                _mechController.SetUpperPartRotation(cabinRotationValue, deltaTime);
 
-            // weapons
+            // main weapons target
             var currentTargetData = _aimWorker.CurrentTargetData;
             if (currentTargetData.IsDefined)
             {
                 var pos = currentTargetData.Position;
-                _weaponTargetPositions.Set(_upperPartEntity, new() { Value = pos});
+                _mechController.SetMainWeaponsTarget(pos);
             }
-               
+
+            // main weapons shot
+            if (Input.GetMouseButtonDown(0))
+                _mechController.FireMainWeapon();
         }
 
         public void Dispose()
         {
             _compositeDisposable.Dispose();
+            _mechController?.Dispose();
         }
 
         private void OnPlayerViewLoaded(LocalPlayerViewInstancedFlag flag)
         {
-            _vehicleEntity = flag.VehicleEntity;
-            _upperPartEntity = _mechComponents.Get(_vehicleEntity).UpperPartEntity;
+            _mechController?.Dispose();
+            _mechController = new MechController(World, _transformAspectHandler, flag.VehicleEntity);
         }
     }
 }

@@ -1,9 +1,16 @@
 namespace ZE.MechBattle
 {
-    public struct DamageApplyParameters
+    public readonly struct DamageApplyParameters
     {
+        public readonly bool IsValid;
         // damager
         // damage group
-        public float Value;    
+        public readonly float Value;    
+
+        public DamageApplyParameters(float damage)
+        {
+            Value = damage;
+            IsValid = true;
+        }
     }
 }

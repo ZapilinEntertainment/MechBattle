@@ -27,6 +27,8 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<CalculateFireLineByRaycastTag> _raycastFirelinesTag;
         private readonly Stash<LocalRotationLimitComponent> _localRotationLimits;
 
+        private readonly Stash<DamageComponent> _damageComponents;
+
         [Inject]
         public WeaponFactory(World world, ParentingRelationsApplier parentingRelationsApplier, StringDataDictionary stringDataDictionary)
         {
@@ -54,6 +56,8 @@ namespace ZE.MechBattle.Ecs
 
             _rotationSpeedComponents = world.GetStash<RotationSpeedComponent>();
             _localRotationLimits = world.GetStash<LocalRotationLimitComponent>();
+
+            _damageComponents = world.GetStash<DamageComponent>();
         }
 
         public struct WeaponCreationProtocol
@@ -65,6 +69,8 @@ namespace ZE.MechBattle.Ecs
             public bool UseAutoShot;
             public bool UseAutoStow;
             public bool SyncTargetWithParent;
+
+            public DamageApplyParameters DamageParameters;
         }
 
         public Entity CreateWeapon(WeaponCreationProtocol protocol)
@@ -140,7 +146,9 @@ namespace ZE.MechBattle.Ecs
 
             if (protocol.SyncTargetWithParent)
                 _syncTargetWithParent.Add(weaponEntity);
-            
+
+            if (protocol.DamageParameters.IsValid)
+                _damageComponents.Add(weaponEntity, new() { DamageParameters = protocol.DamageParameters });
 
             return weaponEntity;
         }

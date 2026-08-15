@@ -16,7 +16,6 @@ namespace ZE.MechBattle
             base.Configure(builder);
             gameObject.name = nameof(SceneScope);
 
-            builder.Register<SessionData>(Lifetime.Scoped);
             builder.Register<TransformAccessManager>(Lifetime.Scoped);
             builder.Register<SceneFlagsManager>(Lifetime.Scoped);
 
