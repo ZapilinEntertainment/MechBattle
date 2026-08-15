@@ -10,5 +10,6 @@ namespace ZE.MechBattle
         public float RotationSpeedDegrees;
         public float3 LocalPosition;  
         public ViewPartKey ViewPartKey;
+        public ForwardRotationLimits FwdRotationLimits;
     }
 }

@@ -12,11 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c7d097df7e424647ab25ff1f269d4a1, type: 3}
   m_Name: tank_gun
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.WeaponConfig
-  <SyncTargetWithParent>k__BackingField: 1
   <MinRange>k__BackingField: 0
   <RecommendedRangePc>k__BackingField: 0.8
   <MaxRange>k__BackingField: 85
-  <Damage>k__BackingField: 1
   <Cooldown>k__BackingField: 3
   <ShotPoint>k__BackingField:
     x: 0
@@ -34,6 +32,12 @@ MonoBehaviour:
     ViewPartKey:
       Type: 1
       Index: 0
+    FwdRotationLimits:
+      LimitAxleRotation:
+        x: 0
+        y: 0
+      XAngleDegreesLimit: 0
+      YAngleDegreesLimit: 0
   _barrelAttachmentProtocol:
     IsValid: 1
     RotationSpeedDegrees: 45
@@ -44,3 +48,9 @@ MonoBehaviour:
     ViewPartKey:
       Type: 2
       Index: 0
+    FwdRotationLimits:
+      LimitAxleRotation:
+        x: 1
+        y: 0
+      XAngleDegreesLimit: 45
+      YAngleDegreesLimit: 0

@@ -44,6 +44,7 @@ namespace ZE.MechBattle.Ecs {
 
             _clearFilter = World.Filter
                 .With<WeaponTargetPositionComponent>()
+                .With<WeaponAutoShotTag>()
                 .Without<AttackTargetComponent>()
                 .Build();
 

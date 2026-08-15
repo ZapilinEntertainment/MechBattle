@@ -20,6 +20,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 394c3cb95e8324f48adddaa3a5461d44
+    m_Address: default_mech_gun_view
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4831dea7172b6c14c88ee1a568184ec8
     m_Address: default_mech_gun_config
     m_ReadOnly: 0

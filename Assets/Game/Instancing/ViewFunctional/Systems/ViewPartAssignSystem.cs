@@ -1,5 +1,6 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
+using UnityEngine;
 using VContainer;
 
 namespace ZE.MechBattle.Ecs {
@@ -57,7 +58,7 @@ namespace ZE.MechBattle.Ecs {
                 }
                 else
                 {
-                    var key = Requests.Get(entity).Key;
+                    var key = Requests.Get(entity).Key;                    
                     var view = viewContainer.View;
                     if (view is IComplexMonoView complexView && complexView.TryGetPartByKey(key, out var viewPart))
                         OnPartFound(entity, viewPart);

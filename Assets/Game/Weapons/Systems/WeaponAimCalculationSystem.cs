@@ -40,11 +40,11 @@ namespace ZE.MechBattle.Ecs {
 
             _idleTowerWeaponsFilter = World.Filter
                 .With<WeaponTowerStowTag>()
-                .Without<AttackTargetComponent>()
+                .Without<WeaponTargetPositionComponent>()
                 .Build();
             _idleBarrelWeaponsFilter = World.Filter
                 .With<WeaponBarrelStowTag>()
-                .Without<AttackTargetComponent>()
+                .Without<WeaponTargetPositionComponent>()
                 .Build();
 
             _targetPositions = World.GetStash<WeaponTargetPositionComponent>();
@@ -94,7 +94,7 @@ namespace ZE.MechBattle.Ecs {
                 }
 
                 var targetRotation = quaternion.LookRotation(normalizedTargetDir, math.up());
-                _aims.Set(barrelEntity, new() { Value = targetRotation});               
+                _aims.Set(barrelEntity, new() { Value = targetRotation});
             }
 
 

@@ -21,9 +21,8 @@ namespace ZE.MechBattle
             builder.Register<IPlayersList, PlayersList>(Lifetime.Scoped);
             builder.Register<PlayerHandler>(Lifetime.Scoped);
             builder.Register<PlayerFactory>(Lifetime.Scoped);
-            
-            RegisterWorker<CursorAimTrackingWorker>(builder);
-            RegisterWorker<PlayerInterfaceWorker>(builder);
+
+            builder.Register<CursorAimTrackingWorker>(Lifetime.Scoped);
         }
 
         void ISceneFeatureInitializer.OnSceneContainerBuilt(IObjectResolver resolver)
@@ -42,7 +41,5 @@ namespace ZE.MechBattle
         protected override PlayerSystemsInstallQueue CreateQueue() => new();
 
 
-        // IMPORTANT: do not use AsImplementedInterfaces() for ITickable - it will double every instance on resolve
-        void RegisterWorker<T>(IContainerBuilder builder) where T : Worker => builder.Register<T>(Lifetime.Transient);
     }
 }

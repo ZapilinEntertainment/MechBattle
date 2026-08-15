@@ -22,7 +22,7 @@ namespace ZE.MechBattle
         private readonly Stash<MovementCollisionAvoidanceComponent> _movementCollisionAvoidanceComponents;
         private readonly Stash<TargetSearchRadiusComponent> _targetSearchRadiusComponents;
         private readonly Stash<AimPrecisionComponent> _aimPrecisionComponents;
-        private readonly Stash<WeaponComponent> _weaponComponents;
+        private readonly Stash<UnitWeaponComponent> _weaponComponents;
         private readonly Stash<HealthComponent> _healthComponents;
         private readonly Stash<DamageComponent> _damageComponents;
 
@@ -51,7 +51,7 @@ namespace ZE.MechBattle
             _movementCollisionAvoidanceComponents = world.GetStash<MovementCollisionAvoidanceComponent>();
             _targetSearchRadiusComponents = world.GetStash<TargetSearchRadiusComponent>();
             _aimPrecisionComponents = world.GetStash<AimPrecisionComponent>();
-            _weaponComponents = world.GetStash<WeaponComponent>();
+            _weaponComponents = world.GetStash<UnitWeaponComponent>();
             _healthComponents = world.GetStash<HealthComponent>();
             _damageComponents = world.GetStash<DamageComponent>();
         }

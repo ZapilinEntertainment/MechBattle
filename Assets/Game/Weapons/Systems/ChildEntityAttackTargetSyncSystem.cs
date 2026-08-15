@@ -11,6 +11,7 @@ namespace ZE.MechBattle.Ecs {
         private Filter _filter;
         private Stash<AttackTargetComponent> _attackTargets;
         private Stash<ParentEntityComponent> _parentEntities;
+        private Stash<WeaponTargetPositionComponent> _weaponTargetPositions;
 
         public void OnAwake() 
         {
@@ -21,6 +22,7 @@ namespace ZE.MechBattle.Ecs {
 
             _attackTargets = World.GetStash<AttackTargetComponent>();
             _parentEntities = World.GetStash<ParentEntityComponent>();
+            _weaponTargetPositions = World.GetStash<WeaponTargetPositionComponent>();
         }
 
         public void OnUpdate(float deltaTime) 
@@ -28,24 +30,30 @@ namespace ZE.MechBattle.Ecs {
             foreach (var childEntity in _filter)
             {
                 var parentEntity = _parentEntities.Get(childEntity).Value;
-                var parentTargetComponent = _attackTargets.Get(parentEntity, out var parentHasTarget);
-                ref var childTargetComponent = ref _attackTargets.Get(childEntity, out var childHasTarget);
-
-                if (parentHasTarget)
-                {
-                    if (!childHasTarget)
-                        SyncComponentsCommand.Execute<AttackTargetComponent>(childEntity, parentEntity, _attackTargets);
-                    else
-                        childTargetComponent.Entity = parentTargetComponent.Entity;
-                }
-                else
-                {
-                    _attackTargets.Remove(childEntity);
-                }
+                Sync(childEntity, parentEntity, _attackTargets);
+                Sync(childEntity, parentEntity, _weaponTargetPositions);
             }
 
         }
 
         public void Dispose() { }
+
+        private void Sync<T>(Entity childEntity, Entity parentEntity, Stash<T> stash ) where T : struct, IComponent
+        {
+            
+            var parentComponent = stash.Get(parentEntity, out var parentHasComponent);
+
+            if (parentHasComponent)
+            {
+                if (!stash.Has(childEntity))
+                    SyncComponentsCommand.Execute<T>(childEntity, parentEntity, stash);
+                else
+                    stash.Set(childEntity, parentComponent);
+            }
+            else
+            {
+                _attackTargets.Remove(childEntity);
+            }
+        }
     }
 }

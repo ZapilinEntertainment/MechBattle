@@ -14,8 +14,8 @@ namespace ZE.MechBattle.Ecs {
     {
         public World World { get; set;}
         private readonly CompositeDisposable _compositeDisposable;
-        private readonly EntityViewHandler _viewHandler;
         private readonly TransformAspectHandler _transformAspectHandler;
+        private readonly CursorAimTrackingWorker _aimWorker;
 
         private bool _playerVehiclePresented = false;
         private Entity _vehicleEntity;
@@ -23,9 +23,13 @@ namespace ZE.MechBattle.Ecs {
         private Stash<MechInputComponent> _input;
         private Stash<MechComponent> _mechComponents;
         private Stash<RotationSpeedComponent> _rotationSpeed;
+        private Stash<WeaponTargetPositionComponent> _weaponTargetPositions;
 
         [Inject]
-        public PlayerInputSystem(SceneFlagsManager flags, EntityViewHandler viewHandler, TransformAspectHandler transformAspectHandler)
+        public PlayerInputSystem(
+            SceneFlagsManager flags, 
+            TransformAspectHandler transformAspectHandler,
+            CursorAimTrackingWorker aimWorker)
         {
             _compositeDisposable = new();
             flags
@@ -35,8 +39,8 @@ namespace ZE.MechBattle.Ecs {
                 .Subscribe<LocalPlayerViewInstancedFlag>(flagActive => _playerVehiclePresented = flagActive)
                 .AddTo(_compositeDisposable);
 
-            _viewHandler = viewHandler;
             _transformAspectHandler = transformAspectHandler;
+            _aimWorker = aimWorker;
         }
 
         public void OnAwake() 
@@ -44,6 +48,9 @@ namespace ZE.MechBattle.Ecs {
             _input = World.GetStash<MechInputComponent>();
             _mechComponents = World.GetStash<MechComponent>();
             _rotationSpeed = World.GetStash<RotationSpeedComponent>();
+            _weaponTargetPositions = World.GetStash<WeaponTargetPositionComponent>();
+
+            _aimWorker.Start();
         }
 
         public void OnUpdate(float deltaTime)
@@ -51,10 +58,12 @@ namespace ZE.MechBattle.Ecs {
             if (!_playerVehiclePresented)
                 return;
 
+            // chassis
             var steer = Input.GetAxisRaw("Horizontal");
             var speed = Input.GetAxisRaw("Vertical");
             _input.Set(_vehicleEntity, new() { SpeedValue = speed, SteerValue = steer });
 
+            // upper part
             var cabinLeft = Input.GetKey(KeyCode.Q);
             var cabinRight = Input.GetKey(KeyCode.E);
             var cabinRotationValue = cabinLeft ? -1f : (cabinRight ? 1f : 0f);
@@ -63,9 +72,16 @@ namespace ZE.MechBattle.Ecs {
                 var rotationSpeed = _rotationSpeed.Get(_upperPartEntity).RadianValue;
                 var rotationStep = quaternion.AxisAngle(math.up(), deltaTime * cabinRotationValue * rotationSpeed);
                 _transformAspectHandler.RotateLocal(_upperPartEntity, rotationStep);
-            }           
+            }
 
-
+            // weapons
+            var currentTargetData = _aimWorker.CurrentTargetData;
+            if (currentTargetData.IsDefined)
+            {
+                var pos = currentTargetData.Position;
+                _weaponTargetPositions.Set(_upperPartEntity, new() { Value = pos});
+            }
+               
         }
 
         public void Dispose()

@@ -7,8 +7,14 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public struct WeaponTowerViewComponent : IComponent 
+    public readonly struct UnitWeaponComponent : IComponent 
     {
+        public readonly Entity Entity;
+
+        public UnitWeaponComponent(Entity entity)
+        {
+            Entity = entity;
+        }
     
     }
 }

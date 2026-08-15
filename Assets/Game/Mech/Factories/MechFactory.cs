@@ -76,7 +76,7 @@ namespace ZE.MechBattle
             // todo: different types of equipment, not only weapons
             if (!mechConfig.TryGetSlotInfo(slot, out var slotInfo))
             {
-                //UnityEngine.Debug.LogError($"no {slot} slot available");
+                UnityEngine.Debug.LogError($"no {slot} slot available");
                 return default;
             }
 
@@ -85,6 +85,7 @@ namespace ZE.MechBattle
                 WeaponConfig = TEMP_weaponConfig,
                 ParentEntity = parent,
                 AttachmentProtocol = slotInfo.AttachmentProtocol,
+                SyncTargetWithParent = true,
             });
             _viewFactory.MakeViewReceiver(weaponEntity, equipmentId + "_view");
 

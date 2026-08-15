@@ -10,7 +10,6 @@ namespace ZE.MechBattle.Ecs
         private readonly ParentingRelationsApplier _parentingRelationsApplier;
         private readonly StringDataDictionary _stringDictionary;
         private readonly Stash<WeaponRangeComponent> _ranges;
-        private readonly Stash<DamageComponent> _damages;
         private readonly Stash<WeaponUpdateComponent> _weaponUpdateComponents;
         private readonly Stash<WeaponProjectileComponent> _weaponProjectileComponents;
         private readonly Stash<WeaponMuzzleEffectComponent> _muzzleEffects;
@@ -26,6 +25,7 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<WeaponBarrelStowTag> _barrelStowTag;
 
         private readonly Stash<CalculateFireLineByRaycastTag> _raycastFirelinesTag;
+        private readonly Stash<LocalRotationLimitComponent> _localRotationLimits;
 
         [Inject]
         public WeaponFactory(World world, ParentingRelationsApplier parentingRelationsApplier, StringDataDictionary stringDataDictionary)
@@ -53,6 +53,7 @@ namespace ZE.MechBattle.Ecs
             _raycastFirelinesTag = world.GetStash<CalculateFireLineByRaycastTag>();
 
             _rotationSpeedComponents = world.GetStash<RotationSpeedComponent>();
+            _localRotationLimits = world.GetStash<LocalRotationLimitComponent>();
         }
 
         public struct WeaponCreationProtocol
@@ -109,7 +110,9 @@ namespace ZE.MechBattle.Ecs
 
                 _weaponTowerComponents.Add(weaponEntity, new(towerEntity));
                 if (protocol.UseAutoStow) 
-                    _towerStowTag.Add(towerEntity); 
+                    _towerStowTag.Add(towerEntity);
+
+                _localRotationLimits.Set(towerEntity, new(towerAttachmentProtocol.FwdRotationLimits));
 
                 //UnityEngine.Debug.Log($"built tower with id {towerEntity.Id}");
             }
@@ -128,7 +131,9 @@ namespace ZE.MechBattle.Ecs
                 if (protocol.UseAutoStow)
                     _barrelStowTag.Add(barrelEntity);
 
-                //UnityEngine.Debug.Log($"built barrel with id {barrelEntity.Id}");
+                _localRotationLimits.Set(barrelEntity, new(barrelAttachmentProtocol.FwdRotationLimits));
+
+                // UnityEngine.Debug.Log($"built barrel with id {barrelEntity.Id}");
             }
 
             _weaponShotPoints.Add(weaponEntity, new(weaponConfig.ShotPoint));

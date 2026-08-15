@@ -11,7 +11,7 @@ namespace ZE.MechBattle.Ecs {
         private Filter _filter;
         private Filter _clearFilter;
         private Stash<AttackOpportunintyComponent> _attackOpportunities;
-        private Stash<WeaponComponent> _weaponComponents;
+        private Stash<UnitWeaponComponent> _weaponComponents;
 
         private Stash<AttackRangeReachedTag> _attackRangeReachedTag;
         private Stash<FireLineClearTag> _fireLineClearTag;
@@ -19,18 +19,18 @@ namespace ZE.MechBattle.Ecs {
         public void OnAwake() 
         {
             _filter = World.Filter
-                .With<WeaponComponent>()
+                .With<UnitWeaponComponent>()
                 .With<AttackTargetComponent>()
                 .Without<EntityDisposeTag>()
                 .Build();
 
             _clearFilter = World.Filter
-                .With<WeaponComponent>()
+                .With<UnitWeaponComponent>()
                 .Without<AttackTargetComponent>()
                 .Build();
 
             _attackOpportunities = World.GetStash<AttackOpportunintyComponent>();
-            _weaponComponents = World.GetStash<WeaponComponent>();
+            _weaponComponents = World.GetStash<UnitWeaponComponent>();
 
             _attackRangeReachedTag = World.GetStash<AttackRangeReachedTag>();
             _fireLineClearTag = World.GetStash<FireLineClearTag>();

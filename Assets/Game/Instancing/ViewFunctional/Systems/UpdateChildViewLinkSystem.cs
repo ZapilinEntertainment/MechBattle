@@ -38,7 +38,8 @@ namespace ZE.MechBattle.Ecs {
                 if (_viewLoadRequests.Has(parentEntity) || !_viewContainerComponents.Has(parentEntity))
                     continue;
 
-                SyncComponentsCommand.Execute<ViewContainerComponent>(awaitingEntity, parentEntity, _viewContainerComponents);
+                if (!_viewContainerComponents.Has(awaitingEntity))
+                    SyncComponentsCommand.Execute<ViewContainerComponent>(awaitingEntity, parentEntity, _viewContainerComponents);
                 _awaitTagsStash.Remove(awaitingEntity);
             }
         }

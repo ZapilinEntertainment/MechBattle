@@ -14,11 +14,14 @@ namespace ZE.MechBattle
         }
 
         public ReadOnlyReactiveProperty<TargetData> TargetDataProperty => _targetDataProperty;
-        private ReactiveProperty<TargetData> _targetDataProperty;
+        public TargetData CurrentTargetData => _targetDataProperty.Value;
+        private ReactiveProperty<TargetData> _targetDataProperty = new();
 
         public override void Start()
         {
-            _targetDataProperty = new ReactiveProperty<TargetData>().AddTo(CompositeDisposable);
+            if (WorkerStatus == Status.Working)
+                return;
+
             base.Start();
             Observable.EveryUpdate().Subscribe(_ => Tick()).AddTo(CompositeDisposable);
         }

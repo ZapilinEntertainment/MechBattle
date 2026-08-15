@@ -55,7 +55,7 @@ namespace ZE.MechBattle.Ecs {
         public void OnAwake() 
         {
             _filter = World.Filter
-                .With<AttackTargetComponent>()
+                .With<AttackTargetComponent>()                
                 .With<CalculateFireLineByRaycastTag>()
                 .With<AttackRangeReachedTag>()
                 .Build();

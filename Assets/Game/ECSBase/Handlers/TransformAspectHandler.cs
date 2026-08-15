@@ -36,6 +36,8 @@ namespace ZE.MechBattle.Ecs
             _parentEntities = world.GetStash<ParentEntityComponent>();
         }
 
+        #region position
+
         public bool TryGetPosition(Entity entity, out float3 position)
         {
             var positionComponent = _positions.Get(entity, out var positionExists);
@@ -66,13 +68,17 @@ namespace ZE.MechBattle.Ecs
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void i_SetLocalPosition(Entity entity, float3 position) => _localPositions.Set(entity, new() { Value = position });
 
+        #endregion
+
+        #region rotation
+
         public quaternion GetRotation(Entity entity) => _rotations.Get(entity).Value;
+        public quaternion GetLocalRotation(Entity entity) => _localRotation.Get(entity).Value;
         public void SetRotation(Entity entity, quaternion rotation)
         {
             i_SetRotation(entity, rotation);
             AddUpdateTag(entity);
         }
-
         
 
         public void Rotate(Entity entity, quaternion rotation)
@@ -108,6 +114,8 @@ namespace ZE.MechBattle.Ecs
             var localPositionComponent = _localPositions.Get(entity, out var localPosExists);
             SyncPositionWithParent(entity, parentComponent.Value, localPosExists ? localPositionComponent.Value : float3.zero, localRotation);
         }
+
+        #endregion
 
         public void SetLocalTransform(Entity entity, RigidTransform transform)
         {
@@ -215,6 +223,15 @@ namespace ZE.MechBattle.Ecs
             localRotationComponent.Value = math.mul(localRotationComponent.Value, rotationStep);
             AddUpdateTag(entity);
         }
+
+        public void RotateLocalWithLimits(Entity entity, quaternion targetRotation, float step, ForwardRotationLimits limits)
+        {
+            ref var localRotationComponent = ref _localRotation.Get(entity);
+            var resultingRotation = MathExtensions.RotateTowards(localRotationComponent.Value, targetRotation, step);
+            localRotationComponent.Value = MathExtensions.ClampRotation(resultingRotation, limits.GetDotLimits());
+            AddUpdateTag(entity);
+        }
+
 
         public RigidTransform GetPoint(Entity entity, bool randomRotationIfNone = true)
         {
