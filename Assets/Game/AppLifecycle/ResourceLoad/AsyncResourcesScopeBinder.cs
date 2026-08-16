@@ -28,7 +28,7 @@ public class AsyncResourcesScopeBinder : IResourceBinder
             if (binding == null)
             {
                 emptyCellsCount++;
-                UnityEngine.Debug.LogError("null binding");
+                //UnityEngine.Debug.LogError("null binding");
             }
         }
         _isEmpty = emptyCellsCount == bindingsCount;

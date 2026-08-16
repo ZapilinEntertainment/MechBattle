@@ -12,7 +12,6 @@ namespace ZE.MechBattle
         void IAppFeatureScopeInstaller.AppScopeInstall(IContainerBuilder builder)
         {
             builder.Register<LocalPlayerInitializer>(Lifetime.Transient);
-            builder.Register<PlayerUiInitializer>(Lifetime.Transient);
         }
 
         void ISceneFeatureScopeInstaller.SceneScopeInstall(IContainerBuilder builder)
@@ -22,7 +21,7 @@ namespace ZE.MechBattle
             builder.Register<PlayerHandler>(Lifetime.Scoped);
             builder.Register<PlayerFactory>(Lifetime.Scoped);
 
-            builder.Register<CursorAimTrackingWorker>(Lifetime.Scoped);
+            builder.Register<CursorAimTrackingWorker>(Lifetime.Scoped);            
         }
 
         void ISceneFeatureInitializer.OnSceneContainerBuilt(IObjectResolver resolver)

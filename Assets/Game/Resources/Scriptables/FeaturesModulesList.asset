@@ -24,6 +24,7 @@ MonoBehaviour:
   - rid: 6586387193149522018
   - rid: 6586387211017519175
   - rid: 6586387193149522013
+  - rid: 6586387278984904775
   references:
     version: 2
     RefIds:
@@ -59,4 +60,7 @@ MonoBehaviour:
       data: 
     - rid: 6586387211017519175
       type: {class: CameraFeatureModule, ns: ZE.MechBattle, asm: MechBattle}
+      data: 
+    - rid: 6586387278984904775
+      type: {class: UIFeatureModule, ns: ZE.MechBattle, asm: MechBattle}
       data: 

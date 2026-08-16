@@ -70,7 +70,9 @@ namespace ZE.MechBattle
 
             var mainWeaponLeft = InstallEquipmentIntoSlot(upperPartEntity, TEMP_mechConfig, MechSlot.MainWeaponLeft, DevelopConstants.DEFAULT_MECH_GUN_ID);
             var mainWeaponRight = InstallEquipmentIntoSlot(upperPartEntity, TEMP_mechConfig, MechSlot.MainWeaponRight, DevelopConstants.DEFAULT_MECH_GUN_ID);
-            _mechWeapons.Add(mechEntity, new() { MainWeaponLeft = mainWeaponLeft, MainWeaponRight = mainWeaponRight });
+            _mechWeapons.Add(mechEntity, new() { 
+                MainWeaponLeft = mainWeaponLeft, 
+                MainWeaponRight = mainWeaponRight });
 
             return upperPartEntity;
         }

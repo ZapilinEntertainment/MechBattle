@@ -1,21 +1,22 @@
 using R3;
 using UnityEngine;
+using VContainer;
 using ZE.Workers;
 
 namespace ZE.MechBattle
 {
     public class CursorAimTrackingWorker : Worker, ITargetDesignator
     {
-        private Camera _camera;
-
-        public CursorAimTrackingWorker(CameraController cameraController) 
-        {
-            _camera = cameraController.Camera;
-        }
-
         public ReadOnlyReactiveProperty<TargetData> TargetDataProperty => _targetDataProperty;
         public TargetData CurrentTargetData => _targetDataProperty.Value;
         private ReactiveProperty<TargetData> _targetDataProperty = new();
+        private readonly AimCaster _aimCaster;
+
+        [Inject]
+        public CursorAimTrackingWorker(AimCaster aimCaster)
+        {
+            _aimCaster = aimCaster;
+        }
 
         public override void Start()
         {
@@ -31,15 +32,8 @@ namespace ZE.MechBattle
             if (WorkerStatus != Status.Working)
                 return;
             var cursorPosition = Input.mousePosition;
-            var ray = _camera.ScreenPointToRay(cursorPosition);
-            if (Physics.Raycast(ray, maxDistance: GameConstants.AIM_RAY_LENGTH, layerMask: LayerConstants.AimCastMask, hitInfo: out var hitInfo))
-            {
-                _targetDataProperty.Value = new(hitInfo.point);
-            }
-            else
-            {
-                _targetDataProperty.Value = new(ray.GetPoint(GameConstants.AIM_RAY_LENGTH));
-            }
+            _aimCaster.TryCastScreenPointRay(cursorPosition, out var hitPos);
+            _targetDataProperty.Value = new(hitPos);
         }
 
         public override void Dispose()

@@ -13,6 +13,8 @@ namespace ZE.MechBattle
             builder.RegisterInstance(cameraController);
 
             builder.Register<PlayerCameraInitializer>(Lifetime.Transient);
+
+            builder.Register<AimCaster>(Lifetime.Scoped);
         }
 
         public void OnSceneContainerBuilt(IObjectResolver resolver)

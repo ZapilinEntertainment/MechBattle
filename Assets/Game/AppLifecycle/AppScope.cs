@@ -3,7 +3,6 @@ using UnityEngine;
 using ZE.UiService;
 using VContainer;
 using VContainer.Unity;
-using ZE.MechBattle.UI;
 using ZE.MechBattle.Vfx;
 using ZE.MechBattle.Views;
 using ZE.Flags;
@@ -21,7 +20,6 @@ namespace ZE.MechBattle.Ecs
 
     public class AppScope : LifetimeScope
     {
-        [SerializeField] private MechGameUIRoot _uiRootPrefab;
         [SerializeField] private ViewContainer _viewContainerPrefab;
         [SerializeField] private FeaturesModulesList _modules;
 
@@ -34,13 +32,11 @@ namespace ZE.MechBattle.Ecs
             }
             builder.RegisterInstance<FeaturesModulesList>(_modules);
 
-            // pre-setted values (serialized)            
-            builder.RegisterComponentInNewPrefab(_uiRootPrefab, Lifetime.Singleton).As<IUILinesParent>().As<UiRoot>();
+            // pre-setted values (serialized)           
             PrepareViews(builder);
 
             // global managers with no resource dependencies
-            builder.Register<AssetsManager>(Lifetime.Singleton);
-            builder.Register<WindowsManager>(Lifetime.Singleton);
+            builder.Register<AssetsManager>(Lifetime.Singleton);            
             builder.Register<StringDataDictionary>(Lifetime.Singleton);
             builder.Register<AppFlagsManager>(Lifetime.Singleton);
             builder.Register<VfxManager>(Lifetime.Singleton);

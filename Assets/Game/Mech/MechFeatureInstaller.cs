@@ -32,10 +32,12 @@ namespace ZE.MechBattle
             const string configKey = DevelopConstants.DEFAULT_MECH_ID + "_config";
             var mechConfigData = await AssetsManager.LoadAssetDirectly<MechConfig>(configKey);
 
-            var compositeBinder = new CompositeResourceBinder();
-            compositeBinder.Add(new KeyedResourceBinding<MechChassisData, string>(mechChassisData, DevelopConstants.DEFAULT_MECH_ID));
-            compositeBinder.Add(new KeyedResourceBinding<MechConfig, string>(mechConfigData, DevelopConstants.DEFAULT_MECH_ID));
-            return compositeBinder;
+            var bindersList = new IResourceBinder[2]
+            {
+                new KeyedResourceBinding<MechChassisData, string>(mechChassisData, DevelopConstants.DEFAULT_MECH_ID),
+                new KeyedResourceBinding<MechConfig, string>(mechConfigData, DevelopConstants.DEFAULT_MECH_ID)
+            };
+            return new AsyncResourcesScopeBinder(bindersList);
         }
     }
 }

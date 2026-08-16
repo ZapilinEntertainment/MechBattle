@@ -3,8 +3,7 @@ using ZE.UiService;
 
 namespace ZE.MechBattle.UI
 {
-    public class MechGameUIRoot : UiRoot, IUILinesParent
+    public class MechGameUIRoot : UiRoot
     {
-        [field:SerializeField] public Transform LinesContainer { get;private set; }    
     }
 }

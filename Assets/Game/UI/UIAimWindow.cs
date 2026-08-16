@@ -1,11 +1,10 @@
 using UnityEngine;
 using ZE.UiService;
 
-namespace ZE.MechBattle.UI
+namespace ZE.MechBattle
 {
     public class UIAimWindow : UiWindow
     {
-        [field: SerializeField] public UIWeaponAimTracker AimTrackerPrefab { get; private set; }
         [field: SerializeField] public Transform MarkersHost;
     
     }

@@ -47,5 +47,11 @@ namespace ZE.MechBattle
 
             return handle.Result;
         }
+
+        public static async Awaitable<T> LoadComponentAssetDirectly<T>(string assetKey) where T : MonoBehaviour
+        {
+            var go = await LoadAssetDirectly<GameObject>(assetKey);
+            return go.GetComponent<T>();
+        }
     }
 }
