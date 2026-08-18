@@ -12,21 +12,25 @@ namespace ZE.MechBattle
         private readonly AimCaster _aimCaster;
         private readonly ICursorAimTracker _cursorTracker;
         private readonly WeaponTargetMarkerFactory _markerFactory;
+        private readonly World _world;
 
         private Entity _weaponEntity;
         private UIWeaponAimMarker _aimMarker;
+        private TargetData _targetData;
 
         [Inject]
         public WeaponAimMarkerWorker(
             TransformAspectHandler transformAspectHandler, 
             AimCaster aimCaster,
             ICursorAimTracker cursorTracker,
-            WeaponTargetMarkerFactory weaponTargetMarkerFactory)
+            WeaponTargetMarkerFactory weaponTargetMarkerFactory,
+            World world)
         {
             _transformAspectHandler = transformAspectHandler;
             _aimCaster = aimCaster;
             _cursorTracker = cursorTracker;
             _markerFactory = weaponTargetMarkerFactory;
+            _world = world;
         }
 
         public void Start(Entity weaponEntity)
@@ -37,8 +41,15 @@ namespace ZE.MechBattle
 
             _cursorTracker
                 .TargetDataProperty
-                .Subscribe(OnTargetDataChanged)
-                .AddTo(CompositeDisposable);            
+                .Subscribe(targetData => _targetData = targetData)
+                .AddTo(CompositeDisposable);
+
+            Observable.EveryUpdate()
+                .Where(_ => !_world.IsDisposed(_weaponEntity))
+                .Subscribe(Update)
+                .AddTo(CompositeDisposable);
+
+            _aimMarker.SetVisibility(true);
         }
 
         public override void Dispose()
@@ -47,14 +58,10 @@ namespace ZE.MechBattle
             _aimMarker.Dispose();
         }
 
-        private void OnTargetDataChanged(TargetData targetData)
+        private void Update(Unit unit)
         {
-            _aimMarker.SetVisibility(targetData.IsDefined);
-            if (!targetData.IsDefined)
-                return;
-
             var gunPoint = _transformAspectHandler.GetPoint(_weaponEntity);
-            _aimCaster.TryGetRayEndScreenPos(targetData, gunPoint, out var screenPos);
+            _aimCaster.TryGetRayEndScreenPos(_targetData, gunPoint, out var screenPos);
             _aimMarker.SetPosition(screenPos);
         }
     }

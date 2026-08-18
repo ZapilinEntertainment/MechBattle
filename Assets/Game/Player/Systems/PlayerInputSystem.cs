@@ -63,11 +63,8 @@ namespace ZE.MechBattle.Ecs {
 
             // main weapons target
             var currentTargetData = _aimWorker.CurrentTargetData;
-            if (currentTargetData.IsDefined)
-            {
-                var pos = currentTargetData.Position;
-                _mechController.SetMainWeaponsTarget(pos);
-            }
+            var pos = currentTargetData.Position;
+            _mechController.SetMainWeaponsTarget(pos);
 
             // main weapons shot
             if (Input.GetMouseButtonDown(0))

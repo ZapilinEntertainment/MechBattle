@@ -23,7 +23,10 @@ namespace ZE.MechBattle.Ecs {
 
         public void OnAwake() 
         {
-            _filter = World.Filter.With<WeaponFireTag>().Build();
+            _filter = World.Filter
+                .With<WeaponProjectileComponent>()
+                .With<WeaponFireTag>()
+                .Build();
 
             _projectiles = World.GetStash<WeaponProjectileComponent>();
             _shotPoints = World.GetStash<WeaponShotPoint>();
