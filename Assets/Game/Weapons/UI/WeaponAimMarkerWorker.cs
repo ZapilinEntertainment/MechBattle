@@ -10,7 +10,7 @@ namespace ZE.MechBattle
     {
         private readonly TransformAspectHandler _transformAspectHandler;
         private readonly AimCaster _aimCaster;
-        private readonly CursorAimTrackingWorker _aimTrackingWorker;
+        private readonly ICursorAimTracker _cursorTracker;
         private readonly WeaponTargetMarkerFactory _markerFactory;
 
         private Entity _weaponEntity;
@@ -19,13 +19,13 @@ namespace ZE.MechBattle
         [Inject]
         public WeaponAimMarkerWorker(
             TransformAspectHandler transformAspectHandler, 
-            AimCaster aimCaster, 
-            CursorAimTrackingWorker cursorAimTrackingWorker,
+            AimCaster aimCaster,
+            ICursorAimTracker cursorTracker,
             WeaponTargetMarkerFactory weaponTargetMarkerFactory)
         {
             _transformAspectHandler = transformAspectHandler;
             _aimCaster = aimCaster;
-            _aimTrackingWorker = cursorAimTrackingWorker;
+            _cursorTracker = cursorTracker;
             _markerFactory = weaponTargetMarkerFactory;
         }
 
@@ -35,7 +35,7 @@ namespace ZE.MechBattle
             _aimMarker = _markerFactory.Create();
             base.Start();
 
-            _aimTrackingWorker
+            _cursorTracker
                 .TargetDataProperty
                 .Subscribe(OnTargetDataChanged)
                 .AddTo(CompositeDisposable);            
@@ -54,8 +54,8 @@ namespace ZE.MechBattle
                 return;
 
             var gunPoint = _transformAspectHandler.GetPoint(_weaponEntity);
-            if (_aimCaster.TryGetRayEndScreenPos(targetData, gunPoint, out var screenPos))
-                _aimMarker.SetPosition(screenPos);
+            _aimCaster.TryGetRayEndScreenPos(targetData, gunPoint, out var screenPos);
+            _aimMarker.SetPosition(screenPos);
         }
     }
 }

@@ -19,7 +19,8 @@ namespace ZE.MechBattle
         private readonly Stash<MechComponent> _mechComponents;
         private readonly Stash<RotationSpeedComponent> _rotationSpeed;
         private readonly Stash<MechWeaponsComponent> _mechWeapons;
-        
+        private readonly Stash<LocalRotationLimitComponent> _localRotationLimits;
+
 
         [Inject]
         public MechFactory(
@@ -44,6 +45,7 @@ namespace ZE.MechBattle
             _mechComponents = world.GetStash<MechComponent>();
             _rotationSpeed = world.GetStash<RotationSpeedComponent>();
             _mechWeapons = world.GetStash<MechWeaponsComponent>();
+            _localRotationLimits = world.GetStash<LocalRotationLimitComponent>();
         }
 
         public Entity Build(float3 position, quaternion rotation)
@@ -53,8 +55,9 @@ namespace ZE.MechBattle
 
             var chassisEntity = _chassisFactory.Build(mechEntity);
             var upperPartEntity = BuildUpperPart(chassisEntity, mechEntity);
+            var headEntity = BuildHead(upperPartEntity, TEMP_mechConfig);
 
-            _mechComponents.Add(mechEntity, new(chassisEntity, upperPartEntity));            
+            _mechComponents.Add(mechEntity, new(chassisEntity, upperPartEntity, headEntity));            
 
             return mechEntity;
         }
@@ -100,6 +103,20 @@ namespace ZE.MechBattle
             _viewFactory.MakeViewReceiver(weaponEntity, equipmentId + "_view");
 
             return weaponEntity;
+        }
+
+        private Entity BuildHead(Entity parent, MechConfig mechConfig)
+        {
+            var attachmentProtocol = mechConfig.HeadAttachmentProtocol;
+            var headEntity = _parentingRelationsApplier.CreateChildEntityForViewPart(
+               attachmentProtocol.ToPoint(),
+               parent,
+               new(ViewPartType.Head));
+
+            _rotationSpeed.Set(headEntity, new(mechConfig.HeadRotationSpeedRadians));
+            _localRotationLimits.Set(headEntity, new(mechConfig.HeadRotationLimits));
+
+            return headEntity;
         }
     }
 }

@@ -350,6 +350,7 @@ MonoBehaviour:
     Ankle: {fileID: 7913355261670966772}
     Foot: {fileID: 8831921794388861062}
   _upperPart: {fileID: 6655062516119415071}
+  _head: {fileID: 6145354192885375054}
   _cameraPoints:
     _serializedList:
     - Key: 0
@@ -836,7 +837,7 @@ Transform:
   m_GameObject: {fileID: 4895932062001224087}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 7.1432962, z: 3.7007523}
+  m_LocalPosition: {x: 0, y: 7, z: 3.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

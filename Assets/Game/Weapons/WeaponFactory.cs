@@ -64,7 +64,7 @@ namespace ZE.MechBattle.Ecs
         {
             public Entity ParentEntity;
             public WeaponConfig WeaponConfig;
-            public WeaponAttachmentProtocol AttachmentProtocol;
+            public ViewPartAttachmentProtocol AttachmentProtocol;
 
             public bool UseAutoShot;
             public bool UseAutoStow;

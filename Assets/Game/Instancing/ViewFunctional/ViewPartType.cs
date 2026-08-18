@@ -10,5 +10,6 @@ namespace ZE.MechBattle
         Ankle,
         Foot,
         UpperPart,
+        Head,
     }
 }

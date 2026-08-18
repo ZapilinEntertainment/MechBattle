@@ -21,7 +21,8 @@ namespace ZE.MechBattle
             builder.Register<PlayerHandler>(Lifetime.Scoped);
             builder.Register<PlayerFactory>(Lifetime.Scoped);
 
-            builder.Register<CursorAimTrackingWorker>(Lifetime.Scoped);            
+            builder.Register<ICursorAimTracker,CursorAimTrackingWorker>(Lifetime.Scoped);
+            builder.Register<MechHeadRotationWorker>(Lifetime.Scoped);
         }
 
         void ISceneFeatureInitializer.OnSceneContainerBuilt(IObjectResolver resolver)
@@ -35,6 +36,8 @@ namespace ZE.MechBattle
 
             var playerInitializer = resolver.Resolve<LocalPlayerInitializer>();
             playerInitializer.StartTracking(localPlayerEntity);
+
+            resolver.Resolve<MechHeadRotationWorker>();
         }
 
         protected override PlayerSystemsInstallQueue CreateQueue() => new();

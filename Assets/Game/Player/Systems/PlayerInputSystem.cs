@@ -25,7 +25,7 @@ namespace ZE.MechBattle.Ecs {
         public PlayerInputSystem(
             SceneFlagsManager flags, 
             TransformAspectHandler transformAspectHandler,
-            CursorAimTrackingWorker aimWorker)
+            ICursorAimTracker aimWorker)
         {
             _compositeDisposable = new();
             flags
@@ -36,7 +36,7 @@ namespace ZE.MechBattle.Ecs {
                 .AddTo(_compositeDisposable);
 
             _transformAspectHandler = transformAspectHandler;
-            _aimWorker = aimWorker;
+            _aimWorker = aimWorker as CursorAimTrackingWorker;
         }
 
         public void OnAwake() 

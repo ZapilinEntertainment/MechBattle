@@ -27,7 +27,7 @@ namespace ZE.MechBattle
     public struct WeaponData
     {
         public WeaponConfig Config;
-        public WeaponAttachmentProtocol AttachmentProtocol;
+        public ViewPartAttachmentProtocol AttachmentProtocol;
     }
 
     public interface IUnitConfig

@@ -12,6 +12,7 @@ namespace ZE.MechBattle
         [field: SerializeField] public LegDataContainer<Transform> RightLeg { get; private set; }
 
         [SerializeField] private Transform _upperPart;
+        [SerializeField] private Transform _head;
         [SerializeField] private SerializedDictionary<CameraMode, CinemachineCamera> _cameraPoints;
 
         public void ActivateVirtualCamera(CameraMode cameraMode)
@@ -53,6 +54,11 @@ namespace ZE.MechBattle
                 case ViewPartType.Foot:
                     {
                         viewPart = new ViewPartContainer(key.Index == 1 ? RightLeg.Foot : LeftLeg.Foot);
+                        return true;
+                    }
+                case ViewPartType.Head:
+                    {
+                        viewPart = new ViewPartContainer(_head);
                         return true;
                     }
                 default:

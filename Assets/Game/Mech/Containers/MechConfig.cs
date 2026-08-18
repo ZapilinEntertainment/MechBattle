@@ -7,7 +7,15 @@ namespace ZE.MechBattle
     [CreateAssetMenu(fileName = nameof(MechConfig), menuName = "Scriptable Objects/" + nameof(MechConfig))]
     public class MechConfig : ScriptableObject
     {
-        [SerializeField] private float _upperPartRotationSpeedDegrees = 90f;
+        [Header("Head")]
+        [field: SerializeField] public ViewPartAttachmentProtocol HeadAttachmentProtocol { get; private set; }
+        [field:SerializeField] public ForwardRotationLimits HeadRotationLimits { get; private set; }
+        [SerializeField] private float _headRotationSpeedDegrees;
+        public float HeadRotationSpeedRadians => math.radians(_headRotationSpeedDegrees);
+
+
+        [Space]
+        [SerializeField] private float _upperPartRotationSpeedDegrees = 90f;       
         [SerializeField] private SerializedDictionary<MechSlot, MechSlotInfo> _slotInfo;
        
 

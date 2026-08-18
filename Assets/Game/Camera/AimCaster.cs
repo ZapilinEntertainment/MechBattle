@@ -46,7 +46,7 @@ namespace ZE.MechBattle
                 return true;
             }
 
-            screenPoint = default;
+            screenPoint = screenPoint = _cameraController.WorldToScreenPoint(ray.GetPoint(GameConstants.AIM_RAY_LENGTH));
             return false;
         }
     }

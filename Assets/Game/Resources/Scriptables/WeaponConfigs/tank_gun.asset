@@ -24,7 +24,7 @@ MonoBehaviour:
   _muzzleEffectId: tank_shot
   _towerAttachmentProtocol:
     IsValid: 1
-    RotationSpeedDegrees: 45
+    RotationSpeedDegrees: 90
     LocalPosition:
       x: 0
       y: 0.923

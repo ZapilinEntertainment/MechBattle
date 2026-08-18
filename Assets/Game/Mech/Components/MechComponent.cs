@@ -10,11 +10,13 @@ namespace ZE.MechBattle.Ecs {
     {
         public readonly Entity ChassisEntity;
         public readonly Entity UpperPartEntity;
+        public readonly Entity HeadEntity;
 
-        public MechComponent(Entity chassisEntity, Entity upperPartEntity)
+        public MechComponent(Entity chassisEntity, Entity upperPartEntity, Entity headEntity)
         {
             ChassisEntity = chassisEntity;
             UpperPartEntity = upperPartEntity;
+            HeadEntity = headEntity;
         }
     
     }

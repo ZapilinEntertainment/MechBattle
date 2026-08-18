@@ -115,6 +115,35 @@ namespace ZE.MechBattle.Ecs
             SyncPositionWithParent(entity, parentComponent.Value, localPosExists ? localPositionComponent.Value : float3.zero, localRotation);
         }
 
+        /// <summary>
+        /// returns true if target rotation reached
+        /// </summary>
+        public bool RotateLocal(Entity entity, quaternion targetRotation, float step)
+        {
+            ref var localRotationComponent = ref _localRotation.Get(entity);
+            localRotationComponent.Value = MathExtensions.RotateTowards(localRotationComponent.Value, targetRotation, step);
+            AddUpdateTag(entity);
+
+            var rotationFinished = math.abs(1 - math.dot(localRotationComponent.Value, targetRotation)) < math.EPSILON;
+            //UnityEngine.Debug.Log($"entity {entity.Id} : {Quaternion.Angle(localRotationComponent.Value, targetRotation)} : {rotationFinished}");
+
+            return rotationFinished;
+        }
+
+        public void RotateLocal(Entity entity, quaternion rotationStep)
+        {
+            ref var localRotationComponent = ref _localRotation.Get(entity);
+            localRotationComponent.Value = math.mul(localRotationComponent.Value, rotationStep);
+            AddUpdateTag(entity);
+        }
+
+        public void RotateLocalWithLimits(Entity entity, quaternion targetRotation, float step, ForwardRotationLimits limits)
+        {
+            ref var localRotationComponent = ref _localRotation.Get(entity);
+            var resultingRotation = MathExtensions.RotateTowards(localRotationComponent.Value, targetRotation, step);
+            localRotationComponent.Value = MathExtensions.ClampRotation(resultingRotation, limits.GetDotLimits());
+            AddUpdateTag(entity);
+        }
         #endregion
 
         public void SetLocalTransform(Entity entity, RigidTransform transform)
@@ -199,38 +228,6 @@ namespace ZE.MechBattle.Ecs
             }
             AddUpdateTag(entity);
         }    
-
-
-
-        /// <summary>
-        /// returns true if target rotation reached
-        /// </summary>
-        public bool RotateLocal(Entity entity, quaternion targetRotation, float step )
-        {
-            ref var localRotationComponent = ref _localRotation.Get(entity);
-            localRotationComponent.Value = MathExtensions.RotateTowards(localRotationComponent.Value, targetRotation, step);
-            AddUpdateTag(entity);
-
-            var rotationFinished = math.abs(1 - math.dot(localRotationComponent.Value, targetRotation)) < math.EPSILON;
-            //UnityEngine.Debug.Log($"entity {entity.Id} : {Quaternion.Angle(localRotationComponent.Value, targetRotation)} : {rotationFinished}");
-
-            return rotationFinished;
-        }
-
-        public void RotateLocal(Entity entity, quaternion rotationStep)
-        {
-            ref var localRotationComponent = ref _localRotation.Get(entity);
-            localRotationComponent.Value = math.mul(localRotationComponent.Value, rotationStep);
-            AddUpdateTag(entity);
-        }
-
-        public void RotateLocalWithLimits(Entity entity, quaternion targetRotation, float step, ForwardRotationLimits limits)
-        {
-            ref var localRotationComponent = ref _localRotation.Get(entity);
-            var resultingRotation = MathExtensions.RotateTowards(localRotationComponent.Value, targetRotation, step);
-            localRotationComponent.Value = MathExtensions.ClampRotation(resultingRotation, limits.GetDotLimits());
-            AddUpdateTag(entity);
-        }
 
 
         public RigidTransform GetPoint(Entity entity, bool randomRotationIfNone = true)

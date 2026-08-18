@@ -12,6 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 538700e5b79b03d40979f5c8348e095d, type: 3}
   m_Name: MechConfig
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.MechConfig
+  <HeadAttachmentProtocol>k__BackingField:
+    LocalPosition:
+      x: 0
+      y: 7
+      z: 3.7
+    LocalRotationDegrees:
+      x: 0
+      y: 0
+      z: 0
+  <HeadRotationLimits>k__BackingField:
+    LimitAxleRotation:
+      x: 1
+      y: 1
+    XAngleDegreesLimit: 30
+    YAngleDegreesLimit: 40
+  _headRotationSpeedDegrees: 90
   _upperPartRotationSpeedDegrees: 30
   _slotInfo:
     _serializedList:

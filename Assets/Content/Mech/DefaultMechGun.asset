@@ -52,5 +52,5 @@ MonoBehaviour:
       LimitAxleRotation:
         x: 1
         y: 1
-      XAngleDegreesLimit: 60
-      YAngleDegreesLimit: 25
+      XAngleDegreesLimit: 32
+      YAngleDegreesLimit: 45

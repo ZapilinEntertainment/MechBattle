@@ -16,8 +16,9 @@ namespace ZE.MechBattle
             builder.Register<MechFactory>(Lifetime.Scoped);
             builder.Register<MechCreateRequestsFactory>(Lifetime.Scoped);
             builder.Register<MechChassisFactory>(Lifetime.Scoped);
-            builder.Register<MechMovementHandler>(Lifetime.Scoped);
+            builder.Register<MechMovementHandler>(Lifetime.Scoped);            
             builder.Register<MechInterpolator>(Lifetime.Scoped);
+            builder.Register<MechHandler>(Lifetime.Scoped);
 
 #if UNITY_EDITOR
             builder.Register<StepDrawer>(Lifetime.Scoped);

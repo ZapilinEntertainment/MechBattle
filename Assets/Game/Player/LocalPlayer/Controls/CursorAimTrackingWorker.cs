@@ -5,7 +5,7 @@ using ZE.Workers;
 
 namespace ZE.MechBattle
 {
-    public class CursorAimTrackingWorker : Worker, ITargetDesignator
+    public class CursorAimTrackingWorker : Worker, ICursorAimTracker
     {
         public ReadOnlyReactiveProperty<TargetData> TargetDataProperty => _targetDataProperty;
         public TargetData CurrentTargetData => _targetDataProperty.Value;

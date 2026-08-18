@@ -5,7 +5,7 @@ namespace ZE.MechBattle
     [Serializable]
     public struct MechSlotInfo
     {
-        public WeaponAttachmentProtocol AttachmentProtocol;
+        public ViewPartAttachmentProtocol AttachmentProtocol;
     
     }
 }
