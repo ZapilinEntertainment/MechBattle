@@ -11,5 +11,6 @@ namespace ZE.MechBattle
         Foot,
         UpperPart,
         Head,
+        Eye
     }
 }

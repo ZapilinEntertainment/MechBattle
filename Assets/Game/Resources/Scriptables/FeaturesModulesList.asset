@@ -25,6 +25,7 @@ MonoBehaviour:
   - rid: 6586387211017519175
   - rid: 6586387193149522013
   - rid: 6586387278984904775
+  - rid: 6586387348091830343
   references:
     version: 2
     RefIds:
@@ -63,4 +64,7 @@ MonoBehaviour:
       data: 
     - rid: 6586387278984904775
       type: {class: UIFeatureModule, ns: ZE.MechBattle, asm: MechBattle}
+      data: 
+    - rid: 6586387348091830343
+      type: {class: VfxFeatureModule, ns: ZE.MechBattle, asm: MechBattle}
       data: 

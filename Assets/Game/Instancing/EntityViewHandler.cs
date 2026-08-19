@@ -9,6 +9,7 @@ namespace ZE.MechBattle
     public class EntityViewHandler
     {
         private readonly Stash<ViewContainerComponent> _viewContainers;
+        private readonly Stash<ViewPartRequestComponent> _viewPartRequestComponents;
         private readonly ViewContainersPool _viewContainersList;
 
         [Inject]
@@ -16,6 +17,7 @@ namespace ZE.MechBattle
         {
             _viewContainersList = viewContainersList;
             _viewContainers = world.GetStash<ViewContainerComponent>();
+            _viewPartRequestComponents = world.GetStash<ViewPartRequestComponent>();
         }
 
         public bool TryGetEntityView<T>(Entity entity, out T view) where T : class, IView
@@ -28,6 +30,7 @@ namespace ZE.MechBattle
             view = viewContainer.View as T;            
             return view != null;
         }
-    
+
+        public void OverrideViewRequestKey(Entity entity, ViewPartKey viewPartKey) => _viewPartRequestComponents.Set(entity, new(viewPartKey));
     }
 }

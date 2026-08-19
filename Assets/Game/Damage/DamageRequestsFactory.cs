@@ -3,15 +3,17 @@ using Scellecs.Morpeh;
 
 namespace ZE.MechBattle.Ecs
 {
-    public class DamageRequestsBuilder
+    public class DamageRequestsFactory
     {
         private readonly World _world;
+        private readonly CollidersTable _collidersTable;
         private readonly Stash<CalculateDamageRequest> _requests;
 
         [Inject]
-        public DamageRequestsBuilder(World world)
+        public DamageRequestsFactory(World world, CollidersTable collidersTable)
         {
             _world = world;
+            _collidersTable = collidersTable;
             _requests = _world.GetStash<CalculateDamageRequest>();
         }
 
@@ -19,6 +21,12 @@ namespace ZE.MechBattle.Ecs
         {
             var entity = _world.CreateEntity();
             _requests.Set(entity, new() { Attacker = damager, Target = target, Data = damageParameters });
+        }
+
+        public void Build(Entity damager, int targetColliderId, DamageApplyParameters damageParameters)
+        {
+            if (!_collidersTable.TryGetColliderOwner(targetColliderId, out var colliderOwner))
+                Build(damager, colliderOwner, damageParameters);
         }
     
     }

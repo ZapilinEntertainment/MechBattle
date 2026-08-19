@@ -10,8 +10,7 @@ namespace ZE.MechBattle.Ecs
         private readonly ParentingRelationsApplier _parentingRelationsApplier;
         private readonly StringDataDictionary _stringDictionary;
         private readonly Stash<WeaponRangeComponent> _ranges;
-        private readonly Stash<WeaponUpdateComponent> _weaponUpdateComponents;
-        private readonly Stash<WeaponProjectileComponent> _weaponProjectileComponents;
+        private readonly Stash<WeaponUpdateComponent> _weaponUpdateComponents;        
         private readonly Stash<WeaponMuzzleEffectComponent> _muzzleEffects;
         private readonly Stash<WeaponTowerComponent> _weaponTowerComponents;
         private readonly Stash<WeaponBarrelComponent> _weaponBarrelComponents;
@@ -29,6 +28,11 @@ namespace ZE.MechBattle.Ecs
 
         private readonly Stash<DamageComponent> _damageComponents;
 
+        private readonly Stash<WeaponProjectileComponent> _weaponProjectileComponents;
+        private readonly Stash<WeaponRayComponent> _weaponRayComponents;
+
+        private readonly Stash<ContinuosFiringTag> _continuosFiring;
+
         [Inject]
         public WeaponFactory(World world, ParentingRelationsApplier parentingRelationsApplier, StringDataDictionary stringDataDictionary)
         {
@@ -38,8 +42,7 @@ namespace ZE.MechBattle.Ecs
 
             _ranges = _world.GetStash<WeaponRangeComponent>();
             _weaponUpdateComponents = world.GetStash<WeaponUpdateComponent>();
-            _muzzleEffects = world.GetStash<WeaponMuzzleEffectComponent>();
-            _weaponProjectileComponents = world.GetStash<WeaponProjectileComponent>();
+            _muzzleEffects = world.GetStash<WeaponMuzzleEffectComponent>();            
 
             _weaponTowerComponents = world.GetStash<WeaponTowerComponent>();
             _weaponBarrelComponents = world.GetStash<WeaponBarrelComponent>();
@@ -58,17 +61,22 @@ namespace ZE.MechBattle.Ecs
             _localRotationLimits = world.GetStash<LocalRotationLimitComponent>();
 
             _damageComponents = world.GetStash<DamageComponent>();
+            _weaponProjectileComponents = world.GetStash<WeaponProjectileComponent>();
+            _weaponRayComponents = world.GetStash<WeaponRayComponent>();
+
+            _continuosFiring = world.GetStash<ContinuosFiringTag>();
         }
 
         public struct WeaponCreationProtocol
         {
             public Entity ParentEntity;
-            public WeaponConfig WeaponConfig;
+            public WeaponConfigBase WeaponConfig;
             public ViewPartAttachmentProtocol AttachmentProtocol;
 
             public bool UseAutoShot;
             public bool UseAutoStow;
             public bool SyncTargetWithParent;
+            public bool NoViewWeapon;
 
             public DamageApplyParameters DamageParameters;
         }
@@ -78,34 +86,14 @@ namespace ZE.MechBattle.Ecs
             var weaponEntity = _world.CreateEntity();
             var weaponConfig = protocol.WeaponConfig;
 
-            _ranges.Add(weaponEntity, new(weaponConfig.MinRange, weaponConfig.MaxRange, weaponConfig.RecommendedRangePc));
-            _weaponUpdateComponents.Add(weaponEntity, new(weaponConfig.Cooldown));
-            if (protocol.UseAutoShot)
-            {
-                _weaponAutoShotTags.Add(weaponEntity);
-                _raycastFirelinesTag.Add(weaponEntity);
-            }            
-
             _parentingRelationsApplier.Apply(new()
             {
                 ParentEntity = protocol.ParentEntity,
                 ChildEntity = weaponEntity,
                 LocalPos = protocol.AttachmentProtocol.LocalPosition,
                 LocalRot = protocol.AttachmentProtocol.LocalRotation,
-                AwaitParentViewComponent = true
+                AwaitParentViewComponent = !protocol.NoViewWeapon
             });
-
-
-            if (weaponConfig.TryGetProjectileId(out var projectileId)) 
-                _weaponProjectileComponents.Add(weaponEntity, new(_stringDictionary.StringToKey(projectileId)));
-
-
-            if (weaponConfig.TryGetMuzzleEffectId(out var muzzleEffectId))
-            {
-                var idKey = _stringDictionary.StringToKey(muzzleEffectId);
-                var vfxKey = new VfxKey(idKey);
-                _muzzleEffects.Add(weaponEntity, new(vfxKey));
-            }
                 
             var addTower = weaponConfig.TryGetTowerAttachmentProtocol(out var towerAttachmentProtocol);
             Entity towerEntity;
@@ -142,15 +130,54 @@ namespace ZE.MechBattle.Ecs
                 // UnityEngine.Debug.Log($"built barrel with id {barrelEntity.Id}");
             }
 
+            ApplyWeaponComponents(weaponEntity, protocol);
+
+            return weaponEntity;
+        }
+
+        public void ApplyWeaponComponents(Entity weaponEntity, WeaponCreationProtocol protocol)
+        {
+            var weaponConfig = protocol.WeaponConfig;
+
+            if (weaponConfig.TryGetMuzzleEffectId(out var muzzleEffectId))
+            {
+                var idKey = _stringDictionary.StringToKey(muzzleEffectId);
+                var vfxKey = new VfxKey(idKey);
+                _muzzleEffects.Add(weaponEntity, new(vfxKey));
+            }
+
             _weaponShotPoints.Add(weaponEntity, new(weaponConfig.ShotPoint));
 
             if (protocol.SyncTargetWithParent)
                 _syncTargetWithParent.Add(weaponEntity);
 
+            SetupAttackComponents(weaponEntity, protocol);
+        }
+
+        private void SetupAttackComponents(Entity weaponEntity, WeaponCreationProtocol protocol)
+        {
+            var weaponConfig = protocol.WeaponConfig;
+
+            if (weaponConfig.TryGetProjectileId(out var projectileId))
+                _weaponProjectileComponents.Add(weaponEntity, new(_stringDictionary.StringToKey(projectileId)));
+
+            if (weaponConfig.TryGetRayEffectId(out var rayEffectId))
+                _weaponRayComponents.Add(weaponEntity, new(_stringDictionary.StringToKey(rayEffectId)));
+
             if (protocol.DamageParameters.IsValid)
                 _damageComponents.Add(weaponEntity, new() { DamageParameters = protocol.DamageParameters });
 
-            return weaponEntity;
+            _ranges.Add(weaponEntity, new(weaponConfig.MinRange, weaponConfig.MaxRange, weaponConfig.RecommendedRangePc));
+            _weaponUpdateComponents.Add(weaponEntity, new(weaponConfig.Cooldown));
+
+            if (protocol.UseAutoShot)
+            {
+                _weaponAutoShotTags.Add(weaponEntity);
+                _raycastFirelinesTag.Add(weaponEntity);
+            }
+
+            if (weaponConfig.ContinuousFiring)
+                _continuosFiring.Add(weaponEntity);
         }
 
         private Entity AttachWeaponPart(Entity parentEntity,WeaponPartAttachmentProtocol protocol)

@@ -3,6 +3,7 @@ using Unity.Mathematics;
 using Unity.IL2CPP.CompilerServices;
 using VContainer;
 using ZE.Utils;
+using UnityEngine;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -33,6 +34,7 @@ namespace ZE.MechBattle.Ecs {
                 .With<WeaponTowerComponent>()
                 .With<WeaponTargetPositionComponent>()
                 .Build();
+
             _aimingbarrelWeaponsFilter = World.Filter
                 .With<WeaponBarrelComponent>()
                 .With<WeaponTargetPositionComponent>()
@@ -74,10 +76,10 @@ namespace ZE.MechBattle.Ecs {
             foreach (var weaponEntity in _aimingbarrelWeaponsFilter)
             {
                 var barrelEntity = _weaponBarrels.Get(weaponEntity).BarrelEntity;
-                var targetPos = _targetPositions.Get(weaponEntity).Value;
+                var targetPos =  _targetPositions.Get(weaponEntity).Value;
 
                 var towerComponent = _weaponTowers.Get(weaponEntity, out var hasTower);
-                var parentPoint = _transformAspectHandler.GetPoint(hasTower ? towerComponent.TowerEntity : weaponEntity);                
+                var parentPoint = _transformAspectHandler.GetPoint(hasTower ? towerComponent.TowerEntity : weaponEntity);
                 var localTargetPos = MathExtensions.InverseTransformPoint(targetPos, parentPoint.pos, parentPoint.rot);
 
                 float3 normalizedTargetDir;
@@ -93,8 +95,8 @@ namespace ZE.MechBattle.Ecs {
                     normalizedTargetDir = math.normalize(localTargetPos);
                 }
 
-                var targetRotation = quaternion.LookRotation(normalizedTargetDir, math.up());
-                _aims.Set(barrelEntity, new() { Value = targetRotation});
+                var localTargetRotation = math.normalize( quaternion.LookRotation(normalizedTargetDir, math.up()));
+                _aims.Set(barrelEntity, new() { Value = localTargetRotation});
             }
 
 

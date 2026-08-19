@@ -13,6 +13,8 @@ namespace ZE.MechBattle
 
         [SerializeField] private Transform _upperPart;
         [SerializeField] private Transform _head;
+        [SerializeField] private Transform _leftEye;
+        [SerializeField] private Transform _rightEye;
         [SerializeField] private SerializedDictionary<CameraMode, CinemachineCamera> _cameraPoints;
 
         public void ActivateVirtualCamera(CameraMode cameraMode)
@@ -59,6 +61,11 @@ namespace ZE.MechBattle
                 case ViewPartType.Head:
                     {
                         viewPart = new ViewPartContainer(_head);
+                        return true;
+                    }
+                case ViewPartType.Eye:
+                    {
+                        viewPart = new ViewPartContainer(key.Index == 1 ? _rightEye :_leftEye);
                         return true;
                     }
                 default:

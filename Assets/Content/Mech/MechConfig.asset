@@ -27,6 +27,14 @@ MonoBehaviour:
       y: 1
     XAngleDegreesLimit: 30
     YAngleDegreesLimit: 40
+  <LeftEyeLocalPosition>k__BackingField:
+    x: -0.9
+    y: 0.22
+    z: 2
+  <RightEyeLocalPosition>k__BackingField:
+    x: 0.9
+    y: 0.22
+    z: 2
   _headRotationSpeedDegrees: 90
   _upperPartRotationSpeedDegrees: 30
   _slotInfo:

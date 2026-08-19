@@ -1,6 +1,7 @@
 using Scellecs.Morpeh;
 using Unity.Mathematics;
 using Unity.IL2CPP.CompilerServices;
+using TriInspector;
 
 namespace ZE.MechBattle.Ecs {
     [System.Serializable]
@@ -11,5 +12,6 @@ namespace ZE.MechBattle.Ecs {
     {
         public quaternion Value;    
         public float3 Forward => math.mul(Value, math.forward());
+        [ShowInInspector] private float3 ValueEuler => math.degrees(math.Euler(Value));
     }
 }

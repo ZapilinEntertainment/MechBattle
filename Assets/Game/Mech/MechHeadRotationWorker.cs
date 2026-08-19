@@ -64,10 +64,7 @@ namespace ZE.MechBattle
             var limits = _rotationLimits.Get(headEntity).DotLimits.GetDotLimits();
             var rotation = MathExtensions.GetLimitedNormalizedRotation(normalizedInput, limits);
 
-            //_rotationTargets.Set(headEntity, new() { Value = rotation });
-            ref var component = ref headEntity.GetComponent<LocalRotationComponent>();
-            component.Value = rotation;
-            headEntity.SetComponent<TransformUpdatedTag>(new());
+            _rotationTargets.Set(headEntity, new() { Value = rotation });
         }
     }
 }

@@ -15,6 +15,11 @@ MonoBehaviour:
   m_GroupName: Default Local Group
   m_GUID: 6c5704f5df2d7114f90cdd11ed36b47a
   m_SerializeEntries:
+  - m_GUID: 0323d0a237026b7449347c316b811c99
+    m_Address: default_ray_effect_view
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0f89c853498a9cb46ba634b2adca87b6
     m_Address: default_mech_config
     m_ReadOnly: 0
@@ -52,6 +57,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a1b3b67b4ce60394ebcf287ffb9eca5c
     m_Address: default_mech_chassis_data
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a9dee9ed22bfdd249ba2fb5d8f3df481
+    m_Address: laser_eyes_weapon_config
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

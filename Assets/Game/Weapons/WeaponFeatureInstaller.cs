@@ -18,6 +18,7 @@ namespace ZE.MechBattle
         {
             base.SceneScopeInstall(builder);
             builder.Register<WeaponFactory>(Lifetime.Scoped);
+            builder.Register<WeaponRaycasterFactory>(Lifetime.Scoped);
 
             builder.Register<WeaponAimMarkerWorker>(Lifetime.Transient);
             builder.Register<WeaponHandler>(Lifetime.Scoped);
@@ -27,9 +28,13 @@ namespace ZE.MechBattle
 
         async Awaitable<IResourceBinder> ISessionAsyncResourceLoader.LoadSessionResourcesAsync(IObjectResolver resolver)
         {
-            const string configKey = DevelopConstants.DEFAULT_MECH_GUN_ID + "_config";
-            var weaponConfig = await AssetsManager.LoadAssetDirectly<WeaponConfig>(configKey);
-            return new KeyedResourceBinding<WeaponConfig, string>(weaponConfig, DevelopConstants.DEFAULT_MECH_GUN_ID);
+            var weaponConfig = await AssetsManager.LoadAssetDirectly<ProjectileWeaponConfig>(DevelopConstants.DEFAULT_MECH_GUN_ID + "_config");
+            var defaultWeaponBinding = new KeyedResourceBinding<ProjectileWeaponConfig, string>(weaponConfig, DevelopConstants.DEFAULT_MECH_GUN_ID);
+
+            var eyesConfig = await AssetsManager.LoadAssetDirectly<RayWeaponConfig>(DevelopConstants.LASER_EYES_WEAPON_ID + "_config");
+            var eyesWeaponBinding = new KeyedResourceBinding<RayWeaponConfig, string>(eyesConfig, DevelopConstants.LASER_EYES_WEAPON_ID);
+
+            return new AsyncResourcesScopeBinder(new IResourceBinder[] { defaultWeaponBinding, eyesWeaponBinding });
         }
     }
 }

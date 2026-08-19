@@ -13,7 +13,6 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<AttackTargetDefineSystem>(SystemGroupOrder.EarlyUpdate);
 
             installer.AddSystem<AttackTargetValidationSystem>(SystemGroupOrder.Default);
-            installer.AddSystem<VfxCreateSystem>(SystemGroupOrder.Default);
             installer.AddSystem<RestorationSystem>(SystemGroupOrder.Default);
 
             installer.AddSystem<ProjectileCreateSystem>(SystemGroupOrder.Default);

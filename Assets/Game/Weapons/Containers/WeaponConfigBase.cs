@@ -1,38 +1,24 @@
-using UnityEngine;
 using Unity.Mathematics;
+using UnityEngine;
 
 namespace ZE.MechBattle
 {
-    [CreateAssetMenu(fileName = "WeaponConfig", menuName = "Scriptable Objects/WeaponConfig")]
-    public class WeaponConfig : ScriptableObject
+    public abstract class WeaponConfigBase : ScriptableObject
     {
-        [field:SerializeField] public float MinRange { get; private set;}
-        [field: SerializeField, Range(0,1)] public float RecommendedRangePc { get; private set; } = 0.8f;
+        [field: SerializeField] public float MinRange { get; private set; }
+        [field: SerializeField, Range(0, 1)] public float RecommendedRangePc { get; private set; } = 0.8f;
         [field: SerializeField] public float MaxRange { get; private set; }
         [field: SerializeField] public float Cooldown { get; private set; }
         [field: SerializeField] public float3 ShotPoint { get; private set; }
-    
-        
-        [SerializeField] private string _projectileId;
         [SerializeField] private string _muzzleEffectId;
         [SerializeField] private WeaponPartAttachmentProtocol _towerAttachmentProtocol;
         [SerializeField] private WeaponPartAttachmentProtocol _barrelAttachmentProtocol;
 
         public float RecommendedRange => math.lerp(MinRange, MaxRange, RecommendedRangePc);
+        public abstract bool ContinuousFiring { get; }
 
-        public bool TryGetProjectileId(out string projectileId)
-        {
-            if (string.IsNullOrEmpty(_projectileId))
-            {
-                projectileId = default;
-                return false;
-            }
-            else
-            {
-                projectileId = _projectileId;
-                return true;
-            }
-        }
+        public abstract bool TryGetProjectileId(out string projectileId);
+        public abstract bool TryGetRayEffectId(out string rayEffectId);
 
         public bool TryGetMuzzleEffectId(out string muzzleEffectId)
         {
@@ -54,7 +40,7 @@ namespace ZE.MechBattle
             return protocol.IsValid;
         }
 
-        public bool TryGetBarrelAttachmentProtocol(out WeaponPartAttachmentProtocol protocol) 
+        public bool TryGetBarrelAttachmentProtocol(out WeaponPartAttachmentProtocol protocol)
         {
             protocol = _barrelAttachmentProtocol;
             return protocol.IsValid;

@@ -49,6 +49,13 @@ namespace ZE.MechBattle
         public void SetMainWeaponsTarget(float3 pos) =>
             _weaponTargetPositions.Set(_upperPartEntity, new() { Value = pos });
 
+        public void SetEyesTarget(float3 pos)
+        {
+            var weapons = _mechWeapons.Get(_mechEntity);
+            _weaponTargetPositions.Set(weapons.LeftEye, new() { Value = pos });
+            _weaponTargetPositions.Set(weapons.RightEye, new() { Value = pos });
+        }
+
         public void FireMainWeapon()
         {
             var weapons = _mechWeapons.Get(_mechEntity);
@@ -57,6 +64,29 @@ namespace ZE.MechBattle
 
             if (!_world.IsDisposed(weapons.MainWeaponRight))
                 _fireTags.Set(weapons.MainWeaponRight);
+        }
+
+        public void SwitchEyeFiring()
+        {
+            var weapons = _mechWeapons.Get(_mechEntity);
+
+            void SwitchEye(Entity eyeEntity)
+            {
+                if (_world.IsDisposed(eyeEntity))
+                    return;
+
+                if (_fireTags.Has(eyeEntity))
+                {
+                    _fireTags.Remove(eyeEntity);
+                }
+                else
+                {
+                    _fireTags.Add(eyeEntity);
+                }
+            }
+
+            SwitchEye(weapons.LeftEye);
+            SwitchEye(weapons.RightEye);               
         }
     }
 }

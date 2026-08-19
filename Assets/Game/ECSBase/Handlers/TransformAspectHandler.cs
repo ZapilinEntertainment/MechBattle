@@ -299,7 +299,7 @@ namespace ZE.MechBattle.Ecs
         private static RigidTransform LocalToWorld(float3 parentWorldPos, quaternion parentWorldRot, float3 childLocalPos, quaternion childLocalRot)
         {
             var globalPos = parentWorldPos + math.mul(parentWorldRot, childLocalPos);
-            var globalRot = math.mul(parentWorldRot, childLocalRot);
+            var globalRot = math.normalize( math.mul(parentWorldRot, childLocalRot));
 
             return new(globalRot, globalPos);
         }

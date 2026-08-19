@@ -18,6 +18,7 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<WeaponAutoShotSystem>(SystemGroupOrder.WeaponUpdates);
             installer.AddSystem<WeaponShotPointCalculationSystem>(SystemGroupOrder.WeaponUpdates);
             installer.AddSystem<WeaponMuzzleEffectCallSystem>(SystemGroupOrder.WeaponUpdates);
+            installer.AddSystem<WeaponRayCastSystem>(SystemGroupOrder.WeaponUpdates);
             installer.AddSystem<WeaponProjectilesCreateSystem>(SystemGroupOrder.WeaponUpdates);
             installer.AddSystem<WeaponStopFireSystem>(SystemGroupOrder.WeaponUpdates);
         }

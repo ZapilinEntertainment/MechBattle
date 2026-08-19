@@ -38,32 +38,14 @@ namespace ZE.MechBattle.Ecs
             // global managers with no resource dependencies
             builder.Register<AssetsManager>(Lifetime.Singleton);            
             builder.Register<StringDataDictionary>(Lifetime.Singleton);
-            builder.Register<AppFlagsManager>(Lifetime.Singleton);
-            builder.Register<VfxManager>(Lifetime.Singleton);
-            builder.Register<VfxEffectPlayersFactory>(Lifetime.Singleton);
+            builder.Register<AppFlagsManager>(Lifetime.Singleton);        
             builder.Register<ViewProviderFactory>(Lifetime.Singleton);
-            RegisterScriptables(builder);
+            IFeatureInstaller.RegisterScriptable<ProjectilesData>(builder);
 
             // start loading heavy resources:
             builder.RegisterEntryPoint<AppAsyncEntryPoint>();
 
             UnityEngine.Debug.Log("app scope configured");
-        }
-
-        private void RegisterScriptables(IContainerBuilder builder)
-        {
-            void RegisterScriptable<T>() where T : ScriptableObject 
-            {
-                var typeString = typeof(T).Name;
-                var scriptable = Resources.Load<T>(Path.Combine(DirectoryConstants.SCRIPTABLES_FOLDER, typeString));
-                if (scriptable == null)
-                    Debug.LogError($"{DirectoryConstants.SCRIPTABLES_FOLDER} {typeString} not found");
-                else
-                    builder.RegisterInstance(scriptable);
-            }
-
-            RegisterScriptable<ProjectilesData>();
-            RegisterScriptable<VfxData>();            
         }
 
         private void PrepareViews(IContainerBuilder builder)

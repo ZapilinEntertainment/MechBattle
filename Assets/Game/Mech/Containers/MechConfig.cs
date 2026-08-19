@@ -10,6 +10,8 @@ namespace ZE.MechBattle
         [Header("Head")]
         [field: SerializeField] public ViewPartAttachmentProtocol HeadAttachmentProtocol { get; private set; }
         [field:SerializeField] public ForwardRotationLimits HeadRotationLimits { get; private set; }
+        [field: SerializeField] public float3 LeftEyeLocalPosition { get; private set; }
+        [field: SerializeField] public float3 RightEyeLocalPosition { get; private set; }
         [SerializeField] private float _headRotationSpeedDegrees;
         public float HeadRotationSpeedRadians => math.radians(_headRotationSpeedDegrees);
 

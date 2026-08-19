@@ -49,6 +49,8 @@ namespace ZE.MechBattle.Ecs {
             if (!_playerVehiclePresented)
                 return;
 
+            // todo: rework to new input system
+
             // chassis
             var steer = Input.GetAxisRaw("Horizontal");
             var speed = Input.GetAxisRaw("Vertical");
@@ -65,10 +67,16 @@ namespace ZE.MechBattle.Ecs {
             var currentTargetData = _aimWorker.CurrentTargetData;
             var pos = currentTargetData.Position;
             _mechController.SetMainWeaponsTarget(pos);
+            _mechController.SetEyesTarget(pos);
 
             // main weapons shot
             if (Input.GetMouseButtonDown(0))
                 _mechController.FireMainWeapon();
+
+            // eyes shot
+            if (Input.GetKeyDown(KeyCode.Space))
+                _mechController.SwitchEyeFiring();
+
         }
 
         public void Dispose()

@@ -24,14 +24,14 @@ namespace ZE.MechBattle.Ecs {
         private readonly CollidersTable _collidersTable;
         private readonly VfxRequestsFactory _vfxRequestsBuilder;
         private readonly ExplosionRequestsBuilder _explosionRequestsBuilder;
-        private readonly DamageRequestsBuilder _damageRequestsBuilder;
+        private readonly DamageRequestsFactory _damageRequestsBuilder;
 
         [Inject]
         public ProjectilesExplodeSystem(
             CollidersTable collidersTable, 
             VfxRequestsFactory vfxRequestsBuilder, 
             ExplosionRequestsBuilder explosionRequestsBuilder,
-            DamageRequestsBuilder damageRequestsBuilder)
+            DamageRequestsFactory damageRequestsBuilder)
         {
             _collidersTable = collidersTable;
             _vfxRequestsBuilder = vfxRequestsBuilder;

@@ -12,5 +12,7 @@ namespace ZE.MechBattle
             Value = damage;
             IsValid = true;
         }
+
+        public DamageApplyParameters Multiply(float damageCf) => new(Value * damageCf);
     }
 }

@@ -11,6 +11,8 @@ namespace ZE.MechBattle.Ecs {
     {
         public Entity MainWeaponLeft;
         public Entity MainWeaponRight;
-    
+
+        public Entity LeftEye;
+        public Entity RightEye;    
     }
 }

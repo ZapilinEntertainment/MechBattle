@@ -26,7 +26,7 @@ namespace ZE.MechBattle
     [Serializable]
     public struct WeaponData
     {
-        public WeaponConfig Config;
+        public ProjectileWeaponConfig Config;
         public ViewPartAttachmentProtocol AttachmentProtocol;
     }
 

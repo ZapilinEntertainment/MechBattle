@@ -18,7 +18,10 @@ namespace ZE.MechBattle.Ecs {
 
         public override void OnAwake()
         {
-            _filter = World.Filter.With<WeaponFireTag>().Build();
+            _filter = World.Filter
+                .With<WeaponFireTag>()
+                .Without<ContinuosFiringTag>()
+                .Build();
             _stash = World.GetStash<WeaponFireTag>();
         }
 
@@ -30,10 +33,8 @@ namespace ZE.MechBattle.Ecs {
             foreach (var weaponEntity in _filter)
             {
                 _completenessHandler.OnWeaponShot(weaponEntity);
+                _stash.Remove(weaponEntity);
             }
-
-            // note: when adding long-firing weapons (ex.:lasers), change RemoveAll to singular executions
-            _stash.RemoveAll();
         }
     }
 }

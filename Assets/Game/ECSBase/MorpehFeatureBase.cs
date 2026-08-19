@@ -18,8 +18,7 @@ namespace ZE.MechBattle
             builder.Register<ProjectilesFactory>(Lifetime.Scoped);
             builder.Register<MonoViewFactory>(Lifetime.Scoped);
             builder.Register<ExplosionRequestsBuilder>(Lifetime.Scoped);
-            builder.Register<DamageRequestsBuilder>(Lifetime.Scoped);
-            builder.Register<VfxRequestsFactory>(Lifetime.Scoped);
+            builder.Register<DamageRequestsFactory>(Lifetime.Scoped);         
 
             builder.Register<DelayApplier>(Lifetime.Scoped);
             builder.Register<TriangularPositionApplier>(Lifetime.Scoped);
