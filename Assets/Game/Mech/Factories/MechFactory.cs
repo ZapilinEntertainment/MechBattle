@@ -25,7 +25,7 @@ namespace ZE.MechBattle
         private readonly Stash<LocalRotationLimitComponent> _localRotationLimits;
 
         private const float TEMP_MainGunDamage = 10f;
-        private const float TEMP_EyesDamage = 1f;
+        private const float TEMP_EyesDamage = 100f;
 
         [Inject]
         public MechFactory(

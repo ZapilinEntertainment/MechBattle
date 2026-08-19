@@ -66,7 +66,7 @@ namespace ZE.MechBattle
                 _fireTags.Set(weapons.MainWeaponRight);
         }
 
-        public void SwitchEyeFiring()
+        public void SwitchEyeFiring(bool active)
         {
             var weapons = _mechWeapons.Get(_mechEntity);
 
@@ -75,13 +75,13 @@ namespace ZE.MechBattle
                 if (_world.IsDisposed(eyeEntity))
                     return;
 
-                if (_fireTags.Has(eyeEntity))
+                if (active)
                 {
-                    _fireTags.Remove(eyeEntity);
+                    _fireTags.Set(eyeEntity);                    
                 }
                 else
                 {
-                    _fireTags.Add(eyeEntity);
+                    _fireTags.Remove(eyeEntity);
                 }
             }
 

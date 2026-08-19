@@ -16,6 +16,7 @@ namespace ZE.MechBattle.Ecs {
         private readonly CompositeDisposable _compositeDisposable;
         private readonly TransformAspectHandler _transformAspectHandler;
         private readonly CursorAimTrackingWorker _aimWorker;
+        private readonly ReactiveProperty<bool> _eyesActiveProperty = new(false);
 
         private bool _playerVehiclePresented = false;
         private MechController _mechController;
@@ -74,21 +75,24 @@ namespace ZE.MechBattle.Ecs {
                 _mechController.FireMainWeapon();
 
             // eyes shot
-            if (Input.GetKeyDown(KeyCode.Space))
-                _mechController.SwitchEyeFiring();
-
+            _eyesActiveProperty.Value = Input.GetKey(KeyCode.Space);
         }
 
         public void Dispose()
         {
             _compositeDisposable.Dispose();
             _mechController?.Dispose();
+            _eyesActiveProperty.Dispose();
         }
 
         private void OnPlayerViewLoaded(LocalPlayerViewInstancedFlag flag)
         {
             _mechController?.Dispose();
             _mechController = new MechController(World, _transformAspectHandler, flag.VehicleEntity);
+
+            _eyesActiveProperty
+                .Subscribe(isPressed => _mechController.SwitchEyeFiring(isPressed))
+                .AddTo(_compositeDisposable);
         }
     }
 }

@@ -4,6 +4,8 @@ using UnityEngine;
 
 namespace ZE.MechBattle
 {
+    // note: creates for every call, so can produce much garbage
+    // (view part is pooling hovewer)
     public class WeaponRaycaster : IWeaponRayCaster
     {
         public float MaxCastDistance => _maxCastDistance;

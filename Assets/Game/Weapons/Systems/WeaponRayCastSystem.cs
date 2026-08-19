@@ -50,6 +50,7 @@ namespace ZE.MechBattle.Ecs {
                 {
                     raycaster = AddNewRaycaster(weaponEntity);
                     _activeRaycasters.Add(weaponEntity, raycaster);
+                    //UnityEngine.Debug.Log($"add caster for entity {weaponEntity.Id}");
                 }
                 raycaster.UpdateFrameIndex(currentFrameIndex);
             }
@@ -87,6 +88,7 @@ namespace ZE.MechBattle.Ecs {
             {
                 var startPoint = _shotPoints.Get(casterKvp.Key).WorldPoint;
                 var ray = new Ray(startPoint.pos, math.forward(startPoint.rot));
+                //UnityEngine.Debug.Log(startPoint.pos);
 
                 var caster = casterKvp.Value;
                 var maxDistance = caster.MaxCastDistance;

@@ -31,7 +31,7 @@ namespace ZE.MechBattle.Vfx
             _prefab = prefab;
             _hostObject = new GameObject(nameof(RayEffectsPool<T>)).transform;
             _hostObject.parent = hostOfPools;
-            _pool = new(createFunc: Create, defaultCapacity: 4);
+            _pool = new(createFunc: Create, defaultCapacity: 4, actionOnGet: OnGet, actionOnRelease: OnRelease);
 
             _releaser = new(_pool);
         }
@@ -44,6 +44,9 @@ namespace ZE.MechBattle.Vfx
             instance.AssignReleaser(_releaser);
             return instance;
         }
+
+        private void OnRelease(T instance) => instance.OnRelease();
+        private void OnGet(T instance) => instance.OnGet();
 
         IDisposableRayEffectView IRayEffectPlayer.GetRayEffect() => _pool.Get();
     }

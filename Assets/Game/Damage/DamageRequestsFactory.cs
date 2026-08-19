@@ -25,7 +25,7 @@ namespace ZE.MechBattle.Ecs
 
         public void Build(Entity damager, int targetColliderId, DamageApplyParameters damageParameters)
         {
-            if (!_collidersTable.TryGetColliderOwner(targetColliderId, out var colliderOwner))
+            if (_collidersTable.TryGetColliderOwner(targetColliderId, out var colliderOwner))
                 Build(damager, colliderOwner, damageParameters);
         }
     
