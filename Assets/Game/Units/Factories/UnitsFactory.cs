@@ -1,7 +1,6 @@
 using VContainer;
 using Scellecs.Morpeh;
 using ZE.MechBattle.Ecs;
-using ZE.MechBattle.Navigation;
 using Unity.Mathematics;
 
 namespace ZE.MechBattle
@@ -24,6 +23,7 @@ namespace ZE.MechBattle
         private readonly Stash<AimPrecisionComponent> _aimPrecisionComponents;
         private readonly Stash<UnitWeaponComponent> _weaponComponents;
         private readonly Stash<HealthComponent> _healthComponents;
+        private readonly Stash<UnitTag> _unitTags;
        
 
         [Inject]
@@ -53,6 +53,7 @@ namespace ZE.MechBattle
             _aimPrecisionComponents = world.GetStash<AimPrecisionComponent>();
             _weaponComponents = world.GetStash<UnitWeaponComponent>();
             _healthComponents = world.GetStash<HealthComponent>();
+            _unitTags = world.GetStash<UnitTag>();
         }
 
         // todo: rework to generic version
@@ -101,6 +102,8 @@ namespace ZE.MechBattle
 
             _healthComponents.Set(entity, new(config.Health));
 
+            _unitTags.Add(entity);
+
             TryAttachWeapon(entity, config);
 
         }
@@ -120,7 +123,7 @@ namespace ZE.MechBattle
                 UseAutoShot = true,
                 SyncTargetWithParent = true,
 
-                DamageParameters = new(config.Damage)
+                DamageParameters = new(weaponData.Config.DamageType, config.Damage)
             });
             _aimPrecisionComponents.Add(weaponEntity, new(config.MaxPrecisionAberration) );
             _weaponComponents.Set(unitEntity, new(weaponEntity));

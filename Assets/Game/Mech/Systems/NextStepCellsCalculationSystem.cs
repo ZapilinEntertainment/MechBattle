@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Scellecs.Morpeh;
 using Scellecs.Morpeh.Native;
 using Unity.Collections;
@@ -8,19 +9,13 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using VContainer;
 using ZE.MechBattle.Navigation;
+using ZE.MechBattle.MechMovement;
 
 namespace ZE.MechBattle.Ecs {
-
-    public interface IMechStepsAffectionMap
-    {
-        void GetStepAffectedCells(Action<IntTriangularPos, Entity> addAffectionData);
-    }
-
-
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public sealed class NextStepCellsCalculationSystem : ISystem, IMechStepsAffectionMap
+    public sealed class NextStepCellsCalculationSystem : ISystem, IMechStepsAffectionMapSource
     {
         private readonly struct CachedFootAffectionData
         {
@@ -35,10 +30,11 @@ namespace ZE.MechBattle.Ecs {
         }
 
         public World World { get; set;}
+        public bool IsAffectionMapEmpty => _mechStepsAffectedCells.Length == 0;
+
         private Filter _filter;
         private Stash<NextStepPositionCalculationRequest> _requests;       
         private Stash<MechInputComponent> _input;        
-        private Stash<MechChassisComponent> _chassisComponents;
 
         private Stash<PositionComponent> _positions;
         private Stash<RotationComponent> _rotations;
@@ -72,7 +68,6 @@ namespace ZE.MechBattle.Ecs {
             _requests = World.GetStash<NextStepPositionCalculationRequest>();
             
             _input = World.GetStash<MechInputComponent>();            
-            _chassisComponents = World.GetStash<MechChassisComponent>();
 
             _initLocalPositions = World.GetStash<InitialLocalPosition>();
             _positions = World.GetStash<PositionComponent>();
@@ -89,7 +84,6 @@ namespace ZE.MechBattle.Ecs {
 
             #region Prepare native data
             var nativeFilter = _filter.AsNative();
-            var chassisComponents = _chassisComponents.AsNative();
             var stepTargets = _stepTargets.AsNative();
             var stepSettings = _stepSettings.AsNative();
             var requests = _requests.AsNative();
@@ -160,7 +154,7 @@ namespace ZE.MechBattle.Ecs {
 
         private void PrepareCapacities(NativeFilter filter)
         {
-            _mechStepsAffectedCells.Clear();
+            //_mechStepsAffectedCells.Clear(); - done by special clear system
             _footAffectionData.Clear();
 
             var maxCount = 0;
@@ -190,5 +184,7 @@ namespace ZE.MechBattle.Ecs {
             if (_mechStepsAffectedCells.Capacity < maxCount)
                 _mechStepsAffectedCells.SetCapacity(maxCount);
         }
+
+        public void ClearData() => _mechStepsAffectedCells.Clear();
     }
 }

@@ -1,14 +1,20 @@
 using VContainer;
+using ZE.MechBattle.Ecs;
+using ZE.MechBattle.GridOperations;
 
 namespace ZE.MechBattle
 {
     [System.Serializable]
-    public class GridOperationsInstaller : IFeatureModule, ISceneFeatureScopeInstaller
+    public class GridOperationsInstaller : EcsFeatureModule<GridSystemsInstallQueue>, ISceneFeatureScopeInstaller
     {
+        protected override GridSystemsInstallQueue CreateQueue() => new();
 
-        void ISceneFeatureScopeInstaller.SceneScopeInstall(IContainerBuilder builder)
+        public override void SceneScopeInstall(IContainerBuilder builder)
         {
-            builder.Register<INavigationGridHandler, NavigationGridHandler>(Lifetime.Scoped);
+            base.SceneScopeInstall(builder);
+
+            builder.Register<NavigationGridHandler>(Lifetime.Scoped);
+            builder.Register<IUnitsGrid, UnitsGrid>(Lifetime.Scoped);
         }
     }
 }

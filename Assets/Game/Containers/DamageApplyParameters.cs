@@ -5,14 +5,18 @@ namespace ZE.MechBattle
         public readonly bool IsValid;
         // damager
         // damage group
-        public readonly float Value;    
+        public readonly float Value;
+        public readonly DamageType DamageType;
 
-        public DamageApplyParameters(float damage)
+        public DamageApplyParameters(DamageType damageType, float damage)
         {
+            DamageType = damageType;
             Value = damage;
             IsValid = true;
         }
 
-        public DamageApplyParameters Multiply(float damageCf) => new(Value * damageCf);
+        public DamageApplyParameters Multiply(float damageCf) => new(DamageType, Value * damageCf);
     }
+
+    public enum DamageType : byte { Undefined, Projectile, Laser, Trampling}
 }

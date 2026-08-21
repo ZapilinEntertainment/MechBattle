@@ -20,6 +20,8 @@ namespace ZE.MechBattle
             builder.Register<MechInterpolator>(Lifetime.Scoped);
             builder.Register<MechHandler>(Lifetime.Scoped);
 
+            builder.Register<IMechStepsMap, MechStepsMap>(Lifetime.Scoped);
+
 #if UNITY_EDITOR
             builder.Register<StepDrawer>(Lifetime.Scoped);
 #endif

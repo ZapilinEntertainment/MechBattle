@@ -34,7 +34,7 @@ namespace ZE.MechBattle.Ecs {
         {
             foreach (var chassisEntity in _chassisSyncFilter)
             {
-                var mechEntity = _mechHandler.GetMechEntity(chassisEntity);
+                var mechEntity = _mechHandler.GetChassisMechEntity(chassisEntity);
                 var inputComponent = _inputComponents.Get(mechEntity, out var exists);
                 if (exists && !inputComponent.IsIdle)
                     _inputComponents.Set(chassisEntity, inputComponent);

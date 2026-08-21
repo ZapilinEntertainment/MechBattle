@@ -1,4 +1,5 @@
 using ZE.MechBattle.Ecs;
+using ZE.MechBattle.MechMovement;
 
 namespace ZE.MechBattle
 {
@@ -12,13 +13,20 @@ namespace ZE.MechBattle
 
             installer.AddSystem<MechIdleStandReturnCheckSystem>(SystemGroupOrder.MechSystemsCalculation);
             installer.AddSystem<MechMovementPrepareSystem>(SystemGroupOrder.MechSystemsCalculation);
-            installer.AddSystemWithInterface<NextStepCellsCalculationSystem, IMechStepsAffectionMap>(SystemGroupOrder.MechSystemsCalculation);
+            installer.AddSystemWithInterface<NextStepCellsCalculationSystem, IMechStepsAffectionMapSource>(SystemGroupOrder.MechSystemsCalculation);
+
+            // calculating next position job -> switch to next systems group
+            installer.AddSystem<MechStepsMapUpdateSystem>(SystemGroupOrder.MechSystemsApplication);
 
             installer.AddSystem<TargetStepPositionCheckSystem>(SystemGroupOrder.MechSystemsApplication);
             installer.AddSystem<StartChassisMovementSystem>(SystemGroupOrder.MechSystemsApplication);
             installer.AddSystem<StepProgressionSystem>(SystemGroupOrder.MechSystemsApplication);
             installer.AddSystem<StepInterpolationSystem>(SystemGroupOrder.MechSystemsApplication);
             installer.AddSystem<MechMovementClearSystem>(SystemGroupOrder.MechSystemsApplication);
+
+            installer.AddSystem<TramplingSystem>(SystemGroupOrder.MechSystemsApplication + 1);
+
+            installer.AddSystem<MechStepsMapClearSystem>(SystemGroupOrder.Dispose);
         }
     }
 }

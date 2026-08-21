@@ -3,11 +3,7 @@ using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle
 {
-    public interface INavigationGridHandler
-    {
-        bool IsCellOccupied(IntTriangularPos pos);
-    }
-    public class NavigationGridHandler : INavigationGridHandler
+    public class NavigationGridHandler
     {
         private readonly IMovementCellsMap _movementCellsList;
 
@@ -18,5 +14,6 @@ namespace ZE.MechBattle
         }
 
         public bool IsCellOccupied(IntTriangularPos pos) => _movementCellsList.TryGetValue(pos, out var cellValue) && cellValue.ProjectionStepIndex == 0;
+
     }
 }

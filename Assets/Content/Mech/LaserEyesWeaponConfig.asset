@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58b55f7e87c9b32428db28a86733bb02, type: 3}
   m_Name: LaserEyesWeaponConfig
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.RayWeaponConfig
+  <DamageType>k__BackingField: 2
   <MinRange>k__BackingField: 0
   <RecommendedRangePc>k__BackingField: 0.8
   <MaxRange>k__BackingField: 250

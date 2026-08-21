@@ -15,6 +15,7 @@ namespace ZE.MechBattle
         }
 
         public Entity GetHeadEntity(Entity mechEntity) => _mechComponents.Get(mechEntity).HeadEntity;
-    
+        public Entity GetChassisEntity(Entity mechEntity) => _mechComponents.Get(mechEntity).ChassisEntity;
+
     }
 }

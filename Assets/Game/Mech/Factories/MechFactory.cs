@@ -120,7 +120,7 @@ namespace ZE.MechBattle
                 AttachmentProtocol = slotInfo.AttachmentProtocol,
                 SyncTargetWithParent = true,
 
-                DamageParameters = new(TEMP_MainGunDamage)
+                DamageParameters = new(TEMP_mainWeaponConfig.DamageType, TEMP_MainGunDamage)
             });
             _viewFactory.MakeViewReceiver(weaponEntity, equipmentId + "_view");
 
@@ -146,7 +146,7 @@ namespace ZE.MechBattle
             var eyeEntity = _weaponFactory.CreateWeapon(new()
             {
                 AttachmentProtocol = new() { LocalPosition = localPos, LocalRotationDegrees = float3.zero },
-                DamageParameters = new(TEMP_EyesDamage),
+                DamageParameters = new(TEMP_eyesWeaponConfig.DamageType, TEMP_EyesDamage),
                 WeaponConfig = TEMP_eyesWeaponConfig,
                 ParentEntity = headEntity,
             });

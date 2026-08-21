@@ -42,7 +42,13 @@ namespace ZE.MechBattle.MechMovement
             _settings = world.GetStash<ChassisSettingsComponent>();
         }
 
-        public Entity GetMechEntity(Entity chassisEntity) => _parentComponents.Get(chassisEntity).Value;
+        public Entity GetChassisMechEntity(Entity chassisEntity) => _parentComponents.Get(chassisEntity).Value;
+        public Entity GetFootChassisEntity(Entity footEntity)
+        {
+            var ankleEntity = _parentComponents.Get(footEntity).Value;
+            var hipEntity = _parentComponents.Get(ankleEntity).Value;
+            return _parentComponents.Get(hipEntity).Value;
+        }
 
         public (Entity activeFoot, Entity backFoot) GetFoots(Entity chassisEntity)
         {
@@ -55,7 +61,8 @@ namespace ZE.MechBattle.MechMovement
 
         public Entity GetActiveFootEntity(Entity chassisEntity)
         {
-            var activeLegIndex = _activeLegs.Get(chassisEntity).Value;
+            var activeLegComponent = _activeLegs.Get(chassisEntity, out var activeLegExists);
+            var activeLegIndex = activeLegExists ? activeLegComponent.Value : 0;
             var component = _chassisComponents.Get(chassisEntity);
             return activeLegIndex == 0 ? component.LeftLeg.Foot : component.RightLeg.Foot;
         }

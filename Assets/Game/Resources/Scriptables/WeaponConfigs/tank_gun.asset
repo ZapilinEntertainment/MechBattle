@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c9cf684c8b41224e8a5e1ff216b575a, type: 3}
   m_Name: tank_gun
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.ProjectileWeaponConfig
+  <DamageType>k__BackingField: 1
   <MinRange>k__BackingField: 0
   <RecommendedRangePc>k__BackingField: 0.8
   <MaxRange>k__BackingField: 85
@@ -20,7 +21,6 @@ MonoBehaviour:
     x: 0
     y: 0
     z: 2.1
-  _projectileId: tank_projectile
   _muzzleEffectId: tank_shot
   _towerAttachmentProtocol:
     IsValid: 1
@@ -54,3 +54,4 @@ MonoBehaviour:
         y: 0
       XAngleDegreesLimit: 45
       YAngleDegreesLimit: 0
+  _projectileId: tank_projectile

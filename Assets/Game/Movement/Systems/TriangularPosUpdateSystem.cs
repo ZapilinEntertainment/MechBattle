@@ -1,6 +1,5 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
-using Unity.Mathematics;
 using VContainer;
 using ZE.MechBattle.Navigation;
 
@@ -11,6 +10,8 @@ namespace ZE.MechBattle.Ecs {
     public sealed class TriangularPosUpdateSystem : ISystem 
     {
         public World World { get; set;}
+        public const SystemGroupOrder GroupOrder = SystemGroupOrder.RegularUpdate;
+
         private Filter _filter;
         private Stash<TriangularPosComponent> _tripos;
         private Stash<PositionComponent> _positions;

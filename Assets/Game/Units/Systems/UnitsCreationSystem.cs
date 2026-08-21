@@ -12,13 +12,13 @@ namespace ZE.MechBattle.Ecs {
         private Stash<PlayerAffiliationComponent> _affiliations { get; set;}
 
         private readonly DelayApplier _delayApplier;
-        private readonly INavigationGridHandler _gridHandler;
+        private readonly NavigationGridHandler _gridHandler;
         private readonly float _triangleHeight;
         private const float UNSUCCESSFUL_REQUEST_CLEAR_TIME = 5f;
 
         [Inject]
         public UnitsCreationSystem(
-            INavigationGridHandler gridHandler, 
+            NavigationGridHandler gridHandler, 
             INavigationMap map,
             DelayApplier delayApplier, 
             UnitsFactory unitsFactory,

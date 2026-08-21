@@ -65,7 +65,9 @@ namespace ZE.MechBattle.Vfx
         {
             _subscription.Dispose();
             _pool.Dispose();
-            GameObject.Destroy(_objectsHost.gameObject);
+
+            if (_objectsHost != null)
+                GameObject.Destroy(_objectsHost.gameObject);
         }
 
         private void OnRestorablesListChanged(bool isPresented)

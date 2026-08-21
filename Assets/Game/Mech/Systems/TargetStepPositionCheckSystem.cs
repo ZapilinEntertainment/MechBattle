@@ -4,8 +4,6 @@ using VContainer;
 using Unity.IL2CPP.CompilerServices;
 using ZE.MechBattle.Navigation;
 using Unity.Mathematics;
-using ZE.MechBattle.MechMovement;
-using UnityEngine;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -13,12 +11,6 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public sealed class TargetStepPositionCheckSystem : ISystem 
     {
-        private struct StepAffectionData
-        {
-            public int TotalCellsCount;
-            public int SuitableCellsCount;
-        }
-
         public World World { get; set;}
         private Filter _filter;
         private Stash<StepTargetPointComponent> _stepTargets;
@@ -26,10 +18,9 @@ namespace ZE.MechBattle.Ecs {
         private Stash<NextStepPositionCalculationRequest> _calculationRequests;
         private Stash<InvalidTargetStepPositionTag> _invalidPositionTags;
 
-        private readonly IMechStepsAffectionMap _affectionMapSource;
+        private readonly IMechStepsMap _mechStepsMap;
         private readonly INavigationMap _navigationMap;
-        private readonly Dictionary<Entity, StepAffectionData> _affectionData = new(INITIAL_CAPACITY);
-        private readonly Dictionary<IntTriangularPos, Entity> _alreadyOccupiedCells = new(INITIAL_CAPACITY);
+        
         private readonly List<OrientedPoint> _orientedPointsList = new(INITIAL_CAPACITY);
         private readonly List<float> _heightsList = new(INITIAL_CAPACITY);
         private const int INITIAL_CAPACITY = 32;
@@ -37,10 +28,10 @@ namespace ZE.MechBattle.Ecs {
 
         [Inject]
         public TargetStepPositionCheckSystem(
-            IMechStepsAffectionMap affectionMap, 
+            IMechStepsMap affectionMap, 
             INavigationMap navigationMap)
         {
-            _affectionMapSource = affectionMap;
+            _mechStepsMap = affectionMap;
             _navigationMap = navigationMap;
         }
 
@@ -60,8 +51,7 @@ namespace ZE.MechBattle.Ecs {
         {
             if (_filter.IsEmpty())
                 return;
-
-            _affectionMapSource.GetStepAffectedCells(AddAffectionData);
+            
             foreach (var entity in _filter)
             {
                 if (!TryFormNextStepPlane(entity, out var plane))
@@ -78,29 +68,17 @@ namespace ZE.MechBattle.Ecs {
                 //UnityEngine.Debug.Log($"next point calculated on entity {entity.Id}: {pos}, plane: {plane}");
             }
 
-            _affectionData.Clear();
-            _alreadyOccupiedCells.Clear();
-
             _calculationRequests.RemoveAll();
         }
 
         public void Dispose() { }
 
-        private void AddAffectionData(IntTriangularPos tripos, Entity entity)
-        {
-            _affectionData.TryGetValue(entity, out var affectionData);
-            affectionData.TotalCellsCount++;
-
-            if (_alreadyOccupiedCells.TryAdd(tripos, entity))
-                affectionData.SuitableCellsCount++;
-
-            _affectionData[entity] = affectionData;
-        }
+        
 
         private bool TryFormNextStepPlane(Entity entity, out float4 plane)
         {
             plane = default;
-            if (!_affectionData.TryGetValue(entity, out var affectionData))
+            if (!_mechStepsMap.TryGetAffectionData(entity, out var affectionData))
             {
                 UnityEngine.Debug.LogError("affection data not found");
                 return false;
@@ -116,7 +94,7 @@ namespace ZE.MechBattle.Ecs {
 
             _orientedPointsList.Clear();
             _heightsList.Clear();
-            foreach (var kvp in _alreadyOccupiedCells)
+            foreach (var kvp in _mechStepsMap)
             {
                 if (kvp.Value == entity)
                 {
@@ -134,14 +112,6 @@ namespace ZE.MechBattle.Ecs {
                 NavigationConstants.GetRansacIterationsCount(affectionData.SuitableCellsCount),
                 ransacThreshold: MechConstants.MAX_TARGET_POS_HEIGHT_ABERRATION,
                 out plane);
-        }
-
-        private quaternion GetChassisRotation(Entity entity, float4 plane)
-        {
-            var chassisEntity = _calculationRequests.Get(entity).ChassisEntity;
-            var chassisRotation = _rotations.Get(entity).Value;
-            var chassisForward = math.mul(chassisRotation, math.forward());
-            return quaternion.LookRotation(chassisForward, plane.xyz);
         }
     }
 }

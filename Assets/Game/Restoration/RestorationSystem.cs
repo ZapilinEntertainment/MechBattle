@@ -40,6 +40,7 @@ namespace ZE.MechBattle.Ecs {
                     if (_restorablesList.TryGetElement(component.RestoreIndex, out var restorable))
                     {
                         restorable.Restore();
+                        _restorablesList.Unregister(component.RestoreIndex);
                     }
 
                     World.RemoveEntity(entity);

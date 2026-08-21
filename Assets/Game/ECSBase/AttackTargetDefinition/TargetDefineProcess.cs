@@ -71,6 +71,7 @@ namespace ZE.MechBattle.Ecs
 
 
             // WARNING: Native stashes and filters exists only for one frame!
+            // TODO: check if Units grid can be used instead of MovementCellsMap
             _job.Entities = _entities;
             _job.AffiliationsStash = _affiliationComponents.AsNative();
             _job.AttackTargets = _attackTargets.AsNative();

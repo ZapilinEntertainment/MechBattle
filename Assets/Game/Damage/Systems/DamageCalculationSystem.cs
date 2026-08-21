@@ -42,9 +42,10 @@ namespace ZE.MechBattle.Ecs {
         {
             var requestBody = _calculateRequests.Get(request);
 
-            // some boost calculations will be here
-            var resultingDamage = requestBody.Data.Value;
-            _resultingDamage.Set(request, new() { Value = resultingDamage});
+            // some boost calculations will be here, or friendly fire checks
+            // use damageParameters.Multiply
+
+            _resultingDamage.Set(request, new() { DamageParameters = requestBody.Data});
             //UnityEngine.Debug.Log("resulting damage: " + resultingDamage);
         }
     }

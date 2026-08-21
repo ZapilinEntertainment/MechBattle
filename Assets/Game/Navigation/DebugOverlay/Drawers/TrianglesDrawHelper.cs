@@ -60,5 +60,12 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
                 Handles.DrawLine(vertices.RightBasisPos, vertices.PinnaclePos);
             }
         }
+
+        public static void DrawDebugLines(TriangleVertices vertices)
+        {
+            Debug.DrawLine(vertices.PinnaclePos, vertices.LeftBasisPos);
+            Debug.DrawLine(vertices.RightBasisPos, vertices.LeftBasisPos);
+            Debug.DrawLine(vertices.RightBasisPos, vertices.PinnaclePos);
+        }
     }
 }

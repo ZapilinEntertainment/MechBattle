@@ -177,7 +177,7 @@ namespace ZE.MechBattle.Ecs {
         private void TranslateAndRotateMechWithChassis(Entity chassisEntity, RigidTransform targetChassisTransform)
         {
             var currentChassisTransform = _transformAspectHandler.GetPoint(chassisEntity);
-            var mechEntity = _mechHandler.GetMechEntity(chassisEntity);
+            var mechEntity = _mechHandler.GetChassisMechEntity(chassisEntity);
             var currentMechTransform = _transformAspectHandler.GetPoint(mechEntity);
 
             quaternion rotationDelta = math.normalizesafe(math.mul(targetChassisTransform.rot, math.conjugate(currentChassisTransform.rot)));
