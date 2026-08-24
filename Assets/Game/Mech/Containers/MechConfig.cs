@@ -12,6 +12,8 @@ namespace ZE.MechBattle
         [field:SerializeField] public ForwardRotationLimits HeadRotationLimits { get; private set; }
         [field: SerializeField] public float3 LeftEyeLocalPosition { get; private set; }
         [field: SerializeField] public float3 RightEyeLocalPosition { get; private set; }
+        [field: SerializeField] public CollidersConfiguration PartitionCollidersConfig { get; private set; }
+
         [SerializeField] private float _headRotationSpeedDegrees;
         public float HeadRotationSpeedRadians => math.radians(_headRotationSpeedDegrees);
 

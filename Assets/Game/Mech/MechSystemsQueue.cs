@@ -26,6 +26,7 @@ namespace ZE.MechBattle
 
             installer.AddSystem<TramplingSystem>(SystemGroupOrder.MechSystemsApplication + 1);
 
+            installer.AddSystem<PartitionsClearSystem>(SystemGroupOrder.DisposedObjectsOperations);
             installer.AddSystem<MechStepsMapClearSystem>(SystemGroupOrder.Dispose);
         }
     }

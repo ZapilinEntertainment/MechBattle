@@ -22,6 +22,9 @@ namespace ZE.MechBattle
 
             builder.Register<IMechStepsMap, MechStepsMap>(Lifetime.Scoped);
 
+            builder.Register<PartitionsList>(Lifetime.Scoped);
+            builder.Register<MechPartitionFactory>(Lifetime.Scoped);
+
 #if UNITY_EDITOR
             builder.Register<StepDrawer>(Lifetime.Scoped);
 #endif

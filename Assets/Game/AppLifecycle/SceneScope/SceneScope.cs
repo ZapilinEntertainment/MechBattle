@@ -21,9 +21,7 @@ namespace ZE.MechBattle
 
             builder.Register<EcsTasksFactory>(Lifetime.Scoped);
             builder.Register<AwaitingTokensList>(Lifetime.Scoped);
-
-            builder.Register<RestorablesList>(Lifetime.Scoped);
-            builder.Register<CollidersTable>(Lifetime.Scoped);
+            builder.Register<RestorablesList>(Lifetime.Scoped);            
 
             builder.Register<ColouredMaterialsDepot>(Lifetime.Scoped);
 

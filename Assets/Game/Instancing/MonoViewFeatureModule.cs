@@ -22,6 +22,7 @@ namespace ZE.MechBattle
             base.SceneScopeInstall(builder);
             builder.Register<FinalViewFunctionalApplier>(Lifetime.Scoped);
             builder.Register<EntityViewHandler>(Lifetime.Scoped);
+            builder.Register<ViewPartsConnectionHandler>(Lifetime.Scoped);
         }
     }
 }

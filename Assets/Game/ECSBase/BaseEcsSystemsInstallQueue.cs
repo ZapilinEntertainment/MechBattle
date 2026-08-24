@@ -31,8 +31,7 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<HierarchyDisposeSyncSystem>(SystemGroupOrder.DisposeTagsSharing);
 
             installer.AddSystem<ViewDestroyEffectSystem>(SystemGroupOrder.DisposedObjectsOperations);            
-            installer.AddSystem<TransformsClearSystem>(SystemGroupOrder.DisposedObjectsOperations);
-            installer.AddSystem<CollidersClearSystem>(SystemGroupOrder.DisposedObjectsOperations);
+            installer.AddSystem<TransformsClearSystem>(SystemGroupOrder.DisposedObjectsOperations);     
 
             installer.AddSystem<LifetimeTrackingSystem>(SystemGroupOrder.Dispose);
             installer.AddSystem<EntityDisposeSystem>(SystemGroupOrder.Dispose);

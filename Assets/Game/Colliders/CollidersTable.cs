@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using Scellecs.Morpeh;
@@ -16,7 +15,7 @@ namespace ZE.MechBattle
         public void RegisterCollider(Entity colliderOwner, int key) 
         {
             _table[key] = colliderOwner;
-            //Debug.Log($"bind collider key {key} to entity {colliderOwner.Id}");
+            Debug.Log($"bind collider key {key} to entity {colliderOwner.Id}");
         }
         public void UnregisterCollider(int key) => _table.Remove(key);
         public void UnregisterAllColliders(Entity owner)

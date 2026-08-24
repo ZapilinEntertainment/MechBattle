@@ -14,10 +14,13 @@ namespace ZE.MechBattle
         private readonly WeaponHandler _weaponHandler;
         private readonly EntityViewHandler _viewHandler;
         private readonly WeaponFactory _weaponFactory;
+        private readonly MechPartitionFactory _partitionsFactory;
+        private readonly World _world;
 
         private readonly MechConfig TEMP_mechConfig;
         private readonly ProjectileWeaponConfig TEMP_mainWeaponConfig;
         private readonly RayWeaponConfig TEMP_eyesWeaponConfig;
+        
 
         private readonly Stash<MechComponent> _mechComponents;
         private readonly Stash<RotationSpeedComponent> _rotationSpeed;
@@ -30,7 +33,6 @@ namespace ZE.MechBattle
         [Inject]
         public MechFactory(
             MonoViewFactory viewFactory, 
-
             TransformAspectHandler transformAspectHandler, 
             EntityViewHandler viewHandler,
             WeaponHandler weaponHandler,
@@ -39,6 +41,8 @@ namespace ZE.MechBattle
             World world,
             ParentingRelationsApplier parentingRelationsApplier,
             WeaponFactory weaponFactory,
+            MechPartitionFactory partitionFactory,
+
             [Key(DevelopConstants.DEFAULT_MECH_ID)] MechConfig mechConfig,
             [Key(DevelopConstants.DEFAULT_MECH_GUN_ID)] ProjectileWeaponConfig weaponConfig,
             [Key(DevelopConstants.LASER_EYES_WEAPON_ID)] RayWeaponConfig eyesWeaponConfig)
@@ -52,15 +56,17 @@ namespace ZE.MechBattle
             _chassisFactory = chassisFactory;
             _parentingRelationsApplier = parentingRelationsApplier;            
             _weaponFactory = weaponFactory;
+            _partitionsFactory = partitionFactory;
 
             TEMP_mechConfig = mechConfig;
             TEMP_mainWeaponConfig = weaponConfig;
             TEMP_eyesWeaponConfig = eyesWeaponConfig;
 
-            _mechComponents = world.GetStash<MechComponent>();
-            _rotationSpeed = world.GetStash<RotationSpeedComponent>();
-            _mechWeapons = world.GetStash<MechWeaponsComponent>();
-            _localRotationLimits = world.GetStash<LocalRotationLimitComponent>();
+            _world = world;
+            _mechComponents = _world.GetStash<MechComponent>();
+            _rotationSpeed = _world.GetStash<RotationSpeedComponent>();
+            _mechWeapons = _world.GetStash<MechWeaponsComponent>();
+            _localRotationLimits = _world.GetStash<LocalRotationLimitComponent>();
         }
 
         public Entity Build(float3 position, quaternion rotation)
@@ -88,7 +94,9 @@ namespace ZE.MechBattle
                 LeftEye = leftEye
             });
 
-            _mechComponents.Add(mechEntity, new(chassisEntity, upperPartEntity, headEntity));            
+            _mechComponents.Add(mechEntity, new(chassisEntity, upperPartEntity, headEntity));
+
+            _partitionsFactory.CreatePartitions(mechEntity, mechConfig);
 
             return mechEntity;
         }

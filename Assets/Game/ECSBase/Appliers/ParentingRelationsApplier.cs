@@ -45,13 +45,11 @@ namespace ZE.MechBattle.Ecs
 
         public void Apply(ExecutionProtocol protocol)
         {
-            var existingGrandparentComponent = _parents.Get(protocol.ParentEntity, out var grandparentExists);
             var childEntity = protocol.ChildEntity;
-
-            if (grandparentExists && existingGrandparentComponent.Value == childEntity)
+            if (!CreateSimpleParentingBond(protocol.ParentEntity, childEntity))
                 throw new System.Exception("parent bond creation error");
 
-            _parents.Set(childEntity, new(protocol.ParentEntity));
+            
             _localPositions.Set(childEntity, new() { Value = protocol.LocalPos});
             _localRotation.Set(childEntity, new() { Value = protocol.LocalRot});
 
@@ -65,6 +63,20 @@ namespace ZE.MechBattle.Ecs
 
             if (protocol.SaveInitLocalPos)
                 _initLocalPositions.Set(childEntity,new(protocol.LocalPos));
+        }
+
+        public bool CreateSimpleParentingBond(Entity parentEntity, Entity childEntity)
+        {
+            var existingGrandparentComponent = _parents.Get(parentEntity, out var grandparentExists);
+
+            if (grandparentExists && existingGrandparentComponent.Value == childEntity)
+            {
+                UnityEngine.Debug.LogError("cannot create circular bond");
+                return false;
+            }                
+
+            _parents.Set(childEntity, new(parentEntity));
+            return true;
         }
 
         public Entity CreateChildEntityForViewPart(RigidTransform point, Entity parent, ViewPartKey viewPartKey)

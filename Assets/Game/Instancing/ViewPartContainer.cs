@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace ZE.MechBattle
 {
-    public class ViewPartContainer : IViewPart
+    public class ViewPartContainer : IViewPart, IViewConnectionsPoint
     {
         public Transform Transform => _transform;
         private readonly Transform _transform;
