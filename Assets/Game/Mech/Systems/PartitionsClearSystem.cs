@@ -10,10 +10,10 @@ namespace ZE.MechBattle.Ecs {
     {
         public World World { get; set;}
         private Filter _filter;
-        private readonly PartitionsList _partitionsList;
+        private readonly PartitionsListManager _partitionsList;
 
         [Inject]
-        public PartitionsClearSystem(PartitionsList partitionsList)
+        public PartitionsClearSystem(PartitionsListManager partitionsList)
         {
             _partitionsList = partitionsList;
         }

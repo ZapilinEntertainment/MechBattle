@@ -13,7 +13,6 @@ namespace ZE.MechBattle
         public override void SceneScopeInstall(IContainerBuilder builder)
         {
             base.SceneScopeInstall(builder);
-            builder.Register<MechFactory>(Lifetime.Scoped);
             builder.Register<MechCreateRequestsFactory>(Lifetime.Scoped);
             builder.Register<MechChassisFactory>(Lifetime.Scoped);
             builder.Register<MechMovementHandler>(Lifetime.Scoped);            
@@ -22,8 +21,13 @@ namespace ZE.MechBattle
 
             builder.Register<IMechStepsMap, MechStepsMap>(Lifetime.Scoped);
 
-            builder.Register<PartitionsList>(Lifetime.Scoped);
+            builder.Register<MechFactory>(Lifetime.Scoped);
+            builder.Register<MechBuilder>(Lifetime.Transient);
+            builder.Register<MechPartsBuilder>(Lifetime.Transient);
+            builder.Register<MechWeaponsBuilder>(Lifetime.Transient);
+
             builder.Register<MechPartitionFactory>(Lifetime.Scoped);
+            builder.Register<PartitionsListManager>(Lifetime.Scoped);
 
 #if UNITY_EDITOR
             builder.Register<StepDrawer>(Lifetime.Scoped);

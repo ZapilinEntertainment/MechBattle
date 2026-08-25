@@ -30,11 +30,11 @@ namespace ZE.MechBattle
 
         }
 
-        public void BuildCollider(Entity entity, ColliderSetupInfo setupInfo)
+        public void BuildCollider(Entity ownerEntity, Entity hostEntity, ColliderSetupInfo setupInfo)
         {
             var collider = _collidersPool.Get(setupInfo);
-            _viewPartsConnectionHandler.Connect(entity, collider, setupInfo.LocalPosition, setupInfo.LocalRotation);
-            _colliderOwnityApplier.ApplyOwnity(entity, collider);
+            _viewPartsConnectionHandler.Connect(hostEntity, collider, setupInfo.LocalPosition, setupInfo.LocalRotation);
+            _colliderOwnityApplier.ApplyOwnity(ownerEntity, collider);
         }
     
     }

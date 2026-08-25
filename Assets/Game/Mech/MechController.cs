@@ -67,6 +67,7 @@ namespace ZE.MechBattle
 
         public void SwitchEyeFiring(bool active)
         {
+            
             if (active)
             {
                 _fireTags.Set(_headEntity);

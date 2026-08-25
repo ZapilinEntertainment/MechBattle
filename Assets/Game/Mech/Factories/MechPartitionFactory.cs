@@ -7,51 +7,33 @@ namespace ZE.MechBattle
     public class MechPartitionFactory
     {
         private readonly World _world;
-        private readonly PartitionsList _partitionsList;
         private readonly ParentingRelationsApplier _parentingRelationsApplier;
-        private readonly Stash<PartitionsRootTag> _partitionRoots;
+        private readonly Stash<MechPartitionComponent> _partitionComponents;
 
         [Inject]
-        public MechPartitionFactory(World world, PartitionsList partitionsList, ParentingRelationsApplier parentingRelationsApplier)
+        public MechPartitionFactory(
+            World world, 
+            ParentingRelationsApplier parentingRelationsApplier)
         {
             _world = world;
-            _partitionsList = partitionsList;
             _parentingRelationsApplier = parentingRelationsApplier;
-
-            _partitionRoots = _world.GetStash<PartitionsRootTag>();
+            _partitionComponents = _world.GetStash<MechPartitionComponent>();
         }
 
-        public void CreatePartitions(Entity mechEntity, MechConfig mechConfig)
+        public Entity CreatePartition(MechPartitionKey key, Entity mechEntity, Entity parentEntity, ViewPartAttachmentProtocol attachmentProtocol)
         {
-            CollidersConfiguration collidersConfig =  default; //mechConfig.PartitionCollidersConfig;
-            CreatePartition(mechEntity, MechPartitionKey.Center, collidersConfig);
-            CreatePartition(mechEntity, MechPartitionKey.LeftArm, collidersConfig);
-            CreatePartition(mechEntity, MechPartitionKey.RightArm, collidersConfig);
-            CreatePartition(mechEntity, MechPartitionKey.LeftLeg, collidersConfig);
-            CreatePartition(mechEntity, MechPartitionKey.RightLeg, collidersConfig);
-
-            _partitionRoots.Add(mechEntity);
-        }
-
-        private void CreatePartition(Entity mechEntity, MechPartitionKey key, CollidersConfiguration collidersConfig)
-        {
-            var partitionEntity = _world.CreateEntity();
-            //_parentingRelationsApplier.Apply(new()
-            //{
-            //    AwaitParentViewComponent = false,
-            //    ChildEntity = partitionEntity,
-            //    ParentEntity = mechEntity,
-            //    d
-            //})
-
-            if (collidersConfig.TryGetColliderSetupInfo(MechPartitionKey.Center.ToString(), out var setupInfo))
+            var entity = _world.CreateEntity();
+            _parentingRelationsApplier.Apply(new()
             {
-               
-            }
-            else
-            {
-                UnityEngine.Debug.LogError($"{key} partition collider info not found");
-            }
+                ChildEntity = entity,
+                ParentEntity = parentEntity,
+                LocalPos = attachmentProtocol.LocalPosition,
+                LocalRot = attachmentProtocol.LocalRotation,
+            });
+
+            _partitionComponents.Add(entity, new(mechEntity, key));
+
+            return entity;
         }
     
     }

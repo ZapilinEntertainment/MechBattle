@@ -1,145 +1,63 @@
 using Scellecs.Morpeh;
-using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
+using VContainer;
 using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle
 {
     public class MechBuilder
     {
-        public struct PartData
-        {
-            public Entity Entity;
-            //public List<string> SpecialKeywords;
+        public Entity MechEntity { get; private set; }
+        public Entity ChassisEntity { get; private set; }
+        public Entity UpperPartEntity { get; private set; }
+        public Entity HeadEntity { get; private set; }
 
-            //public bool ContainsKeyword(string keyword) => SpecialKeywords != null && SpecialKeywords.Contains(keyword);
+        private readonly MonoViewFactory _viewFactory;
+        private readonly TransformAspectHandler _transformAspectHandler;
+        private readonly Stash<MechComponent> _mechComponent;
+
+        [Inject]
+        public MechBuilder(MonoViewFactory viewFactory, TransformAspectHandler transformAspectHandler, World world)
+        {
+            _viewFactory = viewFactory;
+            _transformAspectHandler = transformAspectHandler;
+            _mechComponent = world.GetStash<MechComponent>();
         }
 
-        public Entity MechEntity;
-
-        private readonly MechConfig _mechConfig;
-        private readonly World _world;
-        private readonly Dictionary<string, PartData> _constructedParts = new();
-        private readonly HashSet<string> _processingPartsSet = new();
-        private readonly ParentingRelationsApplier _parentingRelationsApplier;
-
-        private readonly Stash<RotationSpeedComponent> _rotationSpeed;
-        private readonly Stash<LocalRotationLimitComponent> _localRotationLimits;
-
-        public MechBuilder(MechConfig mechConfig, ParentingRelationsApplier parentingRelationsApplier, World world)
+        public Entity Build(MechConfig mechConfig, float3 position, quaternion rotation)
         {
-            _mechConfig = mechConfig;
-            _parentingRelationsApplier = parentingRelationsApplier;
-            _world = world;
+            MechEntity = _viewFactory.CreateViewReceiver(DevelopConstants.DEFAULT_MECH_ID + "_view");
+            _transformAspectHandler.MoveToPoint(MechEntity, position, rotation);
 
-            _rotationSpeed = _world.GetStash<RotationSpeedComponent>();
-            _localRotationLimits = _world.GetStash<LocalRotationLimitComponent>();
+            return MechEntity;
         }
 
-        public void AddConstructedPart(string key, PartData partData) => _constructedParts.Add(key, partData);
-
-        public bool TryGetConstructedPartEntity(string key, out Entity entity)
+        public void CheckCrucialParts(MechPartsBuilder partsBuilder)
         {
-            if (_constructedParts.TryGetValue(key, out var partData))
-            {
-                entity = partData.Entity;
-                return true;
-            }
+            if (!partsBuilder.TryGetConstructedPartEntity(MechConstants.HEAD_PART_ID, out var headEntity))
+                UnityEngine.Debug.LogError("head part was not added");
             else
-            {
-                entity = default;
-                return false;
-            }
-        }
+                HeadEntity = headEntity;
 
-        public IEnumerator<KeyValuePair<string, PartData>> GetEnumerator() => _constructedParts.GetEnumerator();
 
-        public bool TryBuildPart(string key)
-        {
-            if (_constructedParts.ContainsKey(key))
-                return true;
 
-            if (!_mechConfig.TryGetPartSettings(key, out var settings))
-            {
-                UnityEngine.Debug.LogError($"part {key} settings not found");
-                return false;
-            }
-
-            _processingPartsSet.Clear();
-
-            var rootId = settings.Root;
-            Entity parentEntity;
-            if (string.IsNullOrEmpty(rootId))
-            {
-                parentEntity = MechEntity;
-            }
+            if (!partsBuilder.TryGetConstructedPartEntity(MechConstants.UPPER_PART_ID, out var upperPartEntity))
+                UnityEngine.Debug.LogError("upper part was not added");
             else
-            {
-                if (!_constructedParts.TryGetValue(rootId, out var rootData))
-                {
-                    _processingPartsSet.Add(key);
+                UpperPartEntity = upperPartEntity;
 
-                    if (_processingPartsSet.Contains(rootId))
-                    {
-                        UnityEngine.Debug.LogError("circular error with root " + rootId);
-                        return false;
-                    }
 
-                    if (!TryBuildPart(rootId))
-                    {
-                        UnityEngine.Debug.LogError("root build failure: cannot find settings for " + rootId);
-                        return false;
-                    }
-                    else
-                    {
-                        rootData = _constructedParts[rootId];
-                    }
-                }
 
-                parentEntity = rootData.Entity;
-            }
-            
+            if (!partsBuilder.TryGetConstructedPartEntity(MechConstants.CHASSIS_PART_ID, out var chassisPartEntity))
+                UnityEngine.Debug.LogError("chassis was not added");
+            else
+                ChassisEntity = chassisPartEntity;
 
-            var entity = BuildPart(key, settings, parentEntity);
-            AddConstructedPart(key, new() { Entity = entity });
-            return true;
+
+
+            var mechComponent = new MechComponent(ChassisEntity, UpperPartEntity, HeadEntity);
+            _mechComponent.Add(MechEntity, mechComponent);
         }
-
-        private Entity BuildPart(string key, MechPartSettings settings, Entity parent)
-        {
-            Entity entity;
-            var constructionProtocol = settings.ConstructProtocol;
-            switch (constructionProtocol.ConstructionMode)
-            {
-                case ViewPartConstructionMode.EntityOnly:
-                    {
-                        entity = _world.CreateEntity();
-                        break;
-                    }
-                case ViewPartConstructionMode.SyncWithViewPart:
-                    {
-                        if (!constructionProtocol.ViewPartKey.IsValid)
-                            throw new System.Exception("view part key invalid");
-
-                        entity = _parentingRelationsApplier.CreateChildEntityForViewPart(
-                            settings.AttachProtocol.ToPoint(),
-                            parent,
-                            constructionProtocol.ViewPartKey);
-                        break;
-                    }
-                default:
-                    {
-                        throw new System.NotImplementedException("construction mode not implemented");
-                    }
-            }
-
-            _rotationSpeed.Set(entity, new(settings.RotationSpeedRadians));
-            if (math.any(settings.RotationLimits.LimitAxleRotation))
-                _localRotationLimits.Set(entity, new(settings.RotationLimits));
-
-            return entity;
-        }
-    
     }
 }

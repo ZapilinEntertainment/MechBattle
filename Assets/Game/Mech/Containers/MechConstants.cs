@@ -10,6 +10,10 @@ namespace ZE.MechBattle
         public const string HEAD_PART_ID = "head";
         public const string UPPER_PART_ID = "upper_part";
         public const string CHASSIS_PART_ID = "chassis";
-    
+
+        public const string LEFT_ARM_PARTITION_ID = "left_arm";
+        public const string RIGHT_ARM_PARTITION_ID = "right_arm";
+        public const string LEFT_LEG_PARTITION_ID = "left_leg";
+        public const string RIGHT_LEG_PARTITION_ID = "right_leg";
     }
 }
