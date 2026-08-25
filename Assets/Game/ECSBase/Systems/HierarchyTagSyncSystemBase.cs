@@ -5,6 +5,9 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
+
+    // share parent tag with whole hierarchy (set on EVERY children entity)
+    // for one-step child sync use SyncTagWithParentSystem
     public abstract class HierarchyTagSyncSystemBase<T> : ISystem 
         where T : struct, IComponent
     {

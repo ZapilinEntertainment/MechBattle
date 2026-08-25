@@ -20,6 +20,7 @@ namespace ZE.MechBattle.Ecs {
         {
             _filter = World.Filter
                 .With<WeaponFireTag>()
+                .With<WeaponTag>()
                 .Without<ContinuosFiringTag>()
                 .Build();
             _stash = World.GetStash<WeaponFireTag>();

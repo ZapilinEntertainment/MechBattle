@@ -15,8 +15,7 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<WeaponTowerComponent> _weaponTowerComponents;
         private readonly Stash<WeaponBarrelComponent> _weaponBarrelComponents;
         private readonly Stash<WeaponShotPoint> _weaponShotPoints;
-        private readonly Stash<WeaponAutoShotTag> _weaponAutoShotTags;
-        private readonly Stash<SyncWithParentTargetTag> _syncTargetWithParent;
+        private readonly Stash<WeaponAutoShotTag> _weaponAutoShotTags;        
         private readonly Stash<RotationSpeedComponent> _rotationSpeedComponents;
 
         private readonly Stash<ViewPartRequestComponent> _viewPartRequests;
@@ -32,6 +31,11 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<WeaponRayComponent> _weaponRayComponents;
 
         private readonly Stash<ContinuosFiringTag> _continuosFiring;
+
+        private readonly Stash<SyncWithParentTargetTag> _syncTargetWithParent;
+        private readonly Stash<SyncFireTagWithParentTag> _syncFireTagWithParent;
+
+        private readonly Stash<WeaponTag> _weaponTags;
 
         [Inject]
         public WeaponFactory(World world, ParentingRelationsApplier parentingRelationsApplier, StringDataDictionary stringDataDictionary)
@@ -49,7 +53,9 @@ namespace ZE.MechBattle.Ecs
 
             _weaponShotPoints = world.GetStash<WeaponShotPoint>();
             _weaponAutoShotTags = world.GetStash<WeaponAutoShotTag>();
+
             _syncTargetWithParent = world.GetStash<SyncWithParentTargetTag>();
+            _syncFireTagWithParent = world.GetStash<SyncFireTagWithParentTag>();
 
             _viewPartRequests = world.GetStash<ViewPartRequestComponent>();
             _towerStowTag = world.GetStash<WeaponTowerStowTag>();
@@ -65,6 +71,7 @@ namespace ZE.MechBattle.Ecs
             _weaponRayComponents = world.GetStash<WeaponRayComponent>();
 
             _continuosFiring = world.GetStash<ContinuosFiringTag>();
+            _weaponTags = world.GetStash<WeaponTag>();
         }
 
         public struct WeaponCreationProtocol
@@ -76,6 +83,7 @@ namespace ZE.MechBattle.Ecs
             public bool UseAutoShot;
             public bool UseAutoStow;
             public bool SyncTargetWithParent;
+            public bool SyncFireTagWithParent;
             public bool NoViewWeapon;
 
             public DamageApplyParameters DamageParameters;
@@ -137,6 +145,8 @@ namespace ZE.MechBattle.Ecs
 
         public void ApplyWeaponComponents(Entity weaponEntity, WeaponCreationProtocol protocol)
         {
+            _weaponTags.Add(weaponEntity);
+
             var weaponConfig = protocol.WeaponConfig;
 
             if (weaponConfig.TryGetMuzzleEffectId(out var muzzleEffectId))
@@ -150,6 +160,10 @@ namespace ZE.MechBattle.Ecs
 
             if (protocol.SyncTargetWithParent)
                 _syncTargetWithParent.Add(weaponEntity);
+
+            if (protocol.SyncFireTagWithParent)
+                _syncFireTagWithParent.Add(weaponEntity);
+
 
             SetupAttackComponents(weaponEntity, protocol);
         }

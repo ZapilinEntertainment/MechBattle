@@ -23,7 +23,7 @@ namespace ZE.MechBattle
 
         public void CreatePartitions(Entity mechEntity, MechConfig mechConfig)
         {
-            var collidersConfig = mechConfig.PartitionCollidersConfig;
+            CollidersConfiguration collidersConfig =  default; //mechConfig.PartitionCollidersConfig;
             CreatePartition(mechEntity, MechPartitionKey.Center, collidersConfig);
             CreatePartition(mechEntity, MechPartitionKey.LeftArm, collidersConfig);
             CreatePartition(mechEntity, MechPartitionKey.RightArm, collidersConfig);

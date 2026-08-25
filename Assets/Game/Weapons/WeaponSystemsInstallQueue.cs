@@ -7,7 +7,9 @@ namespace ZE.MechBattle.Ecs
         protected override void Configure(ISystemsOperator installer)
         {
             installer.AddSystemWithInterface<WeaponLoadingCheckSystem, IWeaponShotCompletenessHandler>(SystemGroupOrder.WeaponUpdates);
-            installer.AddSystem<ChildEntityAttackTargetSyncSystem>(SystemGroupOrder.WeaponUpdates);
+            installer.AddSystem<SyncChildComponentSystem<SyncWithParentTargetTag, AttackTargetComponent>>(SystemGroupOrder.WeaponUpdates);
+            installer.AddSystem<SyncChildComponentSystem<SyncWithParentTargetTag, WeaponTargetPositionComponent>>(SystemGroupOrder.WeaponUpdates);
+            installer.AddSystem<SyncChildComponentSystem<SyncFireTagWithParentTag, WeaponFireTag>>(SystemGroupOrder.WeaponUpdates);
             installer.AddSystem<WeaponTargetPositionSetSystem>(SystemGroupOrder.WeaponUpdates);
             installer.AddSystem<CheckAttackRangeSystem>(SystemGroupOrder.WeaponUpdates);            
             installer.AddSystem<WeaponAimCalculationSystem>(SystemGroupOrder.WeaponUpdates);

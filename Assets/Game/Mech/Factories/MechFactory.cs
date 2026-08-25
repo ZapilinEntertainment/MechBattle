@@ -2,6 +2,7 @@ using Scellecs.Morpeh;
 using VContainer;
 using Unity.Mathematics;
 using ZE.MechBattle.Ecs;
+using System.Collections.Generic;
 
 namespace ZE.MechBattle
 {
@@ -23,9 +24,7 @@ namespace ZE.MechBattle
         
 
         private readonly Stash<MechComponent> _mechComponents;
-        private readonly Stash<RotationSpeedComponent> _rotationSpeed;
         private readonly Stash<MechWeaponsComponent> _mechWeapons;
-        private readonly Stash<LocalRotationLimitComponent> _localRotationLimits;
 
         private const float TEMP_MainGunDamage = 10f;
         private const float TEMP_EyesDamage = 100f;
@@ -64,52 +63,72 @@ namespace ZE.MechBattle
 
             _world = world;
             _mechComponents = _world.GetStash<MechComponent>();
-            _rotationSpeed = _world.GetStash<RotationSpeedComponent>();
             _mechWeapons = _world.GetStash<MechWeaponsComponent>();
-            _localRotationLimits = _world.GetStash<LocalRotationLimitComponent>();
         }
 
         public Entity Build(float3 position, quaternion rotation)
         {
+            var mechConfig = TEMP_mechConfig;
+            var builder = new MechBuilder(mechConfig, _parentingRelationsApplier, _world);
+
             var mechEntity = _viewFactory.CreateViewReceiver(DevelopConstants.DEFAULT_MECH_ID + "_view");
             _transformAspectHandler.MoveToPoint(mechEntity, position, rotation);
-
-            var mechConfig = TEMP_mechConfig;
+            builder.MechEntity = mechEntity;            
 
             var chassisEntity = _chassisFactory.Build(mechEntity);
-            var upperPartEntity = BuildUpperPart(chassisEntity, mechEntity);
-            var headEntity = BuildHead(upperPartEntity, mechConfig);
+            builder.AddConstructedPart(MechConstants.CHASSIS_PART_ID, new() { Entity = chassisEntity });
 
-            var leftEye = BuildLaserEye(headEntity, mechConfig.LeftEyeLocalPosition, false);
-            var rightEye = BuildLaserEye(headEntity, mechConfig.RightEyeLocalPosition, true);
-
-
-            var mainWeaponLeft = InstallEquipmentIntoSlot(upperPartEntity, mechConfig, MechSlot.MainWeaponLeft, DevelopConstants.DEFAULT_MECH_GUN_ID);
-            var mainWeaponRight = InstallEquipmentIntoSlot(upperPartEntity, mechConfig, MechSlot.MainWeaponRight, DevelopConstants.DEFAULT_MECH_GUN_ID);
-            _mechWeapons.Add(mechEntity, new()
+            var eyeSettingsList = new List<MechPartSettings>();
+            foreach (var mechPartKvp in mechConfig.MechPartSettings)
             {
-                MainWeaponLeft = mainWeaponLeft,
-                MainWeaponRight = mainWeaponRight,
-                RightEye = rightEye,
-                LeftEye = leftEye
-            });
+                var mechPartSettings = mechPartKvp.Value;
+                var constructionMode = mechPartSettings.ConstructProtocol.ConstructionMode;
+                if (constructionMode == ViewPartConstructionMode.SpecialMode)
+                {
+                    if (mechPartSettings.SpecialKeywords.Contains(MechConstants.EYE_KEYWORD))
+                    {
+                        eyeSettingsList.Add(mechPartSettings);
+                    }
+                    else
+                    {
+                        throw new System.NotImplementedException("undefined part special construction logic: " + mechPartKvp.Key);
+                    }
+                }
+                else
+                {
+                    builder.TryBuildPart(mechPartKvp.Key);
+                }                
+            }
+
+
+            if (builder.TryGetConstructedPartEntity(MechConstants.HEAD_PART_ID, out var headEntity))
+            {
+                foreach (var eyeConstructionSettings in eyeSettingsList)
+                {
+                    var eyeEntity = BuildLaserEye(headEntity, eyeConstructionSettings);
+                }
+            }               
+
+            if (builder.TryGetConstructedPartEntity(MechConstants.UPPER_PART_ID, out var upperPartEntity))
+            {
+                var mainWeaponLeft = InstallEquipmentIntoSlot(upperPartEntity, mechConfig, MechSlot.MainWeaponLeft, DevelopConstants.DEFAULT_MECH_GUN_ID);
+                var mainWeaponRight = InstallEquipmentIntoSlot(upperPartEntity, mechConfig, MechSlot.MainWeaponRight, DevelopConstants.DEFAULT_MECH_GUN_ID);
+                _mechWeapons.Add(mechEntity, new()
+                {
+                    MainWeaponLeft = mainWeaponLeft,
+                    MainWeaponRight = mainWeaponRight,
+                });
+            }
+            else
+            {
+                UnityEngine.Debug.LogError("upper part not found");
+            }
+            
 
             _mechComponents.Add(mechEntity, new(chassisEntity, upperPartEntity, headEntity));
-
-            _partitionsFactory.CreatePartitions(mechEntity, mechConfig);
+           // _partitionsFactory.CreatePartitions(mechEntity, mechConfig);
 
             return mechEntity;
-        }
-
-        private Entity BuildUpperPart(Entity parent, Entity mechEntity)
-        {
-            var upperPartEntity = _parentingRelationsApplier.CreateChildEntityForViewPart(
-               new(quaternion.identity, float3.zero),
-               parent,
-               new(ViewPartType.UpperPart));
-
-            _rotationSpeed.Set(upperPartEntity, new(TEMP_mechConfig.UpperPartRotationSpeedRadians));
-            return upperPartEntity;
         }
 
         private Entity InstallEquipmentIntoSlot(Entity parent, MechConfig mechConfig, MechSlot slot, string equipmentId)
@@ -135,36 +154,20 @@ namespace ZE.MechBattle
             return weaponEntity;
         }
 
-        private Entity BuildHead(Entity parent, MechConfig mechConfig)
-        {
-            var attachmentProtocol = mechConfig.HeadAttachmentProtocol;
-            var headEntity = _parentingRelationsApplier.CreateChildEntityForViewPart(
-               attachmentProtocol.ToPoint(),
-               parent,
-               new(ViewPartType.Head));
-
-            _rotationSpeed.Set(headEntity, new(mechConfig.HeadRotationSpeedRadians));
-            _localRotationLimits.Set(headEntity, new(mechConfig.HeadRotationLimits));
-
-            return headEntity;
-        }
-
-        private Entity BuildLaserEye(Entity headEntity, float3 localPos, bool isRight)
+        private Entity BuildLaserEye(Entity headEntity, MechPartSettings constructionSettings)
         {
             var eyeEntity = _weaponFactory.CreateWeapon(new()
             {
-                AttachmentProtocol = new() { LocalPosition = localPos, LocalRotationDegrees = float3.zero },
+                AttachmentProtocol = constructionSettings.AttachProtocol,
                 DamageParameters = new(TEMP_eyesWeaponConfig.DamageType, TEMP_EyesDamage),
                 WeaponConfig = TEMP_eyesWeaponConfig,
                 ParentEntity = headEntity,
+                SyncTargetWithParent = true,
+                SyncFireTagWithParent = true
             });
 
-            if (isRight)
-            {
-                var barrel = _weaponHandler.GetBarrelEntity(eyeEntity);
-                _viewHandler.OverrideViewRequestKey(barrel, new(ViewPartType.Eye, 1));
-            }
-                
+            var barrel = _weaponHandler.GetBarrelEntity(eyeEntity);
+            _viewHandler.OverrideViewRequestKey(barrel, constructionSettings.ConstructProtocol.ViewPartKey);
 
             return eyeEntity;
         }

@@ -9,6 +9,7 @@ namespace ZE.MechBattle
     {
         private readonly Entity _mechEntity;
         private readonly Entity _upperPartEntity;
+        private readonly Entity _headEntity;
         private readonly World _world;
         private readonly TransformAspectHandler _transformAspectHandler;
 
@@ -24,9 +25,9 @@ namespace ZE.MechBattle
             _transformAspectHandler = transformAspectHandler;
 
             _mechEntity = mechEntity;
-            var mechComponents = _world.GetStash<MechComponent>();
-
-            _upperPartEntity = mechComponents.Get(_mechEntity).UpperPartEntity;
+            var mechComponent = _world.GetStash<MechComponent>().Get(_mechEntity);
+            _upperPartEntity = mechComponent.UpperPartEntity;
+            _headEntity = mechComponent.HeadEntity;
 
             _input = _world.GetStash<MechInputComponent>();
             _mechWeapons = _world.GetStash<MechWeaponsComponent>();
@@ -51,9 +52,7 @@ namespace ZE.MechBattle
 
         public void SetEyesTarget(float3 pos)
         {
-            var weapons = _mechWeapons.Get(_mechEntity);
-            _weaponTargetPositions.Set(weapons.LeftEye, new() { Value = pos });
-            _weaponTargetPositions.Set(weapons.RightEye, new() { Value = pos });
+            _weaponTargetPositions.Set(_headEntity, new() { Value = pos});
         }
 
         public void FireMainWeapon()
@@ -68,25 +67,14 @@ namespace ZE.MechBattle
 
         public void SwitchEyeFiring(bool active)
         {
-            var weapons = _mechWeapons.Get(_mechEntity);
-
-            void SwitchEye(Entity eyeEntity)
+            if (active)
             {
-                if (_world.IsDisposed(eyeEntity))
-                    return;
-
-                if (active)
-                {
-                    _fireTags.Set(eyeEntity);                    
-                }
-                else
-                {
-                    _fireTags.Remove(eyeEntity);
-                }
+                _fireTags.Set(_headEntity);
             }
-
-            SwitchEye(weapons.LeftEye);
-            SwitchEye(weapons.RightEye);               
+            else
+            {
+                _fireTags.Remove(_headEntity);
+            }
         }
     }
 }

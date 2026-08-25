@@ -7,24 +7,10 @@ namespace ZE.MechBattle
     [CreateAssetMenu(fileName = nameof(MechConfig), menuName = "Scriptable Objects/" + nameof(MechConfig))]
     public class MechConfig : ScriptableObject
     {
-        [Header("Head")]
-        [field: SerializeField] public ViewPartAttachmentProtocol HeadAttachmentProtocol { get; private set; }
-        [field:SerializeField] public ForwardRotationLimits HeadRotationLimits { get; private set; }
-        [field: SerializeField] public float3 LeftEyeLocalPosition { get; private set; }
-        [field: SerializeField] public float3 RightEyeLocalPosition { get; private set; }
-        [field: SerializeField] public CollidersConfiguration PartitionCollidersConfig { get; private set; }
-
-        [SerializeField] private float _headRotationSpeedDegrees;
-        public float HeadRotationSpeedRadians => math.radians(_headRotationSpeedDegrees);
-
-
-        [Space]
-        [SerializeField] private float _upperPartRotationSpeedDegrees = 90f;       
+        [field: SerializeField] public SerializedDictionary<string, MechPartSettings> MechPartSettings { get; private set; } 
         [SerializeField] private SerializedDictionary<MechSlot, MechSlotInfo> _slotInfo;
-       
-
-        public float UpperPartRotationSpeedRadians => math.radians(_upperPartRotationSpeedDegrees);
 
         public bool TryGetSlotInfo(MechSlot slot, out MechSlotInfo slotInfo) => _slotInfo.TryGetValue(slot, out slotInfo);
+        public bool TryGetPartSettings(string key, out MechPartSettings settings) => MechPartSettings.TryGetValue(key, out settings);
     }
 }

@@ -1,46 +1,47 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
 
-namespace ZE.MechBattle.Ecs {
+namespace ZE.MechBattle.Ecs
+{
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public sealed class ChildEntityAttackTargetSyncSystem : ISystem 
+    // syncs tag with its parent
+    // for mass sync, use HierarchyTagSyncSystemBase
+    public class SyncChildComponentSystem<TagComponent, ValueComponent> : ISystem 
+        where TagComponent : struct, IComponent
+        where ValueComponent : struct, IComponent
     {
-        public World World { get; set;}
+        public World World { get; set; }
         private Filter _filter;
-        private Stash<AttackTargetComponent> _attackTargets;
         private Stash<ParentEntityComponent> _parentEntities;
-        private Stash<WeaponTargetPositionComponent> _weaponTargetPositions;
+        private Stash<ValueComponent> _valueComponents;
 
-        public void OnAwake() 
+
+        public void OnAwake()
         {
             _filter = World.Filter
                 .With<ParentEntityComponent>()
-                .With<SyncWithParentTargetTag>()
+                .With<TagComponent>()
                 .Build();
 
-            _attackTargets = World.GetStash<AttackTargetComponent>();
             _parentEntities = World.GetStash<ParentEntityComponent>();
-            _weaponTargetPositions = World.GetStash<WeaponTargetPositionComponent>();
+            _valueComponents = World.GetStash<ValueComponent>();
         }
 
-        public void OnUpdate(float deltaTime) 
+        public void OnUpdate(float deltaTime)
         {
             foreach (var childEntity in _filter)
             {
                 var parentEntity = _parentEntities.Get(childEntity).Value;
-                Sync(childEntity, parentEntity, _attackTargets);
-                Sync(childEntity, parentEntity, _weaponTargetPositions);
+                Sync(childEntity, parentEntity, _valueComponents);
             }
-
         }
 
         public void Dispose() { }
 
-        private void Sync<T>(Entity childEntity, Entity parentEntity, Stash<T> stash ) where T : struct, IComponent
+        private void Sync<T>(Entity childEntity, Entity parentEntity, Stash<T> stash) where T : struct, IComponent
         {
-            
             var parentComponent = stash.Get(parentEntity, out var parentHasComponent);
 
             if (parentHasComponent)
@@ -52,7 +53,7 @@ namespace ZE.MechBattle.Ecs {
             }
             else
             {
-                _attackTargets.Remove(childEntity);
+                _valueComponents.Remove(childEntity);
             }
         }
     }
