@@ -12,156 +12,194 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 538700e5b79b03d40979f5c8348e095d, type: 3}
   m_Name: MechConfig
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.MechConfig
-  <MechPartSettings>k__BackingField:
-    _serializedList:
-    - Key: head
-      Value:
-        Root: upper_part
-        Partition:
-          Type: 1
-          Index: 0
-        ConstructProtocol:
-          ConstructionMode: 0
-          ViewPartKey:
-            Type: 8
-            Index: 0
-        AttachProtocol:
-          LocalPosition:
-            x: 0
-            y: 7
-            z: 3.7
-          LocalRotationDegrees:
-            x: 0
-            y: 0
-            z: 0
-        RotationSpeedDegrees: 90
-        RotationLimits:
-          LimitAxleRotation:
-            x: 1
-            y: 1
-          XAngleDegreesLimit: 30
-          YAngleDegreesLimit: 40
-        CollidersConfig:
-        - ColliderType: 0
-          LocalPosition:
-            x: 0
-            y: 0
-            z: 0
-          LocalRotation:
-            value:
-              x: 0
-              y: 1
-              z: 0
-              w: 0
-          Size:
-            x: 0
-            y: 0
-            z: 0
-        SpecialKeywords: []
-    - Key: left_eye
-      Value:
-        Root: head
-        Partition:
-          Type: 0
-          Index: 0
-        ConstructProtocol:
-          ConstructionMode: 2
-          ViewPartKey:
-            Type: 9
-            Index: 0
-        AttachProtocol:
-          LocalPosition:
-            x: -0.9
-            y: 0.22
-            z: 2
-          LocalRotationDegrees:
-            x: 0
-            y: 0
-            z: 0
-        RotationSpeedDegrees: 180
-        RotationLimits:
-          LimitAxleRotation:
-            x: 0
-            y: 0
-          XAngleDegreesLimit: 0
-          YAngleDegreesLimit: 0
-        CollidersConfig: []
-        SpecialKeywords:
-        - eye
-    - Key: right_eye
-      Value:
-        Root: head
-        Partition:
-          Type: 0
-          Index: 0
-        ConstructProtocol:
-          ConstructionMode: 2
-          ViewPartKey:
-            Type: 9
-            Index: 1
-        AttachProtocol:
-          LocalPosition:
-            x: 0.9
-            y: 0.22
-            z: 2
-          LocalRotationDegrees:
-            x: 0
-            y: 0
-            z: 0
-        RotationSpeedDegrees: 180
-        RotationLimits:
-          LimitAxleRotation:
-            x: 0
-            y: 0
-          XAngleDegreesLimit: 0
-          YAngleDegreesLimit: 0
-        CollidersConfig: []
-        SpecialKeywords:
-        - eye
-    - Key: upper_part
-      Value:
-        Root: chassis
-        Partition:
-          Type: 1
-          Index: 0
-        ConstructProtocol:
-          ConstructionMode: 0
-          ViewPartKey:
-            Type: 7
-            Index: 0
-        AttachProtocol:
-          LocalPosition:
-            x: 0
-            y: 0
-            z: 0
-          LocalRotationDegrees:
-            x: 0
-            y: 0
-            z: 0
-        RotationSpeedDegrees: 45
-        RotationLimits:
-          LimitAxleRotation:
-            x: 0
-            y: 0
-          XAngleDegreesLimit: 0
-          YAngleDegreesLimit: 0
-        CollidersConfig:
-        - ColliderType: 1
-          LocalPosition:
-            x: 0
-            y: 7
-            z: 0
-          LocalRotation:
-            value:
-              x: 0
-              y: 0
-              z: 0
-              w: 1
-          Size:
-            x: 6
-            y: 6
-            z: 6
-        SpecialKeywords: []
+  _mechParts:
+  - Key:
+      Type: 8
+      Index: 0
+    ConstructionMode: 2
+    RootKey:
+      Type: 7
+      Index: 0
+    Partition:
+      Type: 1
+      Index: 0
+    AttachProtocol:
+      LocalPosition:
+        x: 0
+        y: 7
+        z: 3.7
+      LocalRotationDegrees:
+        x: 0
+        y: 0
+        z: 0
+    RotationSpeedDegrees: 90
+    RotationLimits:
+      LimitAxleRotation:
+        x: 1
+        y: 1
+      XAngleDegreesLimit: 30
+      YAngleDegreesLimit: 40
+    SpecialKeywords: []
+  - Key:
+      Type: 9
+      Index: 0
+    ConstructionMode: 0
+    RootKey:
+      Type: 8
+      Index: 0
+    Partition:
+      Type: 0
+      Index: 0
+    AttachProtocol:
+      LocalPosition:
+        x: -0.9
+        y: 0.22
+        z: 2
+      LocalRotationDegrees:
+        x: 0
+        y: 0
+        z: 0
+    RotationSpeedDegrees: 180
+    RotationLimits:
+      LimitAxleRotation:
+        x: 0
+        y: 0
+      XAngleDegreesLimit: 30
+      YAngleDegreesLimit: 40
+    SpecialKeywords:
+    - eye
+  - Key:
+      Type: 9
+      Index: 1
+    ConstructionMode: 0
+    RootKey:
+      Type: 8
+      Index: 0
+    Partition:
+      Type: 0
+      Index: 0
+    AttachProtocol:
+      LocalPosition:
+        x: 0.9
+        y: 0.22
+        z: 2
+      LocalRotationDegrees:
+        x: 0
+        y: 0
+        z: 0
+    RotationSpeedDegrees: 180
+    RotationLimits:
+      LimitAxleRotation:
+        x: 0
+        y: 0
+      XAngleDegreesLimit: 30
+      YAngleDegreesLimit: 40
+    SpecialKeywords:
+    - eye
+  - Key:
+      Type: 7
+      Index: 0
+    ConstructionMode: 2
+    RootKey:
+      Type: 3
+      Index: 0
+    Partition:
+      Type: 0
+      Index: 0
+    AttachProtocol:
+      LocalPosition:
+        x: 0
+        y: 0
+        z: 0
+      LocalRotationDegrees:
+        x: 0
+        y: 0
+        z: 0
+    RotationSpeedDegrees: 45
+    RotationLimits:
+      LimitAxleRotation:
+        x: 0
+        y: 0
+      XAngleDegreesLimit: 30
+      YAngleDegreesLimit: 40
+    SpecialKeywords: []
+  _partitionConfigs:
+  - Key:
+      Type: 1
+      Index: 0
+    RootPartKey:
+      Type: 0
+      Index: 0
+    AttachProtocol:
+      LocalPosition:
+        x: 0
+        y: 0
+        z: 0
+      LocalRotationDegrees:
+        x: 0
+        y: 0
+        z: 0
+  - Key:
+      Type: 2
+      Index: 0
+    RootPartKey:
+      Type: 0
+      Index: 0
+    AttachProtocol:
+      LocalPosition:
+        x: -7
+        y: 8
+        z: 0
+      LocalRotationDegrees:
+        x: 0
+        y: 0
+        z: 0
+  - Key:
+      Type: 2
+      Index: 1
+    RootPartKey:
+      Type: 0
+      Index: 0
+    AttachProtocol:
+      LocalPosition:
+        x: 7
+        y: 8
+        z: 0
+      LocalRotationDegrees:
+        x: 0
+        y: 0
+        z: 0
+  - Key:
+      Type: 3
+      Index: 0
+    RootPartKey:
+      Type: 0
+      Index: 0
+    AttachProtocol:
+      LocalPosition:
+        x: 0
+        y: 0
+        z: 0
+      LocalRotationDegrees:
+        x: 0
+        y: 0
+        z: 0
+  - Key:
+      Type: 3
+      Index: 1
+    RootPartKey:
+      Type: 0
+      Index: 0
+    AttachProtocol:
+      LocalPosition:
+        x: 0
+        y: 0
+        z: 0
+      LocalRotationDegrees:
+        x: 0
+        y: 0
+        z: 0
+  _colliderConfigs: []
   _slotInfo:
     _serializedList:
     - Key: 1

@@ -73,11 +73,11 @@ namespace ZE.MechBattle
             public void SetParent(Transform parent) => _transform.parent = parent;
         }
 
-        private readonly ObjectPool<BoxPoolingCollider> _boxCollidersPool;
-        private readonly ObjectPool<SpherePoolingCollider> _sphereCollidersPool;
-        private readonly Transform _poolHost;
+        private ObjectPool<BoxPoolingCollider> _boxCollidersPool;
+        private ObjectPool<SpherePoolingCollider> _sphereCollidersPool;
+        private Transform _poolHost;
 
-        public CollidersPool()
+        public void Awake()
         {
             _poolHost = transform;
 

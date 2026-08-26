@@ -96,7 +96,7 @@ namespace ZE.MechBattle.MechBuilding
         {
             var settings = _mechConfig.MechPartSettings;
             var headEntity = _mainBuilder.HeadEntity;
-            foreach (var partSettings in settings.Values)
+            foreach (var partSettings in settings)
             {
                 if (partSettings.SpecialKeywords.Contains(MechConstants.EYE_KEYWORD))
                     BuildLaserEye(headEntity, partSettings);
@@ -116,7 +116,7 @@ namespace ZE.MechBattle.MechBuilding
             });
 
             var barrel = _weaponHandler.GetBarrelEntity(eyeEntity);
-            _viewHandler.OverrideViewRequestKey(barrel, constructionSettings.ConstructProtocol.ViewPartKey);
+            _viewHandler.OverrideViewRequestKey(barrel, constructionSettings.Key);
 
             return eyeEntity;
         }

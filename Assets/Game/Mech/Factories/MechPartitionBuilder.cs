@@ -12,7 +12,7 @@ namespace ZE.MechBattle.MechBuilding
 
         private Entity _mechEntity;
         private IReadOnlyDictionary<string, MechPartSettings> _partSettings;
-        private IReadOnlyDictionary<string, MechBitsBuilder.PartData> _constructedBits;        
+        private IReadOnlyDictionary<ViewPartKey, Entity> _constructedBits;        
 
         private readonly PartitionsListManager _partitionsManager;
         private readonly MechPartitionFactory _partitionFactory;
@@ -49,31 +49,30 @@ namespace ZE.MechBattle.MechBuilding
 
         private Entity BuildPartition(MechPartitionConfig config)
         {
-            var rootId = config.RootPartId;
+            var rootKey = config.RootPartKey;
             var key = config.Key;
 
-            if (!TryGetParentEntity(rootId, out var parentEntity))
-                throw new System.Exception($"required root {config.RootPartId} for {key} was not constructed");
+            if (!TryGetParentEntity(rootKey, out var parentEntity))
+                throw new System.Exception($"required root {rootKey} for {key} was not constructed");
 
             var entity = _partitionFactory.CreatePartition(key, _mechEntity, parentEntity, config.AttachProtocol);
             _partitionsManager.AddPartitionEntity(_mechEntity, key, entity);
             return entity;
         }
 
-        private bool TryGetParentEntity(string rootId, out Entity parentEntity)
+        private bool TryGetParentEntity(ViewPartKey rootKey, out Entity parentEntity)
         {
-            if (string.IsNullOrEmpty(rootId))
+            if (!rootKey.IsValid)
             {
                 parentEntity = _mechEntity;
             }
             else
             {
-                if (!_constructedBits.TryGetValue(rootId, out var partData))
+                if (!_constructedBits.TryGetValue(rootKey, out parentEntity))
                 {
                     parentEntity = default;
                     return false;
                 }                                     
-                parentEntity = partData.Entity;
             }
 
             return true;

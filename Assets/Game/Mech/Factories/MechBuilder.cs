@@ -35,21 +35,21 @@ namespace ZE.MechBattle.MechBuilding
 
         public void CheckCrucialParts(MechBitsBuilder partsBuilder)
         {
-            if (!partsBuilder.TryGetConstructedPartEntity(MechConstants.HEAD_PART_ID, out var headEntity))
+            if (!partsBuilder.TryGetConstructedPartEntity(ViewPartKey.Head, out var headEntity))
                 UnityEngine.Debug.LogError("head part was not added");
             else
                 HeadEntity = headEntity;
 
 
 
-            if (!partsBuilder.TryGetConstructedPartEntity(MechConstants.UPPER_PART_ID, out var upperPartEntity))
+            if (!partsBuilder.TryGetConstructedPartEntity(ViewPartKey.UpperPart, out var upperPartEntity))
                 UnityEngine.Debug.LogError("upper part was not added");
             else
                 UpperPartEntity = upperPartEntity;
 
 
 
-            if (!partsBuilder.TryGetConstructedPartEntity(MechConstants.CHASSIS_PART_ID, out var chassisPartEntity))
+            if (!partsBuilder.TryGetConstructedPartEntity(ViewPartKey.Chassis, out var chassisPartEntity))
                 UnityEngine.Debug.LogError("chassis was not added");
             else
                 ChassisEntity = chassisPartEntity;

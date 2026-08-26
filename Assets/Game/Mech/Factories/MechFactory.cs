@@ -60,15 +60,15 @@ namespace ZE.MechBattle
 
         private void RegisterAllChassisParts(MechChassisFactory.ChassisEntities chassisEntities, MechBitsBuilder bitsBuilder)
         {
-            bitsBuilder.AddConstructedPart(MechConstants.CHASSIS_PART_ID, new() { Entity = chassisEntities.ChassisRoot });
+            bitsBuilder.AddConstructedPart(ViewPartKey.Chassis, chassisEntities.ChassisRoot);
 
-            bitsBuilder.AddConstructedPart(MechConstants.LEFT_HIP_ID, new() { Entity = chassisEntities.LeftLeg.Hip });
-            bitsBuilder.AddConstructedPart(MechConstants.LEFT_ANKLE_ID, new() { Entity = chassisEntities.LeftLeg.Ankle });
-            bitsBuilder.AddConstructedPart(MechConstants.LEFT_FOOT_ID, new() { Entity = chassisEntities.LeftLeg.Foot });
+            bitsBuilder.AddConstructedPart(ViewPartKey.GetHipKey(false), chassisEntities.LeftLeg.Hip );
+            bitsBuilder.AddConstructedPart(ViewPartKey.GetAnkleKey(false), chassisEntities.LeftLeg.Ankle);
+            bitsBuilder.AddConstructedPart(ViewPartKey.GetFootKey(false), chassisEntities.LeftLeg.Foot);
 
-            bitsBuilder.AddConstructedPart(MechConstants.RIGHT_HIP_ID, new() { Entity = chassisEntities.RightLeg.Hip });
-            bitsBuilder.AddConstructedPart(MechConstants.RIGHT_ANKLE_ID, new() { Entity = chassisEntities.RightLeg.Ankle });
-            bitsBuilder.AddConstructedPart(MechConstants.RIGHT_FOOT_ID, new() { Entity = chassisEntities.RightLeg.Foot });
+            bitsBuilder.AddConstructedPart(ViewPartKey.GetHipKey(true), chassisEntities.RightLeg.Hip);
+            bitsBuilder.AddConstructedPart(ViewPartKey.GetAnkleKey(true), chassisEntities.RightLeg.Ankle);
+            bitsBuilder.AddConstructedPart(ViewPartKey.GetFootKey(true), chassisEntities.RightLeg.Foot);
         }
       
 
@@ -76,40 +76,45 @@ namespace ZE.MechBattle
         // but set their ownity to partition entity or mech (if partition not defined)
         private void BuildColliders(Entity mechEntity, MechBitsBuilder mechPartsBuilder, MechConfig mechConfig, IPartitionsList partitionsList)
         {
-            foreach (var partSettingKvp in mechConfig.MechPartSettings)
-            {
-                var collidersConfig = partSettingKvp.Value.CollidersConfig;
-                if (collidersConfig == null || collidersConfig.Length == 0)
-                    continue;
+            //foreach (var colliderConfig in mechConfig.ColliderConfigs)
+            //{
 
-                if (!mechPartsBuilder.TryGetConstructedPartEntity(partSettingKvp.Key, out var constructedPartEntity))
-                {
-                    UnityEngine.Debug.LogWarning($"part {partSettingKvp.Key} was not constructed");
-                    continue;
-                }
+            //}
 
-                var partition = partSettingKvp.Value.Partition;
-                Entity colliderOwner;
-                if (partition.Type == MechPartitionType.Undefined)
-                {
-                    colliderOwner = mechEntity;
-                }
-                else
-                {
-                    if (!partitionsList.TryGet(partition, out var partitionEntity))
-                    {
-                        UnityEngine.Debug.LogWarning($"{partSettingKvp.Key} partition set to {partition}, which was not constructed");
-                        continue;
-                    }
-                    colliderOwner = partitionEntity;
-                }
+            //foreach (var partSettingKvp in mechConfig.MechPartSettings)
+            //{
+            //    var collidersConfig = partSettingKvp.Value.CollidersConfig;
+            //    if (collidersConfig == null || collidersConfig.Length == 0)
+            //        continue;
+
+            //    if (!mechPartsBuilder.TryGetConstructedPartEntity(partSettingKvp.Key, out var constructedPartEntity))
+            //    {
+            //        UnityEngine.Debug.LogWarning($"part {partSettingKvp.Key} was not constructed");
+            //        continue;
+            //    }
+
+            //    var partition = partSettingKvp.Value.Partition;
+            //    Entity colliderOwner;
+            //    if (partition.Type == MechPartitionType.Undefined)
+            //    {
+            //        colliderOwner = mechEntity;
+            //    }
+            //    else
+            //    {
+            //        if (!partitionsList.TryGet(partition, out var partitionEntity))
+            //        {
+            //            UnityEngine.Debug.LogWarning($"{partSettingKvp.Key} partition set to {partition}, which was not constructed");
+            //            continue;
+            //        }
+            //        colliderOwner = partitionEntity;
+            //    }
                 
 
-                foreach (var colliderConfig in collidersConfig)
-                {
-                    _collidersFactory.BuildCollider(colliderOwner, constructedPartEntity, colliderConfig);
-                }
-            }
+            //    foreach (var colliderConfig in collidersConfig)
+            //    {
+            //        _collidersFactory.BuildCollider(colliderOwner, constructedPartEntity, colliderConfig);
+            //    }
+            //}
         }
     }
 }

@@ -8,21 +8,15 @@ namespace ZE.MechBattle.MechBuilding
 {
     public class MechBitsBuilder
     {
-        public struct PartData
-        {
-            public Entity Entity;
-            //public List<string> SpecialKeywords;
-
-            //public bool ContainsKeyword(string keyword) => SpecialKeywords != null && SpecialKeywords.Contains(keyword);
-        }
-        public IReadOnlyDictionary<string, PartData> ConstructedParts => _constructedParts;
+        public IReadOnlyDictionary<ViewPartKey, Entity> ConstructedParts => _constructedParts;
 
         private MechConfig _mechConfig;
         private Entity _mechEntity;
 
         private readonly World _world;
-        private readonly Dictionary<string, PartData> _constructedParts = new();
-        private readonly HashSet<string> _processingPartsSet = new();
+        private readonly Dictionary<ViewPartKey, Entity> _constructedParts = new();
+        private readonly Dictionary<ViewPartKey, MechPartSettings> _settings = new();
+        private readonly HashSet<ViewPartKey> _processingPartsSet = new();
         private readonly ParentingRelationsApplier _parentingRelationsApplier;
 
         private readonly Stash<RotationSpeedComponent> _rotationSpeed;
@@ -43,106 +37,102 @@ namespace ZE.MechBattle.MechBuilding
             _mechConfig = mechConfig;
             _mechEntity = mechEntity;
 
-            foreach (var mechPartKvp in _mechConfig.MechPartSettings)
+            foreach (var mechPartSettings in _mechConfig.MechPartSettings)
             {
-                var mechPartSettings = mechPartKvp.Value;
-                var constructionMode = mechPartSettings.ConstructProtocol.ConstructionMode;
-                if (constructionMode == ViewPartConstructionMode.SpecialMode)
+                var key = mechPartSettings.Key;
+                if (!_settings.TryAdd(key, mechPartSettings))
+                {
+                    UnityEngine.Debug.LogWarning("key duplication: " + key);
                     continue;
+                }
+            }
 
-                TryBuildPart(mechPartKvp.Key);
+            foreach (var mechPartKey in _settings.Keys)
+            {
+                TryBuildPart(mechPartKey, out _);
             }
         }
 
-        public void AddConstructedPart(string key, PartData partData) => _constructedParts.Add(key, partData);
-
-        public bool TryGetConstructedPartEntity(string key, out Entity entity)
+        public void AddConstructedPart(ViewPartKey key, Entity entity)
         {
-            if (_constructedParts.TryGetValue(key, out var partData))
-            {
-                entity = partData.Entity;
-                return true;
-            }
-            else
-            {
-                entity = default;
-                return false;
-            }
+            if (!_constructedParts.TryAdd(key, entity))
+                UnityEngine.Debug.LogError("cannot add " + key.ToString());
         }
 
-        public IEnumerator<KeyValuePair<string, PartData>> GetEnumerator() => _constructedParts.GetEnumerator();
+        public bool TryGetConstructedPartEntity(ViewPartKey key, out Entity entity) =>
+            _constructedParts.TryGetValue(key, out entity);
 
-        public bool TryBuildPart(string key)
+        public IEnumerator<KeyValuePair<ViewPartKey, Entity>> GetEnumerator() => _constructedParts.GetEnumerator();
+
+        private bool TryBuildPart(ViewPartKey key, out Entity entity)
         {
-            if (_constructedParts.ContainsKey(key))
-                return true;
+            entity = default;
 
-            if (!_mechConfig.TryGetPartSettings(key, out var settings))
+            var settings = _settings[key];
+            if (settings.ConstructionMode == MechPartConstructionMode.DoNothing)
             {
-                UnityEngine.Debug.LogError($"part {key} settings not found");
                 return false;
+            }
+
+            if (_constructedParts.TryGetValue(key, out entity))
+            {
+                UnityEngine.Debug.LogWarning("key duplication: " + key.ToString());
+                return true;
             }
 
             _processingPartsSet.Clear();
 
-            var rootId = settings.Root;
+            var rootKey = settings.RootKey;
             Entity parentEntity;
-            if (string.IsNullOrEmpty(rootId))
+            if (!rootKey.IsValid)
             {
                 parentEntity = _mechEntity;
             }
             else
             {
-                if (!_constructedParts.TryGetValue(rootId, out var rootData))
+                if (!_constructedParts.TryGetValue(rootKey, out parentEntity))
                 {
                     _processingPartsSet.Add(key);
 
-                    if (_processingPartsSet.Contains(rootId))
+                    if (_processingPartsSet.Contains(rootKey))
                     {
-                        UnityEngine.Debug.LogError("circular error with root " + rootId);
+                        UnityEngine.Debug.LogError("circular error with root " + rootKey);
                         return false;
                     }
 
-                    if (!TryBuildPart(rootId))
+                    if (!TryBuildPart(rootKey, out parentEntity))
                     {
-                        UnityEngine.Debug.LogError("root build failure: cannot find settings for " + rootId);
+                        UnityEngine.Debug.LogError("root build failure: cannot find settings for " + rootKey);
                         return false;
-                    }
-                    else
-                    {
-                        rootData = _constructedParts[rootId];
                     }
                 }
-
-                parentEntity = rootData.Entity;
             }
             
 
-            var entity = BuildPart(key, settings, parentEntity);
-            AddConstructedPart(key, new() { Entity = entity});
+            entity = BuildPart(key, settings, parentEntity);
+            AddConstructedPart(key, entity);
             return true;
         }
 
-        private Entity BuildPart(string key, MechPartSettings settings, Entity parent)
+        private Entity BuildPart(ViewPartKey key, MechPartSettings settings, Entity parent)
         {
             Entity entity;
-            var constructionProtocol = settings.ConstructProtocol;
-            switch (constructionProtocol.ConstructionMode)
+            switch (settings.ConstructionMode)
             {
-                case ViewPartConstructionMode.EntityOnly:
+                case MechPartConstructionMode.EntityOnly:
                     {
                         entity = _world.CreateEntity();
                         break;
                     }
-                case ViewPartConstructionMode.SyncWithViewPart:
+                case MechPartConstructionMode.LinkToViewPart:
                     {
-                        if (!constructionProtocol.ViewPartKey.IsValid)
+                        if (!key.IsValid)
                             throw new System.Exception("view part key invalid");
 
                         entity = _parentingRelationsApplier.CreateChildEntityForViewPart(
                             settings.AttachProtocol.ToPoint(),
                             parent,
-                            constructionProtocol.ViewPartKey);
+                            key);
                         break;
                     }
                 default:
