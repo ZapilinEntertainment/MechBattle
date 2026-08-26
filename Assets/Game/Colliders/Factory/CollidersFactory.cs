@@ -1,8 +1,7 @@
 using VContainer;
 using Scellecs.Morpeh;
-using ZE.MechBattle.Ecs;
 
-namespace ZE.MechBattle
+namespace ZE.MechBattle.Colliders
 {
 
     // todo: applying collider by asking view should be removed completely  

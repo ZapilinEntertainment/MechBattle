@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Jobs;
 using Unity.Collections;
+using Scellecs.Morpeh;
+using ZE.MechBattle.Ecs;
+using VContainer;
 
 namespace ZE.MechBattle
 {
@@ -16,18 +19,22 @@ namespace ZE.MechBattle
         private int _elementsCount = 0;
         private TransformAccessArray _transformsArray;
         private readonly List<int> _keysList;
+        private readonly Stash<TransformComponent> _transformComponents;
 
         private const int INITIAL_CAPACITY = 8;
 
-        public TransformAccessManager()
+        [Inject]
+        public TransformAccessManager(World world)
         {
             _capacityLimit = INITIAL_CAPACITY;
             KeysMap = new NativeParallelHashMap<int, int>(INITIAL_CAPACITY, Allocator.Persistent);
             _transformsArray = new(INITIAL_CAPACITY);
             _keysList = new(INITIAL_CAPACITY);
+
+            _transformComponents = world.GetStash<TransformComponent>();
         }
 
-        public int RegisterTransform(Transform transform)
+        public void RegisterTransform(Entity entity, Transform transform)
         {
             var key = _nextId++;
             if (_elementsCount == _capacityLimit)
@@ -38,7 +45,8 @@ namespace ZE.MechBattle
             _keysList.Add(key);
 
             _elementsCount++;
-            return key;
+
+            _transformComponents.Add(entity, new() { Key = key });
         }
 
         public void UnregisterTransform(int key) 

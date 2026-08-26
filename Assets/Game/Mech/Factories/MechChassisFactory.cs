@@ -1,7 +1,7 @@
 using Scellecs.Morpeh;
 using VContainer;
-using Unity.Mathematics;
 using ZE.MechBattle.Ecs;
+using System.Collections.Generic;
 
 namespace ZE.MechBattle.MechBuilding
 {
@@ -13,6 +13,8 @@ namespace ZE.MechBattle.MechBuilding
             public LegDataContainer<Entity> LeftLeg;
             public LegDataContainer<Entity> RightLeg;
         }
+
+        private Entity _mechEntity;
 
         private readonly World _world;
         private readonly ParentingRelationsApplier _parentingRelationsApplier;
@@ -40,12 +42,20 @@ namespace ZE.MechBattle.MechBuilding
             _activeLegs = _world.GetStash<MechActiveLegValueComponent>();
         }
     
-        public ChassisEntities Build(Entity mechEntity)
+        public ChassisEntities Build(Entity mechEntity, ICollection<ViewPartKey> separatedPartKeys)
         {
-            var chassisRootEntity = _parentingRelationsApplier.CreateChildEntityForViewPart(_mechChassisData.ChassisRootLocalPoint, mechEntity, new(ViewPartType.ChassisRoot));
+            _mechEntity = mechEntity;
 
-            var leftLegContainer = CreateLeg(_mechChassisData, chassisRootEntity, isRight: false);
-            var rightLegContainer = CreateLeg(_mechChassisData, chassisRootEntity, isRight: true);
+            var rootKey = ViewPartKey.Chassis;
+            var chassisRootEntity = _parentingRelationsApplier.CreateChildEntityForViewPart(
+                _mechChassisData.ChassisRootLocalPoint,
+                _mechEntity,
+                _mechEntity,
+                rootKey,
+                separateViewObject: separatedPartKeys.Contains(rootKey));
+
+            var leftLegContainer = CreateLeg(_mechChassisData, chassisRootEntity, isRight: false, separatedPartKeys);
+            var rightLegContainer = CreateLeg(_mechChassisData, chassisRootEntity, isRight: true, separatedPartKeys);
             _chassisComponents.Set(chassisRootEntity, new()
             {
                 LeftLeg = leftLegContainer,
@@ -68,13 +78,38 @@ namespace ZE.MechBattle.MechBuilding
             };
         }
 
-        private LegDataContainer<Entity> CreateLeg(MechChassisData chassisData, Entity chassisRootEntity, bool isRight)
+        private LegDataContainer<Entity> CreateLeg(
+            MechChassisData chassisData, 
+            Entity chassisRootEntity, 
+            bool isRight, 
+            ICollection<ViewPartKey> separatedPartKeys)
         {
             var index = isRight ? 1 : 0;
             var legData = isRight ? chassisData.RightLegLocalPoints : chassisData.LeftLegLocalPoints;
-            var hipEntity = _parentingRelationsApplier.CreateChildEntityForViewPart(legData.Hip, chassisRootEntity, new (ViewPartType.Hip, index));
-            var ankleEntity = _parentingRelationsApplier.CreateChildEntityForViewPart(legData.Ankle, hipEntity, new (ViewPartType.Ankle, index));
-            var footEntity = _parentingRelationsApplier.CreateChildEntityForViewPart(legData.Foot, ankleEntity, new(ViewPartType.Foot, index));
+
+            var hipKey = ViewPartKey.GetHipKey(isRight);
+            var hipEntity = _parentingRelationsApplier.CreateChildEntityForViewPart(
+                legData.Hip, 
+                chassisRootEntity, 
+                _mechEntity,
+                hipKey, 
+                separatedPartKeys.Contains(hipKey));
+
+            var ankleKey = ViewPartKey.GetAnkleKey(isRight);
+            var ankleEntity = _parentingRelationsApplier.CreateChildEntityForViewPart(
+                legData.Ankle, 
+                hipEntity, 
+                _mechEntity, 
+                ankleKey,
+                separatedPartKeys.Contains(ankleKey));
+
+            var footKey = ViewPartKey.GetFootKey(isRight);
+            var footEntity = _parentingRelationsApplier.CreateChildEntityForViewPart(
+                legData.Foot, 
+                ankleEntity, 
+                _mechEntity,
+                footKey,
+                separatedPartKeys.Contains(footKey));
 
             return new()
             {

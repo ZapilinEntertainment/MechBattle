@@ -12,24 +12,27 @@ namespace ZE.MechBattle.Ecs
             public Entity ChildEntity;
             public float3 LocalPos;
             public quaternion LocalRot;
-            public bool AwaitParentViewComponent;
+            public Entity ViewOwnerEntity;
             public ViewPartKey ViewPartKey;
             public bool SaveInitLocalPos;
         }
 
         private readonly World _world;
+        private readonly TransformAspectHandler _transformHandler;
+        private readonly MonoViewFactory _monoViewFactory;
+
         private readonly Stash<ParentEntityComponent> _parents;
         private readonly Stash<LocalPositionComponent> _localPositions;
         private readonly Stash<LocalRotationComponent> _localRotation;
         private readonly Stash<InitialLocalPosition> _initLocalPositions;
         private readonly Stash<ViewPartRequestComponent> _viewPartsRequestComponents;
 
-        private readonly Stash<AwaitingParentViewLoadingTag> _awaitingViewLoadingTag;
+        private readonly Stash<AwaitingViewLoadingComponent> _awaitingViewLoadingComponents;
 
-        private readonly TransformAspectHandler _transformHandler;
+        
 
         [Inject]
-        public ParentingRelationsApplier(World world, TransformAspectHandler transformAspectHandler)
+        public ParentingRelationsApplier(World world, TransformAspectHandler transformAspectHandler, MonoViewFactory monoViewFactory)
         {
             _world = world;
             _parents = _world.GetStash<ParentEntityComponent>();
@@ -37,10 +40,11 @@ namespace ZE.MechBattle.Ecs
             _localRotation = _world.GetStash<LocalRotationComponent>();
             _initLocalPositions = _world.GetStash<InitialLocalPosition>();
 
-            _awaitingViewLoadingTag = _world.GetStash<AwaitingParentViewLoadingTag>();
+            _awaitingViewLoadingComponents = _world.GetStash<AwaitingViewLoadingComponent>();
             _viewPartsRequestComponents = _world.GetStash<ViewPartRequestComponent>();
 
             _transformHandler = transformAspectHandler;
+            _monoViewFactory = monoViewFactory;
         }
 
         public void Apply(ExecutionProtocol protocol)
@@ -55,8 +59,8 @@ namespace ZE.MechBattle.Ecs
 
             _transformHandler.SyncPositionWithParent(childEntity, protocol.ParentEntity, protocol.LocalPos, protocol.LocalRot);
 
-            if (protocol.AwaitParentViewComponent)
-                _awaitingViewLoadingTag.Set(childEntity);
+            if (protocol.ViewOwnerEntity != default)
+                _awaitingViewLoadingComponents.Set(childEntity, new(protocol.ViewOwnerEntity));
 
             if (protocol.ViewPartKey.IsValid)
                 _viewPartsRequestComponents.Set(childEntity, new(protocol.ViewPartKey));
@@ -79,15 +83,15 @@ namespace ZE.MechBattle.Ecs
             return true;
         }
 
-        public Entity CreateChildEntityForViewPart(RigidTransform point, Entity parent, ViewPartKey viewPartKey)
+        public Entity CreateChildEntityForViewPart(RigidTransform point, Entity parent, Entity viewOwner, ViewPartKey viewPartKey, bool separateViewObject = false)
         {
-            var entity = _world.CreateEntity();
+            var entity = separateViewObject ? _monoViewFactory.CreateViewContainer() : _world.CreateEntity();
             Apply(new()
             {
                 ParentEntity = parent,
                 ChildEntity = entity,
 
-                AwaitParentViewComponent = true,
+                ViewOwnerEntity = viewOwner,
                 ViewPartKey = viewPartKey,
 
                 LocalPos = point.pos,

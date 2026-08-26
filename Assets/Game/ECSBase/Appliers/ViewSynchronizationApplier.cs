@@ -8,7 +8,6 @@ namespace ZE.MechBattle.Ecs
     {
         private readonly World _world;
         private readonly TransformAccessManager _transformAccessManager;
-        private readonly Stash<TransformComponent> _transforms;
         private readonly Stash<TransformUpdatedTag> _transformUpdatedTags;
         private readonly TransformAspectHandler _transformAspectHandler;
         private readonly FinalViewFunctionalApplier _finalViewFunctionalApplier;
@@ -26,15 +25,13 @@ namespace ZE.MechBattle.Ecs
             _transformAspectHandler = transformAspectHandler;
             _finalViewFunctionalApplier = finalViewFunctionalApplier;
 
-            _transforms = _world.GetStash<TransformComponent>();
             _transformUpdatedTags = _world.GetStash<TransformUpdatedTag>();
         }
 
-        public void Apply(Entity entity, IMonoView view, bool applyViewPosition)
+        public void Apply(Entity entity, IMonoView view, bool applyViewPosition, bool doViewChecks = true)
         {
             var transform = view.Transform;
-            var key = _transformAccessManager.RegisterTransform(transform);
-            _transforms.Set(entity, new() { Key = key });
+            _transformAccessManager.RegisterTransform(entity, transform);
             if (applyViewPosition) 
                 _transformAspectHandler.ApplyViewPositionToEntity(entity, transform);
             else
@@ -45,7 +42,8 @@ namespace ZE.MechBattle.Ecs
             view.name = $"entity {entity.Id}";
 #endif
 
-           _finalViewFunctionalApplier.CheckAndApply(entity, view);
+           if (doViewChecks)
+                _finalViewFunctionalApplier.CheckAndApply(entity, view);
         }
 
     }

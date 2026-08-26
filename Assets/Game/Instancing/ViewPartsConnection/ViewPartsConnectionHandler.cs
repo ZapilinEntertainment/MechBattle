@@ -12,14 +12,21 @@ namespace ZE.MechBattle
     {
         private readonly IViewContainersPool _viewContainersPool;
         private readonly ViewPartConnectionsList _connectionsList;
+        private readonly TransformAccessManager _transformAccessManager;
+
         private readonly Stash<ViewPartConnectedTag> _viewPartsConnectedTag;
         private readonly Stash<ViewContainerComponent> _viewContainers;
 
         [Inject]
-        public ViewPartsConnectionHandler(World world, IViewContainersPool viewContainersPool, ViewPartConnectionsList viewPartConnectionsList)
+        public ViewPartsConnectionHandler(
+            World world,
+            IViewContainersPool viewContainersPool, 
+            ViewPartConnectionsList viewPartConnectionsList,
+            TransformAccessManager transformAccessManager)
         {
             _viewContainersPool = viewContainersPool;
             _connectionsList = viewPartConnectionsList;
+            _transformAccessManager = transformAccessManager;
 
             _viewPartsConnectedTag = world.GetStash<ViewPartConnectedTag>();
             _viewContainers = world.GetStash<ViewContainerComponent>();
@@ -29,7 +36,7 @@ namespace ZE.MechBattle
         {
             var viewContainerId = _viewContainers.Get(parentPointEntity).Id;
             if (!_viewContainersPool.TryGetContainer(viewContainerId, out var container))
-                throw new System.Exception("cannot connect: no view container set");
+                throw new System.Exception("cannot connect: view container not exists");
 
             if (container is not IViewConnectionsPoint connectionPoint)
                 throw new System.Exception("cannot connect: view container is not IConnectionPoint");
@@ -47,7 +54,6 @@ namespace ZE.MechBattle
             }
 
             UnityEngine.Debug.Log("view parts connection error");
-        }
-    
+        }    
     }
 }

@@ -32,25 +32,38 @@ namespace ZE.MechBattle.Ecs
             _viewRequests = world.GetStash<ViewLoadRequestTag>();
             _viewContainers = world.GetStash<ViewContainerComponent>();
             _viewKeyComponents = world.GetStash<ViewKeyComponent>();
+        }        
+
+        public Entity CreateViewContainer()
+        {
+            var entity = _world.CreateEntity();
+            AddViewContainerComponents(entity);
+            return entity;
         }
-        
+
         public Entity CreateViewReceiver(string viewId)
         {
-            var containerData = _viewContainersPool.Get();
-            var entity = _world.CreateEntity();
-            MakeViewReceiver(entity, viewId);
-
+            var entity = CreateViewContainer();
+            AddViewReceivingComponents(entity, viewId);
             return entity;
         }
 
         public void MakeViewReceiver(Entity entity, string viewId)
         {
-            var containerData = _viewContainersPool.Get();
-            _viewSyncApplier.Apply(entity, containerData.container, applyViewPosition: false);
+            AddViewContainerComponents(entity);
+            AddViewReceivingComponents(entity, viewId);            
+        }
 
-            _viewContainers.Add(entity, new(containerData.id));
+        private void AddViewContainerComponents(Entity entity)
+        {
+            var (container, id) = _viewContainersPool.Get();
+            _viewSyncApplier.Apply(entity, container, applyViewPosition: false, doViewChecks: false);
+            _viewContainers.Add(entity, new(id));
+        }
+
+        private void AddViewReceivingComponents(Entity entity, string viewId)
+        {
             _viewRequests.Add(entity);
-
             var viewKey = new ViewKey() { IdKey = _stringDataDict.StringToKey(viewId) };
             _viewKeyComponents.Add(entity, new(viewKey));
         }

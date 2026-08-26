@@ -84,7 +84,7 @@ namespace ZE.MechBattle.Ecs
             public bool UseAutoStow;
             public bool SyncTargetWithParent;
             public bool SyncFireTagWithParent;
-            public bool NoViewWeapon;
+            public Entity ViewOwnerEntity;
 
             public DamageApplyParameters DamageParameters;
         }
@@ -94,20 +94,22 @@ namespace ZE.MechBattle.Ecs
             var weaponEntity = _world.CreateEntity();
             var weaponConfig = protocol.WeaponConfig;
 
+            var viewOwnerEntity = protocol.ViewOwnerEntity == default ? weaponEntity : protocol.ViewOwnerEntity;
+
             _parentingRelationsApplier.Apply(new()
             {
                 ParentEntity = protocol.ParentEntity,
                 ChildEntity = weaponEntity,
                 LocalPos = protocol.AttachmentProtocol.LocalPosition,
                 LocalRot = protocol.AttachmentProtocol.LocalRotation,
-                AwaitParentViewComponent = !protocol.NoViewWeapon
+                ViewOwnerEntity = viewOwnerEntity
             });
                 
             var addTower = weaponConfig.TryGetTowerAttachmentProtocol(out var towerAttachmentProtocol);
             Entity towerEntity;
             if (addTower)
             {
-                towerEntity = AttachWeaponPart(weaponEntity, towerAttachmentProtocol);
+                towerEntity = AttachWeaponPart(weaponEntity, viewOwnerEntity, towerAttachmentProtocol);
                 _viewPartRequests.Add(towerEntity, new(towerAttachmentProtocol.ViewPartKey));
 
                 _weaponTowerComponents.Add(weaponEntity, new(towerEntity));
@@ -125,7 +127,7 @@ namespace ZE.MechBattle.Ecs
 
             if (weaponConfig.TryGetBarrelAttachmentProtocol(out var barrelAttachmentProtocol))
             {
-                var barrelEntity = AttachWeaponPart(parentEntity: addTower ? towerEntity : weaponEntity, barrelAttachmentProtocol);
+                var barrelEntity = AttachWeaponPart(parentEntity: addTower ? towerEntity : weaponEntity, viewOwnerEntity, barrelAttachmentProtocol);
 
                 _viewPartRequests.Add(barrelEntity, new(barrelAttachmentProtocol.ViewPartKey));
                 _weaponBarrelComponents.Add(weaponEntity, new(barrelEntity));
@@ -194,7 +196,7 @@ namespace ZE.MechBattle.Ecs
                 _continuosFiring.Add(weaponEntity);
         }
 
-        private Entity AttachWeaponPart(Entity parentEntity,WeaponPartAttachmentProtocol protocol)
+        private Entity AttachWeaponPart(Entity parentEntity, Entity viewOwnerEntity, WeaponPartAttachmentProtocol protocol)
         {
             var weaponPartEntity = _world.CreateEntity();
             _parentingRelationsApplier.Apply(new()
@@ -203,7 +205,7 @@ namespace ZE.MechBattle.Ecs
                 ParentEntity = parentEntity,
                 LocalPos = protocol.LocalPosition,
                 LocalRot = quaternion.identity,
-                AwaitParentViewComponent = true
+                ViewOwnerEntity = viewOwnerEntity
             });
 
             var rotationSpeedDegrees = protocol.RotationSpeedDegrees;

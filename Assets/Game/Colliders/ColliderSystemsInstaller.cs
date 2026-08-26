@@ -6,6 +6,7 @@ namespace ZE.MechBattle
     {
         protected override void Configure(ISystemsOperator installer)
         {
+            installer.AddSystem<CollidersCreateSystem>(SystemGroupOrder.ViewsLoading);
             installer.AddSystem<CollidersRegistrationCeaseSystem>(SystemGroupOrder.DisposedObjectsOperations);
         }
     }

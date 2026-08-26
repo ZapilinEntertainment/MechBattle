@@ -7,7 +7,7 @@ namespace ZE.MechBattle.Views
         protected override void Configure(ISystemsOperator installer)
         {
             installer.AddSystem<ViewRequestsHandleSystem>(SystemGroupOrder.ViewsLoading);
-            installer.AddSystem<UpdateChildViewLinkSystem>(SystemGroupOrder.ViewsLoading);
+            installer.AddSystem<UpdateSubViewAwaitingEntitiesSystem>(SystemGroupOrder.ViewsLoading);
             installer.AddSystem<ViewPartAssignSystem>(SystemGroupOrder.ViewsLoading);
 
             installer.AddSystem<ViewPartsDisconnectionSystem>(SystemGroupOrder.DisposedObjectsOperations);

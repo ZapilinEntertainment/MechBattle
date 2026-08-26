@@ -1,5 +1,7 @@
 using Scellecs.Morpeh;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Mathematics;
 using VContainer;
 using ZE.MechBattle.Ecs;
@@ -12,6 +14,7 @@ namespace ZE.MechBattle.MechBuilding
 
         private MechConfig _mechConfig;
         private Entity _mechEntity;
+        private ICollection<ViewPartKey> _separatingKeys;
 
         private readonly World _world;
         private readonly Dictionary<ViewPartKey, Entity> _constructedParts = new();
@@ -21,6 +24,7 @@ namespace ZE.MechBattle.MechBuilding
 
         private readonly Stash<RotationSpeedComponent> _rotationSpeed;
         private readonly Stash<LocalRotationLimitComponent> _localRotationLimits;
+        
 
         [Inject]
         public MechBitsBuilder(ParentingRelationsApplier parentingRelationsApplier, World world)
@@ -32,10 +36,11 @@ namespace ZE.MechBattle.MechBuilding
             _localRotationLimits = _world.GetStash<LocalRotationLimitComponent>();
         }
 
-        public void BuildParts(Entity mechEntity, MechConfig mechConfig)
+        public void BuildParts(Entity mechEntity, MechConfig mechConfig, ICollection<ViewPartKey> separatingKeys)
         {
             _mechConfig = mechConfig;
             _mechEntity = mechEntity;
+            _separatingKeys = separatingKeys;
 
             foreach (var mechPartSettings in _mechConfig.MechPartSettings)
             {
@@ -109,36 +114,29 @@ namespace ZE.MechBattle.MechBuilding
             }
             
 
-            entity = BuildPart(key, settings, parentEntity);
+            entity = BuildPart(key, settings, parentEntity, _mechEntity);
             AddConstructedPart(key, entity);
             return true;
         }
 
-        private Entity BuildPart(ViewPartKey key, MechPartSettings settings, Entity parent)
+        private Entity BuildPart(ViewPartKey key, MechPartSettings settings, Entity parent, Entity viewOwner)
         {
             Entity entity;
-            switch (settings.ConstructionMode)
+            if (settings.ConstructionMode == MechPartConstructionMode.LinkToViewPart)
             {
-                case MechPartConstructionMode.EntityOnly:
-                    {
-                        entity = _world.CreateEntity();
-                        break;
-                    }
-                case MechPartConstructionMode.LinkToViewPart:
-                    {
-                        if (!key.IsValid)
-                            throw new System.Exception("view part key invalid");
+                if (!key.IsValid)
+                    throw new System.Exception("view part key invalid");
 
-                        entity = _parentingRelationsApplier.CreateChildEntityForViewPart(
-                            settings.AttachProtocol.ToPoint(),
-                            parent,
-                            key);
-                        break;
-                    }
-                default:
-                    {
-                        throw new System.NotImplementedException("construction mode not implemented");
-                    }
+                entity = _parentingRelationsApplier.CreateChildEntityForViewPart(
+                    settings.AttachProtocol.ToPoint(),
+                    parent,
+                    viewOwner,
+                    key,
+                    separateViewObject: _separatingKeys.Contains(key));
+            }
+            else
+            {
+                throw new System.NotImplementedException("construction mode not implemented");
             }
 
             _rotationSpeed.Set(entity, new(settings.RotationSpeedRadians));

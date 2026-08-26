@@ -7,8 +7,14 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public struct AwaitingParentViewLoadingTag : IComponent 
+    public readonly struct AwaitingViewLoadingComponent : IComponent 
     {
-    
+        public readonly Entity ViewOwnerEntity;
+
+        public AwaitingViewLoadingComponent(Entity viewOwnerEntity)
+        {
+            ViewOwnerEntity = viewOwnerEntity;
+        }
+
     }
 }

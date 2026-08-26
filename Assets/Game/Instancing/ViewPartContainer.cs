@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace ZE.MechBattle
 {
+    // simple container-wrapper for transferring mech part transforms
     public class ViewPartContainer : IViewPart, IViewConnectionsPoint
     {
         public Transform Transform => _transform;
@@ -13,9 +14,12 @@ namespace ZE.MechBattle
 
         public ViewPartContainer(Transform transform) => _transform = transform;
 
-        // it is just a container
         public void Dispose() { }
 
-        public void SetParent(Transform parent) => _transform.SetParent(parent, false);
+        public void SetParent(Transform parent)
+        {
+            _transform.parent = parent;
+            _transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+        }
     }
 }

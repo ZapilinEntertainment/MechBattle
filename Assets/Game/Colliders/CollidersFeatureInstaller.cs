@@ -1,6 +1,7 @@
 using VContainer;
 using VContainer.Unity;
 using ZE.MechBattle.Ecs;
+using ZE.MechBattle.Colliders;
 
 namespace ZE.MechBattle
 {
@@ -17,9 +18,10 @@ namespace ZE.MechBattle
         {
             base.SceneScopeInstall(builder);
             builder.Register<ColliderOwnityApplier>(Lifetime.Scoped);
-            builder.Register<CollidersTable>(Lifetime.Scoped);
-            builder.Register<CollidersFactory>(Lifetime.Scoped);
+            builder.Register<CollidersTable>(Lifetime.Scoped);            
             builder.Register<ViewPartConnectionsList>(Lifetime.Scoped);
+            builder.Register<CollidersFactory>(Lifetime.Scoped);
+            builder.Register<ColliderAddRequestsFactory>(Lifetime.Scoped);
         }
     }
 }

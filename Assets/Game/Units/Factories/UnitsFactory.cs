@@ -116,6 +116,7 @@ namespace ZE.MechBattle
             var weaponEntity = _weaponFactory.CreateWeapon(new()
             {
                 ParentEntity = unitEntity,
+                ViewOwnerEntity = unitEntity,
                 WeaponConfig = weaponData.Config,
                 AttachmentProtocol = weaponData.AttachmentProtocol,
 
@@ -123,7 +124,7 @@ namespace ZE.MechBattle
                 UseAutoShot = true,
                 SyncTargetWithParent = true,
 
-                DamageParameters = new(weaponData.Config.DamageType, config.Damage)
+                DamageParameters = new(weaponData.Config.DamageType, config.Damage),                
             });
             _aimPrecisionComponents.Add(weaponEntity, new(config.MaxPrecisionAberration) );
             _weaponComponents.Set(unitEntity, new(weaponEntity));

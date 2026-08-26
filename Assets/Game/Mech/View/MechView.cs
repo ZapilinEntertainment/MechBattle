@@ -25,11 +25,11 @@ namespace ZE.MechBattle
 
         public bool TryGetPartByKey(ViewPartKey key, out IViewPart viewPart)
         {
-            if (key.Index != 0 && key.Index != 1)
+            if (key.Index < 0 || key.Index > 1)
             {
                 viewPart = null;
                 return false;
-            } 
+            }
 
             switch(key.Type) 
             {

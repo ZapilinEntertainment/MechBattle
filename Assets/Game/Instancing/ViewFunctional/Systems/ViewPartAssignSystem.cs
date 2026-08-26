@@ -14,7 +14,6 @@ namespace ZE.MechBattle.Ecs {
     {
         public World World { get; set;}
         protected Stash<ViewPartRequestComponent> Requests;
-        protected Stash<AwaitingParentViewLoadingTag> AwaitingTags;
         protected readonly ViewSynchronizationApplier ViewSyncApplier;
 
         private Filter _filter;
@@ -34,12 +33,11 @@ namespace ZE.MechBattle.Ecs {
             _filter = World.Filter
             .With<ViewPartRequestComponent>()
             .With<ViewContainerComponent>()
-            .Without<AwaitingParentViewLoadingTag>()
+            .Without<AwaitingViewLoadingComponent>()
             .Build();
 
             _viewContainers = World.GetStash<ViewContainerComponent>();
             Requests = World.GetStash<ViewPartRequestComponent>();
-            AwaitingTags = World.GetStash<AwaitingParentViewLoadingTag>();
         }
 
         public void OnUpdate(float deltaTime) 

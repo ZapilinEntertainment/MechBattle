@@ -199,7 +199,183 @@ MonoBehaviour:
         x: 0
         y: 0
         z: 0
-  _colliderConfigs: []
+  _colliderConfigs:
+  - Key:
+      Type: 7
+      Index: 0
+    PartitionKey:
+      Type: 1
+      Index: 0
+    ColliderSetupInfo:
+      ColliderType: 1
+      LocalPosition:
+        x: 0
+        y: 7
+        z: 0
+      LocalRotation:
+        value:
+          x: 0
+          y: 0
+          z: 0
+          w: 1
+      Size:
+        x: 6
+        y: 6
+        z: 6
+  - Key:
+      Type: 7
+      Index: 0
+    PartitionKey:
+      Type: 2
+      Index: 0
+    ColliderSetupInfo:
+      ColliderType: 0
+      LocalPosition:
+        x: -7.3
+        y: 8.6
+        z: -1
+      LocalRotation:
+        value:
+          x: 0
+          y: 0
+          z: 0
+          w: 1
+      Size:
+        x: 9.6
+        y: 5.5
+        z: 6.7
+  - Key:
+      Type: 7
+      Index: 0
+    PartitionKey:
+      Type: 2
+      Index: 1
+    ColliderSetupInfo:
+      ColliderType: 0
+      LocalPosition:
+        x: 7.3
+        y: 8.6
+        z: -1
+      LocalRotation:
+        value:
+          x: 0
+          y: 0
+          z: 0
+          w: 1
+      Size:
+        x: 9.6
+        y: 5.5
+        z: 6.7
+  - Key:
+      Type: 7
+      Index: 0
+    PartitionKey:
+      Type: 2
+      Index: 1
+    ColliderSetupInfo:
+      ColliderType: 0
+      LocalPosition:
+        x: 7.3
+        y: 8.6
+        z: -1
+      LocalRotation:
+        value:
+          x: 0
+          y: 0
+          z: 0
+          w: 1
+      Size:
+        x: 9.6
+        y: 5.5
+        z: 6.7
+  - Key:
+      Type: 4
+      Index: 0
+    PartitionKey:
+      Type: 3
+      Index: 0
+    ColliderSetupInfo:
+      ColliderType: 0
+      LocalPosition:
+        x: 0
+        y: 0
+        z: 2
+      LocalRotation:
+        value:
+          x: 0
+          y: 0
+          z: 0
+          w: 1
+      Size:
+        x: 3
+        y: 4
+        z: 8
+  - Key:
+      Type: 5
+      Index: 0
+    PartitionKey:
+      Type: 3
+      Index: 0
+    ColliderSetupInfo:
+      ColliderType: 0
+      LocalPosition:
+        x: 0
+        y: 0
+        z: 6
+      LocalRotation:
+        value:
+          x: 0
+          y: 0
+          z: 0
+          w: 1
+      Size:
+        x: 5
+        y: 5
+        z: 12
+  - Key:
+      Type: 4
+      Index: 1
+    PartitionKey:
+      Type: 3
+      Index: 1
+    ColliderSetupInfo:
+      ColliderType: 0
+      LocalPosition:
+        x: 0
+        y: 0
+        z: 2
+      LocalRotation:
+        value:
+          x: 0
+          y: 0
+          z: 0
+          w: 1
+      Size:
+        x: 3
+        y: 4
+        z: 8
+  - Key:
+      Type: 5
+      Index: 1
+    PartitionKey:
+      Type: 3
+      Index: 1
+    ColliderSetupInfo:
+      ColliderType: 0
+      LocalPosition:
+        x: 0
+        y: 0
+        z: 6
+      LocalRotation:
+        value:
+          x: 0
+          y: 0
+          z: 0
+          w: 1
+      Size:
+        x: 5
+        y: 5
+        z: 12
   _slotInfo:
     _serializedList:
     - Key: 1

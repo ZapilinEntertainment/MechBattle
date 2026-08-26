@@ -14,7 +14,6 @@ namespace ZE.MechBattle.MechBuilding
         private readonly Stash<MechWeaponsComponent> _mechWeapons;
 
         private MechBuilder _mainBuilder;
-        private MechBitsBuilder _mechPartsBuilder;
         private MechConfig _mechConfig;
         private WeaponConfigBase _mainWeaponConfigLeft;
         private WeaponConfigBase _mainWeaponConfigRight;
@@ -39,14 +38,12 @@ namespace ZE.MechBattle.MechBuilding
 
         public void BuildWeapons(
             MechBuilder mechBuilder, 
-            MechBitsBuilder mechPartsBuilder,
             MechConfig mechConfig, 
             WeaponConfigBase mainWeaponConfigLeft,
             WeaponConfigBase mainWeaponConfigRight,
             WeaponConfigBase laserEyesConfig)
         {
             _mainBuilder = mechBuilder;
-            _mechPartsBuilder = mechPartsBuilder;
 
             _mechConfig = mechConfig;
             _mainWeaponConfigLeft = mainWeaponConfigLeft;
@@ -85,7 +82,7 @@ namespace ZE.MechBattle.MechBuilding
                 AttachmentProtocol = slotInfo.AttachmentProtocol,
                 SyncTargetWithParent = true,
 
-                DamageParameters = new(weaponConfig.DamageType, DevelopConstants.TEMP_MainGunDamage)
+                DamageParameters = new(weaponConfig.DamageType, DevelopConstants.TEMP_MainGunDamage),
             });
             _viewFactory.MakeViewReceiver(weaponEntity, equipmentId + "_view");
 
@@ -112,7 +109,9 @@ namespace ZE.MechBattle.MechBuilding
                 WeaponConfig = _laserEyesConfig,
                 ParentEntity = headEntity,
                 SyncTargetWithParent = true,
-                SyncFireTagWithParent = true
+                SyncFireTagWithParent = true,
+                ViewOwnerEntity = _mainBuilder.MechEntity
+                
             });
 
             var barrel = _weaponHandler.GetBarrelEntity(eyeEntity);

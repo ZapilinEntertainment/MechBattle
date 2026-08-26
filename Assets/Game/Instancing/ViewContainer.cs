@@ -1,4 +1,5 @@
 using UnityEngine;
+using TriInspector;
 
 namespace ZE.MechBattle.Views
 {
@@ -10,20 +11,21 @@ namespace ZE.MechBattle.Views
     // - per-frame instancing can be limited
     // - no exceptions with no-view entity
     // - when visible view loads, it will be correctly synchronised to all entity components
-    public class ViewContainer : MonoBehaviour, IViewContainer, IMonoView
+    public class ViewContainer : MonoBehaviour, IViewContainer, IMonoView, IViewConnectionsPoint
     {
         public Transform Transform => _transform;
         private Transform _transform;
         private GameObject _gameObject;
 
         public IView View { get; private set; }
+        [ShowInInspector] private MonoBehaviour ViewAsMono => View as MonoBehaviour;
 
         // poolable
         public void Dispose() { }
 
-        public void OnViewInstanced(IView prefab) 
+        public void OnViewInstanced(IView instance) 
         {
-            View = prefab;
+            View = instance;
             View.SetParent(_transform);
         }
 

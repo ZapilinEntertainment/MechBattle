@@ -32,5 +32,34 @@ namespace ZE.MechBattle
         }
 
         public void OverrideViewRequestKey(Entity entity, ViewPartKey viewPartKey) => _viewPartRequestComponents.Set(entity, new(viewPartKey));
+
+        public void TransferPartAuthority(int ownerContainerId, Entity subViewEntity, ViewPartKey partKey)
+        {
+            if (!_viewContainersList.TryGetContainer(ownerContainerId, out var viewContainer))
+            {
+                UnityEngine.Debug.LogError($"container {ownerContainerId} not found");
+                return;
+            }
+
+            if (viewContainer.View is not IComplexMonoView complexMonoView)
+            {
+                UnityEngine.Debug.LogError($"this view does not contain parts: {viewContainer.name}");
+                return;
+            }
+
+            if (!complexMonoView.TryGetPartByKey(partKey, out var viewPart))
+            {
+                UnityEngine.Debug.LogError($"{partKey.ToString()} of {viewContainer.name}'s view not found");
+                return;
+            }
+
+            if (!_viewContainersList.TryGetContainer(_viewContainers.Get(subViewEntity).Id, out var partOwnerViewContainer))
+            {
+                UnityEngine.Debug.LogError($"part owner container {ownerContainerId} not found");
+                return;
+            }
+
+            partOwnerViewContainer.OnViewInstanced(viewPart);
+        }
     }
 }
