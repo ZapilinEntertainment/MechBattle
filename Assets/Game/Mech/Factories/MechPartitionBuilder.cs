@@ -4,56 +4,59 @@ using System.Collections.Generic;
 using UnityEngine;
 using ZE.MechBattle.Ecs;
 
-namespace ZE.MechBattle
+namespace ZE.MechBattle.MechBuilding
 {
     public class MechPartitionBuilder
     {
-        public readonly Entity MechEntity;
-        private readonly MechPartitionFactory _partitionsFactory;
-        private readonly PartitionsListManager _partitionsList;
-        private readonly IReadOnlyDictionary<string, MechPartSettings> _partSettings;
-        private readonly IReadOnlyDictionary<string, MechPartsBuilder.PartData> _constructedParts;
+        public IPartitionsList PartitionsList { get; private set; }
+
+        private Entity _mechEntity;
+        private IReadOnlyDictionary<string, MechPartSettings> _partSettings;
+        private IReadOnlyDictionary<string, MechBitsBuilder.PartData> _constructedBits;        
+
+        private readonly PartitionsListManager _partitionsManager;
+        private readonly MechPartitionFactory _partitionFactory;
         private readonly Stash<PartitionsRootTag> _partitionRoots;
+        
 
         public MechPartitionBuilder(
-            Entity mechEntity, 
-            MechConfig mechConfig, 
-            MechPartitionFactory mechPartitionFactory,
-            MechPartsBuilder mechBuilder,
             PartitionsListManager partitionsList,
-            World world)
+            World world,
+            MechPartitionFactory mechPartitionFactory)
         {
-            MechEntity = mechEntity;
-            _partitionsFactory = mechPartitionFactory;
-            _partitionsList = partitionsList;
-
-            _partSettings = mechConfig.MechPartSettings;
-            _constructedParts = mechBuilder.ConstructedParts;
-
+            _partitionsManager = partitionsList;
+            _partitionFactory = mechPartitionFactory;
             _partitionRoots = world.GetStash<PartitionsRootTag>();
         }
 
-        public void BuildAllPartitions()
+        public void BuildAllPartitions(
+            Entity mechEntity,
+            MechBitsBuilder mechBuilder,
+            IReadOnlyList<MechPartitionConfig> partitionConfigs)
         {
-            BuildPartition( MechPartitionKey.Center, MechConstants.UPPER_PART_ID);
-            BuildPartition(MechPartitionKey.LeftArm, MechConstants.LEFT_ARM_PARTITION_ID);
-            BuildPartition(MechPartitionKey.RightArm, MechConstants.RIGHT_ARM_PARTITION_ID);
-            BuildPartition(MechPartitionKey.LeftLeg, MechConstants.LEFT_LEG_PARTITION_ID);
-            BuildPartition(MechPartitionKey.RightLeg, MechConstants.RIGHT_LEG_PARTITION_ID);
+            _mechEntity = mechEntity;
+            _constructedBits = mechBuilder.ConstructedParts;
 
-            _partitionRoots.Add(MechEntity);
+            foreach (var config in partitionConfigs)
+            {
+                BuildPartition(config);
+            }
+
+            PartitionsList = _partitionsManager.GetPartitionsList(_mechEntity);
+
+            _partitionRoots.Add(_mechEntity);
         }
 
-        private Entity BuildPartition(MechPartitionKey key, string settingsKey)
+        private Entity BuildPartition(MechPartitionConfig config)
         {
-            if (!_partSettings.TryGetValue(settingsKey, out var settings))
-                throw new System.Exception(settingsKey + " settings not found");
+            var rootId = config.RootPartId;
+            var key = config.Key;
 
-            if (!TryGetParentEntity(settings.Root, out var parentEntity))
-                throw new System.Exception($"required root {settings.Root} for {settingsKey} was not constructed");
+            if (!TryGetParentEntity(rootId, out var parentEntity))
+                throw new System.Exception($"required root {config.RootPartId} for {key} was not constructed");
 
-            var entity = _partitionsFactory.CreatePartition(key, MechEntity, parentEntity, settings.AttachProtocol);
-            _partitionsList.AddPartitionEntity(MechEntity, key, entity);
+            var entity = _partitionFactory.CreatePartition(key, _mechEntity, parentEntity, config.AttachProtocol);
+            _partitionsManager.AddPartitionEntity(_mechEntity, key, entity);
             return entity;
         }
 
@@ -61,11 +64,11 @@ namespace ZE.MechBattle
         {
             if (string.IsNullOrEmpty(rootId))
             {
-                parentEntity = MechEntity;
+                parentEntity = _mechEntity;
             }
             else
             {
-                if (!_constructedParts.TryGetValue(rootId, out var partData))
+                if (!_constructedBits.TryGetValue(rootId, out var partData))
                 {
                     parentEntity = default;
                     return false;

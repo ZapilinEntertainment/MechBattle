@@ -3,10 +3,17 @@ using VContainer;
 using Unity.Mathematics;
 using ZE.MechBattle.Ecs;
 
-namespace ZE.MechBattle
+namespace ZE.MechBattle.MechBuilding
 {
     public class MechChassisFactory
     {
+        public struct ChassisEntities
+        {
+            public Entity ChassisRoot;
+            public LegDataContainer<Entity> LeftLeg;
+            public LegDataContainer<Entity> RightLeg;
+        }
+
         private readonly World _world;
         private readonly ParentingRelationsApplier _parentingRelationsApplier;
         private readonly MechChassisData _mechChassisData;
@@ -33,7 +40,7 @@ namespace ZE.MechBattle
             _activeLegs = _world.GetStash<MechActiveLegValueComponent>();
         }
     
-        public Entity Build(Entity mechEntity)
+        public ChassisEntities Build(Entity mechEntity)
         {
             var chassisRootEntity = _parentingRelationsApplier.CreateChildEntityForViewPart(_mechChassisData.ChassisRootLocalPoint, mechEntity, new(ViewPartType.ChassisRoot));
 
@@ -53,7 +60,12 @@ namespace ZE.MechBattle
             _activeLegs.Add(chassisRootEntity, MechActiveLegValueComponent.Idle);
 
             //UnityEngine.Debug.Log($"mech entity {mechEntity.Id}, chassis entity {chassisRootEntity.Id}");
-            return chassisRootEntity;
+            return new()
+            {
+                ChassisRoot = chassisRootEntity,
+                LeftLeg = leftLegContainer,
+                RightLeg = rightLegContainer
+            };
         }
 
         private LegDataContainer<Entity> CreateLeg(MechChassisData chassisData, Entity chassisRootEntity, bool isRight)

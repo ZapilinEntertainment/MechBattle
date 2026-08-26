@@ -4,7 +4,7 @@ using UnityEngine;
 using VContainer;
 using ZE.MechBattle.Ecs;
 
-namespace ZE.MechBattle
+namespace ZE.MechBattle.MechBuilding
 {
     public class MechBuilder
     {
@@ -33,7 +33,7 @@ namespace ZE.MechBattle
             return MechEntity;
         }
 
-        public void CheckCrucialParts(MechPartsBuilder partsBuilder)
+        public void CheckCrucialParts(MechBitsBuilder partsBuilder)
         {
             if (!partsBuilder.TryGetConstructedPartEntity(MechConstants.HEAD_PART_ID, out var headEntity))
                 UnityEngine.Debug.LogError("head part was not added");

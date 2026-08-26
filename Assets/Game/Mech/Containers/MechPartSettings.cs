@@ -8,11 +8,11 @@ namespace ZE.MechBattle
     public struct MechPartSettings
     {
         public string Root;
+        public MechPartitionKey Partition;
         public ViewPartConstructionProtocol ConstructProtocol;
         public ViewPartAttachmentProtocol AttachProtocol;
         public float RotationSpeedDegrees;
         public ForwardRotationLimits RotationLimits;
-        public ColliderSetupInfo[] CollidersConfig;
         public List<string> SpecialKeywords;
 
         public float RotationSpeedRadians => math.radians(RotationSpeedDegrees);

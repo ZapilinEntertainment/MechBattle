@@ -4,9 +4,9 @@ using Unity.Mathematics;
 using VContainer;
 using ZE.MechBattle.Ecs;
 
-namespace ZE.MechBattle
+namespace ZE.MechBattle.MechBuilding
 {
-    public class MechPartsBuilder
+    public class MechBitsBuilder
     {
         public struct PartData
         {
@@ -29,7 +29,7 @@ namespace ZE.MechBattle
         private readonly Stash<LocalRotationLimitComponent> _localRotationLimits;
 
         [Inject]
-        public MechPartsBuilder(ParentingRelationsApplier parentingRelationsApplier, World world)
+        public MechBitsBuilder(ParentingRelationsApplier parentingRelationsApplier, World world)
         {
             _parentingRelationsApplier = parentingRelationsApplier;
             _world = world;

@@ -2,6 +2,7 @@ using UnityEngine;
 using VContainer;
 using ZE.MechBattle.Ecs;
 using ZE.MechBattle.MechMovement;
+using ZE.MechBattle.MechBuilding;
 
 namespace ZE.MechBattle
 {
@@ -23,8 +24,9 @@ namespace ZE.MechBattle
 
             builder.Register<MechFactory>(Lifetime.Scoped);
             builder.Register<MechBuilder>(Lifetime.Transient);
-            builder.Register<MechPartsBuilder>(Lifetime.Transient);
+            builder.Register<MechBitsBuilder>(Lifetime.Transient);
             builder.Register<MechWeaponsBuilder>(Lifetime.Transient);
+            builder.Register<MechPartitionBuilder>(Lifetime.Transient);
 
             builder.Register<MechPartitionFactory>(Lifetime.Scoped);
             builder.Register<PartitionsListManager>(Lifetime.Scoped);

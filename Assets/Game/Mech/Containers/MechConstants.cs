@@ -9,7 +9,14 @@ namespace ZE.MechBattle
         public const string EYE_KEYWORD = "eye";
         public const string HEAD_PART_ID = "head";
         public const string UPPER_PART_ID = "upper_part";
+
         public const string CHASSIS_PART_ID = "chassis";
+        public const string LEFT_HIP_ID = "left_hip";
+        public const string LEFT_ANKLE_ID = "left_ankle";
+        public const string LEFT_FOOT_ID = "left_foot";
+        public const string RIGHT_HIP_ID = "right_hip";
+        public const string RIGHT_ANKLE_ID = "right_ankle";
+        public const string RIGHT_FOOT_ID = "right_foot";
 
         public const string LEFT_ARM_PARTITION_ID = "left_arm";
         public const string RIGHT_ARM_PARTITION_ID = "right_arm";

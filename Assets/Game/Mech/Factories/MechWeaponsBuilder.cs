@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using VContainer;
 using ZE.MechBattle.Ecs;
 
-namespace ZE.MechBattle
+namespace ZE.MechBattle.MechBuilding
 {
     public class MechWeaponsBuilder
     {
@@ -14,7 +14,7 @@ namespace ZE.MechBattle
         private readonly Stash<MechWeaponsComponent> _mechWeapons;
 
         private MechBuilder _mainBuilder;
-        private MechPartsBuilder _mechPartsBuilder;
+        private MechBitsBuilder _mechPartsBuilder;
         private MechConfig _mechConfig;
         private WeaponConfigBase _mainWeaponConfigLeft;
         private WeaponConfigBase _mainWeaponConfigRight;
@@ -39,7 +39,7 @@ namespace ZE.MechBattle
 
         public void BuildWeapons(
             MechBuilder mechBuilder, 
-            MechPartsBuilder mechPartsBuilder,
+            MechBitsBuilder mechPartsBuilder,
             MechConfig mechConfig, 
             WeaponConfigBase mainWeaponConfigLeft,
             WeaponConfigBase mainWeaponConfigRight,

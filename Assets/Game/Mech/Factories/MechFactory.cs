@@ -1,15 +1,16 @@
 using Scellecs.Morpeh;
-using VContainer;
 using Unity.Mathematics;
+using VContainer;
 using ZE.MechBattle.Ecs;
-using System.Collections.Generic;
-using System;
+using ZE.MechBattle.MechBuilding;
 
 namespace ZE.MechBattle
 {
     public class MechFactory : IEntityCreationFactory
     {
         private readonly IObjectResolver _resolver;
+        private readonly CollidersFactory _collidersFactory;
+
         private readonly MechConfig TEMP_mechConfig;
         private readonly ProjectileWeaponConfig TEMP_mainWeaponConfig;
         private readonly RayWeaponConfig TEMP_eyesWeaponConfig;
@@ -17,11 +18,14 @@ namespace ZE.MechBattle
         [Inject]
         public MechFactory(
             IObjectResolver resolver,
+            CollidersFactory collidersFactory,
+
             [Key(DevelopConstants.DEFAULT_MECH_ID)] MechConfig mechConfig,
             [Key(DevelopConstants.DEFAULT_MECH_GUN_ID)] ProjectileWeaponConfig weaponConfig,
             [Key(DevelopConstants.LASER_EYES_WEAPON_ID)] RayWeaponConfig eyesWeaponConfig)
         {
-            _resolver = resolver;            
+            _resolver = resolver;
+            _collidersFactory = collidersFactory;
 
             TEMP_mechConfig = mechConfig;
             TEMP_mainWeaponConfig = weaponConfig;
@@ -35,19 +39,77 @@ namespace ZE.MechBattle
             var mainBuilder = _resolver.Resolve<MechBuilder>();
             var mechEntity = mainBuilder.Build(mechConfig, position, rotation);
 
-            var partsBuilder = _resolver.Resolve<MechPartsBuilder>();
+            var bitsBuilder = _resolver.Resolve<MechBitsBuilder>();
             var chassisFactory = _resolver.Resolve<MechChassisFactory>();
-            partsBuilder.AddConstructedPart(MechConstants.CHASSIS_PART_ID, new() { Entity = chassisFactory.Build(mechEntity) });
-            partsBuilder.BuildParts(mechEntity, mechConfig);          
+            RegisterAllChassisParts(chassisFactory.Build(mechEntity), bitsBuilder);
 
-            mainBuilder.CheckCrucialParts(partsBuilder);
+            bitsBuilder.BuildParts(mechEntity, mechConfig);          
+
+            mainBuilder.CheckCrucialParts(bitsBuilder);
 
             var weaponsBuilder = _resolver.Resolve<MechWeaponsBuilder>();
-            weaponsBuilder.BuildWeapons(mainBuilder, partsBuilder, mechConfig, TEMP_mainWeaponConfig, TEMP_mainWeaponConfig, TEMP_eyesWeaponConfig);
+            weaponsBuilder.BuildWeapons(mainBuilder, bitsBuilder, mechConfig, TEMP_mainWeaponConfig, TEMP_mainWeaponConfig, TEMP_eyesWeaponConfig);
 
+            var partitionsBuilder = _resolver.Resolve<MechPartitionBuilder>();
+            partitionsBuilder.BuildAllPartitions(mechEntity, bitsBuilder, mechConfig.PartitionConfigs);
+
+            BuildColliders(mechEntity, bitsBuilder, mechConfig, partitionsBuilder.PartitionsList);
 
             return mechEntity;
         }
+
+        private void RegisterAllChassisParts(MechChassisFactory.ChassisEntities chassisEntities, MechBitsBuilder bitsBuilder)
+        {
+            bitsBuilder.AddConstructedPart(MechConstants.CHASSIS_PART_ID, new() { Entity = chassisEntities.ChassisRoot });
+
+            bitsBuilder.AddConstructedPart(MechConstants.LEFT_HIP_ID, new() { Entity = chassisEntities.LeftLeg.Hip });
+            bitsBuilder.AddConstructedPart(MechConstants.LEFT_ANKLE_ID, new() { Entity = chassisEntities.LeftLeg.Ankle });
+            bitsBuilder.AddConstructedPart(MechConstants.LEFT_FOOT_ID, new() { Entity = chassisEntities.LeftLeg.Foot });
+
+            bitsBuilder.AddConstructedPart(MechConstants.RIGHT_HIP_ID, new() { Entity = chassisEntities.RightLeg.Hip });
+            bitsBuilder.AddConstructedPart(MechConstants.RIGHT_ANKLE_ID, new() { Entity = chassisEntities.RightLeg.Ankle });
+            bitsBuilder.AddConstructedPart(MechConstants.RIGHT_FOOT_ID, new() { Entity = chassisEntities.RightLeg.Foot });
+        }
       
+
+        // build colliders GO on part view containers (through part entity),
+        // but set their ownity to partition entity or mech (if partition not defined)
+        private void BuildColliders(Entity mechEntity, MechBitsBuilder mechPartsBuilder, MechConfig mechConfig, IPartitionsList partitionsList)
+        {
+            foreach (var partSettingKvp in mechConfig.MechPartSettings)
+            {
+                var collidersConfig = partSettingKvp.Value.CollidersConfig;
+                if (collidersConfig == null || collidersConfig.Length == 0)
+                    continue;
+
+                if (!mechPartsBuilder.TryGetConstructedPartEntity(partSettingKvp.Key, out var constructedPartEntity))
+                {
+                    UnityEngine.Debug.LogWarning($"part {partSettingKvp.Key} was not constructed");
+                    continue;
+                }
+
+                var partition = partSettingKvp.Value.Partition;
+                Entity colliderOwner;
+                if (partition.Type == MechPartitionType.Undefined)
+                {
+                    colliderOwner = mechEntity;
+                }
+                else
+                {
+                    if (!partitionsList.TryGet(partition, out var partitionEntity))
+                    {
+                        UnityEngine.Debug.LogWarning($"{partSettingKvp.Key} partition set to {partition}, which was not constructed");
+                        continue;
+                    }
+                    colliderOwner = partitionEntity;
+                }
+                
+
+                foreach (var colliderConfig in collidersConfig)
+                {
+                    _collidersFactory.BuildCollider(colliderOwner, constructedPartEntity, colliderConfig);
+                }
+            }
+        }
     }
 }
