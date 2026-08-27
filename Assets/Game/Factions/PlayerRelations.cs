@@ -15,6 +15,12 @@ namespace ZE.MechBattle
             mask.SetBits(playerId, false);
             return new(mask);
         }
+
+        public bool AreHostile(PlayerKey playerA, PlayerKey playerB)
+        {
+            var playerAMask = GetEnemiesMask(playerA);
+            return playerAMask.Contains(playerB);
+        }
     }
 
     public readonly struct PlayerRelationsMask

@@ -8,27 +8,21 @@ namespace ZE.MechBattle.Ecs {
     public sealed class MechInstanceSystem : EntityCreationSystemBase<MechInstanceRequestComponent, MechFactory>
     {
         private readonly PlayerHandler _playerHandler;
-        private Stash<PlayerAffiliationComponent> _affiliations;
+        private readonly MechHandler _mechHandler;
 
-        public MechInstanceSystem(MechFactory factory, PlayerHandler playerHandler) : base(factory)
+        public MechInstanceSystem(MechFactory factory, PlayerHandler playerHandler, MechHandler mechHandler) : base(factory)
         {
             _playerHandler = playerHandler;
-        }
-
-        public override void OnAwake()
-        {
-            base.OnAwake();
-            _affiliations = World.GetStash<PlayerAffiliationComponent>();
+            _mechHandler = mechHandler;
         }
 
         protected override bool TryExecuteRequest(Entity requestEntity)
         {
             var request = RequestsStash.Get(requestEntity);
             var mechEntity = Factory.Build(request.Position, request.Rotation);
-
-            _affiliations.Set(mechEntity, new(request.PlayerKey));
             if (request.AssumingDirectControl)
                 _playerHandler.AssumingVehicleControl(mechEntity, request.PlayerKey);
+            _mechHandler.AssignMechPlayerAffinity(mechEntity, request.PlayerKey);
             return true;
         }
     }

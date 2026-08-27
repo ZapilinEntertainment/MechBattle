@@ -7,6 +7,7 @@ namespace ZE.MechBattle
     [CreateAssetMenu(fileName = nameof(MechConfig), menuName = "Scriptable Objects/" + nameof(MechConfig))]
     public class MechConfig : ScriptableObject
     {
+        [field: SerializeField] public float AvoidanceRadiusInUnits { get; private set;  } = 10f;
         [SerializeField] private MechPartSettings[] _mechParts;
         [SerializeField] private MechPartitionConfig[] _partitionConfigs;
         [SerializeField] private MechColliderConfig[] _colliderConfigs;

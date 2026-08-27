@@ -15,20 +15,33 @@ namespace ZE.MechBattle.MechBuilding
 
         private readonly MonoViewFactory _viewFactory;
         private readonly TransformAspectHandler _transformAspectHandler;
+
         private readonly Stash<MechComponent> _mechComponent;
+        private readonly Stash<MovementCollisionAvoidanceComponent> _collisionAvoidanceComponent;
+        private readonly Stash<NavigationAgentComponent> _navigationAgents;
+        private readonly Stash<CompositeTargetComponent> _compositeTargetComponents;
 
         [Inject]
         public MechBuilder(MonoViewFactory viewFactory, TransformAspectHandler transformAspectHandler, World world)
         {
             _viewFactory = viewFactory;
             _transformAspectHandler = transformAspectHandler;
+
             _mechComponent = world.GetStash<MechComponent>();
+            _collisionAvoidanceComponent = world.GetStash<MovementCollisionAvoidanceComponent>();
+            _navigationAgents = world.GetStash<NavigationAgentComponent>();
+            _compositeTargetComponents = world.GetStash<CompositeTargetComponent>();
         }
 
         public Entity Build(MechConfig mechConfig, float3 position, quaternion rotation)
         {
             MechEntity = _viewFactory.CreateViewReceiver(DevelopConstants.DEFAULT_MECH_ID + "_view");
             _transformAspectHandler.MoveToPoint(MechEntity, position, rotation);
+
+            _collisionAvoidanceComponent.Add(MechEntity, new(MovementCollisionAvoidancePriority.Mech, mechConfig.AvoidanceRadiusInUnits));
+            _navigationAgents.Add(MechEntity);
+
+            _compositeTargetComponents.Add(MechEntity, new(CompositeTargetMode.Partitions));
 
             return MechEntity;
         }

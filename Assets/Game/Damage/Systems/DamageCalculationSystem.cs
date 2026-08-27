@@ -12,6 +12,7 @@ namespace ZE.MechBattle.Ecs {
         public World World { get; set;}
         private Stash<CalculateDamageRequest> _calculateRequests;
         private Stash<ResultingDamageComponent> _resultingDamage;
+        private Stash<HealthComponent> _healthComponents;
         private Filter _filter;
 
         public void OnAwake() 
@@ -23,6 +24,7 @@ namespace ZE.MechBattle.Ecs {
 
             _calculateRequests = World.GetStash<CalculateDamageRequest>();
             _resultingDamage = World.GetStash<ResultingDamageComponent>();
+            _healthComponents = World.GetStash<HealthComponent>();
         }
 
         public void OnUpdate(float deltaTime) 
@@ -31,22 +33,28 @@ namespace ZE.MechBattle.Ecs {
             {
                 foreach (var request in _filter)
                 {
-                    HandleRequest(request);
+                    if (!TryHandleRequest(request))
+                        World.RemoveEntity(request);
                 }
             }
         }
 
         public void Dispose() { }
 
-        private void HandleRequest(Entity request)
+        private bool TryHandleRequest(Entity request)
         {
             var requestBody = _calculateRequests.Get(request);
+            var targetEntity = requestBody.Target;
+            if (World.IsDisposed(targetEntity) || !_healthComponents.Has(targetEntity))
+                return false;
 
             // some boost calculations will be here, or friendly fire checks
             // use damageParameters.Multiply
 
             _resultingDamage.Set(request, new() { DamageParameters = requestBody.Data});
             //UnityEngine.Debug.Log("resulting damage: " + resultingDamage);
+
+            return true;
         }
     }
 }

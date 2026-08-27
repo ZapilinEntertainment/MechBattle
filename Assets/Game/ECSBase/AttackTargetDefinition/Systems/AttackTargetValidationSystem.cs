@@ -8,23 +8,23 @@ namespace ZE.MechBattle.Ecs {
     public sealed class AttackTargetValidationSystem : ISystem 
     {
         public World World { get; set;}
-        private Filter _filter;
-        private Stash<AttackTargetComponent> _stash;
+        private Filter _targetCheckFilter;
+        private Stash<AttackTargetComponent> _targetsStash;
 
         public void OnAwake() 
         {
-            _filter = World.Filter.With<AttackTargetComponent>().Build();
-            _stash = World.GetStash<AttackTargetComponent>();
+            _targetCheckFilter = World.Filter.With<AttackTargetComponent>().Build();
+            _targetsStash = World.GetStash<AttackTargetComponent>();
         }
 
         public void OnUpdate(float deltaTime) 
         {
-            foreach (var entity in _filter)
+            foreach (var entity in _targetCheckFilter)
             {
-                var target = _stash.Get(entity).Entity;
+                var target = _targetsStash.Get(entity).Entity;
                 if (!World.Has(target))
                 {
-                    _stash.Remove(entity);
+                    _targetsStash.Remove(entity);
                 }                    
             }
         }

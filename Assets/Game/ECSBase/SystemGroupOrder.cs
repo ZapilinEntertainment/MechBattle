@@ -14,5 +14,6 @@ namespace ZE.MechBattle
         ViewsLoading, 
         DisposeTagsSharing, // share dispose tag with connected (child or linked) objects
         DisposedObjectsOperations,
-        Dispose }
+        Dispose,
+        AfterDispose }
 }

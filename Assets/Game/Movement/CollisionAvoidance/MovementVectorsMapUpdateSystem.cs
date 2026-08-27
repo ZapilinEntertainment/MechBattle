@@ -3,6 +3,8 @@ using VContainer;
 using Unity.Mathematics;
 using Unity.IL2CPP.CompilerServices;
 using ZE.MechBattle.Navigation;
+using Unity.Collections;
+using Unity.Jobs;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -19,6 +21,7 @@ namespace ZE.MechBattle.Ecs {
 
         private readonly MovementCellsMap _vectorsList;
         private readonly INavigationMap _map;
+        private readonly NativeList<IntTriangularPos> _resultsList;
       
 
         [Inject]
@@ -29,6 +32,8 @@ namespace ZE.MechBattle.Ecs {
         {
             _vectorsList = vectorsList;
             _map = map;
+
+            _resultsList = new NativeList<IntTriangularPos>(Allocator.Persistent);
         }
 
         public override void OnAwake()
@@ -53,35 +58,54 @@ namespace ZE.MechBattle.Ecs {
             foreach (var entity in _occupationCellsFilter)
             {
                 var avoidanceComponent = _avoidanceComponents.Get(entity);
-                var pos = _positionComponents.Get(entity).Value.xz;
-                var currentTripos = _triangularPosComponents.Get(entity).Value;                
-               
+                var currentTripos = _triangularPosComponents.Get(entity).Value;
+                var worldPos = _positionComponents.Get(entity).Value;                             
 
                 var nextPosComponent = _nextPositionComponents.Get(entity, out var haveNextPos);
                 float2 moveDir;
                 if (haveNextPos)
                 {
                     var nextPos = nextPosComponent.WorldPosXZ;
-                    moveDir = nextPos - pos;
+                    moveDir = nextPos - worldPos.xz;
                 }
                 else
                 {
                     moveDir = float2.zero;
                 }
                
-
-                var currentCellData = new CellMovementData(
-                    entity,
-                    avoidanceComponent.Priority,
-                    moveDir,
-                    projectionIndex: 0 );
-
-                if (!_vectorsList.TryWriteCell(currentTripos, currentCellData))
+                if (avoidanceComponent.RadiusInUnits == 0f)
                 {
-                    #if UNITY_EDITOR
-                    UnityEngine.Debug.LogWarning("entity move cell overlap");
-                    #endif
+                    var currentCellData = new CellMovementData(
+                   entity,
+                   avoidanceComponent.Priority,
+                   moveDir,
+                   projectionIndex: 0);
+
+                   _vectorsList.TryWriteCell(currentTripos, currentCellData);
                 }
+                else
+                {
+                   
+                    var getListJob = new GetTrianglesInRadiusJob()
+                    {
+                        RadiusInUnits = avoidanceComponent.RadiusInUnits,
+                        ResultList = _resultsList,
+                        TriangleHeight = _map.TriangleHeight,
+                        WorldPos = worldPos
+                    };
+                    getListJob.RunByRef();
+                    foreach (var tripos in _resultsList)
+                    {
+                        var cellData = new CellMovementData(
+                           entity,
+                           avoidanceComponent.Priority,
+                           moveDir,
+                           projectionIndex: TriangularMath.CalculateDistance(tripos, currentTripos));
+                        _vectorsList.TryWriteCell(tripos, cellData);
+                    }
+                    _resultsList.Clear();
+                }
+               
             }
 
             // move cells
@@ -108,5 +132,22 @@ namespace ZE.MechBattle.Ecs {
                 }
             }
         }
+
+        protected override void InternalDispose()
+        {
+            base.InternalDispose();
+#if UNITY_EDITOR
+            try
+            {
+#endif
+                _resultsList.Dispose();
+#if UNITY_EDITOR
+            }
+            catch
+            {
+                // editor dispose problems
+            }
+#endif
+            }
     }
 }

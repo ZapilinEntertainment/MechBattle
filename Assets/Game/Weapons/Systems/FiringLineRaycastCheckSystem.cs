@@ -36,6 +36,7 @@ namespace ZE.MechBattle.Ecs {
         private Stash<AttackTargetComponent> _attackTargets;
         private Stash<FireLineClearTag> _fireLineClearTag;
 
+        private readonly AffinityHandler _affinityHandler;
         private readonly CollidersTable _collidersTable;
         private readonly List<EntityCastData> _activeJobEntities = new();
         private readonly QueryParameters _queryParameters = new()
@@ -47,9 +48,10 @@ namespace ZE.MechBattle.Ecs {
         };
 
         [Inject]
-        public FiringLineRaycastCheckSystem(CollidersTable collidersTable)
+        public FiringLineRaycastCheckSystem(CollidersTable collidersTable, AffinityHandler affinityHandler)
         {
             _collidersTable = collidersTable;
+            _affinityHandler = affinityHandler;
         }
 
         public void OnAwake() 
@@ -131,10 +133,13 @@ namespace ZE.MechBattle.Ecs {
                     var result = _resultsList[i];
                     if (result.colliderInstanceID != 0)
                     {
-                        // if raycast hit actual target:
+                        // if raycast hit actual target or at least hit enemy:
                         firingLineIsClear =
                             _collidersTable.TryGetColliderOwner(result.colliderInstanceID, out var colliderOwnerEntity)
-                            && colliderOwnerEntity == entityCastData.TargetEntity;
+                            && (
+                                colliderOwnerEntity == entityCastData.TargetEntity
+                                || _affinityHandler.AreEntitiesHostile(entityCastData.WeaponEntity, entityCastData.TargetEntity)
+                            );
 
                        // if (!firingLineIsClear)  UnityEngine.Debug.Log($"entity {entityCastData.WeaponEntity.Id} : {result.colliderInstanceID}");
                     }

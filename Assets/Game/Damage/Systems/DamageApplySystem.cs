@@ -50,12 +50,11 @@ namespace ZE.MechBattle.Ecs {
             {
                 foreach (var request in _filter)
                 {
+                    // no need to do checks: calculation system did it
+
                     var target = _requestInfo.Get(request).Target;
-                    if (!World.IsDisposed(target))
-                    {
-                        var damageParameters = _resultingDamage.Get(request).DamageParameters;
-                        ApplyDamage(target, damageParameters);
-                    }
+                    var damageParameters = _resultingDamage.Get(request).DamageParameters;
+                    ApplyDamage(target, damageParameters);
                     World.RemoveEntity(request);
                 }
             }

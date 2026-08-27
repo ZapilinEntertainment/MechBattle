@@ -21,6 +21,8 @@ namespace ZE.MechBattle
             builder.Register<PlayerHandler>(Lifetime.Scoped);
             builder.Register<PlayerFactory>(Lifetime.Scoped);
 
+            builder.Register<AffinityHandler>(Lifetime.Scoped);
+
             builder.Register<ICursorAimTracker,CursorAimTrackingWorker>(Lifetime.Scoped);
             builder.Register<MechHeadRotationWorker>(Lifetime.Scoped);
         }

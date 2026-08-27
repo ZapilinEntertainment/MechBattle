@@ -9,11 +9,13 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public struct MovementCollisionAvoidanceComponent : IComponent 
     {
+        public readonly float RadiusInUnits;
         public readonly MovementCollisionAvoidancePriority Priority;
 
-        public MovementCollisionAvoidanceComponent(MovementCollisionAvoidancePriority priority)
+        public MovementCollisionAvoidanceComponent(MovementCollisionAvoidancePriority priority, float radiusInUnits = 0f)
         {
             Priority = priority;
+            RadiusInUnits = radiusInUnits;
         }
     
     }
