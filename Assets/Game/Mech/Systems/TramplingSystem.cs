@@ -22,7 +22,7 @@ namespace ZE.MechBattle.Ecs {
         private readonly IMechStepsMap _stepsMap;
         private readonly IUnitsGrid _unitsGrid;
         private readonly MechMovementHandler _mechHandler;
-        private readonly DamageRequestsFactory _damageRequestsFactory;
+        private readonly DamageApplier _damageApplier;
 
         private readonly HashSet<int2> _affectedHexes = new(4);
         private readonly Dictionary<IntTriangularPos, Entity> _affectedTripos = new(32);
@@ -36,12 +36,12 @@ namespace ZE.MechBattle.Ecs {
             IMechStepsMap mechStepsMap, 
             IUnitsGrid unitsGrid, 
             INavigationMap navMap,
-            DamageRequestsFactory damageRequestsFactory,
+            DamageApplier damageApplier,
             MechMovementHandler mechHandler)
         {
             _stepsMap = mechStepsMap;
             _unitsGrid = unitsGrid;
-            _damageRequestsFactory = damageRequestsFactory;
+            _damageApplier = damageApplier;
             _mechHandler = mechHandler;
 
             _triangleHeight = navMap.TriangleHeight;
@@ -80,6 +80,8 @@ namespace ZE.MechBattle.Ecs {
 
                     foreach (var unit in unitsList)
                     {
+                        if (World.IsDisposed(unit))
+                            continue;
                         var tripos = _triangularPositions.Get(unit).Value;
                         if (_affectedTripos.TryGetValue(tripos, out var footEntity))
                             OnUnitTrampled(footEntity, unit, tripos);
@@ -110,7 +112,7 @@ namespace ZE.MechBattle.Ecs {
 
         private void OnUnitTrampled(Entity footEntity, Entity unitEntity, IntTriangularPos tripos)
         {
-            _damageRequestsFactory.Build(footEntity, unitEntity, new DamageApplyParameters(DamageType.Trampling, 100f));
+            _damageApplier.RequestDamageApply(footEntity, unitEntity, DamageConstants.MECH_TRAMPLE_DAMAGE, DamageType.Trampling);
         }
     }
 }

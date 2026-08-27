@@ -16,10 +16,7 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<CompositeTargetClearTagSystem>(SystemGroupOrder.AfterDispose);
 
             installer.AddSystem<RestorationSystem>(SystemGroupOrder.Default);
-
-            installer.AddSystem<ProjectileCreateSystem>(SystemGroupOrder.Default);
-            installer.AddSystem<DamageCalculationSystem>(SystemGroupOrder.Default);
-            installer.AddSystem<DamageApplySystem>(SystemGroupOrder.Default);
+            installer.AddSystem<ProjectileCreateSystem>(SystemGroupOrder.Default);            
 
             installer.AddSystem<ProjectileMoveSystem>(SystemGroupOrder.RegularUpdate);
             installer.AddSystem<ProjectilesExplodeSystem>(SystemGroupOrder.RegularUpdate);

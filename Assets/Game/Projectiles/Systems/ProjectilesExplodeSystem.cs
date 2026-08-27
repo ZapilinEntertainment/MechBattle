@@ -24,19 +24,19 @@ namespace ZE.MechBattle.Ecs {
         private readonly CollidersTable _collidersTable;
         private readonly VfxRequestsFactory _vfxRequestsBuilder;
         private readonly ExplosionRequestsBuilder _explosionRequestsBuilder;
-        private readonly DamageRequestsFactory _damageRequestsBuilder;
+        private readonly DamageApplier _damageApplier;
 
         [Inject]
         public ProjectilesExplodeSystem(
             CollidersTable collidersTable, 
             VfxRequestsFactory vfxRequestsBuilder, 
             ExplosionRequestsBuilder explosionRequestsBuilder,
-            DamageRequestsFactory damageRequestsBuilder)
+            DamageApplier damageApplier)
         {
             _collidersTable = collidersTable;
             _vfxRequestsBuilder = vfxRequestsBuilder;
             _explosionRequestsBuilder = explosionRequestsBuilder;
-            _damageRequestsBuilder = damageRequestsBuilder;
+            _damageApplier = damageApplier;
         }
 
         public void OnAwake() 
@@ -131,13 +131,11 @@ namespace ZE.MechBattle.Ecs {
             if (isDamagingProjectile)
             {
                 var projectileOwnerComponent = _ownerComponents.Get(projectile, out var projectileOwnerExists);
-                _damageRequestsBuilder.Build(
-                    damager: projectileOwnerExists ? projectileOwnerComponent.OwnerEntity : default,
+                _damageApplier.RequestDamageApply(
+                    attacker: projectileOwnerExists ? projectileOwnerComponent.OwnerEntity : default,
                     target: target,
-                    damageParameters: damageComponent.DamageParameters);
-                //UnityEngine.Debug.Log("request damage: " + damageComponent.DamageParameters.Value.ToString());
+                    damageApplyParameters: damageComponent.DamageParameters);
             }
-            //else UnityEngine.Debug.Log("not a damageable projectile");
         }
     }
 }

@@ -1,5 +1,7 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
+using VContainer;
+using ZE.MechBattle.Damage;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -10,51 +12,46 @@ namespace ZE.MechBattle.Ecs {
     public sealed class DamageCalculationSystem : ISystem 
     {
         public World World { get; set;}
-        private Stash<CalculateDamageRequest> _calculateRequests;
-        private Stash<ResultingDamageComponent> _resultingDamage;
-        private Stash<HealthComponent> _healthComponents;
-        private Filter _filter;
+        private Stash<DamageReceivedTag> _damageReceivedTags;
+        private readonly DamageRequestsList _damageRequestsList;
+        private readonly ReceivedDamageList _receivedDamageList;
+
+        [Inject]
+        public DamageCalculationSystem(DamageRequestsList requestsList, ReceivedDamageList receivedDamageList)
+        {
+            _damageRequestsList = requestsList;
+            _receivedDamageList = receivedDamageList;
+        }
 
         public void OnAwake() 
         {
-            _filter = World.Filter
-                .With<CalculateDamageRequest>()
-                .Without<ResultingDamageComponent>()
-                .Build();
-
-            _calculateRequests = World.GetStash<CalculateDamageRequest>();
-            _resultingDamage = World.GetStash<ResultingDamageComponent>();
-            _healthComponents = World.GetStash<HealthComponent>();
+            _damageReceivedTags = World.GetStash<DamageReceivedTag>();
         }
 
         public void OnUpdate(float deltaTime) 
         {
-            if (_filter.IsNotEmpty())
+            if (_damageRequestsList.IsEmpty)
+                return;
+
+            foreach (var request in _damageRequestsList)
             {
-                foreach (var request in _filter)
-                {
-                    if (!TryHandleRequest(request))
-                        World.RemoveEntity(request);
-                }
+                var target = request.Target;
+                if (World.IsDisposed(target))
+                    continue;
+
+                // some boost calculations will be here, or friendly fire checks
+                // use damageParameters.Multiply
+
+                var flags = ReceivedDamageFlag.None;
+                if (request.DamageApplyParameters.DamageType == DamageType.Trampling)
+                    flags |= ReceivedDamageFlag.Trampled;
+                
+                _receivedDamageList.Add(target, new() { Volume = request.DamageApplyParameters.Value, Flags =flags });
+                _damageReceivedTags.Set(target);
             }
+            _damageRequestsList.Clear();
         }
 
         public void Dispose() { }
-
-        private bool TryHandleRequest(Entity request)
-        {
-            var requestBody = _calculateRequests.Get(request);
-            var targetEntity = requestBody.Target;
-            if (World.IsDisposed(targetEntity) || !_healthComponents.Has(targetEntity))
-                return false;
-
-            // some boost calculations will be here, or friendly fire checks
-            // use damageParameters.Multiply
-
-            _resultingDamage.Set(request, new() { DamageParameters = requestBody.Data});
-            //UnityEngine.Debug.Log("resulting damage: " + resultingDamage);
-
-            return true;
-        }
     }
 }

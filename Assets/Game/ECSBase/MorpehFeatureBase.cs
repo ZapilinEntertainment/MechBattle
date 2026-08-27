@@ -17,8 +17,7 @@ namespace ZE.MechBattle
             builder.Register<ProjectileRequestsFactory>(Lifetime.Scoped);
             builder.Register<ProjectilesFactory>(Lifetime.Scoped);
             builder.Register<MonoViewFactory>(Lifetime.Scoped);
-            builder.Register<ExplosionRequestsBuilder>(Lifetime.Scoped);
-            builder.Register<DamageRequestsFactory>(Lifetime.Scoped);         
+            builder.Register<ExplosionRequestsBuilder>(Lifetime.Scoped);       
 
             builder.Register<DelayApplier>(Lifetime.Scoped);
             builder.Register<TriangularPositionApplier>(Lifetime.Scoped);
@@ -28,9 +27,7 @@ namespace ZE.MechBattle
             builder.Register<ViewSynchronizationApplier>(Lifetime.Scoped);            
 
             builder.Register<MorpehSystemInstallHandler>(Lifetime.Scoped);
-            builder.Register<LifetimeTrackingManager>(Lifetime.Scoped);
-
-            builder.RegisterEntryPoint<DamageablesInitializer>();
+            builder.Register<LifetimeTrackingManager>(Lifetime.Scoped);            
         }
 
         void ISceneFeaturePostInitializer.OnSceneContainerPostBuilt(IObjectResolver resolver)

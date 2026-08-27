@@ -27,6 +27,7 @@ MonoBehaviour:
   - rid: 6586387278984904775
   - rid: 6586387348091830343
   - rid: 6586387461492179015
+  - rid: 6586387536204529736
   references:
     version: 2
     RefIds:
@@ -71,4 +72,7 @@ MonoBehaviour:
       data: 
     - rid: 6586387461492179015
       type: {class: CollidersFeatureInstaller, ns: ZE.MechBattle, asm: MechBattle}
+      data: 
+    - rid: 6586387536204529736
+      type: {class: DamageFeatureModule, ns: ZE.MechBattle, asm: MechBattle}
       data: 

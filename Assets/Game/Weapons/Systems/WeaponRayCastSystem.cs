@@ -17,15 +17,15 @@ namespace ZE.MechBattle.Ecs {
         private Filter _filter;
         private Stash<WeaponShotPoint> _shotPoints;
 
-        private readonly DamageRequestsFactory _damageRequestsFactory;
+        private readonly DamageApplier _damageApplier;
         private readonly WeaponHandler _weaponHandler;
         private readonly WeaponRaycasterFactory _raycasterFactory;
         private readonly Dictionary<Entity, IWeaponRayCaster> _activeRaycasters = new();
 
         [Inject]
-        public WeaponRayCastSystem(DamageRequestsFactory damageRequestsFactory, WeaponHandler weaponHandler, WeaponRaycasterFactory weaponRaycasterFactory)
+        public WeaponRayCastSystem(DamageApplier damageApplier, WeaponHandler weaponHandler, WeaponRaycasterFactory weaponRaycasterFactory)
         {
-            _damageRequestsFactory = damageRequestsFactory;
+            _damageApplier = damageApplier;
             _weaponHandler = weaponHandler;
             _raycasterFactory = weaponRaycasterFactory;
         }
@@ -123,7 +123,7 @@ namespace ZE.MechBattle.Ecs {
         {
             var damageParameters = _weaponHandler.GetWeaponDamage(weaponEntity);
             damageParameters = damageParameters.Multiply(rayDamageDistanceCf);
-            _damageRequestsFactory.Build(weaponEntity, targetColliderId, damageParameters);
+            _damageApplier.RequestDamageApply(weaponEntity, targetColliderId, damageParameters);
         }
     }
 }
