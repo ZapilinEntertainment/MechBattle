@@ -16,7 +16,6 @@ namespace ZE.MechBattle.Ecs {
         private Filter _filter;
         private Stash<HealthComponent> _health;
         private Stash<EntityDisposeTag> _entityDisposeTag;
-        private Stash<DamageReceivedTag> _damageReceivedTags;
 
         private readonly VfxRequestsFactory _vfxRequestsFactory;
         private readonly TransformAspectHandler _transformAspectHandler;
@@ -39,13 +38,12 @@ namespace ZE.MechBattle.Ecs {
         public void OnAwake() 
         {
             _filter = World.Filter
-                .With<DamageReceivedTag>()
+                .With<DamageReceivedComponent>()
                 .With<HealthComponent>()
                 .Build();
 
             _health = World.GetStash<HealthComponent>();
             _entityDisposeTag = World.GetStash<EntityDisposeTag>();
-            _damageReceivedTags = World.GetStash<DamageReceivedTag>();
 
         }
 
@@ -56,14 +54,8 @@ namespace ZE.MechBattle.Ecs {
 
             foreach (var entity in _filter)
             {
-                if (!_receivedDamageList.TryGet(entity, out var damageData))
-                    continue;
-
-                ApplyDamage(entity, damageData);
+                ApplyDamage(entity, _receivedDamageList[entity]);
             }
-
-            _receivedDamageList.Clear();
-            _damageReceivedTags.RemoveAll();
         }
 
         public void Dispose() { }

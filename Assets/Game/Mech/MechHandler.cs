@@ -25,9 +25,9 @@ namespace ZE.MechBattle
         {
             _affinityHandler.SetEntityAffinity(mechEntity, playerKey);
             var partitions = _partitionsManager.GetPartitionsList(mechEntity);
-            foreach (var partition in partitions)
+            foreach (var partitionEntity in partitions.Entities)
             {
-                _affinityHandler.SetEntityAffinity(partition, playerKey);
+                _affinityHandler.SetEntityAffinity(partitionEntity, playerKey);
             }
         }
 

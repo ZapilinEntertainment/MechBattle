@@ -8,6 +8,7 @@ namespace ZE.MechBattle
     public class MechConfig : ScriptableObject
     {
         [field: SerializeField] public float AvoidanceRadiusInUnits { get; private set;  } = 10f;
+        [field: SerializeField] public MechEnergyCellsConfig EnergyCellsConfig { get; private set; }
         [SerializeField] private MechPartSettings[] _mechParts;
         [SerializeField] private MechPartitionConfig[] _partitionConfigs;
         [SerializeField] private MechColliderConfig[] _colliderConfigs;

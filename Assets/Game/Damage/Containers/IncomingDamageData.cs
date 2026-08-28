@@ -16,6 +16,7 @@ namespace ZE.MechBattle
     [Flags]
     public enum ReceivedDamageFlag : byte { 
         None = 0, 
-        Trampled = 1 << 0
+        Trampled = 1 << 0,
+        ExcessDamageTransfer = 1 << 1
     }
 }

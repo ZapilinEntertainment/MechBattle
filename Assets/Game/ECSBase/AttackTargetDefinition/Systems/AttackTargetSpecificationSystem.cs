@@ -57,7 +57,7 @@ namespace ZE.MechBattle.Ecs {
 
                     if (!_targetParts.TryGetValue(targetEntity, out var list))
                     {
-                        list = _partitionsManager.GetPartitionsList(targetEntity).GetFullList();
+                        list = _partitionsManager.GetPartitionsList(targetEntity).Entities;
                         _targetParts.Add(targetEntity, list);
                     }
 

@@ -11,6 +11,7 @@ namespace ZE.MechBattle
     {
         private readonly IObjectResolver _resolver;
         private readonly ColliderAddRequestsFactory _collidersRequestsFactory;
+        private readonly EnergyCellsFactory _energyCellsFactory;
 
         private readonly MechConfig TEMP_mechConfig;
         private readonly ProjectileWeaponConfig TEMP_mainWeaponConfig;
@@ -20,6 +21,7 @@ namespace ZE.MechBattle
         public MechFactory(
             IObjectResolver resolver,
             ColliderAddRequestsFactory collidersRequestsFactory,
+            EnergyCellsFactory energyCellsFactory,
 
             [Key(DevelopConstants.DEFAULT_MECH_ID)] MechConfig mechConfig,
             [Key(DevelopConstants.DEFAULT_MECH_GUN_ID)] ProjectileWeaponConfig weaponConfig,
@@ -27,6 +29,7 @@ namespace ZE.MechBattle
         {
             _resolver = resolver;
             _collidersRequestsFactory = collidersRequestsFactory;
+            _energyCellsFactory = energyCellsFactory;
 
             TEMP_mechConfig = mechConfig;
             TEMP_mainWeaponConfig = weaponConfig;
@@ -55,6 +58,8 @@ namespace ZE.MechBattle
             partitionsBuilder.BuildAllPartitions(mechEntity, bitsBuilder, mechConfig.PartitionConfigs);
 
             RequestColliders(mechEntity, bitsBuilder, mechConfig, partitionsBuilder.PartitionsList);
+
+            BuildEnergyCells(partitionsBuilder.PartitionsList, mechConfig.EnergyCellsConfig);
 
             //foreach (var part in bitsBuilder.ConstructedParts) UnityEngine.Debug.Log($"{part.Key} : {part.Value.Id}");
 
@@ -121,6 +126,17 @@ namespace ZE.MechBattle
                         hostEntity: constructedPartEntity, 
                         setupInfo: colliderConfig.ColliderSetupInfo));
             }            
+        }
+
+        private void BuildEnergyCells(IPartitionsList partitionsList, MechEnergyCellsConfig cellsConfig)
+        {
+            foreach (var partitionKvp in partitionsList)
+            {
+                if (!cellsConfig.TryGetCellsCount(partitionKvp.Key, out var cellsCount))
+                    continue;
+
+                _energyCellsFactory.BuildPartitionEnergySystem(partitionKvp.Value, cellsCount, cellsConfig.CellConfig);
+            }
         }
     }
 }

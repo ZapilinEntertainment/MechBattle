@@ -1,5 +1,4 @@
 using Scellecs.Morpeh;
-using UnityEngine;
 using Unity.IL2CPP.CompilerServices;
 
 namespace ZE.MechBattle.Ecs {
@@ -7,8 +6,14 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public struct DamageReceivedTag : IComponent 
+    public readonly struct NextEnergyCellComponent : IComponent 
     {
+        public readonly Entity CellEntity;
+
+        public NextEnergyCellComponent(Entity cellEntity)
+        {
+            CellEntity = cellEntity;
+        }
     
     }
 }

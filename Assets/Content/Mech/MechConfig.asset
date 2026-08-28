@@ -12,6 +12,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 538700e5b79b03d40979f5c8348e095d, type: 3}
   m_Name: MechConfig
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.MechConfig
+  <AvoidanceRadiusInUnits>k__BackingField: 10
+  <EnergyCellsConfig>k__BackingField:
+    _cellsCount:
+      _serializedList:
+      - Key:
+          Type: 1
+          Index: 0
+        Value: 6
+      - Key:
+          Type: 2
+          Index: 0
+        Value: 4
+      - Key:
+          Type: 2
+          Index: 1
+        Value: 4
+      - Key:
+          Type: 3
+          Index: 0
+        Value: 6
+      - Key:
+          Type: 3
+          Index: 1
+        Value: 6
+    CellConfig:
+      EnergyCapacity: 100
+      DamageToChargeLossCf: 0.5
+      RepairTime: 10
   _mechParts:
   - Key:
       Type: 8

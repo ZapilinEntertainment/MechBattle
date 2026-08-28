@@ -24,7 +24,7 @@ namespace ZE.MechBattle
             installer.AddSystem<StepInterpolationSystem>(SystemGroupOrder.MechSystemsApplication);
             installer.AddSystem<MechMovementClearSystem>(SystemGroupOrder.MechSystemsApplication);
 
-            installer.AddSystem<TramplingSystem>(SystemGroupOrder.DamageApply - 1);
+            installer.AddSystem<TramplingSystem>(SystemGroupOrder.DamageApply2 - 1);
 
             installer.AddSystem<PartitionsClearSystem>(SystemGroupOrder.DisposedObjectsOperations);
             installer.AddSystem<MechStepsMapClearSystem>(SystemGroupOrder.Dispose);

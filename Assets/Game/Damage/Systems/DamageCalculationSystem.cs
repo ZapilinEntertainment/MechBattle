@@ -12,7 +12,7 @@ namespace ZE.MechBattle.Ecs {
     public sealed class DamageCalculationSystem : ISystem 
     {
         public World World { get; set;}
-        private Stash<DamageReceivedTag> _damageReceivedTags;
+        private Stash<DamageReceivedComponent> _damageReceivedTags;
         private readonly DamageRequestsList _damageRequestsList;
         private readonly ReceivedDamageList _receivedDamageList;
 
@@ -25,7 +25,7 @@ namespace ZE.MechBattle.Ecs {
 
         public void OnAwake() 
         {
-            _damageReceivedTags = World.GetStash<DamageReceivedTag>();
+            _damageReceivedTags = World.GetStash<DamageReceivedComponent>();
         }
 
         public void OnUpdate(float deltaTime) 
