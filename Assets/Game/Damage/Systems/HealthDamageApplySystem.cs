@@ -16,6 +16,8 @@ namespace ZE.MechBattle.Ecs {
         private Filter _filter;
         private Stash<HealthComponent> _health;
         private Stash<EntityDisposeTag> _entityDisposeTag;
+        private Stash<RepairableTag> _repairableTag;
+        private Stash<RepairRequiredTag> _repairRequiredTag;
 
         private readonly VfxRequestsFactory _vfxRequestsFactory;
         private readonly TransformAspectHandler _transformAspectHandler;
@@ -45,6 +47,9 @@ namespace ZE.MechBattle.Ecs {
             _health = World.GetStash<HealthComponent>();
             _entityDisposeTag = World.GetStash<EntityDisposeTag>();
 
+            _repairableTag = World.GetStash<RepairableTag>();
+            _repairRequiredTag = World.GetStash<RepairRequiredTag>();
+
         }
 
         public void OnUpdate(float deltaTime) 
@@ -73,6 +78,12 @@ namespace ZE.MechBattle.Ecs {
 
         private void OnEntityHealthIsZero(Entity entity, IncomingDamageData damageData)
         {
+            if (_repairableTag.Has(entity))
+            {
+                _repairRequiredTag.Set(entity);
+                return;
+            }
+
             _entityDisposeTag.Set(entity);
             if (damageData.Flags.HasFlag(ReceivedDamageFlag.Trampled))
                 _vfxRequestsFactory.Build(_trampledVfxKey, _transformAspectHandler.GetPosition(entity));

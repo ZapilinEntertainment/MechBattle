@@ -39,6 +39,7 @@ MonoBehaviour:
     CellConfig:
       EnergyCapacity: 100
       DamageToChargeLossCf: 0.5
+      HealthPoints: 0
       RepairTime: 10
   _mechParts:
   - Key:
@@ -167,6 +168,7 @@ MonoBehaviour:
         x: 0
         y: 0
         z: 0
+    HealthPoints: 300
   - Key:
       Type: 2
       Index: 0
@@ -182,6 +184,7 @@ MonoBehaviour:
         x: 0
         y: 0
         z: 0
+    HealthPoints: 250
   - Key:
       Type: 2
       Index: 1
@@ -197,6 +200,7 @@ MonoBehaviour:
         x: 0
         y: 0
         z: 0
+    HealthPoints: 250
   - Key:
       Type: 3
       Index: 0
@@ -212,6 +216,7 @@ MonoBehaviour:
         x: 0
         y: 0
         z: 0
+    HealthPoints: 250
   - Key:
       Type: 3
       Index: 1
@@ -227,6 +232,7 @@ MonoBehaviour:
         x: 0
         y: 0
         z: 0
+    HealthPoints: 250
   _colliderConfigs:
   - Key:
       Type: 7

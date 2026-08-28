@@ -10,6 +10,7 @@ namespace ZE.MechBattle
         [Group(SETTINGS)] public MechPartitionKey Key;
         [Group(SETTINGS)] public ViewPartKey RootPartKey;
         [Group(SETTINGS)] public ViewPartAttachmentProtocol AttachProtocol;
+        [Group(SETTINGS)] public float HealthPoints;
 
         private const string SETTINGS = "settings";
         private string Title() => $"{Key.Type} : {Key.Index}";

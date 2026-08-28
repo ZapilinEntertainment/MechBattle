@@ -13,6 +13,8 @@ namespace ZE.MechBattle
         private Stash<DamageToEnergyConsumptionConversionComponent> _conversionComponent;
         private Stash<NextEnergyCellComponent> _nextCells;
         private Stash<EnergyCellsGridComponent> _cellsGridComponent;
+        private Stash<HealthComponent> _healthComponent;
+        private Stash<RepairableTag> _repairableTag;
 
         [Inject]
         public EnergyCellsFactory(World world)
@@ -23,6 +25,8 @@ namespace ZE.MechBattle
             _conversionComponent = world.GetStash<DamageToEnergyConsumptionConversionComponent>();
             _nextCells = world.GetStash<NextEnergyCellComponent>();
             _cellsGridComponent = world.GetStash<EnergyCellsGridComponent>();
+            _healthComponent = world.GetStash<HealthComponent>();
+            _repairableTag = world.GetStash<RepairableTag>();
         }
 
         public void BuildPartitionEnergySystem(Entity partitionEntity, int cellsCount, EnergyCellConfig cellConfig)
@@ -38,7 +42,9 @@ namespace ZE.MechBattle
                 _nextCells.Set(cells[i], new(cells[i + 1]));
             }
 
+
             _cellsGridComponent.Set(partitionEntity, new(cells[0]));
+            _repairableTag.Set(partitionEntity);
         }
 
         public Entity BuildEnergyCell(EnergyCellConfig cellConfig)
@@ -46,6 +52,7 @@ namespace ZE.MechBattle
             var entity = _world.CreateEntity();
             _energyChargeComponents.Add(entity, new(cellConfig.EnergyCapacity));
             _conversionComponent.Add(entity, new(cellConfig.DamageToChargeLossCf));
+            _healthComponent.Add(entity, new(cellConfig.HealthPoints));
             return entity;
         }
     

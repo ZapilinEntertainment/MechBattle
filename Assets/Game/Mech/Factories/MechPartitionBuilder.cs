@@ -11,12 +11,12 @@ namespace ZE.MechBattle.MechBuilding
         public IPartitionsList PartitionsList { get; private set; }
 
         private Entity _mechEntity;
-        private IReadOnlyDictionary<string, MechPartSettings> _partSettings;
         private IReadOnlyDictionary<ViewPartKey, Entity> _constructedBits;        
 
         private readonly PartitionsListManager _partitionsManager;
         private readonly MechPartitionFactory _partitionFactory;
         private readonly Stash<PartitionsRootTag> _partitionRoots;
+        private readonly Stash<HealthComponent> _healthComponent;
         
 
         public MechPartitionBuilder(
@@ -26,7 +26,9 @@ namespace ZE.MechBattle.MechBuilding
         {
             _partitionsManager = partitionsList;
             _partitionFactory = mechPartitionFactory;
+
             _partitionRoots = world.GetStash<PartitionsRootTag>();
+            _healthComponent = world.GetStash<HealthComponent>();
         }
 
         public void BuildAllPartitions(
@@ -56,7 +58,9 @@ namespace ZE.MechBattle.MechBuilding
                 throw new System.Exception($"required root {rootKey} for {key} was not constructed");
 
             var entity = _partitionFactory.CreatePartition(key, _mechEntity, parentEntity, config.AttachProtocol);
+            _healthComponent.Set(entity, new(config.HealthPoints));
             _partitionsManager.AddPartitionEntity(_mechEntity, key, entity);
+
             return entity;
         }
 

@@ -7,21 +7,23 @@ namespace ZE.MechBattle.Energy
 {
     public class EnergyDamageApplier
     {
-        private readonly DamageApplier _damageApplier;
         private readonly Stash<EnergyCellsGridComponent> _cells;
         private readonly Stash<NextEnergyCellComponent> _nextCell;
         private readonly Stash<DamageToEnergyConsumptionConversionComponent> _conversionCfs;
         private readonly Stash<EnergyChargeComponent> _energyCharge;
+        private readonly Stash<RepairRequiredTag> _repairRequiredTags;
+        private readonly Stash<HealthComponent> _healthComponents;
         private readonly List<Entity> _cellsList = new(capacity : 10);
 
         [Inject]
-        public EnergyDamageApplier(World world, DamageApplier damageApplier)
+        public EnergyDamageApplier(World world)
         {
-            _damageApplier = damageApplier;
             _cells = world.GetStash<EnergyCellsGridComponent>();
             _nextCell = world.GetStash<NextEnergyCellComponent>();
             _conversionCfs = world.GetStash<DamageToEnergyConsumptionConversionComponent>();
             _energyCharge = world.GetStash<EnergyChargeComponent>();
+            _repairRequiredTags = world.GetStash<RepairRequiredTag>();
+            _healthComponents = world.GetStash<HealthComponent>();
         }
 
         public float ApplyDamageToEnergyGrid(Entity receiver, float damageVolume, Entity maxDamageProducer)
@@ -41,6 +43,9 @@ namespace ZE.MechBattle.Energy
             for (var i = elementsCount - 1; i > -1; i++)
             {
                 var cellEntity = _cellsList[i];
+                if (_repairRequiredTags.Has(cellEntity))
+                    continue;
+
                 excessDamage = ApplyDamageOnEnergyCell(cellEntity, damageVolume);
                 if (excessDamage == 0f)
                     break;
@@ -69,9 +74,23 @@ namespace ZE.MechBattle.Energy
             {
                 chargeComponent.Value -= energyDamage;
                 energyDamage = 0f;
+                return 0f;
             }
 
-            return energyDamage / conversionCf;
+            var excessDamage = energyDamage / conversionCf;
+            ref var healthComponent = ref _healthComponents.Get(energyCellEntity);
+            if (healthComponent.CurrentValue < excessDamage)
+            {
+                excessDamage -= healthComponent.CurrentValue;
+                healthComponent.CurrentValue = 0f;
+                _repairRequiredTags.Add(energyCellEntity);
+                return excessDamage;
+            }
+            else
+            {
+                healthComponent.CurrentValue -= excessDamage;
+                return 0f;
+            }
         }
     
     }
