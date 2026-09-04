@@ -16,7 +16,7 @@ namespace ZE.MechBattle.Ecs {
         private Filter _filter;
         private Stash<HealthComponent> _health;
         private Stash<EntityDisposeTag> _entityDisposeTag;
-        private Stash<RepairableTag> _repairableTag;
+        private Stash<RepairableComponent> _repairableTag;
         private Stash<RepairRequiredTag> _repairRequiredTag;
 
         private readonly VfxRequestsFactory _vfxRequestsFactory;
@@ -47,7 +47,7 @@ namespace ZE.MechBattle.Ecs {
             _health = World.GetStash<HealthComponent>();
             _entityDisposeTag = World.GetStash<EntityDisposeTag>();
 
-            _repairableTag = World.GetStash<RepairableTag>();
+            _repairableTag = World.GetStash<RepairableComponent>();
             _repairRequiredTag = World.GetStash<RepairRequiredTag>();
 
         }

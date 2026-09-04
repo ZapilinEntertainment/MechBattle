@@ -6,6 +6,8 @@ namespace ZE.MechBattle
         public const float MAX_TARGET_POS_HEIGHT_ABERRATION = 5f;
         public const float MIN_SHORT_STEP_CF = 0.75f;
 
+        public const float DAMAGE_REPAIR_DELAY = 3f;
+
         public const string EYE_KEYWORD = "eye";
     }
 }

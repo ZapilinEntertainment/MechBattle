@@ -15,7 +15,7 @@ namespace ZE.MechBattle
         [Inject]
         public LocalPlayerController(SceneFlagsManager sceneFlags, World world)
         {
-            _subscription = sceneFlags.Subscribe<LocalPlayerViewInstancedFlag>(OnPlayerViewLoaded);
+            _subscription = sceneFlags.Subscribe<LocalPlayerMechControlsSetFlag>(OnPlayerViewLoaded);
             _input = world.GetStash<MechInputComponent>();
         }
 
@@ -24,7 +24,7 @@ namespace ZE.MechBattle
             _subscription.Dispose();
         }
 
-        private void OnPlayerViewLoaded(LocalPlayerViewInstancedFlag flag)
+        private void OnPlayerViewLoaded(LocalPlayerMechControlsSetFlag flag)
         {
             
         }

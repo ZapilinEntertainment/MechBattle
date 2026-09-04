@@ -12,16 +12,19 @@ namespace ZE.MechBattle
         private readonly IObjectResolver _resolver;
         private readonly ColliderAddRequestsFactory _collidersRequestsFactory;
         private readonly EnergyCellsFactory _energyCellsFactory;
+        private readonly RepairFeatureApplier _repairFeatureApplier;
 
         private readonly MechConfig TEMP_mechConfig;
         private readonly ProjectileWeaponConfig TEMP_mainWeaponConfig;
         private readonly RayWeaponConfig TEMP_eyesWeaponConfig;
+        private readonly int TEMP_repairTeamsCount;
 
         [Inject]
         public MechFactory(
             IObjectResolver resolver,
             ColliderAddRequestsFactory collidersRequestsFactory,
             EnergyCellsFactory energyCellsFactory,
+            RepairFeatureApplier repairFeatureApplier,
 
             [Key(DevelopConstants.DEFAULT_MECH_ID)] MechConfig mechConfig,
             [Key(DevelopConstants.DEFAULT_MECH_GUN_ID)] ProjectileWeaponConfig weaponConfig,
@@ -30,10 +33,11 @@ namespace ZE.MechBattle
             _resolver = resolver;
             _collidersRequestsFactory = collidersRequestsFactory;
             _energyCellsFactory = energyCellsFactory;
+            _repairFeatureApplier = repairFeatureApplier;
 
             TEMP_mechConfig = mechConfig;
             TEMP_mainWeaponConfig = weaponConfig;
-            TEMP_eyesWeaponConfig = eyesWeaponConfig;            
+            TEMP_eyesWeaponConfig = eyesWeaponConfig;
         }
 
         public Entity Build(float3 position, quaternion rotation)
@@ -59,7 +63,9 @@ namespace ZE.MechBattle
 
             RequestColliders(mechEntity, bitsBuilder, mechConfig, partitionsBuilder.PartitionsList);
 
-            BuildEnergyCells(partitionsBuilder.PartitionsList, mechConfig.EnergyCellsConfig);
+            BuildEnergyCells(mechEntity, partitionsBuilder.PartitionsList, mechConfig.EnergyCellsConfig);
+
+            _repairFeatureApplier.ApplyOnRepairProduceEntity(mechEntity, TEMP_repairTeamsCount, 0f); // repair speed will be defined by energy system
 
             //foreach (var part in bitsBuilder.ConstructedParts) UnityEngine.Debug.Log($"{part.Key} : {part.Value.Id}");
 
@@ -128,14 +134,14 @@ namespace ZE.MechBattle
             }            
         }
 
-        private void BuildEnergyCells(IPartitionsList partitionsList, MechEnergyCellsConfig cellsConfig)
+        private void BuildEnergyCells(Entity mechEntity, IPartitionsList partitionsList, MechEnergyCellsConfig cellsConfig)
         {
             foreach (var partitionKvp in partitionsList)
             {
                 if (!cellsConfig.TryGetCellsCount(partitionKvp.Key, out var cellsCount))
                     continue;
 
-                _energyCellsFactory.BuildPartitionEnergySystem(partitionKvp.Value, cellsCount, cellsConfig.CellConfig);
+                _energyCellsFactory.BuildPartitionEnergySystem(mechEntity, partitionKvp.Value, cellsCount, cellsConfig.CellConfig);
             }
         }
     }

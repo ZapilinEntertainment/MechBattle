@@ -1,5 +1,6 @@
 using UnityEngine;
 using ZE.UiService;
+using ZE.Utils;
 
 namespace ZE.MechBattle
 {
@@ -15,6 +16,7 @@ namespace ZE.MechBattle
         private readonly string _assetPath;
         private WindowType _windowAsset;
 
+        public WindowBinder() => _assetPath = UiWindow.GetWindowDefaultAssetName<WindowType>();
         public WindowBinder(string assetPath) => _assetPath = assetPath;
 
         public async Awaitable LoadWindow()

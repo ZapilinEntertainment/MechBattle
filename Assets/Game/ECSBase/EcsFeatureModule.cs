@@ -16,7 +16,7 @@ namespace ZE.MechBattle.Ecs
 
         public virtual void SceneScopeInstall(IContainerBuilder builder)
         {
-            _queueInstaller.InstallDependencies(builder);
+            _queueInstaller.InstallDependencies(builder);            
         }
 
         public virtual void OnSceneContainerBuilt(IObjectResolver resolver)

@@ -28,9 +28,13 @@ MonoBehaviour:
   - rid: 6586387348091830343
   - rid: 6586387461492179015
   - rid: 6586387536204529736
+  - rid: 3291161655197827143
   references:
     version: 2
     RefIds:
+    - rid: 3291161655197827143
+      type: {class: EnergySystemFeatureModule, ns: ZE.MechBattle, asm: MechBattle}
+      data: 
     - rid: 6586387193149522008
       type: {class: MorpehFeatureBase, ns: ZE.MechBattle, asm: MechBattle}
       data: 

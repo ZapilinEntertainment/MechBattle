@@ -27,7 +27,9 @@ namespace ZE.MechBattle
             builder.Register<ViewSynchronizationApplier>(Lifetime.Scoped);            
 
             builder.Register<MorpehSystemInstallHandler>(Lifetime.Scoped);
-            builder.Register<LifetimeTrackingManager>(Lifetime.Scoped);            
+            builder.Register<LifetimeTrackingManager>(Lifetime.Scoped);
+
+            builder.Register<WorkersFactory>(Lifetime.Scoped);
         }
 
         void ISceneFeaturePostInitializer.OnSceneContainerPostBuilt(IObjectResolver resolver)

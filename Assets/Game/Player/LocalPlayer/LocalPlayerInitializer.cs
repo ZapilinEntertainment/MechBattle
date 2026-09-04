@@ -33,7 +33,7 @@ namespace ZE.MechBattle
         protected override void OnConditionMatched()
         {
             var lifetimeObject = _lifetimeTrackingManager.GetEntityLifetimeObject(Entity);
-            var flag = new LocalPlayerViewInstancedFlag(Entity, _vehicleEntity);
+            var flag = new LocalPlayerMechControlsSetFlag(Entity, _vehicleEntity);
             lifetimeObject.Add(_sceneFlags.AddTemporalFlag(flag));
         }
     }

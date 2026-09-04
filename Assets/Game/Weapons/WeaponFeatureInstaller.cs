@@ -10,8 +10,7 @@ namespace ZE.MechBattle
     {
         public IWindowBinder GetWindowBinder() 
         {
-            // todo: add special binder for universality
-            return new WindowBinder<UIAimWindow>("ui_aim_window");
+            return new WindowBinder<UIAimWindow>();
         }
 
         public override void SceneScopeInstall(IContainerBuilder builder)

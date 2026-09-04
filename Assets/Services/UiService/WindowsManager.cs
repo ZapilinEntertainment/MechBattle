@@ -21,12 +21,14 @@ namespace ZE.UiService
             var instance = GameObject.Instantiate(windowPrefab, _uiRoot.DisabledWindowsContainer);
             _windows[typeof(T)] = instance;
             //UnityEngine.Debug.Log("registered " + typeof(T).ToString());
-        }            
+        }
 
-        public T ShowWindow<T>() where T : UiWindow
+        public T ShowWindow<T>() where T : UiWindow => ShowWindow<T>(_uiRoot.ActiveWindowsContainer);
+
+        public T ShowWindow<T>(Transform parent) where T : UiWindow
         {
-            var window = GetWindow<T>();         
-            window.transform.SetParent(_uiRoot.ActiveWindowsContainer, false);
+            var window = GetWindow<T>();
+            window.transform.SetParent(parent, false);
             window.transform.SetAsLastSibling();
 
             return window;

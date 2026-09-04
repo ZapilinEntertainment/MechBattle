@@ -7,7 +7,10 @@ using ZE.MechBattle.MechBuilding;
 namespace ZE.MechBattle
 {
     [System.Serializable]
-    public class MechFeatureInstaller : EcsFeatureModule<MechSystemsQueue>, ISessionAsyncResourceLoader
+    public class MechFeatureInstaller : 
+        EcsFeatureModule<MechSystemsQueue>, 
+        ISessionAsyncResourceLoader,
+        IAsyncWindowLoader
     {
         protected override MechSystemsQueue CreateQueue() => new();
 
@@ -27,6 +30,8 @@ namespace ZE.MechBattle
             builder.Register<MechBitsBuilder>(Lifetime.Transient);
             builder.Register<MechWeaponsBuilder>(Lifetime.Transient);
             builder.Register<MechPartitionBuilder>(Lifetime.Transient);
+
+            builder.Register<RepairFeatureApplier>(Lifetime.Scoped);
 
             builder.Register<MechPartitionFactory>(Lifetime.Scoped);
             builder.Register<PartitionsListManager>(Lifetime.Scoped);
@@ -50,6 +55,11 @@ namespace ZE.MechBattle
                 new KeyedResourceBinding<MechConfig, string>(mechConfigData, DevelopConstants.DEFAULT_MECH_ID)
             };
             return new AsyncResourcesScopeBinder(bindersList);
+        }
+
+        IWindowBinder IAsyncWindowLoader.GetWindowBinder()
+        {
+            return new WindowBinder<UIMechInterfaceWindow>();
         }
     }
 }

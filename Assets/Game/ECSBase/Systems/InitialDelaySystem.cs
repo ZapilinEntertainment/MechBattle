@@ -10,7 +10,7 @@ namespace ZE.MechBattle.Ecs {
     {
         protected override void OnDelayCompleted(Entity entity)
         {
-            _stash.Remove(entity);
+            Stash.Remove(entity);
         }
     }
 }

@@ -9,6 +9,7 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public struct HealthComponent : IComponent 
     {
+        public bool IsDamaged => CurrentValue != MaxValue;
         public float CurrentValue;  
         public readonly float MaxValue;
 

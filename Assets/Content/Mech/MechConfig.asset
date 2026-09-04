@@ -21,19 +21,19 @@ MonoBehaviour:
           Index: 0
         Value: 6
       - Key:
-          Type: 2
+          Type: 3
           Index: 0
         Value: 4
       - Key:
-          Type: 2
+          Type: 3
           Index: 1
         Value: 4
       - Key:
-          Type: 3
+          Type: 2
           Index: 0
         Value: 6
       - Key:
-          Type: 3
+          Type: 2
           Index: 1
         Value: 6
     CellConfig:
@@ -170,7 +170,7 @@ MonoBehaviour:
         z: 0
     HealthPoints: 300
   - Key:
-      Type: 2
+      Type: 3
       Index: 0
     RootPartKey:
       Type: 0
@@ -186,7 +186,7 @@ MonoBehaviour:
         z: 0
     HealthPoints: 250
   - Key:
-      Type: 2
+      Type: 3
       Index: 1
     RootPartKey:
       Type: 0
@@ -202,10 +202,10 @@ MonoBehaviour:
         z: 0
     HealthPoints: 250
   - Key:
-      Type: 3
+      Type: 2
       Index: 0
     RootPartKey:
-      Type: 0
+      Type: 5
       Index: 0
     AttachProtocol:
       LocalPosition:
@@ -218,11 +218,11 @@ MonoBehaviour:
         z: 0
     HealthPoints: 250
   - Key:
-      Type: 3
+      Type: 2
       Index: 1
     RootPartKey:
-      Type: 0
-      Index: 0
+      Type: 5
+      Index: 1
     AttachProtocol:
       LocalPosition:
         x: 0
@@ -260,7 +260,7 @@ MonoBehaviour:
       Type: 7
       Index: 0
     PartitionKey:
-      Type: 2
+      Type: 3
       Index: 0
     ColliderSetupInfo:
       ColliderType: 0
@@ -282,29 +282,7 @@ MonoBehaviour:
       Type: 7
       Index: 0
     PartitionKey:
-      Type: 2
-      Index: 1
-    ColliderSetupInfo:
-      ColliderType: 0
-      LocalPosition:
-        x: 7.3
-        y: 8.6
-        z: -1
-      LocalRotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 1
-      Size:
-        x: 9.6
-        y: 5.5
-        z: 6.7
-  - Key:
-      Type: 7
-      Index: 0
-    PartitionKey:
-      Type: 2
+      Type: 3
       Index: 1
     ColliderSetupInfo:
       ColliderType: 0
@@ -326,7 +304,7 @@ MonoBehaviour:
       Type: 4
       Index: 0
     PartitionKey:
-      Type: 3
+      Type: 2
       Index: 0
     ColliderSetupInfo:
       ColliderType: 0
@@ -348,7 +326,7 @@ MonoBehaviour:
       Type: 5
       Index: 0
     PartitionKey:
-      Type: 3
+      Type: 2
       Index: 0
     ColliderSetupInfo:
       ColliderType: 0
@@ -370,7 +348,7 @@ MonoBehaviour:
       Type: 4
       Index: 1
     PartitionKey:
-      Type: 3
+      Type: 2
       Index: 1
     ColliderSetupInfo:
       ColliderType: 0
@@ -392,7 +370,7 @@ MonoBehaviour:
       Type: 5
       Index: 1
     PartitionKey:
-      Type: 3
+      Type: 2
       Index: 1
     ColliderSetupInfo:
       ColliderType: 0

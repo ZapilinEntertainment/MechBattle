@@ -15,7 +15,7 @@
   <Project Path="Game.Editor.Tests.csproj" />
   <Project Path="ZE.WorkerService.csproj" />
   <Project Path="Assembly-CSharp-firstpass.csproj" />
+  <Project Path="ZE.MechBattle.Editor.Utils.csproj" />
   <Project Path="DrawWizards.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
-  <Project Path="ZE.MechBattle.Editor.Utils.csproj" />
 </Solution>

@@ -15,7 +15,7 @@ namespace ZE.MechBattle
         {
             _sceneFlags = flags;
             _cameraController = cameraController;
-            _subscription = _sceneFlags.Subscribe<LocalPlayerViewInstancedFlag>(OnPlayerViewInstanced);
+            _subscription = _sceneFlags.Subscribe<LocalPlayerMechControlsSetFlag>(OnPlayerViewInstanced);
             _viewHandler = viewHandler;
         }
 
@@ -25,7 +25,7 @@ namespace ZE.MechBattle
             _subscription.Dispose();
         }
 
-        private async void OnPlayerViewInstanced(LocalPlayerViewInstancedFlag flag)
+        private async void OnPlayerViewInstanced(LocalPlayerMechControlsSetFlag flag)
         {
             if (!_viewHandler.TryGetEntityView<ICameraPointView>(flag.VehicleEntity, out var cameraHostView))
             {

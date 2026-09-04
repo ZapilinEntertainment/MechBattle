@@ -9,32 +9,37 @@ namespace ZE.MechBattle
     public class EnergyCellsFactory
     {
         private readonly World _world;
-        private Stash<EnergyChargeComponent> _energyChargeComponents;
-        private Stash<DamageToEnergyConsumptionConversionComponent> _conversionComponent;
-        private Stash<NextEnergyCellComponent> _nextCells;
-        private Stash<EnergyCellsGridComponent> _cellsGridComponent;
-        private Stash<HealthComponent> _healthComponent;
-        private Stash<RepairableTag> _repairableTag;
+        private readonly RepairFeatureApplier _repairApplier;
+
+        private readonly Stash<EnergyChargeComponent> _energyChargeComponents;
+        private readonly Stash<DamageToEnergyConsumptionConversionComponent> _conversionComponent;
+        private readonly Stash<NextEnergyCellComponent> _nextCells;
+        private readonly Stash<EnergyCellsGridComponent> _cellsGridComponent;
+        private readonly Stash<HealthComponent> _healthComponent;
+
+        
 
         [Inject]
-        public EnergyCellsFactory(World world)
+        public EnergyCellsFactory(World world, RepairFeatureApplier repairFeatureApplier)
         {
             _world = world;
+            _repairApplier = repairFeatureApplier;
 
             _energyChargeComponents = world.GetStash<EnergyChargeComponent>();
             _conversionComponent = world.GetStash<DamageToEnergyConsumptionConversionComponent>();
             _nextCells = world.GetStash<NextEnergyCellComponent>();
             _cellsGridComponent = world.GetStash<EnergyCellsGridComponent>();
             _healthComponent = world.GetStash<HealthComponent>();
-            _repairableTag = world.GetStash<RepairableTag>();
         }
 
-        public void BuildPartitionEnergySystem(Entity partitionEntity, int cellsCount, EnergyCellConfig cellConfig)
+        public void BuildPartitionEnergySystem(Entity mechEntity, Entity partitionEntity, int cellsCount, EnergyCellConfig cellConfig)
         {
             Span<Entity> cells = stackalloc Entity[cellsCount];
             for (var i = 0; i < cellsCount; i++)
             {
-                cells[i] = BuildEnergyCell(cellConfig);
+                var cell = BuildEnergyCell(cellConfig);
+                _repairApplier.ApplyOnRepairable(cell, mechEntity, new(RepairableType.EnergyCell, i));
+                cells[i] = cell;
             }
 
             for (var i = 0; i < cellsCount - 1; i++)
@@ -44,7 +49,7 @@ namespace ZE.MechBattle
 
 
             _cellsGridComponent.Set(partitionEntity, new(cells[0]));
-            _repairableTag.Set(partitionEntity);
+            
         }
 
         public Entity BuildEnergyCell(EnergyCellConfig cellConfig)
@@ -52,7 +57,7 @@ namespace ZE.MechBattle
             var entity = _world.CreateEntity();
             _energyChargeComponents.Add(entity, new(cellConfig.EnergyCapacity));
             _conversionComponent.Add(entity, new(cellConfig.DamageToChargeLossCf));
-            _healthComponent.Add(entity, new(cellConfig.HealthPoints));
+            _healthComponent.Add(entity, new(cellConfig.HealthPoints));        
             return entity;
         }
     

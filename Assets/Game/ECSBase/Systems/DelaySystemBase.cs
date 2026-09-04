@@ -11,12 +11,12 @@ namespace ZE.MechBattle.Ecs
     {
         public World World { get; set; }
         private Filter _filter;
-        protected Stash<T> _stash;
+        protected Stash<T> Stash { get; private set; }
 
         public virtual void OnAwake()
         {
             _filter = World.Filter.With<T>().Build();
-            _stash = World.GetStash<T>();
+            Stash = World.GetStash<T>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -27,7 +27,7 @@ namespace ZE.MechBattle.Ecs
             var time = Time.time;
             foreach (var entity in _filter)
             {
-                if (_stash.Get(entity).StopTime >= time)
+                if (Stash.Get(entity).StopTime >= time)
                 {
                     OnDelayCompleted(entity);
                 }

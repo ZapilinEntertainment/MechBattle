@@ -30,10 +30,10 @@ namespace ZE.MechBattle.Ecs {
         {
             _compositeDisposable = new();
             flags
-                .Subscribe<LocalPlayerViewInstancedFlag>(OnPlayerViewLoaded)
+                .Subscribe<LocalPlayerMechControlsSetFlag>(OnPlayerViewLoaded)
                 .AddTo(_compositeDisposable);
             flags
-                .Subscribe<LocalPlayerViewInstancedFlag>(flagActive => _playerVehiclePresented = flagActive)
+                .Subscribe<LocalPlayerMechControlsSetFlag>(flagActive => _playerVehiclePresented = flagActive)
                 .AddTo(_compositeDisposable);
 
             _transformAspectHandler = transformAspectHandler;
@@ -85,7 +85,7 @@ namespace ZE.MechBattle.Ecs {
             _eyesActiveProperty.Dispose();
         }
 
-        private void OnPlayerViewLoaded(LocalPlayerViewInstancedFlag flag)
+        private void OnPlayerViewLoaded(LocalPlayerMechControlsSetFlag flag)
         {
             _mechController?.Dispose();
             _mechController = new MechController(World, _transformAspectHandler, flag.VehicleEntity);
