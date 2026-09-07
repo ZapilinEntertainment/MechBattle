@@ -29,7 +29,7 @@ namespace ZE.MechBattle
             installer.AddSystem<RepairDelayClearSystem>(SystemGroupOrder.Repairs);
             installer.AddSystem<RepairDelaySetSystem>(SystemGroupOrder.Repairs);
             installer.AddSystem<RepairTeamsDistributionSystem>(SystemGroupOrder.Repairs);
-            installer.AddSystem<RepairApplySystem>(SystemGroupOrder.Repairs);
+            installer.AddSystemWithInterface<RepairApplySystem, IRepairingEntitiesList>(SystemGroupOrder.Repairs);
             installer.AddSystem<RepairRequireTagClearSystem>(SystemGroupOrder.Repairs);
 
             installer.AddSystem<PartitionsClearSystem>(SystemGroupOrder.DisposedObjectsOperations);

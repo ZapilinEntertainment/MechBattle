@@ -27,7 +27,7 @@ namespace ZE.MechBattle.Ecs
             var time = Time.time;
             foreach (var entity in _filter)
             {
-                if (Stash.Get(entity).StopTime >= time)
+                if (time > Stash.Get(entity).StopTime)
                 {
                     OnDelayCompleted(entity);
                 }

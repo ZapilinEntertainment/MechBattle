@@ -17,7 +17,7 @@ namespace ZE.MechBattle
         private readonly MechConfig TEMP_mechConfig;
         private readonly ProjectileWeaponConfig TEMP_mainWeaponConfig;
         private readonly RayWeaponConfig TEMP_eyesWeaponConfig;
-        private readonly int TEMP_repairTeamsCount;
+        private const int TEMP_repairTeamsCount = 3;
 
         [Inject]
         public MechFactory(
@@ -65,7 +65,7 @@ namespace ZE.MechBattle
 
             BuildEnergyCells(mechEntity, partitionsBuilder.PartitionsList, mechConfig.EnergyCellsConfig);
 
-            _repairFeatureApplier.ApplyOnRepairProduceEntity(mechEntity, TEMP_repairTeamsCount, 0f); // repair speed will be defined by energy system
+            _repairFeatureApplier.ApplyOnRepairProduceEntity(mechEntity, TEMP_repairTeamsCount, 10f); // repair speed will be defined by energy system
 
             //foreach (var part in bitsBuilder.ConstructedParts) UnityEngine.Debug.Log($"{part.Key} : {part.Value.Id}");
 

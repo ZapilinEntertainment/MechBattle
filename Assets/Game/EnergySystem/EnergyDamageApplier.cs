@@ -38,6 +38,7 @@ namespace ZE.MechBattle.Energy
         private readonly Stash<EnergyChargeComponent> _energyCharge;
         private readonly Stash<RepairRequiredTag> _repairRequiredTags;
         private readonly Stash<HealthComponent> _healthComponents;
+        private readonly Stash<DamageReceivedComponent> _damageReceived;
         private readonly List<EnergyCell> _cellsList = new(capacity : 10);
 
         [Inject]
@@ -49,6 +50,7 @@ namespace ZE.MechBattle.Energy
             _energyCharge = world.GetStash<EnergyChargeComponent>();
             _repairRequiredTags = world.GetStash<RepairRequiredTag>();
             _healthComponents = world.GetStash<HealthComponent>();
+            _damageReceived = world.GetStash<DamageReceivedComponent>();
         }
 
         public float ApplyDamageToEnergyGrid(Entity receiver, float damageVolume, Entity maxDamageProducer)
@@ -111,12 +113,14 @@ namespace ZE.MechBattle.Energy
                     {
                         damageVolume -= healthComponent.CurrentValue;
                         healthComponent.CurrentValue = 0f;
+                        _damageReceived.Set(cellData.Entity);
                         //UnityEngine.Debug.Log($"energy cell {cellData.Entity.Id} completely destroyed");
                     }
                     else
                     {
                         healthComponent.CurrentValue -= damageVolume;
                         damageVolume = 0f;
+                        _damageReceived.Set(cellData.Entity);
                         break;
                     }
                 }

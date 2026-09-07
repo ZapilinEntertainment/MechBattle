@@ -12,7 +12,6 @@ namespace ZE.MechBattle
         private UIEnergyCellViewWorker[] _cellControllers;
 
         private readonly Stash<RepairRequiredTag> _repairRequiredTags;
-        private readonly Stash<RepairProcessComponent> _repairProcessComponents;
         private readonly Stash<HealthComponent> _healthComponents;
         private readonly Stash<EnergyCellsGridComponent> _cellsGrid;
         private readonly Stash<NextEnergyCellComponent> _nextCells;
@@ -20,15 +19,16 @@ namespace ZE.MechBattle
         private readonly ReactiveProperty<UIPartitionView.PartitionViewMode> _partitionViewModeProperty;
         private readonly EnergyCellUiViewPool _cellsPool;
         private readonly World _world;
+        private readonly IRepairingEntitiesList _repairingEntities;
         
 
-        public UIMechPartitionViewWorker(World world, EnergyCellUiViewPool cellViewPool)
+        public UIMechPartitionViewWorker(World world, EnergyCellUiViewPool cellViewPool, IRepairingEntitiesList repairingEntitiesList)
         {
             _world = world;
             _cellsPool = cellViewPool;
+            _repairingEntities = repairingEntitiesList;
 
             _repairRequiredTags = _world.GetStash<RepairRequiredTag>();
-            _repairProcessComponents = _world.GetStash<RepairProcessComponent>();
             _healthComponents = _world.GetStash<HealthComponent>();
             _cellsGrid = _world.GetStash<EnergyCellsGridComponent>();
             _nextCells = _world.GetStash<NextEnergyCellComponent>();
@@ -72,7 +72,7 @@ namespace ZE.MechBattle
 
             if (_repairRequiredTags.Has(_partitionEntity))
             {
-                _partitionViewModeProperty.Value = _repairProcessComponents.Has(_partitionEntity) ? UIPartitionView.PartitionViewMode.Repairs : UIPartitionView.PartitionViewMode.HealthDisplay;
+                _partitionViewModeProperty.Value = _repairingEntities.Contains(_partitionEntity) ? UIPartitionView.PartitionViewMode.Repairs : UIPartitionView.PartitionViewMode.HealthDisplay;
                 _partitionView.SetHealthPc(_healthComponents.Get(_partitionEntity).HealthPercent);
             }                
             else

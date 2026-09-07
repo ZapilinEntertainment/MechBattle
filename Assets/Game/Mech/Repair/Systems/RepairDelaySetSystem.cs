@@ -28,6 +28,7 @@ namespace ZE.MechBattle.Ecs {
             foreach (var entity in _filter)
             {
                 _delays.Set(entity, new(Time.time + MechConstants.DAMAGE_REPAIR_DELAY));
+                //UnityEngine.Debug.Log($"repair delayed for entity {entity.Id} : {Time.time + MechConstants.DAMAGE_REPAIR_DELAY}");
             }
         }
 

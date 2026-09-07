@@ -12,20 +12,21 @@ namespace ZE.MechBattle
         private Entity _cellEntity;
         private EnergyCellUiView _view;
 
+        private readonly IRepairingEntitiesList _repairingEntities;
         private readonly Stash<EnergyChargeComponent> _chargeComponents;
         private readonly Stash<HealthComponent> _healthComponents;
         private readonly Stash<RepairRequiredTag> _repairRequired;
-        private readonly Stash<RepairProcessComponent> _repairProcess;
         private readonly Stash<DamageReceivedComponent> _damageReceived;
 
         [Inject]
-        public UIEnergyCellViewWorker(World world)
+        public UIEnergyCellViewWorker(World world, IRepairingEntitiesList repairingEntitiesList)
         {
             _healthComponents = world.GetStash<HealthComponent>();
-            _repairProcess = world.GetStash<RepairProcessComponent>();
             _repairRequired = world.GetStash<RepairRequiredTag>();
             _chargeComponents = world.GetStash<EnergyChargeComponent>();
             _damageReceived = world.GetStash<DamageReceivedComponent>();
+
+            _repairingEntities = repairingEntitiesList;
         }
 
         public void Start(Entity cellEntity, EnergyCellUiView view)
@@ -37,7 +38,7 @@ namespace ZE.MechBattle
 
         public void Update()
         {
-            var repairInProgress = _repairProcess.Has(_cellEntity);
+            var repairInProgress = _repairingEntities.Contains(_cellEntity);
             var requireRepairs = _repairRequired.Has(_cellEntity);
             var mainLineColor = requireRepairs ? (repairInProgress ? _view.RepairColor : _view.HealthColor) : _view.EnergyColor;
             float mainLineValue;

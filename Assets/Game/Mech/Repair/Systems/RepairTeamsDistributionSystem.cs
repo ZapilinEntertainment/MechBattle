@@ -43,6 +43,7 @@ namespace ZE.MechBattle.Ecs {
 
             _repairTargetsFilter = World.Filter
                 .With<RepairRequiredTag>()
+                .Without<RepairDelayComponent>()
                 .Without<EntityDisposeTag>()
                 .Build();
 
@@ -75,7 +76,6 @@ namespace ZE.MechBattle.Ecs {
             var count = _candidatesList.Count;
             if (count == 0)
                 return;
-
 
             _candidatesList.Sort();
 
