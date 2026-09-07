@@ -38,9 +38,15 @@ namespace ZE.MechBattle.Ecs {
         {
             foreach (var entity in _filter)
             {
-                var receivedDamageVolume = _receivedDamageList[entity];
+                if (!_receivedDamageList.TryGetDamageData(entity, out var incomingDamageData))
+                {
+                    // no previous damage systems
+                    UnityEngine.Debug.Log("cannot receive damage for entity " + entity.Id.ToString());
+                    continue;
+                }
+
                 var maxDamageProducer = _damageReceived.Get(entity).MaxDamageProducer;
-                var excessDamage = _energyDamageApplier.ApplyDamageToEnergyGrid(entity, receivedDamageVolume.Volume, maxDamageProducer);
+                var excessDamage = _energyDamageApplier.ApplyDamageToEnergyGrid(entity, incomingDamageData.Volume, maxDamageProducer);
                 if (excessDamage == 0f)
                 {
                     _receivedDamageList.RemoveDamage(entity);

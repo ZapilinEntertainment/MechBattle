@@ -12,6 +12,7 @@ namespace ZE.MechBattle.Ecs {
         public bool IsDamaged => CurrentValue != MaxValue;
         public float CurrentValue;  
         public readonly float MaxValue;
+        public float HealthPercent => CurrentValue / MaxValue;
 
         public HealthComponent(float maxValue)
         {

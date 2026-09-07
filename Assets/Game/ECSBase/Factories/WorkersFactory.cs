@@ -24,11 +24,13 @@ namespace ZE.MechBattle
             if (_world.IsDisposed(entity))
                 throw new EntityDisposedException();
 
-            var worker = _objectResolver.Resolve<T>();
+            var worker = CreateWorker<T>();
             var lifetimeObject = _lifetimeTrackingManager.GetEntityLifetimeObject(entity);
             lifetimeObject.Add(worker);
             return worker;
         }
-    
+
+        public T CreateWorker<T>() where T : Worker => _objectResolver.Resolve<T>();
+
     }
 }

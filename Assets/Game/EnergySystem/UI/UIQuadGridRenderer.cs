@@ -15,7 +15,7 @@ namespace ZE.MechBattle
         [SerializeField] private float spacing = 2f;
 
         [Header("Color Settings")]
-        [SerializeField] private Color32 healthColor = Color.green;
+        [SerializeField] private Gradient healthColorGradient;
         [SerializeField] private Color32 emptyColor = Color.red;
 
         [Header("State")]
@@ -24,7 +24,6 @@ namespace ZE.MechBattle
         [SerializeField] private int seed = 42;
 
         private List<int> ShuffledIndices = new List<int>();
-        private int lastCalculatedCount = -1;
         private int lastSeed = -1;
 
         public float Value
@@ -41,6 +40,7 @@ namespace ZE.MechBattle
 
         protected override void OnPopulateMesh(VertexHelper vh)
         {
+
             vh.Clear();
 
             Rect rect = rectTransform.rect;
@@ -71,6 +71,8 @@ namespace ZE.MechBattle
             );
 
             int quadCounter = 0;
+            var activeColor = healthColorGradient.Evaluate(Value);
+
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
@@ -78,7 +80,7 @@ namespace ZE.MechBattle
                     float x = startPos.x + c * (quadSize + spacing);
                     float y = startPos.y + r * (quadSize + spacing);
 
-                    Color32 color = isHealth[quadCounter] ? healthColor : emptyColor;
+                    Color32 color = isHealth[quadCounter] ? activeColor : emptyColor;
 
                     UIVertex v0 = CreateVertex(new Vector3(x, y, 0), color);
                     UIVertex v1 = CreateVertex(new Vector3(x, y + quadSize, 0), color);
@@ -117,8 +119,6 @@ namespace ZE.MechBattle
                 ShuffledIndices[i] = ShuffledIndices[j];
                 ShuffledIndices[j] = temp;
             }
-
-            lastCalculatedCount = totalQuads;
             lastSeed = seed;
         }
 

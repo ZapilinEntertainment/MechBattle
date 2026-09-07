@@ -6,9 +6,10 @@ namespace ZE.MechBattle.Damage
     public class ReceivedDamageList
     {
         public bool IsEmpty => _dict.Count == 0;
-        public IncomingDamageData this[Entity entity] => _dict[entity];
         private readonly Dictionary<Entity, IncomingDamageData> _dict = new();
 
+
+        public bool TryGetDamageData(Entity entity, out IncomingDamageData incomingDamageData) => _dict.TryGetValue(entity, out incomingDamageData);
 
         public void Add(Entity target, IncomingDamageData resultingDamage)
         {

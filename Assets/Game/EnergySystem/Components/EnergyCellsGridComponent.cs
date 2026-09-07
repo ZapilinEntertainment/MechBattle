@@ -8,12 +8,14 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public readonly struct EnergyCellsGridComponent : IComponent 
     {
+        public readonly int TotalCellsCount;
         public readonly Entity FirstCellEntity;
 
 
-        public EnergyCellsGridComponent(Entity firstCell)
+        public EnergyCellsGridComponent(Entity firstCell, int totalCellsCount)
         {
             FirstCellEntity = firstCell;
+            TotalCellsCount = totalCellsCount;
         }
     
     }

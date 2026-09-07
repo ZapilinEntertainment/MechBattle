@@ -59,7 +59,9 @@ namespace ZE.MechBattle.Ecs {
 
             foreach (var entity in _filter)
             {
-                ApplyDamage(entity, _receivedDamageList[entity]);
+                // can already be consumed by energy damage apply system
+                if (_receivedDamageList.TryGetDamageData(entity, out var incomingDamageData))
+                    ApplyDamage(entity, incomingDamageData);
             }
         }
 
@@ -67,6 +69,9 @@ namespace ZE.MechBattle.Ecs {
 
         private void ApplyDamage(Entity target, IncomingDamageData damageData)
         {
+            if (_repairableTag.Has(target))
+                _repairRequiredTag.Set(target);
+
             ref var healthComponent = ref _health.Get(target);
             var healthValue = math.clamp(healthComponent.CurrentValue - damageData.Volume,0, healthComponent.MaxValue);
             if (healthValue == 0f)
@@ -79,10 +84,7 @@ namespace ZE.MechBattle.Ecs {
         private void OnEntityHealthIsZero(Entity entity, IncomingDamageData damageData)
         {
             if (_repairableTag.Has(entity))
-            {
-                _repairRequiredTag.Set(entity);
                 return;
-            }
 
             _entityDisposeTag.Set(entity);
             if (damageData.Flags.HasFlag(ReceivedDamageFlag.Trampled))

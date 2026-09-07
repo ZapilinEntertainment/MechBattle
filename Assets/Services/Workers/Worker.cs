@@ -11,7 +11,6 @@ namespace ZE.Workers
         protected enum Status : byte { Created = 0, Working, Disposed}
 
         public Observable<Unit> Disposed => _onDisposeCommand;
-        protected IObjectResolver ObjectResolver => _objectResolver;
         protected readonly CompositeDisposable CompositeDisposable = new();
         protected Status WorkerStatus { get; private set; }
         private readonly ReactiveCommand _onDisposeCommand = new();        
@@ -26,7 +25,7 @@ namespace ZE.Workers
             //UnityEngine.Debug.Log(this.GetType() + WorkerStatus.ToString());
         }
 
-        public T StartSubWorker<T>() where T : Worker
+        public T AddSubWorker<T>() where T : Worker
         {
             var worker = _objectResolver.Resolve<T>();
             if (worker == null)
@@ -35,8 +34,6 @@ namespace ZE.Workers
             _subWorkers ??= new List<Worker>();
             _subWorkers.Add(worker);
             worker.Disposed.Subscribe(_ => OnSubWorkerDisposed(worker)).AddTo(CompositeDisposable);
-
-            worker.Start();
             return worker;
         }
 

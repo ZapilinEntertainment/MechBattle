@@ -6,8 +6,9 @@ namespace ZE.MechBattle
 {
     public class EnergyCellUiView : MonoBehaviour, IPoolableObject<EnergyCellUiView>
     {
-        [SerializeField] public Color EnergyColor { get; private set; } = Color.cyan;
-        [SerializeField] public Color RepairColor { get; private set; } = Color.green;
+        [field:SerializeField] public Color EnergyColor { get; private set; } = Color.cyan;
+        [field: SerializeField] public Color RepairColor { get; private set; } = Color.limeGreen;
+        [field: SerializeField] public Color HealthColor { get; private set; } = Color.green;
         [Space]
         [SerializeField] private Image _energyLine;
         [SerializeField] private Image _damageLine;
@@ -39,6 +40,8 @@ namespace ZE.MechBattle
                 // todo: some visual effect
             }
         }
+
+        public void SetupParent(Transform parent) => transform.SetParent(parent, false);
 
         public void AssignReleaser(PoolElementReleaser<EnergyCellUiView> releaser) =>
             _releaser = releaser;

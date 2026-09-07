@@ -5,6 +5,7 @@ namespace ZE.MechBattle
 {
     public struct EnergyCellsEnumerator
     {
+        private bool _firstOneUsed;
         private readonly Entity _startEntity;
         private readonly Stash<NextEnergyCellComponent> _nextCellStash;
 
@@ -12,14 +13,20 @@ namespace ZE.MechBattle
         {
             _startEntity = startEntity;
             _nextCellStash = stash;
-            Current = default;
+            Current = _startEntity;
+            _firstOneUsed = false;
         }
 
         public Entity Current { get; private set; }
 
         public bool MoveNext()
         {
-            var nextCellComponent = _nextCellStash.Get(_startEntity, out var nextCellExists);
+            if (!_firstOneUsed)
+            {
+                _firstOneUsed = true;
+                return true;
+            }                
+            var nextCellComponent = _nextCellStash.Get(Current, out var nextCellExists);
             Current = nextCellComponent.CellEntity;
 
             return nextCellExists;

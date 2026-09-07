@@ -24,7 +24,8 @@ namespace ZE.MechBattle
             builder.Register<EnergyCellsFactory>(Lifetime.Scoped);
 
             builder.Register<MechPartitionsUiInitializer>(Lifetime.Transient);
-            builder.Register<UIMechPartitionsViewWorker>(Lifetime.Transient);
+            builder.Register<UIMechPartitionViewWorker>(Lifetime.Transient);
+            builder.Register<UIEnergyCellViewWorker>(Lifetime.Transient);
         }
 
         async Awaitable<IResourceBinder> ISessionAsyncResourceLoader.LoadSessionResourcesAsync(IObjectResolver resolver)

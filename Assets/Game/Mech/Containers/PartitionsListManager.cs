@@ -22,6 +22,15 @@ namespace ZE.MechBattle
         }
 
         public void OnRootEntityDisposed(Entity entity) => _list.Remove(entity);
+
+        public bool TryGetPartition(Entity entity, MechPartitionKey key, out Entity partitionEntity)
+        {
+            if (_list.TryGetValue(entity, out var list) && list.TryGet(key, out partitionEntity))
+                return true;
+
+            partitionEntity = default;
+            return false;
+        }
     
     }
 }

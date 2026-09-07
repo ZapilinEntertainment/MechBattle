@@ -9,6 +9,7 @@ namespace ZE.MechBattle.Ecs {
     public struct EnergyChargeComponent : IComponent 
     {
         public float Value;
+        public float ChargePercent => Value / MaxValue;
         public readonly float MaxValue;
 
         public EnergyChargeComponent(float maxCharge, float charge = -1f)

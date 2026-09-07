@@ -39,25 +39,25 @@ namespace ZE.MechBattle
             {
                 var cell = BuildEnergyCell(cellConfig);
                 _repairApplier.ApplyOnRepairable(cell, mechEntity, new(RepairableType.EnergyCell, i));
-                cells[i] = cell;
+                cells[i] = cell;                
             }
 
             for (var i = 0; i < cellsCount - 1; i++)
             {
                 _nextCells.Set(cells[i], new(cells[i + 1]));
+                //UnityEngine.Debug.Log($"{i}/{cellsCount} : {cells[i].Id} -> {cells[i+1].Id}");
             }
 
 
-            _cellsGridComponent.Set(partitionEntity, new(cells[0]));
-            
+            _cellsGridComponent.Set(partitionEntity, new(cells[0], cellsCount));           
         }
 
         public Entity BuildEnergyCell(EnergyCellConfig cellConfig)
         {
             var entity = _world.CreateEntity();
-            _energyChargeComponents.Add(entity, new(cellConfig.EnergyCapacity));
+            _energyChargeComponents.Add(entity, new(cellConfig.EnergyCapacity));            
+            _healthComponent.Add(entity, new(cellConfig.HealthPoints));
             _conversionComponent.Add(entity, new(cellConfig.DamageToChargeLossCf));
-            _healthComponent.Add(entity, new(cellConfig.HealthPoints));        
             return entity;
         }
     

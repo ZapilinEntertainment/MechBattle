@@ -37,9 +37,9 @@ MonoBehaviour:
           Index: 1
         Value: 6
     CellConfig:
-      EnergyCapacity: 100
+      EnergyCapacity: 25
       DamageToChargeLossCf: 0.5
-      HealthPoints: 0
+      HealthPoints: 15
       RepairTime: 10
   _mechParts:
   - Key:
