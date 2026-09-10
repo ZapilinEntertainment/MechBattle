@@ -58,7 +58,7 @@ namespace ZE.MechBattle.Ecs {
         private void LowerAdrenaline(Entity entity, float deltaTime)
         {
             ref var adrenaline = ref _adrenaline.Get(entity);
-            adrenaline.AdrenalineVolume = math.clamp(adrenaline.AdrenalineVolume - adrenaline.AdrenalineFallbackSpeed * deltaTime, 0f, adrenaline.MaxAdrenalineVolume);
+            adrenaline.AdrenalineVolume = math.clamp(adrenaline.AdrenalineVolume - adrenaline.AdrenalineFallbackSpeed * adrenaline.CurrentAdrenalineLevel * deltaTime, 0f, adrenaline.MaxAdrenalineVolume);
             adrenaline.CurrentAdrenalineLevel = (int)(adrenaline.AdrenalineVolume / adrenaline.AdrenalineLevelLimit);
 
             //UnityEngine.Debug.Log($"↓ {entity.Id} : {adrenaline.AdrenalineVolume} / {adrenaline.CurrentAdrenalineLevel}");

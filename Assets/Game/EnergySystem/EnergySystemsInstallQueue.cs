@@ -12,6 +12,8 @@ namespace ZE.MechBattle
 
             installer.AddSystem<EnergyDistributionSystem>(SystemGroupOrder.EnergySystem);
             installer.AddSystem<EnergyChargingSystem>(SystemGroupOrder.EnergySystem);
+
+            installer.AddSystem<SpentEnergyClearSystem>(SystemGroupOrder.Dispose);
         }
     }
 }

@@ -2,7 +2,6 @@ using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
 using VContainer;
 using ZE.MechBattle.Damage;
-using ZE.MechBattle.Energy;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -14,11 +13,11 @@ namespace ZE.MechBattle.Ecs {
         private Filter _filter;
         private Stash<DamageReceivedComponent> _damageReceived;
         private readonly ReceivedDamageList _receivedDamageList;
-        private readonly EnergyDamageApplier _energyDamageApplier;
+        private readonly EnergyHandler _energyDamageApplier;
         
 
         [Inject]
-        public EnergySystemsReceiveDamageSystem(ReceivedDamageList receivedDamageList, EnergyDamageApplier energyDamageApplier)
+        public EnergySystemsReceiveDamageSystem(ReceivedDamageList receivedDamageList, EnergyHandler energyDamageApplier)
         {
             _receivedDamageList = receivedDamageList;
             _energyDamageApplier = energyDamageApplier;

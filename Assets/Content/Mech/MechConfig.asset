@@ -47,7 +47,7 @@ MonoBehaviour:
     BaseRepairSpeed: 10
     MinRepairSpeedCf: 0.3
     MaxRepairSpeedCf: 1.1
-    AdrenalineEnergyConversionCf: 0.3
+    AdrenalineEnergyConversionCf: 0.2
     AdrenalineDamageConversionCf: 0.5
     AdrenalineLevelLimit: 100
     AdrenalineFallbackSpeed: 7

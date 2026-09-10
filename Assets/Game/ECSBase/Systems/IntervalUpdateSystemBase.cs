@@ -8,7 +8,7 @@ namespace ZE.MechBattle.Ecs {
     public abstract class IntervalUpdateSystemBase<T> : PausableSystem where T : struct, IIntervalUpdateComponent
     {
         private Filter _filter;
-        private Stash<T> _stash;
+        protected Stash<T> Stash;
 
         public IntervalUpdateSystemBase(SceneFlagsManager flags) : base(flags)
         {
@@ -17,7 +17,7 @@ namespace ZE.MechBattle.Ecs {
         public override void OnAwake()
         {
             _filter = PrepareFilter().Build();
-            _stash = World.GetStash<T>();
+            Stash = World.GetStash<T>();
         }
 
         public override void OnUpdate(float deltaTime)
@@ -27,11 +27,11 @@ namespace ZE.MechBattle.Ecs {
 
             foreach (var entity in _filter)
             {
-                ref var component = ref _stash.Get(entity);
+                ref var component = ref Stash.Get(entity);
                 var newValue = component.TimeLeft - deltaTime;
                 if (newValue > 0f)
                 {
-                    component.TimeLeft = newValue;
+                    component.TimeLeft = newValue;                    
                 }                    
                 else
                 {
@@ -47,7 +47,7 @@ namespace ZE.MechBattle.Ecs {
 
         protected void RestartTimer(Entity entity, float delta = 0f)
         {
-            ref var component = ref _stash.Get(entity);
+            ref var component = ref Stash.Get(entity);
             component.TimeLeft = component.Interval + delta;
         }
     }

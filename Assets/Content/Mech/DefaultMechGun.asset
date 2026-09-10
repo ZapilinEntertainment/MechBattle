@@ -9,14 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c9cf684c8b41224e8a5e1ff216b575a, type: 3}
+  m_Script: {fileID: 11500000, guid: 9b43a1d0f6fbb3f4191bc547f7715197, type: 3}
   m_Name: DefaultMechGun
-  m_EditorClassIdentifier: MechBattle::ZE.MechBattle.ProjectileWeaponConfig
+  m_EditorClassIdentifier: MechBattle::ZE.MechBattle.MechProjectileWeaponConfig
   <DamageType>k__BackingField: 1
   <MinRange>k__BackingField: 0
   <RecommendedRangePc>k__BackingField: 0.8
   <MaxRange>k__BackingField: 0
-  <Cooldown>k__BackingField: 10
+  <Cooldown>k__BackingField: 0.5
   <ShotPoint>k__BackingField:
     x: 0
     y: 0
@@ -55,3 +55,4 @@ MonoBehaviour:
       XAngleDegreesLimit: 32
       YAngleDegreesLimit: 45
   _projectileId: mech_cannon_projectile
+  _shotEnergyCost: 100

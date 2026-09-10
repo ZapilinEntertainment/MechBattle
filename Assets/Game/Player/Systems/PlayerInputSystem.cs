@@ -13,21 +13,24 @@ namespace ZE.MechBattle.Ecs {
     public sealed class PlayerInputSystem : ISystem 
     {
         public World World { get; set;}
+
+        private readonly WorkersFactory _workersFactory;
         private readonly CompositeDisposable _compositeDisposable;
-        private readonly TransformAspectHandler _transformAspectHandler;
         private readonly CursorAimTrackingWorker _aimWorker;
         private readonly ReactiveProperty<bool> _eyesActiveProperty = new(false);
 
         private bool _playerVehiclePresented = false;
-        private MechController _mechController;
+        private MechControllerWorker _mechController;
         
 
         [Inject]
         public PlayerInputSystem(
             SceneFlagsManager flags, 
-            TransformAspectHandler transformAspectHandler,
-            ICursorAimTracker aimWorker)
+            ICursorAimTracker aimWorker,
+            WorkersFactory workersFactory)
         {
+            _workersFactory = workersFactory;
+
             _compositeDisposable = new();
             flags
                 .Subscribe<LocalPlayerMechControlsSetFlag>(OnPlayerViewLoaded)
@@ -36,7 +39,6 @@ namespace ZE.MechBattle.Ecs {
                 .Subscribe<LocalPlayerMechControlsSetFlag>(flagActive => _playerVehiclePresented = flagActive)
                 .AddTo(_compositeDisposable);
 
-            _transformAspectHandler = transformAspectHandler;
             _aimWorker = aimWorker as CursorAimTrackingWorker;
         }
 
@@ -72,7 +74,10 @@ namespace ZE.MechBattle.Ecs {
 
             // main weapons shot
             if (Input.GetMouseButtonDown(0))
-                _mechController.FireMainWeapon();
+                _mechController.FireMainLeftWeapon();
+
+            if (Input.GetMouseButtonDown(1))
+                _mechController.FireMainRightWeapon();
 
             // eyes shot
             _eyesActiveProperty.Value = Input.GetKey(KeyCode.Space);
@@ -88,7 +93,8 @@ namespace ZE.MechBattle.Ecs {
         private void OnPlayerViewLoaded(LocalPlayerMechControlsSetFlag flag)
         {
             _mechController?.Dispose();
-            _mechController = new MechController(World, _transformAspectHandler, flag.VehicleEntity);
+            _mechController = _workersFactory.CreateWorker<MechControllerWorker>();
+            _mechController.Start(flag.VehicleEntity);
 
             _eyesActiveProperty
                 .Subscribe(isPressed => _mechController.SwitchEyeFiring(isPressed))

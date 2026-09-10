@@ -11,7 +11,7 @@ namespace ZE.MechBattle.Ecs
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public sealed class WeaponLoadingCheckSystem : IntervalUpdateSystemBase<WeaponUpdateComponent>, IWeaponShotCompletenessHandler
+    public sealed class WeaponLoadingCheckSystem : IntervalUpdateSystemBase<WeaponLoadingComponent>, IWeaponShotCompletenessHandler
     {
         private Stash<GunLoadedTag> _readyToShotTag;
 

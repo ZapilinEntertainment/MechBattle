@@ -11,7 +11,9 @@ namespace ZE.MechBattle.MechBuilding
         private readonly WeaponHandler _weaponHandler;
         private readonly EntityViewHandler _viewHandler;
         private readonly MonoViewFactory _viewFactory;
+
         private readonly Stash<MechWeaponsComponent> _mechWeapons;
+        private readonly Stash<EnergyConsumerComponent> _energyConsumers;
 
         private MechBuilder _mainBuilder;
         private MechConfig _mechConfig;
@@ -34,6 +36,7 @@ namespace ZE.MechBattle.MechBuilding
             _viewFactory = viewFactory;
 
             _mechWeapons = world.GetStash<MechWeaponsComponent>();
+            _energyConsumers = world.GetStash<EnergyConsumerComponent>();
         }
 
         public void BuildWeapons(
@@ -75,16 +78,24 @@ namespace ZE.MechBattle.MechBuilding
                 return default;
             }
 
+            return BuildMechWeapon(parent, equipmentId, weaponConfig, slotInfo.AttachmentProtocol);
+        }
+
+        private Entity BuildMechWeapon(Entity parent, string weaponId, WeaponConfigBase weaponConfig, ViewPartAttachmentProtocol partAttachmentProtocol)
+        {
             var weaponEntity = _weaponFactory.CreateWeapon(new()
             {
                 WeaponConfig = weaponConfig,
                 ParentEntity = parent,
-                AttachmentProtocol = slotInfo.AttachmentProtocol,
+                AttachmentProtocol = partAttachmentProtocol,
                 SyncTargetWithParent = true,
 
                 DamageParameters = new(weaponConfig.DamageType, DevelopConstants.TEMP_MainGunDamage),
             });
-            _viewFactory.MakeViewReceiver(weaponEntity, equipmentId + "_view");
+            _viewFactory.MakeViewReceiver(weaponEntity, weaponId + "_view");
+
+            if (weaponConfig is IMechWeaponConfig mechWeaponConfig)
+                AddMechSpecificComponents(weaponEntity, mechWeaponConfig);
 
             return weaponEntity;
         }
@@ -117,8 +128,16 @@ namespace ZE.MechBattle.MechBuilding
             var barrel = _weaponHandler.GetBarrelEntity(eyeEntity);
             _viewHandler.OverrideViewRequestKey(barrel, constructionSettings.Key);
 
+            if (_laserEyesConfig is IMechWeaponConfig mechWeaponConfig)
+                AddMechSpecificComponents(eyeEntity, mechWeaponConfig);
+
             return eyeEntity;
         }
 
+        private void AddMechSpecificComponents(Entity weaponEntity, IMechWeaponConfig mechWeaponConfig)
+        {
+            if (mechWeaponConfig.TryGetShotEnergyCost(out var cost))
+                _energyConsumers.Add(weaponEntity, new() { Volume = cost });
+        }
     }
 }

@@ -20,6 +20,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 08d0d5af1a2bfa048b49a7c220bcd9ac
+    m_Address: laser_eyes_weapon_config
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0ea8fe32e70e6104bbfc7a53c5f403e3
     m_Address: ui_mech_reactor_window
     m_ReadOnly: 0
@@ -42,11 +47,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 454e0eee529392a4dbe648d04594f34f
     m_Address: ui_weapon_aim_marker
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 4831dea7172b6c14c88ee1a568184ec8
-    m_Address: default_mech_gun_config
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -75,8 +75,8 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a9dee9ed22bfdd249ba2fb5d8f3df481
-    m_Address: laser_eyes_weapon_config
+  - m_GUID: acd218077ab4c304a951ffe312964af7
+    m_Address: default_mech_gun_config
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

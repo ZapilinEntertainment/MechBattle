@@ -43,17 +43,26 @@ namespace ZE.MechBattle
 
             var mechEntity = flag.VehicleEntity;
             var mechEntityLifetimeObject = _lifetimeTrackingManager.GetEntityLifetimeObject(mechEntity);
+            var colors = new Color[2] { Color.red, Color.blue };
+            var i = 0;
             foreach (var weaponEntity in _weaponHandler.GetNextWeaponEntity(mechEntity))
             {
-                StartWeaponTracking(_weaponHandler.GetWeaponsAimingEntity(weaponEntity), mechEntityLifetimeObject);
+                var color = colors[i];
+                StartWeaponTracking(weaponEntity, mechEntity, mechEntityLifetimeObject, 
+                    new()
+                {
+                    Color = color,
+                    Level = i
+                });
+                i = (i + 1) % colors.Length;
             }
         }
 
-        private void StartWeaponTracking(Entity trackingWeapon, DisposableBag lifetimeObject)
+        private void StartWeaponTracking(Entity trackingWeapon, Entity mechEntity, DisposableBag lifetimeObject, WeaponAimMarkerDisplayProtocol displayProtocol)
         {
             var markerWorker = _resolver.Resolve<WeaponAimMarkerWorker>();
             lifetimeObject.Add(markerWorker);
-            markerWorker.Start(trackingWeapon);
+            markerWorker.Start(trackingWeapon, mechEntity, displayProtocol);
         }
     }
 }

@@ -10,7 +10,7 @@ namespace ZE.MechBattle.Ecs
         private readonly ParentingRelationsApplier _parentingRelationsApplier;
         private readonly StringDataDictionary _stringDictionary;
         private readonly Stash<WeaponRangeComponent> _ranges;
-        private readonly Stash<WeaponUpdateComponent> _weaponUpdateComponents;        
+        private readonly Stash<WeaponLoadingComponent> _weaponUpdateComponents;        
         private readonly Stash<WeaponMuzzleEffectComponent> _muzzleEffects;
         private readonly Stash<WeaponTowerComponent> _weaponTowerComponents;
         private readonly Stash<WeaponBarrelComponent> _weaponBarrelComponents;
@@ -45,7 +45,7 @@ namespace ZE.MechBattle.Ecs
             _stringDictionary = stringDataDictionary;
 
             _ranges = _world.GetStash<WeaponRangeComponent>();
-            _weaponUpdateComponents = world.GetStash<WeaponUpdateComponent>();
+            _weaponUpdateComponents = world.GetStash<WeaponLoadingComponent>();
             _muzzleEffects = world.GetStash<WeaponMuzzleEffectComponent>();            
 
             _weaponTowerComponents = world.GetStash<WeaponTowerComponent>();

@@ -18,10 +18,12 @@ namespace ZE.MechBattle
         {
             base.SceneScopeInstall(builder);
             builder.Register<MechCreateRequestsFactory>(Lifetime.Scoped);
-            builder.Register<MechChassisFactory>(Lifetime.Scoped);
-            builder.Register<MechMovementHandler>(Lifetime.Scoped);            
+            builder.Register<MechChassisFactory>(Lifetime.Scoped);                      
             builder.Register<MechInterpolator>(Lifetime.Scoped);
+
             builder.Register<MechHandler>(Lifetime.Scoped);
+            builder.Register<MechWeaponsHandler>(Lifetime.Scoped);
+            builder.Register<MechMovementHandler>(Lifetime.Scoped);
 
             builder.Register<IMechStepsMap, MechStepsMap>(Lifetime.Scoped);
 
@@ -30,6 +32,8 @@ namespace ZE.MechBattle
             builder.Register<MechBitsBuilder>(Lifetime.Transient);
             builder.Register<MechWeaponsBuilder>(Lifetime.Transient);
             builder.Register<MechPartitionBuilder>(Lifetime.Transient);
+
+            builder.Register<MechControllerWorker>(Lifetime.Transient);
 
             builder.Register<RepairFeatureApplier>(Lifetime.Scoped);
 

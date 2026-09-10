@@ -26,6 +26,8 @@ namespace ZE.MechBattle
 
             installer.AddSystem<TramplingSystem>(SystemGroupOrder.DamageApply2 - 1);
 
+            installer.AddSystem<MechChargeCalculationSystem>(SystemGroupOrder.EnergySystem + 1);
+
             installer.AddSystem<RepairDelayClearSystem>(SystemGroupOrder.Repairs);
             installer.AddSystem<RepairDelaySetSystem>(SystemGroupOrder.Repairs);
             installer.AddSystem<RepairTeamsDistributionSystem>(SystemGroupOrder.Repairs);

@@ -5,9 +5,9 @@ using Unity.Mathematics;
 using VContainer;
 using ZE.MechBattle.Ecs;
 
-namespace ZE.MechBattle.Energy
+namespace ZE.MechBattle
 {
-    public class EnergyDamageApplier
+    public class EnergyHandler
     {
         private struct EnergyCell : IComparable<EnergyCell>
         {
@@ -32,6 +32,29 @@ namespace ZE.MechBattle.Energy
             }
         }
 
+        private struct EnergySource : IComparable<EnergySource>
+        {
+            public readonly Entity Entity;
+            public readonly MechPartitionType Partition;
+            public readonly float Charge;
+
+            public EnergySource(Entity entity, MechPartitionType partitionType, float charge)
+            {
+                Entity = entity;
+                Partition = partitionType;
+                Charge = charge;
+            }
+
+            public int CompareTo(EnergySource other)
+            {
+                var chargeComparison = -Charge.CompareTo(other.Charge);
+                if (chargeComparison == 0)
+                    return -Partition.CompareTo(other.Partition);
+
+                return chargeComparison;
+            }
+        }
+
         private readonly Stash<EnergyCellsGridComponent> _energyGrid;
         private readonly Stash<NextEnergyCellComponent> _nextCell;
         private readonly Stash<DamageToEnergyConsumptionConversionComponent> _conversionCfs;
@@ -39,10 +62,13 @@ namespace ZE.MechBattle.Energy
         private readonly Stash<RepairRequiredTag> _repairRequiredTags;
         private readonly Stash<HealthComponent> _healthComponents;
         private readonly Stash<DamageReceivedComponent> _damageReceived;
+        private readonly Stash<EnergySpentComponent> _energySpent;
+
         private readonly List<EnergyCell> _cellsList = new(capacity : 10);
+        private readonly List<EnergySource> _energySources = new(capacity: 32);
 
         [Inject]
-        public EnergyDamageApplier(World world)
+        public EnergyHandler(World world)
         {
             _energyGrid = world.GetStash<EnergyCellsGridComponent>();
             _nextCell = world.GetStash<NextEnergyCellComponent>();
@@ -51,6 +77,7 @@ namespace ZE.MechBattle.Energy
             _repairRequiredTags = world.GetStash<RepairRequiredTag>();
             _healthComponents = world.GetStash<HealthComponent>();
             _damageReceived = world.GetStash<DamageReceivedComponent>();
+            _energySpent = world.GetStash<EnergySpentComponent>();
         }
 
         public float ApplyDamageToEnergyGrid(Entity receiver, float damageVolume, Entity maxDamageProducer)
@@ -130,5 +157,44 @@ namespace ZE.MechBattle.Energy
             _cellsList.Clear();
             return damageVolume;
         }   
+
+        public void SpendEnergyFromPartitions(Entity mechEntity, IPartitionsList partitions, float energyVolume)
+        {
+            foreach (var partitionKvp in partitions)
+            {
+                var firstCellEntity = _energyGrid.Get(partitionKvp.Value).FirstCellEntity;
+                foreach (var cellEntity in new EnergyCellsEnumerator(_nextCell, firstCellEntity))
+                {
+                    var charge = _energyCharge.Get(cellEntity).Value;
+                    _energySources.Add(new(cellEntity, partitionKvp.Key.Type, charge));
+                }
+            }
+
+            _energySources.Sort();
+            var spent = 0f;
+            foreach (var source in _energySources)
+            {
+                ref var charge = ref _energyCharge.Get(source.Entity);
+                if (charge.Value > energyVolume)
+                {
+                    spent += charge.Value;
+                    charge.Value -= energyVolume;
+                    break;
+                }
+                else
+                {
+                    energyVolume -= charge.Value;
+                    spent += charge.Value;
+                    charge.Value = 0f; 
+                }
+            }
+
+            var component = _energySpent.Get(mechEntity, out var exists);
+            var volume = exists ? component.Volume + spent : spent;
+            _energySpent.Set(mechEntity, new() { Volume = volume});
+
+
+            _energySources.Clear();
+        }
     }
 }

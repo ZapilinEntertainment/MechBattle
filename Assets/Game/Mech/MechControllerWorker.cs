@@ -1,33 +1,36 @@
-using System;
 using Scellecs.Morpeh;
 using ZE.MechBattle.Ecs;
 using Unity.Mathematics;
+using ZE.Workers;
+using VContainer;
 
 namespace ZE.MechBattle
 {
-    public class MechController : IDisposable
+    public class MechControllerWorker : Worker
     {
-        private readonly Entity _mechEntity;
-        private readonly Entity _upperPartEntity;
-        private readonly Entity _headEntity;
-        private readonly World _world;
-        private readonly TransformAspectHandler _transformAspectHandler;
+        private Entity _mechEntity;
+        private Entity _upperPartEntity;
+        private Entity _headEntity;
 
         private Stash<MechInputComponent> _input;
         private Stash<RotationSpeedComponent> _rotationSpeed;
         private Stash<WeaponTargetPositionComponent> _weaponTargetPositions;
         private Stash<WeaponFireTag> _fireTags;
         private Stash<MechWeaponsComponent> _mechWeapons;
+        
+        private readonly World _world;
+        private readonly TransformAspectHandler _transformAspectHandler;
+        private readonly MechWeaponsHandler _mechWeaponsHandler;
 
-        public MechController(World world, TransformAspectHandler transformAspectHandler, Entity mechEntity)
+        [Inject]
+        public MechControllerWorker(
+            World world, 
+            TransformAspectHandler transformAspectHandler, 
+            MechWeaponsHandler mechWeaponsHandler)
         {
             _world = world;
             _transformAspectHandler = transformAspectHandler;
-
-            _mechEntity = mechEntity;
-            var mechComponent = _world.GetStash<MechComponent>().Get(_mechEntity);
-            _upperPartEntity = mechComponent.UpperPartEntity;
-            _headEntity = mechComponent.HeadEntity;
+            _mechWeaponsHandler = mechWeaponsHandler;
 
             _input = _world.GetStash<MechInputComponent>();
             _mechWeapons = _world.GetStash<MechWeaponsComponent>();
@@ -36,7 +39,15 @@ namespace ZE.MechBattle
             _rotationSpeed = _world.GetStash<RotationSpeedComponent>();
         }
 
-        public void Dispose() { }
+        public void Start(Entity mechEntity)
+        {
+            base.Start();
+
+            _mechEntity = mechEntity;
+            var mechComponent = _world.GetStash<MechComponent>().Get(_mechEntity);
+            _upperPartEntity = mechComponent.UpperPartEntity;
+            _headEntity = mechComponent.HeadEntity;
+        }
 
         public void SetControls(float speed, float steer) => _input.Set(_mechEntity, new() { SpeedValue = speed, SteerValue = steer });
 
@@ -55,15 +66,19 @@ namespace ZE.MechBattle
             _weaponTargetPositions.Set(_headEntity, new() { Value = pos});
         }
 
-        public void FireMainWeapon()
+        public void FireMainLeftWeapon()
         {
             var weapons = _mechWeapons.Get(_mechEntity);
-            if (!_world.IsDisposed(weapons.MainWeaponLeft))
-                _fireTags.Set(weapons.MainWeaponLeft);
-
-            if (!_world.IsDisposed(weapons.MainWeaponRight))
-                _fireTags.Set(weapons.MainWeaponRight);
+            TryFireWeapon(weapons.MainWeaponLeft);
         }
+
+        public void FireMainRightWeapon()
+        {
+            var weapons = _mechWeapons.Get(_mechEntity);
+            TryFireWeapon(weapons.MainWeaponRight);
+        }
+
+
 
         public void SwitchEyeFiring(bool active)
         {
@@ -76,6 +91,15 @@ namespace ZE.MechBattle
             {
                 _fireTags.Remove(_headEntity);
             }
+        }
+
+        private void TryFireWeapon(Entity weaponEntity)
+        {
+            if (_world.IsDisposed(weaponEntity) || !_mechWeaponsHandler.CanWeaponFire(_mechEntity, weaponEntity))
+                return;
+
+            _mechWeaponsHandler.FireWeapon(_mechEntity, weaponEntity);
+            _fireTags.Set(weaponEntity);
         }
     }
 }

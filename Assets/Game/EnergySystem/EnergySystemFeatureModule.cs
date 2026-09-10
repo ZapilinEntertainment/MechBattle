@@ -1,7 +1,6 @@
 using UnityEngine;
 using VContainer;
 using ZE.MechBattle.Ecs;
-using ZE.MechBattle.Energy;
 
 namespace ZE.MechBattle
 {
@@ -18,7 +17,7 @@ namespace ZE.MechBattle
         {
             base.SceneScopeInstall(builder);
 
-            builder.Register<EnergyDamageApplier>(Lifetime.Scoped);
+            builder.Register<EnergyHandler>(Lifetime.Scoped);
             builder.Register<EnergyCellsFactory>(Lifetime.Scoped);
 
             builder.Register<MechEnergySystemUiInitializer>(Lifetime.Transient);

@@ -3,6 +3,7 @@ using Scellecs.Morpeh;
 using VContainer;
 using ZE.MechBattle.Ecs;
 using ZE.Workers;
+using UnityEngine;
 
 namespace ZE.MechBattle
 {
@@ -13,8 +14,12 @@ namespace ZE.MechBattle
         private readonly ICursorAimTracker _cursorTracker;
         private readonly WeaponTargetMarkerFactory _markerFactory;
         private readonly World _world;
+        private readonly MechWeaponsHandler _mechWeaponsHandler;
+        private readonly WeaponHandler _weaponHandler;
 
         private Entity _weaponEntity;
+        private Entity _mechEntity;
+        private Entity _aimingEntity;
         private UIWeaponAimMarker _aimMarker;
         private TargetData _targetData;
 
@@ -24,18 +29,25 @@ namespace ZE.MechBattle
             AimCaster aimCaster,
             ICursorAimTracker cursorTracker,
             WeaponTargetMarkerFactory weaponTargetMarkerFactory,
-            World world)
+            World world,
+            MechWeaponsHandler mechWeaponsHandler,
+            WeaponHandler weaponHandler)
         {
             _transformAspectHandler = transformAspectHandler;
             _aimCaster = aimCaster;
             _cursorTracker = cursorTracker;
             _markerFactory = weaponTargetMarkerFactory;
             _world = world;
+            _mechWeaponsHandler = mechWeaponsHandler;
+            _weaponHandler = weaponHandler;
         }
 
-        public void Start(Entity weaponEntity)
+        public void Start(Entity weaponEntity, Entity mechEntity, WeaponAimMarkerDisplayProtocol displayProtocol)
         {
             _weaponEntity = weaponEntity;
+            _mechEntity = mechEntity;
+            _aimingEntity = _weaponHandler.GetWeaponsAimingEntity(weaponEntity);
+
             _aimMarker = _markerFactory.Create();
             base.Start();
 
@@ -49,6 +61,7 @@ namespace ZE.MechBattle
                 .Subscribe(Update)
                 .AddTo(CompositeDisposable);
 
+            _aimMarker.Setup(displayProtocol);
             _aimMarker.SetVisibility(true);
         }
 
@@ -60,9 +73,16 @@ namespace ZE.MechBattle
 
         private void Update(Unit unit)
         {
-            var gunPoint = _transformAspectHandler.GetPoint(_weaponEntity);
+            var gunPoint = _transformAspectHandler.GetPoint(_aimingEntity);
             _aimCaster.TryGetRayEndScreenPos(_targetData, gunPoint, out var screenPos);
-            _aimMarker.SetPosition(screenPos);
+
+            var loadingPc = _mechWeaponsHandler.GetWeaponLoadingProgress(_weaponEntity);
+            _aimMarker.UpdateData(new()
+            {
+                ScreenPos = screenPos,
+                GunLoadingProgress = loadingPc,
+                EnergyChargePc = _mechWeaponsHandler.GetWeaponEnergySatisfactionPc(_mechEntity, _weaponEntity)
+            });
         }
     }
 }

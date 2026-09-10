@@ -39,6 +39,9 @@ namespace ZE.Workers
 
         public virtual void Dispose()
         {
+            if (WorkerStatus == Status.Disposed)
+                return;
+
             WorkerStatus = Status.Disposed;
             if ((_subWorkers?.Count ?? 0) != 0)
             {

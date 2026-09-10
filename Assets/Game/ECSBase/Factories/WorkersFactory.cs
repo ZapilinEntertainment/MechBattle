@@ -31,6 +31,5 @@ namespace ZE.MechBattle
         }
 
         public T CreateWorker<T>() where T : Worker => _objectResolver.Resolve<T>();
-
     }
 }
