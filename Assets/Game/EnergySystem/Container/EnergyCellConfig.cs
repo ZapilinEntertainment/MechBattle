@@ -7,7 +7,6 @@ namespace ZE.MechBattle
     {
         public float EnergyCapacity;
         public float DamageToChargeLossCf;
-        public float HealthPoints;
-        public float RepairTime;    
+        public float HealthPoints;  
     }
 }

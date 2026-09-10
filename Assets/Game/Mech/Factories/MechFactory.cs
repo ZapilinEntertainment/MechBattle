@@ -10,8 +10,7 @@ namespace ZE.MechBattle
     public class MechFactory : IEntityCreationFactory
     {
         private readonly IObjectResolver _resolver;
-        private readonly ColliderAddRequestsFactory _collidersRequestsFactory;
-        private readonly EnergyCellsFactory _energyCellsFactory;
+        private readonly ColliderAddRequestsFactory _collidersRequestsFactory;        
         private readonly RepairFeatureApplier _repairFeatureApplier;
 
         private readonly MechConfig TEMP_mechConfig;
@@ -23,7 +22,6 @@ namespace ZE.MechBattle
         public MechFactory(
             IObjectResolver resolver,
             ColliderAddRequestsFactory collidersRequestsFactory,
-            EnergyCellsFactory energyCellsFactory,
             RepairFeatureApplier repairFeatureApplier,
 
             [Key(DevelopConstants.DEFAULT_MECH_ID)] MechConfig mechConfig,
@@ -32,7 +30,6 @@ namespace ZE.MechBattle
         {
             _resolver = resolver;
             _collidersRequestsFactory = collidersRequestsFactory;
-            _energyCellsFactory = energyCellsFactory;
             _repairFeatureApplier = repairFeatureApplier;
 
             TEMP_mechConfig = mechConfig;
@@ -63,7 +60,8 @@ namespace ZE.MechBattle
 
             RequestColliders(mechEntity, bitsBuilder, mechConfig, partitionsBuilder.PartitionsList);
 
-            BuildEnergyCells(mechEntity, partitionsBuilder.PartitionsList, mechConfig.EnergyCellsConfig);
+            var energyModuleBuilder = _resolver.Resolve<MechEnergyModuleBuilder>();
+            energyModuleBuilder.Build(mechEntity, partitionsBuilder.PartitionsList, mechConfig);
 
             _repairFeatureApplier.ApplyOnRepairProduceEntity(mechEntity, TEMP_repairTeamsCount, 10f); // repair speed will be defined by energy system
 
@@ -132,17 +130,6 @@ namespace ZE.MechBattle
                         hostEntity: constructedPartEntity, 
                         setupInfo: colliderConfig.ColliderSetupInfo));
             }            
-        }
-
-        private void BuildEnergyCells(Entity mechEntity, IPartitionsList partitionsList, MechEnergyCellsConfig cellsConfig)
-        {
-            foreach (var partitionKvp in partitionsList)
-            {
-                if (!cellsConfig.TryGetCellsCount(partitionKvp.Key, out var cellsCount))
-                    continue;
-
-                _energyCellsFactory.BuildPartitionEnergySystem(mechEntity, partitionKvp.Value, cellsCount, cellsConfig.CellConfig);
-            }
         }
     }
 }

@@ -9,7 +9,8 @@ namespace ZE.MechBattle
     {
         [SerializeField] private SerializedDictionary<MechPartitionKey, int> _cellsCount;
 
-        public EnergyCellConfig CellConfig;
+        [field: SerializeField] public EnergyCellConfig CellConfig { get; private set; }
+        // todo: mech reactor config
 
         public bool TryGetCellsCount(MechPartitionKey key, out int count) => _cellsCount.TryGetValue(key, out count);
     }

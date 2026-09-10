@@ -4,7 +4,9 @@ using ZE.UiService;
 
 namespace ZE.MechBattle
 {
-    public class MechPartitionsUiInitializer : IDisposable
+
+    // todo: convert to worker, bind to game state, hide windows on stop working
+    public class MechEnergySystemUiInitializer : IDisposable
     {
         private readonly IDisposable _subscription;
         private readonly WindowsManager _windowsManager;
@@ -12,7 +14,7 @@ namespace ZE.MechBattle
         private readonly PartitionsListManager _partitions;
 
         [Inject]
-        public MechPartitionsUiInitializer(
+        public MechEnergySystemUiInitializer(
             SceneFlagsManager sceneFlags, 
             WindowsManager windowsManager, 
             WorkersFactory workersFactory,
@@ -43,9 +45,15 @@ namespace ZE.MechBattle
                     continue;
 
                 _workersFactory
-                    .AddWorkerToEntity<UIMechPartitionViewWorker>(flag.VehicleEntity)
+                    .AddWorkerToEntity<UIMechPartitionViewWorker>(vehicleEntity)
                     .Start(partitionViewKvp.Value, partitionEntity);
             }
+
+
+            var reactorWindow = _windowsManager.ShowWindow<UIMechReactorWindow>();
+            _workersFactory
+                .AddWorkerToEntity<UIMechReactorWindowWorker>(vehicleEntity)
+                .Start(vehicleEntity, reactorWindow);
         }
     }
 }

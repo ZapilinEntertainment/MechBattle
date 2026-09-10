@@ -1,9 +1,7 @@
-using System.Threading.Tasks;
 using UnityEngine;
 using VContainer;
 using ZE.MechBattle.Ecs;
 using ZE.MechBattle.Energy;
-using ZE.UiService;
 
 namespace ZE.MechBattle
 {
@@ -23,9 +21,12 @@ namespace ZE.MechBattle
             builder.Register<EnergyDamageApplier>(Lifetime.Scoped);
             builder.Register<EnergyCellsFactory>(Lifetime.Scoped);
 
-            builder.Register<MechPartitionsUiInitializer>(Lifetime.Transient);
+            builder.Register<MechEnergySystemUiInitializer>(Lifetime.Transient);
             builder.Register<UIMechPartitionViewWorker>(Lifetime.Transient);
             builder.Register<UIEnergyCellViewWorker>(Lifetime.Transient);
+            builder.Register<UIMechReactorWindowWorker>(Lifetime.Transient);
+
+            builder.Register<MechEnergyModuleBuilder>(Lifetime.Transient);
         }
 
         async Awaitable<IResourceBinder> ISessionAsyncResourceLoader.LoadSessionResourcesAsync(IObjectResolver resolver)
@@ -43,12 +44,14 @@ namespace ZE.MechBattle
         public override void OnSceneContainerBuilt(IObjectResolver resolver)
         {
             base.OnSceneContainerBuilt(resolver);
-            resolver.Resolve<MechPartitionsUiInitializer>();
+            resolver.Resolve<MechEnergySystemUiInitializer>();
         }
 
         IWindowBinder IAsyncWindowLoader.GetWindowBinder()
         {
-            return new WindowBinder<UIPartitionsWindow>();
+            return new CompositeWindowBinder(
+                new WindowBinder<UIPartitionsWindow>(), 
+                new WindowBinder<UIMechReactorWindow>());
         }
     }
 }

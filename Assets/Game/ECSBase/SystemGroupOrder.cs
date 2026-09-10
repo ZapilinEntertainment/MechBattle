@@ -12,8 +12,10 @@ namespace ZE.MechBattle
         TransformUpdates,        
         ViewsLoading,
         DamageCalculation,
+        AfterDamageCalculation,
         DamageApply1,
         DamageApply2,
+        EnergySystem,
         Repairs,
         DisposeTagsSharing, // share dispose tag with connected (child or linked) objects
         DisposedObjectsOperations,

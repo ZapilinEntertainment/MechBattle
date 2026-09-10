@@ -20,6 +20,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0ea8fe32e70e6104bbfc7a53c5f403e3
+    m_Address: ui_mech_reactor_window
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0f89c853498a9cb46ba634b2adca87b6
     m_Address: default_mech_config
     m_ReadOnly: 0

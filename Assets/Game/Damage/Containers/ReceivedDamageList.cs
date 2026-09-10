@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ZE.MechBattle.Damage
 {
-    public class ReceivedDamageList
+    public class ReceivedDamageList : IReceivedDamageList
     {
         public bool IsEmpty => _dict.Count == 0;
         private readonly Dictionary<Entity, IncomingDamageData> _dict = new();
@@ -22,5 +22,12 @@ namespace ZE.MechBattle.Damage
         public void Clear() => _dict.Clear();
         public void RemoveDamage(Entity entity) => _dict.Remove(entity);
         public void UpdateDamage(Entity entity, IncomingDamageData damageData) => _dict[entity] = damageData;
+    }
+}
+namespace ZE.MechBattle
+{
+    public interface IReceivedDamageList
+    {
+        bool TryGetDamageData(Entity entity, out IncomingDamageData incomingDamageData);
     }
 }

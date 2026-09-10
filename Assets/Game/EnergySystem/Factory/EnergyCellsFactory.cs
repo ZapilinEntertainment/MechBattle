@@ -16,6 +16,7 @@ namespace ZE.MechBattle
         private readonly Stash<NextEnergyCellComponent> _nextCells;
         private readonly Stash<EnergyCellsGridComponent> _cellsGridComponent;
         private readonly Stash<HealthComponent> _healthComponent;
+        private readonly Stash<EnergyElementComponent> _elements;
 
         
 
@@ -30,14 +31,15 @@ namespace ZE.MechBattle
             _nextCells = world.GetStash<NextEnergyCellComponent>();
             _cellsGridComponent = world.GetStash<EnergyCellsGridComponent>();
             _healthComponent = world.GetStash<HealthComponent>();
+            _elements = world.GetStash<EnergyElementComponent>();
         }
 
-        public void BuildPartitionEnergySystem(Entity mechEntity, Entity partitionEntity, int cellsCount, EnergyCellConfig cellConfig)
+        public void BuildPartitionEnergySystem(Entity mechEntity, Entity partitionEntity, Entity reactorEntity, int cellsCount, EnergyCellConfig cellConfig)
         {
             Span<Entity> cells = stackalloc Entity[cellsCount];
             for (var i = 0; i < cellsCount; i++)
             {
-                var cell = BuildEnergyCell(cellConfig);
+                var cell = BuildEnergyCell(cellConfig, reactorEntity);
                 _repairApplier.ApplyOnRepairable(cell, mechEntity, new(RepairableType.EnergyCell, i));
                 cells[i] = cell;                
             }
@@ -52,12 +54,13 @@ namespace ZE.MechBattle
             _cellsGridComponent.Set(partitionEntity, new(cells[0], cellsCount));           
         }
 
-        public Entity BuildEnergyCell(EnergyCellConfig cellConfig)
+        public Entity BuildEnergyCell(EnergyCellConfig cellConfig, Entity reactorEntity)
         {
             var entity = _world.CreateEntity();
             _energyChargeComponents.Add(entity, new(cellConfig.EnergyCapacity));            
             _healthComponent.Add(entity, new(cellConfig.HealthPoints));
             _conversionComponent.Add(entity, new(cellConfig.DamageToChargeLossCf));
+            _elements.Add(entity, new(reactorEntity));
             return entity;
         }
     

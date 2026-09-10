@@ -9,6 +9,7 @@ namespace ZE.MechBattle
     {
         [field: SerializeField] public float AvoidanceRadiusInUnits { get; private set;  } = 10f;
         [field: SerializeField] public MechEnergyCellsConfig EnergyCellsConfig { get; private set; }
+        [field: SerializeField] public MechReactorConfig ReactorConfig { get; private set; }
         [SerializeField] private MechPartSettings[] _mechParts;
         [SerializeField] private MechPartitionConfig[] _partitionConfigs;
         [SerializeField] private MechColliderConfig[] _colliderConfigs;

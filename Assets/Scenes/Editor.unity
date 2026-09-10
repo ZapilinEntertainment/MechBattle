@@ -2593,6 +2593,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: UIRoot
       objectReference: {fileID: 0}
+    - target: {fileID: 4594575284570068552, guid: 026b89acf922b66409d7e4368ff4dfbf, type: 3}
+      propertyPath: m_AdditionalShaderChannelsFlag
+      value: 25
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5842,8 +5846,8 @@ MonoBehaviour:
   _unitId: tank
   _count: 3
   _spawnRadius: 50
-  _interval: 3
-  _initialDelay: 1
+  _interval: 1
+  _initialDelay: 0
   _limit: -1
   _status: 0
 --- !u!1001 &1734655685

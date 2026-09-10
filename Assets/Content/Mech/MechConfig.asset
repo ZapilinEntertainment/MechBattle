@@ -36,11 +36,23 @@ MonoBehaviour:
           Type: 2
           Index: 1
         Value: 6
-    CellConfig:
-      EnergyCapacity: 25
-      DamageToChargeLossCf: 0.5
-      HealthPoints: 15
-      RepairTime: 10
+    <CellConfig>k__BackingField:
+      EnergyCapacity: 100
+      DamageToChargeLossCf: 2
+      HealthPoints: 100
+  <ReactorConfig>k__BackingField:
+    BaseEnergyGenerationSpeed: 10
+    MinEnergyProductionCf: 0.5
+    MaxEnergyProductionCf: 1.5
+    BaseRepairSpeed: 10
+    MinRepairSpeedCf: 0.3
+    MaxRepairSpeedCf: 1.1
+    AdrenalineEnergyConversionCf: 0.3
+    AdrenalineDamageConversionCf: 0.5
+    AdrenalineLevelLimit: 100
+    AdrenalineFallbackSpeed: 7
+    AdrenalineLevelsCount: 7
+    HealthPoints: 2500
   _mechParts:
   - Key:
       Type: 8
