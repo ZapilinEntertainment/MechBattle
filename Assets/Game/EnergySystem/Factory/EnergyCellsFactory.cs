@@ -16,7 +16,7 @@ namespace ZE.MechBattle
         private readonly Stash<NextEnergyCellComponent> _nextCells;
         private readonly Stash<EnergyCellsGridComponent> _cellsGridComponent;
         private readonly Stash<HealthComponent> _healthComponent;
-        private readonly Stash<EnergyElementComponent> _elements;
+        private readonly Stash<EnergySourceComponent> _sourceComponents;
 
         
 
@@ -31,7 +31,7 @@ namespace ZE.MechBattle
             _nextCells = world.GetStash<NextEnergyCellComponent>();
             _cellsGridComponent = world.GetStash<EnergyCellsGridComponent>();
             _healthComponent = world.GetStash<HealthComponent>();
-            _elements = world.GetStash<EnergyElementComponent>();
+            _sourceComponents = world.GetStash<EnergySourceComponent>();
         }
 
         public void BuildPartitionEnergySystem(Entity mechEntity, Entity partitionEntity, Entity reactorEntity, int cellsCount, EnergyCellConfig cellConfig)
@@ -60,7 +60,7 @@ namespace ZE.MechBattle
             _energyChargeComponents.Add(entity, new(cellConfig.EnergyCapacity));            
             _healthComponent.Add(entity, new(cellConfig.HealthPoints));
             _conversionComponent.Add(entity, new(cellConfig.DamageToChargeLossCf));
-            _elements.Add(entity, new(reactorEntity));
+            _sourceComponents.Add(entity, new(reactorEntity));
             return entity;
         }
     

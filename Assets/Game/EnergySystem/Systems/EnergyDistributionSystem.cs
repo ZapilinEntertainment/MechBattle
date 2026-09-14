@@ -9,17 +9,17 @@ namespace ZE.MechBattle.Ecs {
     {
         public World World { get; set;}
         private Filter _filter;
-        private Stash<EnergyElementComponent> _elements;
+        private Stash<EnergySourceComponent> _energySources;
         private Stash<EnergyChargeSpeedComponent> _chargeSpeeds;
 
         public void OnAwake() 
         {
             _filter = World.Filter
-                .With<EnergyElementComponent>()
+                .With<EnergySourceComponent>()
                 .Without<EntityDisposeTag>()
                 .Build();
 
-            _elements = World.GetStash<EnergyElementComponent>();
+            _energySources = World.GetStash<EnergySourceComponent>();
             _chargeSpeeds = World.GetStash<EnergyChargeSpeedComponent>();
         }
 
@@ -27,7 +27,7 @@ namespace ZE.MechBattle.Ecs {
         {
             foreach (var entity in _filter)
             {
-                var energySourceEntity = _elements.Get(entity).EnergySourceEntity;
+                var energySourceEntity = _energySources.Get(entity).SourceEntity;
                 SyncComponentsCommand.Execute(entity, energySourceEntity, _chargeSpeeds);
             }
         }
