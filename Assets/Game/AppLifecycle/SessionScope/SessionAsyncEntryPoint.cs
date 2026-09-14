@@ -5,6 +5,7 @@ using VContainer.Unity;
 
 namespace ZE.MechBattle
 {
+
     // load resources for child - SceneScope
     public class SessionAsyncEntryPoint : AsyncScopeEntryPoint<ISceneAsyncResourceLoader>
     {

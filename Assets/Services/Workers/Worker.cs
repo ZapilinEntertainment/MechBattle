@@ -11,8 +11,11 @@ namespace ZE.Workers
         protected enum Status : byte { Created = 0, Working, Disposed}
 
         public Observable<Unit> Disposed => _onDisposeCommand;
-        protected readonly CompositeDisposable CompositeDisposable = new();
+        
         protected Status WorkerStatus { get; private set; }
+        protected IObjectResolver ObjectResolver => _objectResolver;
+
+        protected readonly CompositeDisposable CompositeDisposable = new();
         private readonly ReactiveCommand _onDisposeCommand = new();        
         private List<Worker> _subWorkers;
 

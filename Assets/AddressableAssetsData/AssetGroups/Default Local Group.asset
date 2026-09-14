@@ -45,6 +45,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 40ead1c56a4dded4490555d1477c5031
+    m_Address: ui_fail_window
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 454e0eee529392a4dbe648d04594f34f
     m_Address: ui_weapon_aim_marker
     m_ReadOnly: 0

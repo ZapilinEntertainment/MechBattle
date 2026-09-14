@@ -3,13 +3,19 @@ using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 using ZE.MechBattle.Navigation;
+using ZE.MechBattle.States;
 
 namespace ZE.MechBattle
 {
-    public class SceneScope : FeaturedScopeBase<ISceneFeatureScopeInstaller, ISceneFeatureInitializer, ISceneFeaturePostInitializer>
+    public class SceneScope : FeaturedScopeBase<ISceneFeatureScopeInstaller, ISceneFeatureInitializer, ISceneFeaturePostInitializer>, IAsyncWindowLoader
     {
         [SerializeField] private MapSettingsSO _mapSettings;
         [SerializeField] private LevelSettingsObject _levelSettings;
+
+        public IWindowBinder GetWindowBinder()
+        {
+            return new WindowBinder<UIFailWindow>();
+        }
 
         protected override void Configure(IContainerBuilder builder)
         {
@@ -25,13 +31,13 @@ namespace ZE.MechBattle
 
             builder.Register<ColouredMaterialsDepot>(Lifetime.Scoped);
 
-            var map = new NavigationMap(_mapSettings.ToStruct(), Unity.Collections.Allocator.Persistent);
+            var map = new NavigationMap(_mapSettings.ToStruct(), Allocator.Persistent);
             builder.RegisterInstance<INavigationMap, IUpdatableMap>(map);
             builder.Register(resolver => new NavigationMapController(map), Lifetime.Scoped);
 
             builder.RegisterInstance(_levelSettings);
 
-            builder.RegisterEntryPoint<SceneBootstrap>();
+            RegisterStates(builder);
 
             UnityEngine.Debug.Log("scene scope configured");
         }
@@ -46,6 +52,15 @@ namespace ZE.MechBattle
             installer.SceneScopeInstall(containerBuilder);
 
 
-       
+        private void RegisterStates(IContainerBuilder builder)
+        {
+            builder.Register<SceneLoadingState>(Lifetime.Transient);
+            builder.Register<SceneGameState>(Lifetime.Transient);
+            builder.Register<SceneFailState>(Lifetime.Transient);
+
+            builder.RegisterEntryPoint<SceneStateMachine>();
+
+            builder.Register<UIFailWindowWorker>(Lifetime.Transient);
+        }
     }
 }

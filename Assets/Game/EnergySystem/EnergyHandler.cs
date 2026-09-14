@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Scellecs.Morpeh;
 using Unity.Mathematics;
 using VContainer;
+using ZE.MechBattle.Damage;
 using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle
@@ -69,24 +70,38 @@ namespace ZE.MechBattle
         private readonly List<EnergyCell> _cellsList = new(capacity : 10);
         private readonly List<EnergySource> _energySourceList = new(capacity: 32);
 
+        private readonly World _world;
         private readonly PartitionsListManager _partitionsListManager;
+        private readonly DamageRequestsList _damageRequestsList;
 
         [Inject]
-        public EnergyHandler(World world, PartitionsListManager partitionsListManager)
+        public EnergyHandler(World world, PartitionsListManager partitionsListManager, DamageRequestsList damageRequestsList)
         {
+            _world = world;
             _partitionsListManager = partitionsListManager;
+            _damageRequestsList = damageRequestsList;
 
-            _energyGrid = world.GetStash<EnergyCellsGridComponent>();
-            _nextCell = world.GetStash<NextEnergyCellComponent>();
-            _conversionCfs = world.GetStash<DamageToEnergyConsumptionConversionComponent>();
-            _energyCharge = world.GetStash<EnergyChargeComponent>();
-            _repairRequiredTags = world.GetStash<RepairRequiredTag>();
-            _healthComponents = world.GetStash<HealthComponent>();
-            _damageReceived = world.GetStash<DamageReceivedComponent>();
-            _energySpent = world.GetStash<EnergySpentComponent>();
+            _energyGrid = _world.GetStash<EnergyCellsGridComponent>();
+            _nextCell = _world.GetStash<NextEnergyCellComponent>();
+            _conversionCfs = _world.GetStash<DamageToEnergyConsumptionConversionComponent>();
+            _energyCharge = _world.GetStash<EnergyChargeComponent>();
+            _repairRequiredTags = _world.GetStash<RepairRequiredTag>();
+            _healthComponents = _world.GetStash<HealthComponent>();
+            _damageReceived = _world.GetStash<DamageReceivedComponent>();
+            _energySpent = _world.GetStash<EnergySpentComponent>();
 
-            _energySourceComponents = world.GetStash<EnergySourceComponent>();
-            _gridModeComponents = world.GetStash<EnergyGridModeComponent>();
+            _energySourceComponents = _world.GetStash<EnergySourceComponent>();
+            _gridModeComponents = _world.GetStash<EnergyGridModeComponent>();
+        }
+
+        public bool TryTransferExcessDamageOnRepairable(Entity repairableEntity, float excessDamage)
+        {
+            var energySource = _energySourceComponents.Get(repairableEntity, out var sourceComponentExists);
+            if (!sourceComponentExists || _world.IsDisposed(energySource.SourceEntity))
+                return false;
+
+            _damageRequestsList.Add(new(default, energySource.SourceEntity, new(DamageType.DamageTransfer, excessDamage)));
+            return true;
         }
 
         public void WriteSpentEnergy(Entity spendingEntity, float energyVolume)

@@ -18,5 +18,5 @@ namespace ZE.MechBattle
         public DamageApplyParameters Multiply(float damageCf) => new(DamageType, Value * damageCf);
     }
 
-    public enum DamageType : byte { Undefined, Projectile, Laser, Trampling}
+    public enum DamageType : byte { Undefined, Projectile, Laser, Trampling, DamageTransfer}
 }

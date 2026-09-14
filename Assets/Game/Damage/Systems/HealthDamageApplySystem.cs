@@ -23,18 +23,21 @@ namespace ZE.MechBattle.Ecs {
         private readonly TransformAspectHandler _transformAspectHandler;
         private readonly ReceivedDamageList _receivedDamageList;
         private readonly VfxKey _trampledVfxKey;
+        private readonly EnergyHandler _energyHandler;
 
         [Inject]
         public HealthDamageApplySystem(
             VfxRequestsFactory vfxRequestsFactory, 
             StringDataDictionary stringDataDictionary, 
             TransformAspectHandler transformAspectHandler,
-            ReceivedDamageList receivedDamageList)
+            ReceivedDamageList receivedDamageList,
+            EnergyHandler energyHandler)
         {
             _vfxRequestsFactory = vfxRequestsFactory;
             _transformAspectHandler = transformAspectHandler;
             _receivedDamageList = receivedDamageList;
             _trampledVfxKey = new VfxKey(stringDataDictionary.StringToKey(VfxConstants.TrampledExplosionId));
+            _energyHandler = energyHandler;
         }
 
         public void OnAwake() 
@@ -73,18 +76,24 @@ namespace ZE.MechBattle.Ecs {
                 _repairRequiredTag.Set(target);
 
             ref var healthComponent = ref _health.Get(target);
-            var healthValue = math.clamp(healthComponent.CurrentValue - damageData.Volume,0, healthComponent.MaxValue);
+            var resultingHp = healthComponent.CurrentValue - damageData.Volume;
+            var healthValue = math.clamp(resultingHp,0, healthComponent.MaxValue);
             if (healthValue == 0f)
-                OnEntityHealthIsZero(target, damageData);
+                OnEntityHealthIsZero(target, damageData, resultingHp * -1f);
             else
                 healthComponent.CurrentValue = healthValue;
             //UnityEngine.Debug.Log($"health: {healthValue} / {healthComponent.MaxValue}");
         }
 
-        private void OnEntityHealthIsZero(Entity entity, IncomingDamageData damageData)
+        private void OnEntityHealthIsZero(Entity entity, IncomingDamageData damageData, float excessDamage)
         {
             if (_repairableTag.Has(entity))
+            {
+                if (excessDamage > 0f)
+                    _energyHandler.TryTransferExcessDamageOnRepairable(entity, excessDamage);
                 return;
+            }
+                
 
             _entityDisposeTag.Set(entity);
             if (damageData.Flags.HasFlag(ReceivedDamageFlag.Trampled))

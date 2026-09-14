@@ -33,6 +33,8 @@ namespace ZE.Flags
                 .Subscribe(onNext); 
         }
 
+        public Observable<bool> Subscribe<T>() where T : IFlag => GetOrCreateAgent<T>().FlagActiveProperty;
+
 
         public T AddFlag<T>() where T : IFlag
         {
