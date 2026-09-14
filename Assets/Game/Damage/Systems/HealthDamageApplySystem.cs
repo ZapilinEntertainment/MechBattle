@@ -4,15 +4,16 @@ using Unity.IL2CPP.CompilerServices;
 using VContainer;
 using ZE.MechBattle.Damage;
 
-namespace ZE.MechBattle.Ecs {
+namespace ZE.MechBattle.Ecs
+{
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
 
     // doing applying effects, death effects and counting
-    public sealed class HealthDamageApplySystem : ISystem 
+    public sealed class HealthDamageApplySystem : ISystem
     {
-        public World World { get; set;}
+        public World World { get; set; }
         private Filter _filter;
         private Stash<HealthComponent> _health;
         private Stash<EntityDisposeTag> _entityDisposeTag;
@@ -27,8 +28,8 @@ namespace ZE.MechBattle.Ecs {
 
         [Inject]
         public HealthDamageApplySystem(
-            VfxRequestsFactory vfxRequestsFactory, 
-            StringDataDictionary stringDataDictionary, 
+            VfxRequestsFactory vfxRequestsFactory,
+            StringDataDictionary stringDataDictionary,
             TransformAspectHandler transformAspectHandler,
             ReceivedDamageList receivedDamageList,
             EnergyHandler energyHandler)
@@ -40,7 +41,7 @@ namespace ZE.MechBattle.Ecs {
             _energyHandler = energyHandler;
         }
 
-        public void OnAwake() 
+        public void OnAwake()
         {
             _filter = World.Filter
                 .With<DamageReceivedComponent>()
@@ -55,7 +56,7 @@ namespace ZE.MechBattle.Ecs {
 
         }
 
-        public void OnUpdate(float deltaTime) 
+        public void OnUpdate(float deltaTime)
         {
             if (_filter.IsEmpty())
                 return;
@@ -77,7 +78,7 @@ namespace ZE.MechBattle.Ecs {
 
             ref var healthComponent = ref _health.Get(target);
             var resultingHp = healthComponent.CurrentValue - damageData.Volume;
-            var healthValue = math.clamp(resultingHp,0, healthComponent.MaxValue);
+            var healthValue = math.clamp(resultingHp, 0, healthComponent.MaxValue);
             if (healthValue == 0f)
                 OnEntityHealthIsZero(target, damageData, resultingHp * -1f);
             else
@@ -93,7 +94,7 @@ namespace ZE.MechBattle.Ecs {
                     _energyHandler.TryTransferExcessDamageOnRepairable(entity, excessDamage);
                 return;
             }
-                
+
 
             _entityDisposeTag.Set(entity);
             if (damageData.Flags.HasFlag(ReceivedDamageFlag.Trampled))

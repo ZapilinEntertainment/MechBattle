@@ -67,7 +67,7 @@ namespace ZE.MechBattle
         private readonly Stash<EnergySourceComponent> _energySourceComponents;
         private readonly Stash<EnergyGridModeComponent> _gridModeComponents;
 
-        private readonly List<EnergyCell> _cellsList = new(capacity : 10);
+        private readonly List<EnergyCell> _cellsList = new(capacity: 10);
         private readonly List<EnergySource> _energySourceList = new(capacity: 32);
 
         private readonly World _world;
@@ -123,8 +123,8 @@ namespace ZE.MechBattle
                 var health = _healthComponents.Get(cellEntity).CurrentValue;
                 if (health == 0f)
                     continue;
-                var charge = _energyCharge.Get(cellEntity).Value;                
-                _cellsList.Add(new (cellEntity, charge, health));
+                var charge = _energyCharge.Get(cellEntity).Value;
+                _cellsList.Add(new(cellEntity, charge, health));
             }
 
             // if every cell is broken
@@ -133,7 +133,7 @@ namespace ZE.MechBattle
 
             // energy spending:
             _cellsList.Sort();
-            for (var i = 0; i < _cellsList.Count;i++)
+            for (var i = 0; i < _cellsList.Count; i++)
             {
                 var cellData = _cellsList[i];
                 if (cellData.Charge == 0f)
@@ -156,7 +156,7 @@ namespace ZE.MechBattle
                     break;
                 }
             }
-            
+
             // health spending
             if (damageVolume != 0f)
             {
@@ -188,7 +188,7 @@ namespace ZE.MechBattle
 
             _cellsList.Clear();
             return damageVolume;
-        }   
+        }
 
         public bool TrySpendEnergyForEntity(Entity consumerEntity, float requiredEnergyVolume, out float shortage)
         {
@@ -232,7 +232,7 @@ namespace ZE.MechBattle
                 {
                     requiredEnergyVolume -= charge.Value;
                     spent += charge.Value;
-                    charge.Value = 0f; 
+                    charge.Value = 0f;
                 }
             }
 

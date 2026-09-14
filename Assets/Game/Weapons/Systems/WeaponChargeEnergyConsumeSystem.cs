@@ -16,6 +16,7 @@ namespace ZE.MechBattle.Ecs {
         private Stash<WeaponChargeEnergyConsumption> _chargeConsumption;
         private Stash<WeaponDischargeEnergyConsumption> _dischargeConsumption;
         private Stash<EnergySourceComponent> _energySources;
+        private Stash<WeaponChargeComponent> _chargeComponent;
 
         private readonly EnergyHandler _energyHandler;
 
@@ -45,6 +46,7 @@ namespace ZE.MechBattle.Ecs {
             _chargeConsumption = World.GetStash<WeaponChargeEnergyConsumption>();
             _dischargeConsumption = World.GetStash<WeaponDischargeEnergyConsumption>();
             _energySources = World.GetStash<EnergySourceComponent>();
+            _chargeComponent = World.GetStash<WeaponChargeComponent>();
         }
 
         public void OnUpdate(float deltaTime) 
@@ -66,7 +68,15 @@ namespace ZE.MechBattle.Ecs {
 
         public void Dispose() { }
 
-        private void AbortCharging(Entity weaponEntity) => _chargingWeaponTag.Remove(weaponEntity);
-        private void AbortDischarging(Entity weaponEntity) => _firingTag.Remove(weaponEntity);
+        private void AbortCharging(Entity weaponEntity)
+        {
+            _chargingWeaponTag.Remove(weaponEntity);
+            _chargeComponent.Get(weaponEntity).ChargePercent = 0f;
+        }
+        private void AbortDischarging(Entity weaponEntity)
+        {
+            _firingTag.Remove(weaponEntity);
+            _chargeComponent.Get(weaponEntity).ChargePercent = 0f;
+        }
     }
 }
