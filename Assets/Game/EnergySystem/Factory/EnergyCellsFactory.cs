@@ -51,7 +51,8 @@ namespace ZE.MechBattle
             }
 
 
-            _cellsGridComponent.Set(partitionEntity, new(cells[0], cellsCount));           
+            _cellsGridComponent.Set(partitionEntity, new(cells[0], cellsCount));
+            _sourceComponents.Set(partitionEntity, new(reactorEntity));
         }
 
         public Entity BuildEnergyCell(EnergyCellConfig cellConfig, Entity reactorEntity)

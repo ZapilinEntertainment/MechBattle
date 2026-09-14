@@ -4,15 +4,16 @@ using Unity.IL2CPP.CompilerServices;
 using VContainer;
 using ZE.MechBattle.Damage;
 
-namespace ZE.MechBattle.Ecs {
+namespace ZE.MechBattle.Ecs
+{
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
 
     // doing applying effects, death effects and counting
-    public sealed class HealthDamageApplySystem : ISystem 
+    public sealed class HealthDamageApplySystem : ISystem
     {
-        public World World { get; set;}
+        public World World { get; set; }
         private Filter _filter;
         private Stash<HealthComponent> _health;
         private Stash<EntityDisposeTag> _entityDisposeTag;
@@ -23,21 +24,24 @@ namespace ZE.MechBattle.Ecs {
         private readonly TransformAspectHandler _transformAspectHandler;
         private readonly ReceivedDamageList _receivedDamageList;
         private readonly VfxKey _trampledVfxKey;
+        private readonly EnergyHandler _energyHandler;
 
         [Inject]
         public HealthDamageApplySystem(
-            VfxRequestsFactory vfxRequestsFactory, 
-            StringDataDictionary stringDataDictionary, 
+            VfxRequestsFactory vfxRequestsFactory,
+            StringDataDictionary stringDataDictionary,
             TransformAspectHandler transformAspectHandler,
-            ReceivedDamageList receivedDamageList)
+            ReceivedDamageList receivedDamageList,
+            EnergyHandler energyHandler)
         {
             _vfxRequestsFactory = vfxRequestsFactory;
             _transformAspectHandler = transformAspectHandler;
             _receivedDamageList = receivedDamageList;
             _trampledVfxKey = new VfxKey(stringDataDictionary.StringToKey(VfxConstants.TrampledExplosionId));
+            _energyHandler = energyHandler;
         }
 
-        public void OnAwake() 
+        public void OnAwake()
         {
             _filter = World.Filter
                 .With<DamageReceivedComponent>()
@@ -52,7 +56,7 @@ namespace ZE.MechBattle.Ecs {
 
         }
 
-        public void OnUpdate(float deltaTime) 
+        public void OnUpdate(float deltaTime)
         {
             if (_filter.IsEmpty())
                 return;
@@ -73,18 +77,24 @@ namespace ZE.MechBattle.Ecs {
                 _repairRequiredTag.Set(target);
 
             ref var healthComponent = ref _health.Get(target);
-            var healthValue = math.clamp(healthComponent.CurrentValue - damageData.Volume,0, healthComponent.MaxValue);
+            var resultingHp = healthComponent.CurrentValue - damageData.Volume;
+            var healthValue = math.clamp(resultingHp, 0, healthComponent.MaxValue);
             if (healthValue == 0f)
-                OnEntityHealthIsZero(target, damageData);
+                OnEntityHealthIsZero(target, damageData, resultingHp * -1f);
             else
                 healthComponent.CurrentValue = healthValue;
             //UnityEngine.Debug.Log($"health: {healthValue} / {healthComponent.MaxValue}");
         }
 
-        private void OnEntityHealthIsZero(Entity entity, IncomingDamageData damageData)
+        private void OnEntityHealthIsZero(Entity entity, IncomingDamageData damageData, float excessDamage)
         {
             if (_repairableTag.Has(entity))
+            {
+                if (excessDamage > 0f)
+                    _energyHandler.TryTransferExcessDamageOnRepairable(entity, excessDamage);
                 return;
+            }
+
 
             _entityDisposeTag.Set(entity);
             if (damageData.Flags.HasFlag(ReceivedDamageFlag.Trampled))
