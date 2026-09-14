@@ -54,5 +54,10 @@ MonoBehaviour:
         y: 1
       XAngleDegreesLimit: 32
       YAngleDegreesLimit: 45
+  _chargeSettings:
+    IsValid: 0
+    ChargeTime: 0
+    DischargeTime: 0
+    ManualReleaseMinPercent: 0
   _projectileId: mech_cannon_projectile
   _shotEnergyCost: 100

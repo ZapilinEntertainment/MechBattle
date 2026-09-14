@@ -1,5 +1,4 @@
 using Scellecs.Morpeh;
-using UnityEngine;
 using ZE.Workers;
 using R3;
 using ZE.MechBattle.Ecs;
@@ -35,8 +34,8 @@ namespace ZE.MechBattle
         {
             _mechEntity = mechEntity;
 
-            var reactors = _world.GetStash<MechReactorComponent>();
-            _reactorEntity = reactors.Get(_mechEntity).ReactorEntity;
+            var energySources = _world.GetStash<EnergySourceComponent>();
+            _reactorEntity = energySources.Get(_mechEntity).SourceEntity;
 
             var adrenaline = _adrenaline.Get(_mechEntity);
             window.SetupAdrenalineSteps(adrenaline.MaxAdrenalineLevel);

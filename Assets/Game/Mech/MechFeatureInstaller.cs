@@ -3,6 +3,8 @@ using VContainer;
 using ZE.MechBattle.Ecs;
 using ZE.MechBattle.MechMovement;
 using ZE.MechBattle.MechBuilding;
+using ZE.MechBattle.Mech.UI;
+using VContainer.Unity;
 
 namespace ZE.MechBattle
 {
@@ -33,12 +35,17 @@ namespace ZE.MechBattle
             builder.Register<MechWeaponsBuilder>(Lifetime.Transient);
             builder.Register<MechPartitionBuilder>(Lifetime.Transient);
 
-            builder.Register<MechControllerWorker>(Lifetime.Transient);
+            builder.Register<MechControlsWorker>(Lifetime.Transient);
+            builder.Register<LaserEyesControlsWorker>(Lifetime.Transient);
+
+            builder.Register<IMechUIElementsVisibilityController, UIMechInterfaceWorker>(Lifetime.Transient).AsSelf();
+            builder.RegisterEntryPoint<MechUiInitializer>(Lifetime.Transient);
 
             builder.Register<RepairFeatureApplier>(Lifetime.Scoped);
 
             builder.Register<MechPartitionFactory>(Lifetime.Scoped);
             builder.Register<PartitionsListManager>(Lifetime.Scoped);
+            
 
 #if UNITY_EDITOR
             builder.Register<StepDrawer>(Lifetime.Scoped);

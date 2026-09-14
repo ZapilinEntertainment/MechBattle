@@ -3,7 +3,6 @@ using Scellecs.Morpeh;
 using VContainer;
 using ZE.MechBattle.Ecs;
 using ZE.Workers;
-using UnityEngine;
 
 namespace ZE.MechBattle
 {
@@ -16,6 +15,7 @@ namespace ZE.MechBattle
         private readonly World _world;
         private readonly MechWeaponsHandler _mechWeaponsHandler;
         private readonly WeaponHandler _weaponHandler;
+        private readonly IMechUIElementsVisibilityController _elementsVisibilityController;
 
         private Entity _weaponEntity;
         private Entity _mechEntity;
@@ -31,7 +31,8 @@ namespace ZE.MechBattle
             WeaponTargetMarkerFactory weaponTargetMarkerFactory,
             World world,
             MechWeaponsHandler mechWeaponsHandler,
-            WeaponHandler weaponHandler)
+            WeaponHandler weaponHandler,
+            IMechUIElementsVisibilityController elementsVisibilityController)
         {
             _transformAspectHandler = transformAspectHandler;
             _aimCaster = aimCaster;
@@ -40,6 +41,7 @@ namespace ZE.MechBattle
             _world = world;
             _mechWeaponsHandler = mechWeaponsHandler;
             _weaponHandler = weaponHandler;
+            _elementsVisibilityController = elementsVisibilityController;
         }
 
         public void Start(Entity weaponEntity, Entity mechEntity, WeaponAimMarkerDisplayProtocol displayProtocol)
@@ -62,7 +64,11 @@ namespace ZE.MechBattle
                 .AddTo(CompositeDisposable);
 
             _aimMarker.Setup(displayProtocol);
-            _aimMarker.SetVisibility(true);
+            _elementsVisibilityController
+                .VisibilityFlagsProperty
+                .Select(visibility => visibility.HasFlag(MechInterfaceElementsVisibilityFlags.MainGunAim))
+                .Subscribe(_aimMarker.SetVisibility)
+                .AddTo(CompositeDisposable);
         }
 
         public override void Dispose()

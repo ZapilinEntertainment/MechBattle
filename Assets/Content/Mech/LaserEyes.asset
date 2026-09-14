@@ -55,4 +55,10 @@ MonoBehaviour:
       XAngleDegreesLimit: 0
       YAngleDegreesLimit: 0
   _rayEffectId: default_ray_effect
-  _energyPerSecond: 5
+  _chargeSettings:
+    IsValid: 1
+    ChargeTime: 3
+    ChargeEnergyCost: 350
+    DischargeTime: 3
+    DischargeEnergyCost: 0
+    ManualReleaseMinPercent: 0.5

@@ -30,12 +30,14 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<WeaponProjectileComponent> _weaponProjectileComponents;
         private readonly Stash<WeaponRayComponent> _weaponRayComponents;
 
-        private readonly Stash<ContinuosFiringTag> _continuosFiring;
+        private readonly Stash<ContinuosFiringTag> _continuosFiringTag;
 
         private readonly Stash<SyncWithParentTargetTag> _syncTargetWithParent;
         private readonly Stash<SyncFireTagWithParentTag> _syncFireTagWithParent;
 
         private readonly Stash<WeaponTag> _weaponTags;
+
+        private readonly Stash<WeaponChargeComponent> _weaponChargeComponents;
 
         [Inject]
         public WeaponFactory(World world, ParentingRelationsApplier parentingRelationsApplier, StringDataDictionary stringDataDictionary)
@@ -70,8 +72,10 @@ namespace ZE.MechBattle.Ecs
             _weaponProjectileComponents = world.GetStash<WeaponProjectileComponent>();
             _weaponRayComponents = world.GetStash<WeaponRayComponent>();
 
-            _continuosFiring = world.GetStash<ContinuosFiringTag>();
+            _continuosFiringTag = world.GetStash<ContinuosFiringTag>();
             _weaponTags = world.GetStash<WeaponTag>();
+
+            _weaponChargeComponents = world.GetStash<WeaponChargeComponent>();
         }
 
         public struct WeaponCreationProtocol
@@ -193,7 +197,7 @@ namespace ZE.MechBattle.Ecs
             }
 
             if (weaponConfig.ContinuousFiring)
-                _continuosFiring.Add(weaponEntity);
+                _continuosFiringTag.Add(weaponEntity);
         }
 
         private Entity AttachWeaponPart(Entity parentEntity, Entity viewOwnerEntity, WeaponPartAttachmentProtocol protocol)

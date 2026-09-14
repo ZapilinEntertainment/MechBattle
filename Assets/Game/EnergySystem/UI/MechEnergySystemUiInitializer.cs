@@ -2,7 +2,7 @@ using System;
 using VContainer;
 using ZE.UiService;
 
-namespace ZE.MechBattle
+namespace ZE.MechBattle.Mech.UI
 {
 
     // todo: convert to worker, bind to game state, hide windows on stop working
@@ -24,7 +24,7 @@ namespace ZE.MechBattle
             _workersFactory = workersFactory;
             _partitions = partitionsList;
 
-            _subscription = sceneFlags.Subscribe<LocalPlayerMechControlsSetFlag>(OnLocalPlayerControlsSet);
+            _subscription = sceneFlags.Subscribe<LocalPlayerVehicleAssignedFlag>(OnLocalPlayerControlsSet);
         }
 
         public void Dispose()
@@ -32,9 +32,9 @@ namespace ZE.MechBattle
             _subscription.Dispose();
         }
 
-        private void OnLocalPlayerControlsSet(LocalPlayerMechControlsSetFlag flag)
+        private void OnLocalPlayerControlsSet(LocalPlayerVehicleAssignedFlag flag)
         {
-            var interfaceWindow = _windowsManager.ShowWindow<UIMechInterfaceWindow>();
+            var interfaceWindow = _windowsManager.GetWindow<UIMechInterfaceWindow>();
             var partitionsWindow = _windowsManager.ShowWindow<UIPartitionsWindow>(interfaceWindow.GetParent(UIMechInterfaceWindow.MechInterfaceSubwindow.Partitions));
 
             var vehicleEntity = flag.VehicleEntity;

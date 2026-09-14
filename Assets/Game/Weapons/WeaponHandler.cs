@@ -11,9 +11,11 @@ namespace ZE.MechBattle
         private readonly World _world;
         private readonly Stash<WeaponTowerComponent> _towers;
         private readonly Stash<WeaponBarrelComponent> _barrels;
-        private readonly Stash<MechWeaponsComponent> _weapons;
         private readonly Stash<DamageComponent> _damage;
         private readonly Stash<WeaponRangeComponent> _ranges;
+
+        private readonly Stash<ChargingWeaponTag> _chargingTags;
+        private readonly Stash<WeaponFireTag> _fireTags;
 
         [Inject]
         public WeaponHandler(World world)
@@ -21,10 +23,20 @@ namespace ZE.MechBattle
             _world = world;
             _towers = _world.GetStash<WeaponTowerComponent>();
             _barrels = _world.GetStash<WeaponBarrelComponent>();
-            _weapons = _world.GetStash<MechWeaponsComponent>();
             _damage = _world.GetStash<DamageComponent>();
             _ranges = _world.GetStash<WeaponRangeComponent>();
+
+            _chargingTags = _world.GetStash<ChargingWeaponTag>();
+            _fireTags = _world.GetStash<WeaponFireTag>();
         }
+
+        public void ReleaseChargingWeapon(Entity weaponEntity)
+        {
+            _chargingTags.Remove(weaponEntity);
+            _fireTags.Set(weaponEntity);
+        }
+
+        public void StopWeapongFiring(Entity weaponEntity) => _fireTags.Remove(weaponEntity);
 
         public Entity GetWeaponsAimingEntity(Entity weaponEntity)
         {
@@ -38,16 +50,6 @@ namespace ZE.MechBattle
                     return towerComponent.TowerEntity;
             }
             return barrelComponent.BarrelEntity;
-        }
-
-        public IEnumerable<Entity> GetNextWeaponEntity(Entity mechEntity)
-        {
-            var mechWeapons = _weapons.Get(mechEntity);
-            if (!_world.IsDisposed(mechWeapons.MainWeaponLeft))
-                yield return mechWeapons.MainWeaponLeft;
-
-            if (!_world.IsDisposed(mechWeapons.MainWeaponRight))
-                yield return mechWeapons.MainWeaponRight;
         }
 
         public DamageApplyParameters GetWeaponDamage(Entity weaponEntity) => _damage.Get(weaponEntity).DamageParameters;

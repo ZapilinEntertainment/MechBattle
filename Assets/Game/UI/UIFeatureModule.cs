@@ -4,12 +4,13 @@ using System.Threading;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
+using ZE.MechBattle.Mech.UI;
 using ZE.MechBattle.UI;
 using ZE.UiService;
 
 namespace ZE.MechBattle
 {
-    public class UIFeatureModule : IFeatureModule, IAppFeatureScopeInstaller, ISessionAsyncResourceLoader, ISceneFeatureInitializer
+    public class UIFeatureModule : IFeatureModule, IAppFeatureScopeInstaller, ISessionAsyncResourceLoader
     {
         public void AppScopeInstall(IContainerBuilder builder)
         {
@@ -18,7 +19,6 @@ namespace ZE.MechBattle
             builder.Register<WindowsManager>(Lifetime.Singleton);
 
             builder.Register<WeaponTargetMarkerFactory>(Lifetime.Singleton);
-            builder.Register<UiInitializer>(Lifetime.Scoped);
         }
 
         async Awaitable<IResourceBinder> ISessionAsyncResourceLoader.LoadSessionResourcesAsync(IObjectResolver resolver)
@@ -26,11 +26,6 @@ namespace ZE.MechBattle
             await resolver.Resolve<WeaponTargetMarkerFactory>().LoadPrefab();
             await LoadAllFeatureWindowsAsync(resolver);
             return null;
-        }
-
-        void ISceneFeatureInitializer.OnSceneContainerBuilt(IObjectResolver resolver)
-        {
-            resolver.Resolve<UiInitializer>();
         }
 
         private async Awaitable LoadAllFeatureWindowsAsync(IObjectResolver resolver)

@@ -5,8 +5,7 @@ namespace ZE.MechBattle
 {
     [CreateAssetMenu(fileName = nameof(ProjectileWeaponConfig), menuName = "Scriptable Objects/" + nameof(ProjectileWeaponConfig))]
     public class ProjectileWeaponConfig : WeaponConfigBase
-    {    
-        
+    {
         [SerializeField] private string _projectileId;
 
         public override bool ContinuousFiring => false;

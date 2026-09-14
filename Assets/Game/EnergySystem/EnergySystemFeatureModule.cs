@@ -1,6 +1,7 @@
 using UnityEngine;
 using VContainer;
 using ZE.MechBattle.Ecs;
+using ZE.MechBattle.Mech.UI;
 
 namespace ZE.MechBattle
 {

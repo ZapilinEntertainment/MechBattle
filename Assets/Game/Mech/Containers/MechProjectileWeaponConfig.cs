@@ -7,6 +7,12 @@ namespace ZE.MechBattle
     {
         [SerializeField] private float _shotEnergyCost;
 
+        public bool TryGetChargeSettings(out WeaponChargeSettings chargeSettings)
+        {
+            chargeSettings = default;
+            return false;
+        }
+
         public bool TryGetShotEnergyCost(out float cost)
         {
             cost = _shotEnergyCost;

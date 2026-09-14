@@ -85,6 +85,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ba49635bcd10d2b49b68fe6ad8dd8c6a
+    m_Address: ui_laser_eyes_window
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c4c98fcc5cbdabc40b2d8a472cef0a57
     m_Address: ui_partitions_window
     m_ReadOnly: 0

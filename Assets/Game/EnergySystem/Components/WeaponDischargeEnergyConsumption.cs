@@ -6,14 +6,10 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public readonly struct MechReactorComponent : IComponent 
+    public readonly struct WeaponDischargeEnergyConsumption : IComponent 
     {
-        public readonly Entity ReactorEntity;
-
-        public MechReactorComponent(Entity reactorEntity)
-        {
-            ReactorEntity = reactorEntity;
-        }
+        public readonly float Volume;
+        public WeaponDischargeEnergyConsumption(float volume) => Volume = volume;
     
     }
 }

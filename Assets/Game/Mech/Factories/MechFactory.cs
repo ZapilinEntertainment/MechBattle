@@ -52,9 +52,6 @@ namespace ZE.MechBattle
 
             mainBuilder.CheckCrucialParts(bitsBuilder);
 
-            var weaponsBuilder = _resolver.Resolve<MechWeaponsBuilder>();
-            weaponsBuilder.BuildWeapons(mainBuilder, mechConfig, TEMP_mainWeaponConfig, TEMP_mainWeaponConfig, TEMP_eyesWeaponConfig);
-
             var partitionsBuilder = _resolver.Resolve<MechPartitionBuilder>();
             partitionsBuilder.BuildAllPartitions(mechEntity, bitsBuilder, mechConfig.PartitionConfigs);
 
@@ -62,6 +59,9 @@ namespace ZE.MechBattle
 
             var energyModuleBuilder = _resolver.Resolve<MechEnergyModuleBuilder>();
             energyModuleBuilder.Build(mechEntity, partitionsBuilder.PartitionsList, mechConfig);
+
+            var weaponsBuilder = _resolver.Resolve<MechWeaponsBuilder>();
+            weaponsBuilder.BuildWeapons(mainBuilder, mechConfig, energyModuleBuilder, TEMP_mainWeaponConfig, TEMP_mainWeaponConfig, TEMP_eyesWeaponConfig);
 
             _repairFeatureApplier.ApplyOnRepairProduceEntity(mechEntity, TEMP_repairTeamsCount, 10f); // repair speed will be defined by energy system
 

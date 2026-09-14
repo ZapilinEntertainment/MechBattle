@@ -63,13 +63,19 @@ namespace ZE.MechBattle
         private readonly Stash<HealthComponent> _healthComponents;
         private readonly Stash<DamageReceivedComponent> _damageReceived;
         private readonly Stash<EnergySpentComponent> _energySpent;
+        private readonly Stash<EnergySourceComponent> _energySourceComponents;
+        private readonly Stash<EnergyGridModeComponent> _gridModeComponents;
 
         private readonly List<EnergyCell> _cellsList = new(capacity : 10);
-        private readonly List<EnergySource> _energySources = new(capacity: 32);
+        private readonly List<EnergySource> _energySourceList = new(capacity: 32);
+
+        private readonly PartitionsListManager _partitionsListManager;
 
         [Inject]
-        public EnergyHandler(World world)
+        public EnergyHandler(World world, PartitionsListManager partitionsListManager)
         {
+            _partitionsListManager = partitionsListManager;
+
             _energyGrid = world.GetStash<EnergyCellsGridComponent>();
             _nextCell = world.GetStash<NextEnergyCellComponent>();
             _conversionCfs = world.GetStash<DamageToEnergyConsumptionConversionComponent>();
@@ -78,6 +84,17 @@ namespace ZE.MechBattle
             _healthComponents = world.GetStash<HealthComponent>();
             _damageReceived = world.GetStash<DamageReceivedComponent>();
             _energySpent = world.GetStash<EnergySpentComponent>();
+
+            _energySourceComponents = world.GetStash<EnergySourceComponent>();
+            _gridModeComponents = world.GetStash<EnergyGridModeComponent>();
+        }
+
+        public void WriteSpentEnergy(Entity spendingEntity, float energyVolume)
+        {
+            var sourceEntity = _energySourceComponents.Get(spendingEntity).SourceEntity;
+            var component = _energySpent.Get(sourceEntity, out var exists);
+            var volume = exists ? component.Volume + energyVolume : energyVolume;
+            _energySpent.Set(sourceEntity, new() { Volume = volume });
         }
 
         public float ApplyDamageToEnergyGrid(Entity receiver, float damageVolume, Entity maxDamageProducer)
@@ -158,7 +175,21 @@ namespace ZE.MechBattle
             return damageVolume;
         }   
 
-        public void SpendEnergyFromPartitions(Entity mechEntity, IPartitionsList partitions, float energyVolume)
+        public bool TrySpendEnergyForEntity(Entity consumerEntity, float requiredEnergyVolume, out float shortage)
+        {
+            var energySource = _energySourceComponents.Get(consumerEntity).SourceEntity;
+            var gridModeComponent = _gridModeComponents.Get(energySource);
+            if (gridModeComponent.Mode != EnergyGridMode.Partitions)
+                throw new System.NotImplementedException("grid mode not implemented");
+
+            return TrySpendEnergyFromPartitions(
+                gridModeComponent.Entity,
+                _partitionsListManager.GetPartitionsList(gridModeComponent.Entity),
+                requiredEnergyVolume,
+                out shortage);
+        }
+
+        public bool TrySpendEnergyFromPartitions(Entity mechEntity, IPartitionsList partitions, float requiredEnergyVolume, out float shortage)
         {
             foreach (var partitionKvp in partitions)
             {
@@ -166,35 +197,37 @@ namespace ZE.MechBattle
                 foreach (var cellEntity in new EnergyCellsEnumerator(_nextCell, firstCellEntity))
                 {
                     var charge = _energyCharge.Get(cellEntity).Value;
-                    _energySources.Add(new(cellEntity, partitionKvp.Key.Type, charge));
+                    _energySourceList.Add(new(cellEntity, partitionKvp.Key.Type, charge));
                 }
             }
 
-            _energySources.Sort();
+            _energySourceList.Sort();
             var spent = 0f;
-            foreach (var source in _energySources)
+            foreach (var source in _energySourceList)
             {
                 ref var charge = ref _energyCharge.Get(source.Entity);
-                if (charge.Value > energyVolume)
+                if (charge.Value > requiredEnergyVolume)
                 {
                     spent += charge.Value;
-                    charge.Value -= energyVolume;
+                    charge.Value -= requiredEnergyVolume;
+                    requiredEnergyVolume = 0f;
                     break;
                 }
                 else
                 {
-                    energyVolume -= charge.Value;
+                    requiredEnergyVolume -= charge.Value;
                     spent += charge.Value;
                     charge.Value = 0f; 
                 }
             }
 
-            var component = _energySpent.Get(mechEntity, out var exists);
-            var volume = exists ? component.Volume + spent : spent;
-            _energySpent.Set(mechEntity, new() { Volume = volume});
+            shortage = requiredEnergyVolume;
 
+            WriteSpentEnergy(mechEntity, requiredEnergyVolume);
 
-            _energySources.Clear();
+            _energySourceList.Clear();
+
+            return shortage == 0f;
         }
     }
 }

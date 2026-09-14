@@ -14,7 +14,6 @@ namespace ZE.MechBattle
         [SerializeField] private string _muzzleEffectId;
         [SerializeField] private WeaponPartAttachmentProtocol _towerAttachmentProtocol;
         [SerializeField] private WeaponPartAttachmentProtocol _barrelAttachmentProtocol;
-
         public float RecommendedRange => math.lerp(MinRange, MaxRange, RecommendedRangePc);
         public abstract bool ContinuousFiring { get; }
 

@@ -17,6 +17,9 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<AimCheckSystem>(SystemGroupOrder.WeaponUpdates);
             installer.AddSystem<FiringLineRaycastCheckSystem>(SystemGroupOrder.WeaponUpdates);
 
+            installer.AddSystem<WeaponChargeEnergyConsumeSystem>(SystemGroupOrder.WeaponUpdates);
+            installer.AddSystem<WeaponChargeUpdateSystem>(SystemGroupOrder.WeaponUpdates);
+
             installer.AddSystem<WeaponAutoShotSystem>(SystemGroupOrder.WeaponUpdates);
             installer.AddSystem<WeaponShotPointCalculationSystem>(SystemGroupOrder.WeaponUpdates);
             installer.AddSystem<WeaponMuzzleEffectCallSystem>(SystemGroupOrder.WeaponUpdates);

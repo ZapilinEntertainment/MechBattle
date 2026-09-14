@@ -6,15 +6,18 @@ namespace ZE.MechBattle
 {
     public class MechEnergyModuleBuilder
     {
+        public Entity ReactorEntity { get; private set; }
+
         private readonly EnergyCellsFactory _energyCellsFactory;
         private readonly World _world;
         private readonly ParentingRelationsApplier _parentingRelationsApplier;
 
         private readonly Stash<EnergyChargeSpeedComponent> _chargeSpeedComponents;
-        private readonly Stash<MechReactorComponent> _mechReactorBindComponents;
+        private readonly Stash<EnergySourceComponent> _energySources;
         private readonly Stash<ReactorComponent> _reactorComponents;
         private readonly Stash<AdrenalineComponent> _adrenalineComponents;
         private readonly Stash<HealthComponent> _health;
+        private readonly Stash<EnergyGridModeComponent> _gridModeComponents;
 
         [Inject]
         public MechEnergyModuleBuilder(EnergyCellsFactory energyCellsFactory, World world, ParentingRelationsApplier parentingRelationsApplier)
@@ -27,16 +30,17 @@ namespace ZE.MechBattle
             _reactorComponents = _world.GetStash<ReactorComponent>();
             _adrenalineComponents = _world.GetStash<AdrenalineComponent>();
 
-            _mechReactorBindComponents = _world.GetStash<MechReactorComponent>();
+            _energySources = _world.GetStash<EnergySourceComponent>();
 
             _health = _world.GetStash<HealthComponent>();
+            _gridModeComponents = _world.GetStash<EnergyGridModeComponent>();
         }
 
         public void Build(Entity mechEntity, IPartitionsList partitionsList, MechConfig mechConfig)
         {
             // reactor is discrete entity
-            var reactorEntity = BuildReactor(mechConfig.ReactorConfig);
-            _mechReactorBindComponents.Set(mechEntity, new(reactorEntity));
+            var reactorEntity = BuildReactor(mechEntity, mechConfig.ReactorConfig);
+            _energySources.Set(mechEntity, new(reactorEntity));
             _parentingRelationsApplier.CreateSimpleParentingBond(mechEntity, reactorEntity);
 
 
@@ -57,13 +61,14 @@ namespace ZE.MechBattle
             // potential future problem: adrenaline & energy system features are too tight coupling
         }
 
-        private Entity BuildReactor(MechReactorConfig reactorConfig)
+        private Entity BuildReactor(Entity mechEntity, MechReactorConfig reactorConfig)
         {
-            var reactor = _world.CreateEntity();
-            _chargeSpeedComponents.Set(reactor);
-            _reactorComponents.Set(reactor, new(reactorConfig));
-            _health.Set(reactor, new(reactorConfig.HealthPoints));
-            return reactor;
+            ReactorEntity = _world.CreateEntity();
+            _chargeSpeedComponents.Set(ReactorEntity);
+            _reactorComponents.Set(ReactorEntity, new(reactorConfig));
+            _health.Set(ReactorEntity, new(reactorConfig.HealthPoints));
+            _gridModeComponents.Set(ReactorEntity, EnergyGridModeComponent.CreatePartitionsModeComponent(mechEntity));
+            return ReactorEntity;
         }
     
     }

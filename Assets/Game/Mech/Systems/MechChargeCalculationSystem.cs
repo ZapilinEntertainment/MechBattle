@@ -24,7 +24,7 @@ namespace ZE.MechBattle.Ecs {
         public void OnAwake() 
         {
             _filter = World.Filter
-                .With<MechReactorComponent>()
+                .With<EnergySourceComponent>()
                 .With<PartitionsRootTag>()
                 .Build();
 

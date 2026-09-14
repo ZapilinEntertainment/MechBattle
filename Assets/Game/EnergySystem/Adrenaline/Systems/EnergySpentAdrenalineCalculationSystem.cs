@@ -12,17 +12,19 @@ namespace ZE.MechBattle.Ecs {
         private Filter _filter;
         private Stash<AdrenalineComponent> _adrenaline;
         private Stash<EnergySpentComponent> _energySpent;
+        private Stash<EnergySourceComponent> _energySourceComponent;
         private Stash<EnergySpentAdrenalineComponent> _adrenalineAdditions;
 
         public void OnAwake() 
         {
             _filter = World.Filter
                 .With<AdrenalineComponent>()
-                .With<EnergySpentComponent>()
+                .With<EnergySourceComponent>()
                 .Build();
 
             _adrenaline = World.GetStash<AdrenalineComponent>();
             _energySpent = World.GetStash<EnergySpentComponent>();
+            _energySourceComponent = World.GetStash<EnergySourceComponent>();
             _adrenalineAdditions = World.GetStash<EnergySpentAdrenalineComponent>();
         }
 
@@ -30,9 +32,13 @@ namespace ZE.MechBattle.Ecs {
         {
             foreach (var entity in _filter)
             {
-                var energy = _energySpent.Get(entity).Volume;
+                var sourceEntity = _energySourceComponent.Get(entity).SourceEntity;
+                var energySpentComponent = _energySpent.Get(sourceEntity, out var spentComponentExists);
+                if (!spentComponentExists)
+                    continue;
+
                 var adrenaline = _adrenaline.Get(entity);
-                var adrenalineVolume = energy * adrenaline.AdrenalineEnergyConsumptionCf;
+                var adrenalineVolume = energySpentComponent.Volume * adrenaline.AdrenalineEnergyConsumptionCf;
                 _adrenalineAdditions.Set(entity, new() { AdrenalineVolume = adrenalineVolume });
             }
         }

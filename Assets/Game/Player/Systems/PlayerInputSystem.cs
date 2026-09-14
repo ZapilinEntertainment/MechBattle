@@ -1,8 +1,6 @@
 using R3;
 using Scellecs.Morpeh;
-using System;
 using Unity.IL2CPP.CompilerServices;
-using Unity.Mathematics;
 using UnityEngine;
 using VContainer;
 
@@ -17,10 +15,11 @@ namespace ZE.MechBattle.Ecs {
         private readonly WorkersFactory _workersFactory;
         private readonly CompositeDisposable _compositeDisposable;
         private readonly CursorAimTrackingWorker _aimWorker;
+        private readonly SceneFlagsManager _flags;
         private readonly ReactiveProperty<bool> _eyesActiveProperty = new(false);
 
         private bool _playerVehiclePresented = false;
-        private MechControllerWorker _mechController;
+        private MechControlsWorker _mechController;
         
 
         [Inject]
@@ -30,13 +29,14 @@ namespace ZE.MechBattle.Ecs {
             WorkersFactory workersFactory)
         {
             _workersFactory = workersFactory;
+            _flags = flags;
 
             _compositeDisposable = new();
-            flags
-                .Subscribe<LocalPlayerMechControlsSetFlag>(OnPlayerViewLoaded)
+            _flags
+                .Subscribe<LocalPlayerVehicleAssignedFlag>(OnPlayerViewLoaded)
                 .AddTo(_compositeDisposable);
-            flags
-                .Subscribe<LocalPlayerMechControlsSetFlag>(flagActive => _playerVehiclePresented = flagActive)
+            _flags
+                .Subscribe<LocalPlayerVehicleAssignedFlag>(flagActive => _playerVehiclePresented = flagActive)
                 .AddTo(_compositeDisposable);
 
             _aimWorker = aimWorker as CursorAimTrackingWorker;
@@ -90,15 +90,18 @@ namespace ZE.MechBattle.Ecs {
             _eyesActiveProperty.Dispose();
         }
 
-        private void OnPlayerViewLoaded(LocalPlayerMechControlsSetFlag flag)
+        private void OnPlayerViewLoaded(LocalPlayerVehicleAssignedFlag flag)
         {
             _mechController?.Dispose();
-            _mechController = _workersFactory.CreateWorker<MechControllerWorker>();
+            _mechController = _workersFactory.CreateWorker<MechControlsWorker>();
             _mechController.Start(flag.VehicleEntity);
 
             _eyesActiveProperty
                 .Subscribe(isPressed => _mechController.SwitchEyeFiring(isPressed))
                 .AddTo(_compositeDisposable);
+
+            var controllerFlag = _flags.AddTemporalFlag<LocalPlayerMechControllerSetFlag>(new(_mechController));
+            _mechController.AddToLifetime(controllerFlag);
         }
     }
 }

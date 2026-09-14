@@ -52,7 +52,9 @@ namespace ZE.Workers
             CompositeDisposable.Dispose();
             _onDisposeCommand.Execute(Unit.Default);
             _onDisposeCommand.Dispose();
-        }    
+        }
+
+        public void AddToLifetime(IDisposable disposable) => CompositeDisposable.Add(disposable);
 
         private void OnSubWorkerDisposed(Worker worker)
         {

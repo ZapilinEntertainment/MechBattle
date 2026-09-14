@@ -1,7 +1,7 @@
 using UnityEngine;
 using VContainer;
 using ZE.MechBattle.Ecs;
-using ZE.UiService;
+using ZE.MechBattle.Weapons;
 
 namespace ZE.MechBattle
 {
@@ -10,7 +10,9 @@ namespace ZE.MechBattle
     {
         public IWindowBinder GetWindowBinder() 
         {
-            return new WindowBinder<UIAimWindow>();
+            return new CompositeWindowBinder(
+                new WindowBinder<UIAimWindow>(),
+                new WindowBinder<UILaserEyesWindow>());
         }
 
         public override void SceneScopeInstall(IContainerBuilder builder)
@@ -20,7 +22,11 @@ namespace ZE.MechBattle
             builder.Register<WeaponRaycasterFactory>(Lifetime.Scoped);
 
             builder.Register<WeaponAimMarkerWorker>(Lifetime.Transient);
+            builder.Register<UILaserEyesPanelWorker>(Lifetime.Transient);
+
             builder.Register<WeaponHandler>(Lifetime.Scoped);
+
+            builder.Register<IWeaponsManager, MechWeaponsManager>(Lifetime.Scoped).AsSelf();
         }
 
         protected override WeaponSystemsInstallQueue CreateQueue() => new();

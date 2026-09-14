@@ -10,7 +10,7 @@ namespace ZE.MechBattle.Ecs {
         public World World { get; set;}
         private Filter _mechBoostFilter;
         private Stash<AdrenalineComponent> _adrenaline;
-        private Stash<MechReactorComponent> _mechReactors;
+        private Stash<EnergySourceComponent> _energySources;
         private Stash<ReactorComponent> _reactorComponents;
         private Stash<EnergyChargeSpeedComponent> _chargeSpeed;
         private Stash<RepairSpeedComponent> _repairSpeed;
@@ -20,11 +20,11 @@ namespace ZE.MechBattle.Ecs {
         {
             _mechBoostFilter = World.Filter
                 .With<AdrenalineComponent>()
-                .With<MechReactorComponent>()
+                .With<EnergySourceComponent>()
                 .Build();
 
             _adrenaline = World.GetStash<AdrenalineComponent>();
-            _mechReactors = World.GetStash<MechReactorComponent>();
+            _energySources = World.GetStash<EnergySourceComponent>();
             _reactorComponents = World.GetStash<ReactorComponent>();
             _chargeSpeed = World.GetStash<EnergyChargeSpeedComponent>();
             _repairSpeed = World.GetStash<RepairSpeedComponent>();
@@ -36,7 +36,7 @@ namespace ZE.MechBattle.Ecs {
             {
                 var adrenalineComponent = _adrenaline.Get(mechEntity);
 
-                var reactorEntity = _mechReactors.Get(mechEntity).ReactorEntity;
+                var reactorEntity = _energySources.Get(mechEntity).SourceEntity;
                 var reactorComponent = _reactorComponents.Get(reactorEntity);
                 _chargeSpeed.Set(reactorEntity, new() { Value = reactorComponent.BaseEnergyProduceSpeed * adrenalineComponent.EnergyProductionCf });
 

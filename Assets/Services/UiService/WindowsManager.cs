@@ -28,6 +28,9 @@ namespace ZE.UiService
         public T ShowWindow<T>(Transform parent) where T : UiWindow
         {
             var window = GetWindow<T>();
+            if (window.isActiveAndEnabled)
+                return window;
+
             window.transform.SetParent(parent, false);
             window.transform.SetAsLastSibling();
 
