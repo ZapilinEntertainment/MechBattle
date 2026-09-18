@@ -21,7 +21,14 @@ namespace ZE.MechBattle.Views
         [ShowInInspector] private MonoBehaviour ViewAsMono => View as MonoBehaviour;
 
         // poolable
-        public void Dispose() { }
+        public void Dispose() 
+        {
+            if (View != null)
+            {
+                View.Dispose();
+                View = null;
+            }           
+        }
 
         public void OnViewInstanced(IView instance) 
         {

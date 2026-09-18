@@ -11,11 +11,8 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
 
-    // TODO: add pause handling
-    public sealed class ProjectileMoveSystem : IFixedSystem 
+    public sealed class ProjectileMoveSystem : PausableSystem 
     {
-
-        public World World { get; set;}
         private Filter _filter;
         private Stash<MoveSpeedComponent> _speed;
         private Stash<ExplosionTimerComponent> _explosionTimer;
@@ -29,7 +26,7 @@ namespace ZE.MechBattle.Ecs {
         private const int DEFAULT_CAPACITY = 32;
 
         [Inject]
-        public ProjectileMoveSystem(TransformAspectHandler transformAspectHandler)
+        public ProjectileMoveSystem(TransformAspectHandler transformAspectHandler, SceneFlagsManager sceneFlags) : base(sceneFlags)
         {
             _queryParameters = new QueryParameters()
             {
@@ -42,7 +39,7 @@ namespace ZE.MechBattle.Ecs {
             _transformAspect = transformAspectHandler;
         }
 
-        public void OnAwake() 
+        public override void OnAwake()
         {
             _filter = World.Filter
                 .With<ProjectileComponent>()
@@ -56,15 +53,18 @@ namespace ZE.MechBattle.Ecs {
             _collisionResults = World.GetStash<CollisionComponent>();
         }
 
-        public void OnUpdate(float dt)
+        public override void OnUpdate(float deltaTime)
         {
+            if (IsPaused)
+                return; 
+
             if (_filter.IsNotEmpty())
             {
                 var count = 0;
                 foreach (var projectile in _filter)
                 {
                     ref var explosionTimer = ref _explosionTimer.Get(projectile);
-                    explosionTimer.Value -= dt;
+                    explosionTimer.Value -= deltaTime;
                     if (explosionTimer.Value <= 0)
                     {
                         _explodeTags.Add(projectile);
@@ -85,14 +85,14 @@ namespace ZE.MechBattle.Ecs {
                         var projectile = _projectilesList[i];
                         var position = _transformAspect.GetPosition(projectile);
                         var direction = _transformAspect.GetForward(projectile);
-                        var step = _speed.Get(projectile).Value * dt;
+                        var step = _speed.Get(projectile).Value * deltaTime;
                         raycastCommands[i] = new RaycastCommand(position, direction, _queryParameters, step);
                         _movementVectorsCache.Add(step * direction);
                     }
 
                     var results = new NativeArray<RaycastHit>(2 * count, Allocator.TempJob);
                     var handle = RaycastCommand.ScheduleBatch(raycastCommands, results, 16);
-                    handle.Complete();                                    
+                    handle.Complete();
 
                     for (var i = 0; i < count; i++)
                     {
@@ -119,7 +119,7 @@ namespace ZE.MechBattle.Ecs {
             }
         }
 
-        public void Dispose()
+        protected override void InternalDispose()
         {
             _projectilesList.Clear();
             _movementVectorsCache.Clear();

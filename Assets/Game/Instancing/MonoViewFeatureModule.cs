@@ -24,5 +24,21 @@ namespace ZE.MechBattle
             builder.Register<EntityViewHandler>(Lifetime.Scoped);
             builder.Register<ViewPartsConnectionHandler>(Lifetime.Scoped);
         }
+
+        public override void OnWorldDispose(World world, IObjectResolver resolver)
+        {
+            var filter = world.Filter.With<ViewContainerComponent>().Build();
+            if (filter.IsEmpty())
+                return;
+
+            var viewContainersList = resolver.Resolve<ViewContainersPool>();
+            var viewContainerStash = world.GetStash<ViewContainerComponent>();
+            foreach (var entity in filter)
+            {
+                var viewContainer = viewContainerStash.Get(entity);
+                viewContainersList.Release(viewContainer.Id);
+            }
+
+        }
     }
 }

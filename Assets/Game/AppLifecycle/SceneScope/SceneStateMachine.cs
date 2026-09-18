@@ -1,4 +1,4 @@
-namespace ZE.MechBattle.States
+namespace ZE.MechBattle.GameStates
 {
     public enum SceneStateKey : byte
     {

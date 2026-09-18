@@ -1,4 +1,5 @@
 using Scellecs.Morpeh;
+using System;
 using VContainer;
 using VContainer.Unity;
 using ZE.MechBattle.Ecs;
@@ -12,6 +13,7 @@ namespace ZE.MechBattle
         {
             base.SceneScopeInstall(builder);
 
+            builder.Register<WorldDisposer>(Lifetime.Transient).As<IDisposable>();
             builder.Register<World>(_ => CreateWorld(), Lifetime.Scoped);
 
             builder.Register<ProjectileRequestsFactory>(Lifetime.Scoped);
@@ -30,6 +32,8 @@ namespace ZE.MechBattle
             builder.Register<LifetimeTrackingManager>(Lifetime.Scoped);
 
             builder.Register<WorkersFactory>(Lifetime.Scoped);
+
+           
         }
 
         void ISceneFeaturePostInitializer.OnSceneContainerPostBuilt(IObjectResolver resolver)

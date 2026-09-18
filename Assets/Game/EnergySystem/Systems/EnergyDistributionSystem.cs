@@ -28,6 +28,8 @@ namespace ZE.MechBattle.Ecs {
             foreach (var entity in _filter)
             {
                 var energySourceEntity = _energySources.Get(entity).SourceEntity;
+                if (World.IsDisposed(energySourceEntity))
+                    continue;
                 SyncComponentsCommand.Execute(entity, energySourceEntity, _chargeSpeeds);
             }
         }

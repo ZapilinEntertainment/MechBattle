@@ -11,13 +11,20 @@ namespace ZE.MechBattle.Views
         private ObjectPool<ViewContainer> _pool;
         private int _nextId = 1;
         private Transform _poolHost;
+        private SceneController _sceneController;
         private readonly Dictionary<int, ViewContainer> _activeContainers = new();
 
+        private void Awake()
+        {
+            GameObject.DontDestroyOnLoad(gameObject);
+        }
+
         [Inject]
-        public void Inject(ViewContainer viewContainerPrefab)
+        public void Inject(ViewContainer viewContainerPrefab, SceneController sceneController)
         {
             _prefab = viewContainerPrefab;
             _poolHost = transform;
+            _sceneController = sceneController;
             _pool = new(createFunc: Create, actionOnGet: OnGet, actionOnRelease: OnRelease, defaultCapacity : 128, maxSize :GameConstants.MAX_VIEWS_COUNT);
         }
 
@@ -36,7 +43,9 @@ namespace ZE.MechBattle.Views
 
             _activeContainers.Remove(id);
 
-            viewContainer.View?.Dispose();
+            // todo: wrong decision, need to use Clear() method for clearing inner view,
+            // but Dispose should result in returning to pool (need to rework this pool)
+            viewContainer.Dispose();
             _pool.Release(viewContainer);
         }
 
@@ -61,6 +70,7 @@ namespace ZE.MechBattle.Views
 
         private void OnGet(ViewContainer viewContainer)
         {
+            viewContainer.transform.SetParent(_sceneController.ActiveSceneObjectsHost);
             viewContainer.SetVisibility(true);
         }
 

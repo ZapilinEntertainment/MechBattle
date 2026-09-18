@@ -14,12 +14,15 @@ namespace ZE.MechBattle.Navigation
         public readonly NativeHashSet<int> QueuedPositions;
         public readonly NativeArray<IntTriangularPos> Positions;
 
+        private bool _isDisposed = false;
+        private FlattenedHexList<CellPassabilityData> _passabilityData;
+
         private readonly Allocator _allocator;
         public readonly NativeArray<CellPassabilityData> PassabilityDataInnerArray;
         private readonly int _hexRadius;
         private readonly NativeArray<byte> _rowIndices;
 
-        private FlattenedHexList<CellPassabilityData> _passabilityData;
+       
 
         public CellPassabilityData GetPassabilityData(int index) => PassabilityDataInnerArray[index];
         public CellPassabilityData GetPassabilityData(IntTriangularPos pos) => _passabilityData[pos];
@@ -88,12 +91,18 @@ namespace ZE.MechBattle.Navigation
         }
 
         private void FinalDispose()
-        {
+        {            
+            if (_isDisposed)
+            {
+                UnityEngine.Debug.LogError("double dispose");
+                return;
+            }
             PassabilityDataInnerArray.Dispose();
             CalculationData.Dispose();
             CalculationQueue.Dispose();
             QueuedPositions.Dispose();
             _rowIndices.Dispose();
+            _isDisposed = true;
         }
 
 

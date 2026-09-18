@@ -1,3 +1,4 @@
+using R3;
 using System;
 using VContainer;
 using ZE.UiService;
@@ -12,17 +13,20 @@ namespace ZE.MechBattle.Mech.UI
         private readonly WindowsManager _windowsManager;
         private readonly WorkersFactory _workersFactory;
         private readonly PartitionsListManager _partitions;
+        private readonly LifetimeTrackingManager _lifetimeTrackingManager;
 
         [Inject]
         public MechEnergySystemUiInitializer(
             SceneFlagsManager sceneFlags, 
             WindowsManager windowsManager, 
             WorkersFactory workersFactory,
-            PartitionsListManager partitionsList)
+            PartitionsListManager partitionsList,
+            LifetimeTrackingManager lifetimeTrackingManager)
         {
             _windowsManager = windowsManager;
             _workersFactory = workersFactory;
             _partitions = partitionsList;
+            _lifetimeTrackingManager = lifetimeTrackingManager;
 
             _subscription = sceneFlags.Subscribe<LocalPlayerVehicleAssignedFlag>(OnLocalPlayerControlsSet);
         }
@@ -35,7 +39,10 @@ namespace ZE.MechBattle.Mech.UI
         private void OnLocalPlayerControlsSet(LocalPlayerVehicleAssignedFlag flag)
         {
             var interfaceWindow = _windowsManager.GetWindow<UIMechInterfaceWindow>();
-            var partitionsWindow = _windowsManager.ShowWindow<UIPartitionsWindow>(interfaceWindow.GetParent(UIMechInterfaceWindow.MechInterfaceSubwindow.Partitions));
+            var partitionWindowSubscription = _windowsManager
+                .ShowWindowTemporarily<UIPartitionsWindow>(
+                    interfaceWindow.GetParent(UIMechInterfaceWindow.MechInterfaceSubwindow.Partitions),
+                    out var partitionsWindow);
 
             var vehicleEntity = flag.VehicleEntity;
             foreach (var partitionViewKvp in partitionsWindow.Partitions)
@@ -49,8 +56,9 @@ namespace ZE.MechBattle.Mech.UI
                     .Start(partitionViewKvp.Value, partitionEntity);
             }
 
+            _lifetimeTrackingManager.AddToEntityLifetime(vehicleEntity, partitionWindowSubscription);
 
-            var reactorWindow = _windowsManager.ShowWindow<UIMechReactorWindow>();
+            var reactorWindow = _windowsManager.ShowWindow<UIMechReactorWindow>(interfaceWindow.GetParent(UIMechInterfaceWindow.MechInterfaceSubwindow.Reactor));
             _workersFactory
                 .AddWorkerToEntity<UIMechReactorWindowWorker>(vehicleEntity)
                 .Start(vehicleEntity, reactorWindow);

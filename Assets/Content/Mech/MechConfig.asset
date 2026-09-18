@@ -52,7 +52,7 @@ MonoBehaviour:
     AdrenalineLevelLimit: 100
     AdrenalineFallbackSpeed: 7
     AdrenalineLevelsCount: 7
-    HealthPoints: 2500
+    HealthPoints: 500
   _mechParts:
   - Key:
       Type: 8

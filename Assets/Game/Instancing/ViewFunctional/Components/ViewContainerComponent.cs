@@ -1,5 +1,4 @@
 using Scellecs.Morpeh;
-using UnityEngine;
 using Unity.IL2CPP.CompilerServices;
 using TriInspector;
 
@@ -16,6 +15,5 @@ namespace ZE.MechBattle.Ecs {
 #endif
 
         public ViewContainerComponent(int id) => Id = id;
-    
     }
 }

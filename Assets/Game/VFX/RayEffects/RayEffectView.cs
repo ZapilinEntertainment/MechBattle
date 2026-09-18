@@ -15,9 +15,9 @@ namespace ZE.MechBattle
                 _endEffect.position = value;
             } }
 
-        private PoolElementReleaser<RayEffectView> _releaser;
+        private IPoolElementReleaser<RayEffectView> _releaser;
 
-        public void AssignReleaser(PoolElementReleaser<RayEffectView> releaser) => _releaser = releaser;
+        public void AssignReleaser(IPoolElementReleaser<RayEffectView> releaser) => _releaser = releaser;
 
         public void Dispose() => _releaser.Release(this);
 
@@ -26,18 +26,8 @@ namespace ZE.MechBattle
             _endEffect.gameObject.SetActive(isVisible);
         }
 
-        public void OnGet()
-        {
-            if (_isDestroyed)
-                return;
-            gameObject.SetActive(true);
-        }
-        public void OnRelease()
-        {
-            if (_isDestroyed)
-                return;
-            gameObject.SetActive(false);
-        }
+        public void OnGet() { }
+        public void OnRelease() { }
 
         private void OnDestroy()
         {

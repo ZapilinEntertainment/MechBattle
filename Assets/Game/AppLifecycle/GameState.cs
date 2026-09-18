@@ -1,7 +1,7 @@
 using System;
 using ZE.Workers;
 
-namespace ZE.MechBattle.States
+namespace ZE.MechBattle.GameStates
 {
     public interface IGameState : IDisposable
     {
@@ -18,5 +18,6 @@ namespace ZE.MechBattle.States
         public abstract void OnExit();
 
         protected void SwitchState(T key) => _stateSwitch.SwitchState(key);
+        protected void RequestStateMachineStatusChange(StateMachineStatus status) => _stateSwitch.ChangeStateMachineStatus(status);
     }
 }

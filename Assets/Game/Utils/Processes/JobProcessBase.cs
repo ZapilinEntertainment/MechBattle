@@ -15,6 +15,7 @@ namespace ZE.Utils
 
         private JobHandle _activeHandle;
         private bool _isLaunched;
+        private bool _isDisposed = false;
 
         public virtual void Launch(Input input)
         {
@@ -33,8 +34,14 @@ namespace ZE.Utils
 
         public void Dispose()
         {
+            if (_isDisposed)
+            {
+                UnityEngine.Debug.LogError("double dispose");
+                return;
+            }
             _activeHandle.Complete();
             DisposeResources();
+            _isDisposed = true;
         }
 
         protected abstract Output FormResults();

@@ -37,6 +37,8 @@ namespace ZE.MechBattle.Ecs {
                 var adrenalineComponent = _adrenaline.Get(mechEntity);
 
                 var reactorEntity = _energySources.Get(mechEntity).SourceEntity;
+                if (World.IsDisposed(reactorEntity))
+                    continue;
                 var reactorComponent = _reactorComponents.Get(reactorEntity);
                 _chargeSpeed.Set(reactorEntity, new() { Value = reactorComponent.BaseEnergyProduceSpeed * adrenalineComponent.EnergyProductionCf });
 

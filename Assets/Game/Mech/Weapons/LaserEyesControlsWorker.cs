@@ -12,6 +12,8 @@ namespace ZE.MechBattle
         public Observable<bool> AreLaserEyesActiveProperty => _areLaserEyesActiveProperty;
 
         private Entity _headEntity;
+
+        private readonly World _world;
         private readonly Stash<ChargingWeaponTag> _chargeTags;
         private readonly Stash<WeaponTargetPositionComponent> _weaponTargetPositions;
         private readonly Stash<WeaponFireTag> _fireTags;
@@ -21,9 +23,11 @@ namespace ZE.MechBattle
         [Inject]
         public LaserEyesControlsWorker(World world, WeaponHandler weaponHandler)
         {
-            _weaponTargetPositions = world.GetStash<WeaponTargetPositionComponent>();
-            _chargeTags = world.GetStash<ChargingWeaponTag>();
-            _fireTags = world.GetStash<WeaponFireTag>();
+            _world = world;
+
+            _weaponTargetPositions = _world.GetStash<WeaponTargetPositionComponent>();
+            _chargeTags = _world.GetStash<ChargingWeaponTag>();
+            _fireTags = _world.GetStash<WeaponFireTag>();
 
             _weaponHandler = weaponHandler;
 
@@ -54,6 +58,8 @@ namespace ZE.MechBattle
 
         private void Update(Unit unit)
         {
+            if (_world.IsDisposed(_headEntity))
+                return;
             _areLaserEyesActiveProperty.Value = _fireTags.Has(_headEntity) || _chargeTags.Has(_headEntity);
         }
     }

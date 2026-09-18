@@ -14,7 +14,7 @@ namespace ZE.MechBattle
 
         public ViewPartContainer(Transform transform) => _transform = transform;
 
-        public void Dispose() { }
+        public void Dispose() => GameObject.Destroy(_transform.gameObject);
 
         public void SetParent(Transform parent)
         {

@@ -3,6 +3,7 @@ using ZE.Workers;
 using R3;
 using ZE.MechBattle.Ecs;
 using VContainer;
+using ZE.UiService;
 
 namespace ZE.MechBattle
 {
@@ -10,6 +11,7 @@ namespace ZE.MechBattle
     {
         private Entity _mechEntity;
         private Entity _reactorEntity;
+        private UIMechReactorWindow _window;
 
         private readonly ReactiveProperty<UIMechReactorWindow.UpdateProtocol> _protocolReactiveProperty = new();
         private readonly World _world;
@@ -33,6 +35,7 @@ namespace ZE.MechBattle
         public void Start(Entity mechEntity, UIMechReactorWindow window)
         {
             _mechEntity = mechEntity;
+            _window = window;
 
             var energySources = _world.GetStash<EnergySourceComponent>();
             _reactorEntity = energySources.Get(_mechEntity).SourceEntity;
@@ -49,11 +52,12 @@ namespace ZE.MechBattle
         {
             base.Dispose();
             _protocolReactiveProperty.Dispose();
+            _window.Dispose();
         }
 
         private void UpdateData(Unit unit)
         {
-            if (_world.IsDisposed)
+            if (_world.IsDisposed(_mechEntity) || _world.IsDisposed(_reactorEntity))
                 return;
 
             var adrenalineComponent = _adrenaline.Get(_mechEntity);

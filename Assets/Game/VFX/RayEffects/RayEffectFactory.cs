@@ -22,6 +22,7 @@ namespace ZE.MechBattle
             TEMP_defaultEffectView = defaultEffectView;
 
             _poolsHost = new GameObject("rayEffectsHost").transform;
+            GameObject.DontDestroyOnLoad(_poolsHost);
         }
 
         public IDisposableRayEffectView Create(int effectId)

@@ -1,7 +1,13 @@
+using Scellecs.Morpeh;
 using VContainer;
 
 namespace ZE.MechBattle.Ecs
 {
+    public interface IEcsFeatureModule
+    {
+        void OnWorldDispose(World world, IObjectResolver resolver);
+    }
+
     [System.Serializable]
     public abstract class EcsFeatureModule<InstallQueueType> : IFeatureModule, ISceneFeatureScopeInstaller, ISceneFeatureInitializer
         where InstallQueueType : FeatureSystemsInstallQueue
@@ -23,5 +29,7 @@ namespace ZE.MechBattle.Ecs
         {
             _queueInstaller.Initialize(resolver);
         }
+
+        public virtual void OnWorldDispose(World world, IObjectResolver resolver) { }
     }
 }

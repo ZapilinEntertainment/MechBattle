@@ -49,6 +49,8 @@ namespace ZE.MechBattle.Vfx
             _subscription = _appFlags.Subscribe<RestorablesList>(OnRestorablesListChanged);
 
             _objectsHost = new GameObject(HOST_NAME).transform;
+            GameObject.DontDestroyOnLoad(_objectsHost);
+
             _prefab = data.Prefab;
             _playingDuration = data.PlayDuration;
             _pool = new ObjectPool<PoolableEmitter>(

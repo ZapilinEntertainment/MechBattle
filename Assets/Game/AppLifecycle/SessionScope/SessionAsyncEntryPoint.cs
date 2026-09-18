@@ -9,7 +9,9 @@ namespace ZE.MechBattle
     // load resources for child - SceneScope
     public class SessionAsyncEntryPoint : AsyncScopeEntryPoint<ISceneAsyncResourceLoader>
     {
+        public LifetimeScope SceneScope { get; private set; }
         private readonly LifetimeScope _currentScope;
+        private IResourceBinder _resourceBinder;
         public SessionAsyncEntryPoint(FeaturesModulesList modulesList, LifetimeScope currentScope) : base(modulesList)
         {
             _currentScope = currentScope;
@@ -17,16 +19,18 @@ namespace ZE.MechBattle
 
         public override async Awaitable StartAsync(CancellationToken cancellation)
         {
-            var binder = await LoadResourcesAsync(cancellation);
-            var sceneScope = GameObject.FindAnyObjectByType<SceneScope>(FindObjectsInactive.Exclude);  
-            if (sceneScope == null)
+            if (_resourceBinder == null)
+                _resourceBinder = await LoadResourcesAsync(cancellation);
+
+            SceneScope = GameObject.FindAnyObjectByType<SceneScope>(FindObjectsInactive.Exclude);  
+            if (SceneScope == null)
             {
                 Debug.LogWarning("scene scope object not found, building anew...");
-                _currentScope.CreateChild<SceneScope>(builder => binder.Register(builder));
+                SceneScope = _currentScope.CreateChild<SceneScope>(builder => _resourceBinder.Register(builder));
             }
             else
             {
-                sceneScope.Build();
+                SceneScope.Build();
             }
         }
 

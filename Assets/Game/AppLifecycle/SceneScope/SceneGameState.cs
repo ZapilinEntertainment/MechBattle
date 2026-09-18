@@ -3,7 +3,7 @@ using Scellecs.Morpeh;
 using VContainer;
 using ZE.MechBattle.Ecs;
 
-namespace ZE.MechBattle.States
+namespace ZE.MechBattle.GameStates
 {
     public class SceneGameState : GameState<SceneStateKey>
     {
@@ -51,8 +51,11 @@ namespace ZE.MechBattle.States
         {
             if (_world.IsDisposed(_localPlayerMechReactor) || _entityDisposedTag.Has(_localPlayerMechReactor))
             {
+#if UNITY_EDITOR
                 UnityEngine.Debug.Log("mech reactor destroyed, scene failed");
-                _entityDisposedTag.Set(_localPlayerMechEntity);
+#endif
+                if (!_world.IsDisposed(_localPlayerMechEntity)) 
+                    _entityDisposedTag.Set(_localPlayerMechEntity);
                 SwitchState(SceneStateKey.Fail);
             }
         }

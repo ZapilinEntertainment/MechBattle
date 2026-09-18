@@ -67,7 +67,7 @@ namespace ZE.MechBattle
 
         private void Update(Unit unit)
         {
-            if (_world.IsDisposed)
+            if (_world.IsDisposed(_partitionEntity))
                 return;
 
             if (_repairRequiredTags.Has(_partitionEntity))

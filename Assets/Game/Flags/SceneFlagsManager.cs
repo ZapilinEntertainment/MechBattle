@@ -14,10 +14,7 @@ namespace ZE.MechBattle
             _lifetimeTrackingManager = lifetimeTrackingManager;
         }
 
-        public void AddFlagToEntity<T>(Entity entity, T flag) where T : IFlag
-        {
-            var lifetimeObject = _lifetimeTrackingManager.GetEntityLifetimeObject(entity);
-            lifetimeObject.Add(AddTemporalFlag(flag));
-        }    
+        public void AddFlagToEntity<T>(Entity entity, T flag) where T : IFlag =>
+            _lifetimeTrackingManager.AddToEntityLifetime(entity, AddTemporalFlag(flag));
     }
 }

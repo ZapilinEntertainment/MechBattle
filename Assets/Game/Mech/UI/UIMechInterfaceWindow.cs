@@ -5,7 +5,7 @@ namespace ZE.MechBattle
 {
     public class UIMechInterfaceWindow : UiWindow
     {
-        public enum MechInterfaceSubwindow : byte { Undefined, Partitions}
+        public enum MechInterfaceSubwindow : byte { Undefined, Partitions, Reactor}
 
         public Transform GetParent(MechInterfaceSubwindow subwindow) => transform;
     }

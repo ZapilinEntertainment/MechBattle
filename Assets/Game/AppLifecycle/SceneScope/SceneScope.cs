@@ -3,24 +3,22 @@ using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 using ZE.MechBattle.Navigation;
-using ZE.MechBattle.States;
+using ZE.MechBattle.GameStates;
 
 namespace ZE.MechBattle
 {
-    public class SceneScope : FeaturedScopeBase<ISceneFeatureScopeInstaller, ISceneFeatureInitializer, ISceneFeaturePostInitializer>, IAsyncWindowLoader
+    public class SceneScope : FeaturedScopeBase<ISceneFeatureScopeInstaller, ISceneFeatureInitializer, ISceneFeaturePostInitializer>
     {
         [SerializeField] private MapSettingsSO _mapSettings;
         [SerializeField] private LevelSettingsObject _levelSettings;
-
-        public IWindowBinder GetWindowBinder()
-        {
-            return new WindowBinder<UIFailWindow>();
-        }
+        [SerializeField] private Transform _activeObjectsHost;
 
         protected override void Configure(IContainerBuilder builder)
         {
             base.Configure(builder);
             gameObject.name = nameof(SceneScope);
+
+            builder.Register<TimeController>(Lifetime.Scoped);
 
             builder.Register<TransformAccessManager>(Lifetime.Scoped);
             builder.Register<SceneFlagsManager>(Lifetime.Scoped);
@@ -39,7 +37,11 @@ namespace ZE.MechBattle
 
             RegisterStates(builder);
 
+            builder.RegisterBuildCallback(resolver => resolver.Resolve<SceneController>().ActiveSceneObjectsHost = _activeObjectsHost);
+
+#if UNITY_EDITOR
             UnityEngine.Debug.Log("scene scope configured");
+#endif
         }
 
         protected override void FeatureInitialize(ISceneFeatureInitializer initializer, IObjectResolver resolver) =>
@@ -58,7 +60,7 @@ namespace ZE.MechBattle
             builder.Register<SceneGameState>(Lifetime.Transient);
             builder.Register<SceneFailState>(Lifetime.Transient);
 
-            builder.RegisterEntryPoint<SceneStateMachine>();
+            builder.RegisterEntryPoint<SceneStateMachine>(Lifetime.Singleton);
 
             builder.Register<UIFailWindowWorker>(Lifetime.Transient);
         }

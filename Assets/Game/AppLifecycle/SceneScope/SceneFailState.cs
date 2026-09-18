@@ -1,38 +1,49 @@
 using R3;
 using System;
-using System.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.SceneManagement;
 using VContainer;
 
-namespace ZE.MechBattle.States
+namespace ZE.MechBattle.GameStates
 {
     public class SceneFailState : GameState<SceneStateKey>
     {
         private UIFailWindowWorker _worker;
-        private IDisposable _subscription;
+        private CompositeDisposable _activeCompositeDisposable = new();
+        private readonly SceneFlagsManager _sceneFlags;
+
+        [Inject]
+        public SceneFailState(SceneFlagsManager sceneFlagsManager)
+        {
+            _sceneFlags = sceneFlagsManager;
+        }
 
         public override void OnEnter() 
         {
             _worker = AddSubWorker<UIFailWindowWorker>();
-            _subscription = _worker.FailOptionSelectedProperty.Subscribe(OnOptionSelected);
             _worker.Start();
+            _worker.FailOptionSelectedProperty
+                .Subscribe(OnOptionSelected)
+                .AddTo(_activeCompositeDisposable);
+            _sceneFlags
+                .AddTemporalFlag<PauseFlag>()
+                .AddTo(_activeCompositeDisposable);
         }
 
         public override void OnExit() 
         {
-            ClearSubscription();
+            _activeCompositeDisposable.Clear();
             _worker.Dispose();
             _worker = null;
         }
 
         private void OnOptionSelected(GameFailOption option)
         {
-            ClearSubscription();
+            _activeCompositeDisposable.Clear();
             if (option == GameFailOption.Restart)
             {
+#if UNITY_EDITOR
                 UnityEngine.Debug.Log("restart game");
-                ReloadScene();
+#endif
+                RequestStateMachineStatusChange(StateMachineStatus.RestartRequired);
             }
             else
             {
@@ -40,29 +51,10 @@ namespace ZE.MechBattle.States
             }
         }
 
-        private void ClearSubscription()
+        public override void Dispose()
         {
-            if (_subscription == null)
-                return;
-            _subscription.Dispose();
-            _subscription = null;
-        }
-
-        private async Awaitable ReloadScene()
-        {
-            var sceneScope = ObjectResolver.Resolve<SceneScope>();
-            sceneScope.Dispose();
-            var activeSceneIndex = SceneManager.GetActiveScene().buildIndex;
-
-            var unloadingOperation = SceneManager.UnloadSceneAsync(activeSceneIndex);
-            while (!unloadingOperation.isDone)
-                await Awaitable.NextFrameAsync();
-
-            var loadingOperation = SceneManager.LoadSceneAsync(activeSceneIndex);
-            while (!unloadingOperation.isDone)
-                await Awaitable.NextFrameAsync();
-
-            SwitchState(SceneStateKey.Loading);
+            base.Dispose();
+            _activeCompositeDisposable.Dispose();
         }
     }
 }

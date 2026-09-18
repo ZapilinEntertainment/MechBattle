@@ -1,3 +1,4 @@
+using R3;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,6 +20,7 @@ namespace ZE.UiService
         public void RegisterWindow<T>(T windowPrefab) where T : UiWindow
         {
             var instance = GameObject.Instantiate(windowPrefab, _uiRoot.DisabledWindowsContainer);
+            instance.AssignWindowsManager(this);
             _windows[typeof(T)] = instance;
             //UnityEngine.Debug.Log("registered " + typeof(T).ToString());
         }
@@ -35,6 +37,13 @@ namespace ZE.UiService
             window.transform.SetAsLastSibling();
 
             return window;
+        }
+
+        public IDisposable ShowWindowTemporarily<T>(Transform parent, out T windowOut) where T : UiWindow
+        {
+            var window = ShowWindow<T>(parent);
+            windowOut = window;
+            return Disposable.Create(() => HideWindow(window));
         }
 
         public T GetWindow<T>() where T : UiWindow

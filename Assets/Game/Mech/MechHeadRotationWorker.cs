@@ -5,13 +5,16 @@ using VContainer;
 using UnityEngine;
 using ZE.MechBattle.Ecs;
 using Unity.Mathematics;
+using ZE.Workers;
 
 namespace ZE.MechBattle
 {
-    public class MechHeadRotationWorker : IDisposable
+    // todo: rework to system
+    public class MechHeadRotationWorker : Worker
     {
-        private readonly CompositeDisposable _compositeDisposable = new();
+        private readonly World _world;
         private readonly MechHandler _mechHandler;
+        private readonly SceneFlagsManager _sceneFlags;
         private readonly Stash<LocalRotationLimitComponent> _rotationLimits;
         private readonly Stash<LocalTargetRotationComponent> _rotationTargets;
 
@@ -25,23 +28,26 @@ namespace ZE.MechBattle
             World world)
         {
             _mechHandler = mechHandler;
+            _sceneFlags = sceneFlags;
+            _world = world;
 
             _rotationLimits = world.GetStash<LocalRotationLimitComponent>();
             _rotationTargets = world.GetStash<LocalTargetRotationComponent>();
 
-            sceneFlags
-                .Subscribe<PlayerCameraSetFlag>(OnPlayerCameraSet)
-                .AddTo(_compositeDisposable);
+           
+        }
+
+        public override void Start()
+        {
+            base.Start();
+            _sceneFlags
+               .Subscribe<PlayerCameraSetFlag>(OnPlayerCameraSet)
+               .AddTo(CompositeDisposable);
 
             Observable.EveryUpdate()
                 .Where(_ => _headEntitySet)
                 .Subscribe(Update)
-                .AddTo(_compositeDisposable);
-        }
-
-        public void Dispose()
-        {
-            _compositeDisposable.Dispose();
+                .AddTo(CompositeDisposable);
         }
 
         private void OnPlayerCameraSet(PlayerCameraSetFlag flag)
@@ -52,6 +58,9 @@ namespace ZE.MechBattle
 
         private void Update(Unit unit)
         {
+            if (_world.IsDisposed(_headEntity))
+                return;
+
             var cursorPos = Input.mousePosition;
             var x = math.clamp( cursorPos.x / Screen.width, 0f, 1f);
             var y = 1f - math.clamp( cursorPos.y / Screen.height, 0f, 1f);

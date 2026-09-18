@@ -17,7 +17,11 @@ namespace ZE.MechBattle.Views
         public ViewsPool(PoolableView prefab)
         {
             _prefab = prefab;
-            _host = new GameObject(HOST_NAME).transform;
+
+            var hostGo = new GameObject(HOST_NAME);
+            GameObject.DontDestroyOnLoad(hostGo);
+            _host = hostGo.transform;
+
             _pool = new ObjectPool<IPoolableView>(
                 createFunc: CreateView,
                 actionOnGet: OnTakenFromPool,

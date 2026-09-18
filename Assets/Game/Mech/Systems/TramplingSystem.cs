@@ -62,6 +62,8 @@ namespace ZE.MechBattle.Ecs {
             foreach (var kvp in _stepsMap)
             {
                 var footEntity = kvp.Value;
+                if (World.IsDisposed(footEntity))
+                    continue;
 
                 if (!IsFootCloseToGround(footEntity))
                     continue;

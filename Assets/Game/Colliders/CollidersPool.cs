@@ -13,33 +13,41 @@ namespace ZE.MechBattle
 
         private class SpherePoolingCollider : PoolingCollider<SphereCollider>
         {
-            public SpherePoolingCollider(SphereCollider collider) : base(collider)
+            private IPoolElementReleaser<SpherePoolingCollider> _releaser;
+
+            public SpherePoolingCollider(SphereCollider collider, IPoolElementReleaser<SpherePoolingCollider> releaser) : base(collider) 
             {
+                _releaser = releaser;
             }
 
             public override void SetupColliderInfo(ColliderSetupInfo info)
             {
                 _collider.radius = math.max( math.max(info.Size.x, info.Size.y), info.Size.z);
             }
+
+            protected override void Release() => _releaser.Release(this);
         }
 
         private class BoxPoolingCollider : PoolingCollider<BoxCollider>
         {
-            public BoxPoolingCollider(BoxCollider collider) : base(collider)
+            private readonly IPoolElementReleaser<BoxPoolingCollider> _releaser;
+            public BoxPoolingCollider(BoxCollider collider, IPoolElementReleaser<BoxPoolingCollider> releaser) : base(collider) 
             {
+                _releaser = releaser;
             }
 
             public override void SetupColliderInfo(ColliderSetupInfo info)
             {
                 _collider.size = info.Size;
             }
+
+            protected override void Release() => _releaser.Release(this);
         }
 
         private abstract class PoolingCollider<T> : IPoolingCollider, IPoolableObject<PoolingCollider<T>> where T : Collider
         {
             protected readonly T _collider;
 
-            private PoolElementReleaser<PoolingCollider<T>> _releaser;
             private readonly Transform _transform;
             private readonly int _colliderInstanceId;
 
@@ -60,7 +68,7 @@ namespace ZE.MechBattle
 
             public void OnDisconnected() => Release();
 
-            public void AssignReleaser(PoolElementReleaser<PoolingCollider<T>> releaser) => _releaser = releaser;
+            public void AssignReleaser(IPoolElementReleaser<PoolingCollider<T>> releaser) { }
 
             public void OnGet() => _collider.enabled = true;
 
@@ -68,28 +76,39 @@ namespace ZE.MechBattle
 
             public void Dispose() => Release();
 
-            private void Release() => _releaser.Release(this);
+            protected abstract void Release();
 
             public void SetParent(Transform parent) => _transform.parent = parent;
         }
 
+
         private ObjectPool<BoxPoolingCollider> _boxCollidersPool;
         private ObjectPool<SpherePoolingCollider> _sphereCollidersPool;
         private Transform _poolHost;
+        private PoolElementReleaser<BoxPoolingCollider> _boxReleaser;
+        private PoolElementReleaser<SpherePoolingCollider> _sphereReleaser;
 
         public void Awake()
         {
+            GameObject.DontDestroyOnLoad(gameObject);
+
             _poolHost = transform;
 
             _boxCollidersPool = new ObjectPool<BoxPoolingCollider>(
                 createFunc: CreateBoxCollider,
                 actionOnGet: OnColliderGet,
-                actionOnRelease: OnColliderRelease);
+                actionOnRelease: OnColliderRelease,
+                defaultCapacity: 0);
 
             _sphereCollidersPool = new ObjectPool<SpherePoolingCollider>(
                 createFunc: CreateSphereCollider,
                 actionOnGet: OnColliderGet,
-                actionOnRelease: OnColliderRelease);
+                actionOnRelease: OnColliderRelease,
+                defaultCapacity: 0);
+
+
+            _boxReleaser = new(_boxCollidersPool);
+            _sphereReleaser = new(_sphereCollidersPool);
         }
 
         public IPoolingCollider Get(ColliderSetupInfo setupInfo)
@@ -99,11 +118,10 @@ namespace ZE.MechBattle
             return collider;
         }
 
-        private BoxPoolingCollider CreateBoxCollider() =>
-            new (i_CreateColliderHost<BoxCollider>());
+        private BoxPoolingCollider CreateBoxCollider() => new(i_CreateColliderHost<BoxCollider>(), _boxReleaser);
+        private SpherePoolingCollider CreateSphereCollider() => new(i_CreateColliderHost<SphereCollider>(), _sphereReleaser);
 
-        private SpherePoolingCollider CreateSphereCollider() =>
-            new(i_CreateColliderHost<SphereCollider>());
+
 
         private T i_CreateColliderHost<T>() where T : Collider
         {
@@ -114,7 +132,11 @@ namespace ZE.MechBattle
 
         private void OnColliderGet(IPoolingCollider collider) => collider.OnGet();
 
-        private void OnColliderRelease(IPoolingCollider collider) => collider.OnRelease();
+        private void OnColliderRelease(IPoolingCollider collider)
+        {
+            collider.OnRelease();
+            collider.SetParent(_poolHost);
+        }
 
         protected override void OnDisposed()
         {

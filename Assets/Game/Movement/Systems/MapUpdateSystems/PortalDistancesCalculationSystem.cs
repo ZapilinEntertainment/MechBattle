@@ -37,7 +37,10 @@ namespace ZE.MechBattle.Ecs {
         }
 
         public void OnAwake() { }
-        public void Dispose() => _calculationProcess.Dispose();
+        public void Dispose()
+        {
+            _calculationProcess.Dispose();
+        }
 
         public void OnUpdate(float deltaTime) 
         {

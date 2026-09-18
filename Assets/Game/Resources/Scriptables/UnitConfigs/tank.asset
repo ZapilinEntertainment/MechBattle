@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: tank
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitConfig
   <Health>k__BackingField: 4
-  <Damage>k__BackingField: 20
+  <Damage>k__BackingField: 50
   <CollisionAvoidancePriority>k__BackingField: 1
   <ViewId>k__BackingField: tank_view
   <TargetSearchRadius>k__BackingField: 600

@@ -13,7 +13,7 @@ namespace ZE.MechBattle
         [SerializeField] private Image _energyLine;
         [SerializeField] private Image _damageLine;
         [SerializeField] private GameObject _repairMarker;
-        private PoolElementReleaser<EnergyCellUiView> _releaser;
+        private IPoolElementReleaser<EnergyCellUiView> _releaser;
         
         public struct UpdateProtocol
         {
@@ -43,13 +43,12 @@ namespace ZE.MechBattle
 
         public void SetupParent(Transform parent) => transform.SetParent(parent, false);
 
-        public void AssignReleaser(PoolElementReleaser<EnergyCellUiView> releaser) =>
+        public void AssignReleaser(IPoolElementReleaser<EnergyCellUiView> releaser) =>
             _releaser = releaser;
 
         public void Dispose()
         {
-            _releaser?.Release(this);
-            _releaser = null;
+            _releaser.Release(this);
         }
 
         public void OnGet() { }

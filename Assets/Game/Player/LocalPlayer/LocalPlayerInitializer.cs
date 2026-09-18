@@ -8,15 +8,19 @@ namespace ZE.MechBattle
         private readonly SceneFlagsManager _sceneFlags;
         private readonly LifetimeTrackingManager _lifetimeTrackingManager;
         private readonly Stash<ViewLoadRequestTag> _viewLoadRequests;
+        private readonly WorkersFactory _workersFactory;
         private Entity _vehicleEntity;
 
         public LocalPlayerInitializer(
             World world, 
             SceneFlagsManager sceneFlags, 
-            LifetimeTrackingManager lifetimeTrackingManager) : base(world)
+            LifetimeTrackingManager lifetimeTrackingManager,
+            WorkersFactory workersFactory) : base(world)
         {
             _sceneFlags = sceneFlags;
             _lifetimeTrackingManager = lifetimeTrackingManager;
+            _workersFactory = workersFactory;
+
             _viewLoadRequests = world.GetStash<ViewLoadRequestTag>();
         }
 
@@ -32,9 +36,12 @@ namespace ZE.MechBattle
 
         protected override void OnConditionMatched()
         {
-            var lifetimeObject = _lifetimeTrackingManager.GetEntityLifetimeObject(Entity);
             var flag = new LocalPlayerVehicleAssignedFlag(Entity, _vehicleEntity);
-            lifetimeObject.Add(_sceneFlags.AddTemporalFlag(flag));
+            _lifetimeTrackingManager.AddToEntityLifetime(Entity, _sceneFlags.AddTemporalFlag(flag));
+            
+            _workersFactory
+                .AddWorkerToEntity<MechHeadRotationWorker>(_vehicleEntity)
+                .Start();
         }
     }
 }

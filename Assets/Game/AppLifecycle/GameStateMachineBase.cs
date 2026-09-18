@@ -1,19 +1,24 @@
+using R3;
 using System;
 using System.Collections.Generic;
 using VContainer;
 using VContainer.Unity;
 using ZE.Workers;
 
-namespace ZE.MechBattle.States
+namespace ZE.MechBattle.GameStates
 {
-    public abstract class GameStateMachineBase<T> : Worker, IInitializable, IStateSwitch<T>
+    public enum StateMachineStatus : byte { NotStarted, Working, ExitRequired, RestartRequired}
+
+    public abstract class GameStateMachineBase<T> : Worker, IInitializable, IStateSwitch<T>, IContainerScopeStateMachine
         where T : Enum
     {
+        public Observable<StateMachineStatus> StateMachineStatusProperty => _statusReactiveProperty;
         protected abstract T DefaultStateKey { get; }
         private T _currentStateKey;
         private readonly Dictionary<T, IGameState> _states = new();
+        private readonly ReactiveProperty<StateMachineStatus> _statusReactiveProperty = new();
 
-        public void Initialize()
+        public virtual void Initialize()
         {
             PrepareAllStates();
             i_StartState(DefaultStateKey);
@@ -23,6 +28,7 @@ namespace ZE.MechBattle.States
         {
             base.Dispose();
             _states.Clear();
+            _statusReactiveProperty.Dispose();
         }
 
         public void SwitchState(T nextStateKey)
@@ -47,5 +53,7 @@ namespace ZE.MechBattle.States
             _currentStateKey = stateKey;
             _states[_currentStateKey].OnEnter();
         }
+
+        public void ChangeStateMachineStatus(StateMachineStatus status) => _statusReactiveProperty.Value = status;
     }
 }

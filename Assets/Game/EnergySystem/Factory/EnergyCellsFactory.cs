@@ -10,6 +10,7 @@ namespace ZE.MechBattle
     {
         private readonly World _world;
         private readonly RepairFeatureApplier _repairApplier;
+        private readonly ParentingRelationsApplier _parentingRelationsApplier;
 
         private readonly Stash<EnergyChargeComponent> _energyChargeComponents;
         private readonly Stash<DamageToEnergyConsumptionConversionComponent> _conversionComponent;
@@ -21,10 +22,11 @@ namespace ZE.MechBattle
         
 
         [Inject]
-        public EnergyCellsFactory(World world, RepairFeatureApplier repairFeatureApplier)
+        public EnergyCellsFactory(World world, RepairFeatureApplier repairFeatureApplier, ParentingRelationsApplier parentingRelationsApplier)
         {
             _world = world;
             _repairApplier = repairFeatureApplier;
+            _parentingRelationsApplier = parentingRelationsApplier;
 
             _energyChargeComponents = world.GetStash<EnergyChargeComponent>();
             _conversionComponent = world.GetStash<DamageToEnergyConsumptionConversionComponent>();
@@ -39,7 +41,7 @@ namespace ZE.MechBattle
             Span<Entity> cells = stackalloc Entity[cellsCount];
             for (var i = 0; i < cellsCount; i++)
             {
-                var cell = BuildEnergyCell(cellConfig, reactorEntity);
+                var cell = BuildEnergyCell(partitionEntity, cellConfig, reactorEntity);
                 _repairApplier.ApplyOnRepairable(cell, mechEntity, new(RepairableType.EnergyCell, i));
                 cells[i] = cell;                
             }
@@ -55,9 +57,10 @@ namespace ZE.MechBattle
             _sourceComponents.Set(partitionEntity, new(reactorEntity));
         }
 
-        public Entity BuildEnergyCell(EnergyCellConfig cellConfig, Entity reactorEntity)
+        public Entity BuildEnergyCell(Entity parentEntity, EnergyCellConfig cellConfig, Entity reactorEntity)
         {
             var entity = _world.CreateEntity();
+            _parentingRelationsApplier.CreateSimpleParentingBond(parentEntity, entity);
             _energyChargeComponents.Add(entity, new(cellConfig.EnergyCapacity));            
             _healthComponent.Add(entity, new(cellConfig.HealthPoints));
             _conversionComponent.Add(entity, new(cellConfig.DamageToChargeLossCf));

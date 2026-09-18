@@ -25,8 +25,8 @@ namespace ZE.MechBattle
                 throw new EntityDisposedException();
 
             var worker = CreateWorker<T>();
-            var lifetimeObject = _lifetimeTrackingManager.GetEntityLifetimeObject(entity);
-            lifetimeObject.Add(worker);
+            _lifetimeTrackingManager.AddToEntityLifetime(entity, worker);
+            //UnityEngine.Debug.Log($"add {typeof(T).Name} to entity {entity.Id}");
             return worker;
         }
 

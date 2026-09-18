@@ -33,6 +33,9 @@ namespace ZE.MechBattle.Ecs {
             foreach (var entity in _filter)
             {
                 var sourceEntity = _energySourceComponent.Get(entity).SourceEntity;
+                if (World.IsDisposed(sourceEntity))
+                    continue;
+
                 var energySpentComponent = _energySpent.Get(sourceEntity, out var spentComponentExists);
                 if (!spentComponentExists)
                     continue;

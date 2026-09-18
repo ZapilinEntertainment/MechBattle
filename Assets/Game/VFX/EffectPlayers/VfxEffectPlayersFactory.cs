@@ -52,6 +52,7 @@ namespace ZE.MechBattle.Vfx
             _emitVolume = data.EmitCount;
             _emitter = GameObject.Instantiate(data.Prefab);
             _emitterTransform = _emitter.transform;
+            GameObject.DontDestroyOnLoad(_emitter);
         }
 
         public void Play(float3 pos, quaternion rot)

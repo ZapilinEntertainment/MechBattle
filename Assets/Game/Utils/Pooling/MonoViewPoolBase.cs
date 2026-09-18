@@ -15,24 +15,13 @@ namespace ZE.MechBattle.Vfx
         protected readonly ObjectPool<T> Pool;
         private readonly Transform _hostObject;        
         private readonly T _prefab;
-        private readonly Releaser _releaser;        
-
-        private class Releaser : PoolElementReleaser<T>
-        {
-            private readonly IObjectPool<T> _pool;
-
-            public Releaser(IObjectPool<T> pool)
-            {
-                _pool = pool;
-            }
-
-            public override void Release(T instance) => _pool.Release(instance);
-        }
+        private readonly PoolElementReleaser<T> _releaser;        
 
         public MonoViewPoolBase(T prefab, Transform hostOfPools)
         {
             _prefab = prefab;
             _hostObject = new GameObject(PoolHostObjectName).transform;
+            GameObject.DontDestroyOnLoad(_hostObject);
             _hostObject.parent = hostOfPools;
             Pool = new(createFunc: Create, defaultCapacity: DefaultCapacity, actionOnGet: OnGet, actionOnRelease: OnRelease);
 
@@ -48,8 +37,17 @@ namespace ZE.MechBattle.Vfx
             return instance;
         }
 
-        private void OnRelease(T instance) => instance.OnRelease();
-        private void OnGet(T instance) => instance.OnGet();
+        private void OnRelease(T instance)
+        {
+            instance.gameObject.SetActive(false);
+            instance.OnRelease();            
+            instance.transform.SetParent(_hostObject);
+        }
+        private void OnGet(T instance)
+        {
+            instance.OnGet();
+            instance.gameObject.SetActive(true);
+        }
 
         public T Get() => Pool.Get();
     }

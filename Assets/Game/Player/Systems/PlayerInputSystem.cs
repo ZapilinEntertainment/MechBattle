@@ -19,6 +19,7 @@ namespace ZE.MechBattle.Ecs {
         private readonly ReactiveProperty<bool> _eyesActiveProperty = new(false);
 
         private bool _playerVehiclePresented = false;
+        private Entity _mechEntity;
         private MechControlsWorker _mechController;
         
 
@@ -49,7 +50,7 @@ namespace ZE.MechBattle.Ecs {
 
         public void OnUpdate(float deltaTime)
         {
-            if (!_playerVehiclePresented)
+            if (!_playerVehiclePresented || World.IsDisposed(_mechEntity))
                 return;
 
             // todo: rework to new input system
@@ -94,7 +95,8 @@ namespace ZE.MechBattle.Ecs {
         {
             _mechController?.Dispose();
             _mechController = _workersFactory.CreateWorker<MechControlsWorker>();
-            _mechController.Start(flag.VehicleEntity);
+            _mechEntity = flag.VehicleEntity;
+            _mechController.Start(_mechEntity);
 
             _eyesActiveProperty
                 .Subscribe(isPressed => _mechController.SwitchEyeFiring(isPressed))

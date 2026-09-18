@@ -25,6 +25,8 @@ namespace ZE.MechBattle.Ecs
 
         protected override void Configure(IContainerBuilder builder)
         {
+            builder.Register<SceneController>(Lifetime.Singleton);
+
             foreach (var module in _modules.Modules)
             {
                 if (module is IAppFeatureScopeInstaller appScopeInstaller)
@@ -45,7 +47,9 @@ namespace ZE.MechBattle.Ecs
             // start loading heavy resources:
             builder.RegisterEntryPoint<AppAsyncEntryPoint>();
 
+#if UNITY_EDITOR
             UnityEngine.Debug.Log("app scope configured");
+#endif
         }
 
         private void PrepareViews(IContainerBuilder builder)

@@ -1,7 +1,7 @@
 using VContainer;
 using R3;
 
-namespace ZE.MechBattle.States
+namespace ZE.MechBattle.GameStates
 {
     public class SceneLoadingState : GameState<SceneStateKey>
     {
@@ -35,7 +35,9 @@ namespace ZE.MechBattle.States
         private void OnPlayerMechControlsStart()
         {
             SwitchState(SceneStateKey.Game);
+#if UNITY_EDITOR
             UnityEngine.Debug.Log("mech controls set, game starting");
+#endif
         }
     }
 }

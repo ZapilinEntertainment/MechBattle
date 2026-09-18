@@ -6,6 +6,7 @@ using R3;
 namespace ZE.Workers
 {
     // IMPORTANT: do not use AsImplementedInterfaces() for ITickable - it will double every instance on resolve
+    // also note: use Lifetime.Singletone for multi-container usement, it will be doubled otherwise
     public abstract class Worker : IDisposable
     {
         protected enum Status : byte { Created = 0, Working, Disposed}

@@ -1,19 +1,21 @@
 using System.Collections.Generic;
-using System.IO;
-using System.Threading;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
-using ZE.MechBattle.Mech.UI;
 using ZE.MechBattle.UI;
 using ZE.UiService;
 
 namespace ZE.MechBattle
 {
-    public class UIFeatureModule : IFeatureModule, IAppFeatureScopeInstaller, ISessionAsyncResourceLoader
+    public class UIFeatureModule : IFeatureModule, IAppFeatureScopeInstaller, ISessionAsyncResourceLoader, IAsyncWindowLoader
     {
         public void AppScopeInstall(IContainerBuilder builder)
         {
+#if UNITY_EDITOR
+            UnityEngine.Debug.Log("app scope install");
+#endif
+
+
             var uiRootPrefab = Resources.Load<MechGameUIRoot>("UIRoot");
             builder.RegisterComponentInNewPrefab(uiRootPrefab, Lifetime.Singleton).As<UiRoot>();
             builder.Register<WindowsManager>(Lifetime.Singleton);
@@ -26,6 +28,11 @@ namespace ZE.MechBattle
             await resolver.Resolve<WeaponTargetMarkerFactory>().LoadPrefab();
             await LoadAllFeatureWindowsAsync(resolver);
             return null;
+        }
+
+        public IWindowBinder GetWindowBinder()
+        {
+            return new WindowBinder<UIFailWindow>();
         }
 
         private async Awaitable LoadAllFeatureWindowsAsync(IObjectResolver resolver)

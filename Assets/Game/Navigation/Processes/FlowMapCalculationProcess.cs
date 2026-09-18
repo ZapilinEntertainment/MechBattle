@@ -52,10 +52,10 @@ namespace ZE.MechBattle.Navigation
 
         protected override void DisposeResources()
         {
-            _activeJobHandle.Complete();
-            _collections.Dispose();
+            _activeJobHandle.Complete();            
             try
             {
+                _collections.Dispose();
                 _zeroPositions.Dispose();
             }
             catch

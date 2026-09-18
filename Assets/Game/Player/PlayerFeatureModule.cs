@@ -38,8 +38,6 @@ namespace ZE.MechBattle
 
             var playerInitializer = resolver.Resolve<LocalPlayerInitializer>();
             playerInitializer.StartTracking(localPlayerEntity);
-
-            resolver.Resolve<MechHeadRotationWorker>();
         }
 
         protected override PlayerSystemsInstallQueue CreateQueue() => new();
