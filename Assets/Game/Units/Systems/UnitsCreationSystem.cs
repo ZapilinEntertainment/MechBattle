@@ -13,6 +13,8 @@ namespace ZE.MechBattle.Ecs {
 
         private readonly DelayApplier _delayApplier;
         private readonly NavigationGridHandler _gridHandler;
+        private readonly SquadHandler _squadHandler;
+
         private readonly float _triangleHeight;
         private const float UNSUCCESSFUL_REQUEST_CLEAR_TIME = 5f;
 
@@ -22,10 +24,12 @@ namespace ZE.MechBattle.Ecs {
             INavigationMap map,
             DelayApplier delayApplier, 
             UnitsFactory unitsFactory,
-            TransformAspectHandler transformAspectHandler) : base(unitsFactory)
+            TransformAspectHandler transformAspectHandler,
+            SquadHandler squadHandler) : base(unitsFactory)
         {
             _gridHandler = gridHandler;
             _delayApplier = delayApplier;
+            _squadHandler = squadHandler;
 
             _triangleHeight = map.TriangleHeight;
         }
@@ -38,8 +42,8 @@ namespace ZE.MechBattle.Ecs {
 
         protected override bool TryExecuteRequest(Entity requestEntity)
         {
-            var spawnComponent = RequestsStash.Get(requestEntity);
-            var cellPoint = spawnComponent.CellPoint;
+            var spawnRequest = RequestsStash.Get(requestEntity);
+            var cellPoint = spawnRequest.CellPoint;
 
             // note: request will not be deleted, it just spawns when cell will be empty or will be cleared in UNSUCCESSFUL_REQUEST_CLEAR_TIME
             if (_gridHandler.IsCellOccupied(cellPoint.Tripos))
@@ -49,8 +53,12 @@ namespace ZE.MechBattle.Ecs {
                 return false;
             }
 
-            var entity = Factory.Build(spawnComponent.UnitKey, spawnComponent.CellPoint.ToRigidTransform(_triangleHeight));
-            _affiliations.Add(entity, new(spawnComponent.PlayerKey));
+            var entity = Factory.Build(spawnRequest.UnitKey, spawnRequest.CellPoint.ToRigidTransform(_triangleHeight));
+            _affiliations.Add(entity, new(spawnRequest.PlayerKey));
+
+            if (spawnRequest.SquadAssignmentRequested)
+                _squadHandler.AssignEntityToSquad(entity, spawnRequest.SquadId);
+
             return true;
         }
     }

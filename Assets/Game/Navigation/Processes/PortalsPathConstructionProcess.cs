@@ -164,7 +164,7 @@ namespace ZE.MechBattle.Navigation
                 DEBUG_LogPortalOptions(input.Request);
  #endif
 
-            var pathCost = PreparePortalsPath(input.Request.StartTripos);
+            var pathCost = PreparePortalsPath(input.Request.EndTripos, input.Request.StartHexCoord);
             _pathsBuffer.AddCalculatedPath(input.ReservedPathId, FormResult(request, pathCost));
 
             _nodes.Clear();
@@ -172,7 +172,7 @@ namespace ZE.MechBattle.Navigation
         }
 
 
-        private float PreparePortalsPath(IntTriangularPos target)
+        private float PreparePortalsPath(IntTriangularPos target, int2 startHexCoord)
         {
             // prepare initial nodes
             for (var i = 0; i < _startPortals.Count; i++)
@@ -208,7 +208,7 @@ namespace ZE.MechBattle.Navigation
                 if (!_nodes.TryGetValue(endPortalId, out var endPortalNode))
                     continue;
 
-                var pathCost = endPortalNode.TotalPathCost + endPortalOption.MinDist;
+                var pathCost = endPortalNode.IntegrationValue + endPortalOption.MinDist;
                 shortestPathOption = shortestPathOption.TryUpdate(endPortalId, pathCost);
             }
 
@@ -217,7 +217,7 @@ namespace ZE.MechBattle.Navigation
 
             // fulfill resulting path
             var observingNode = _nodes[shortestPathOption.PortalId];
-            var resultingPathCost = observingNode.TotalPathCost;
+            var resultingPathCost = shortestPathOption.Length;
             _resultingPath.Clear();
             _resultingPath.InsertRange(0, observingNode.StepsCount + 1);
 
@@ -233,8 +233,55 @@ namespace ZE.MechBattle.Navigation
             }
 
             _resultingPath[0] = observingNode.PortalId;
+            _resultingPath = FilterPathByHexes(_resultingPath, startHexCoord);
 
             return resultingPathCost;
+        }
+
+        private NativeList<int> FilterPathByHexes(NativeList<int> path, int2 startHexCoord)
+        {
+            var length = path.Length;
+            if (length == 1)
+                return path;
+
+            Span<int> filteredPath = stackalloc int[length];
+            var filteredPathIndex = 0;
+            var currentHexCoord = startHexCoord;
+            var nextHexCoord = currentHexCoord;
+
+            for (var i = 0; i < path.Length; i++)
+            {
+                var portalId = path[i];
+                var portal = _portalsCoordinator.GetPortal(portalId);
+
+                var useExitA = math.all(portal.HexCoordA == currentHexCoord);
+                var useExitB = math.all(portal.HexCoordB == currentHexCoord);
+                if (useExitA | useExitB )
+                {
+                    // write over last portal if in same hex
+                    filteredPath[filteredPathIndex] = portalId;
+                    // other one is next hex
+                    nextHexCoord = useExitA ? portal.HexCoordB : portal.HexCoordA;
+                }
+                else
+                {
+                    filteredPath[++filteredPathIndex] = portalId;
+                    // transition done, update current hexcoord
+                    currentHexCoord = nextHexCoord;
+                }
+            }
+
+            var newCount = filteredPathIndex + 1;
+            if (newCount == length)
+                return path;
+
+            path.Length = newCount;
+            for (var i = 0; i < newCount; i++)
+            {
+                path[i] = filteredPath[i];
+            }
+
+            return path;
         }
 
         private async Awaitable PreparePortalOptions(
@@ -327,7 +374,7 @@ namespace ZE.MechBattle.Navigation
                         connectedNode.PreviousPortalId = currentNode.PortalId;
                         connectedNode.StepsCount = currentNode.StepsCount + 1;
 
-                        _nodes[currentNode.PortalId] = connectedNode;
+                        _nodes[connectedPortalId] = connectedNode;
                     }
                 }
                 else

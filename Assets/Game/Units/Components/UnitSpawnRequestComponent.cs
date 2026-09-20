@@ -13,12 +13,17 @@ namespace ZE.MechBattle.Ecs {
         public readonly UnitKey UnitKey;
         public readonly CellPoint CellPoint;
         public readonly PlayerKey PlayerKey;
+        public readonly int SquadId;
 
-        public UnitSpawnRequestComponent(UnitKey key, CellPoint point, PlayerKey playerKey)
+        public bool SquadAssignmentRequested => SquadId != SQUAD_INVALID_VALUE;
+        private const int SQUAD_INVALID_VALUE = -1;
+
+        public UnitSpawnRequestComponent(UnitKey key, CellPoint point, PlayerKey playerKey, int squadId = SQUAD_INVALID_VALUE)
         {
             UnitKey = key;
             PlayerKey = playerKey;
             CellPoint = point;
+            SquadId = squadId;
         }
     
     }

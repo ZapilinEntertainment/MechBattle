@@ -70,6 +70,9 @@ namespace ZE.MechBattle.Ecs {
             if (!stampExists || stampIterationComponent.LastSyncIteration != _iterationNumber)
             {
                 //UnityEngine.Debug.Log($"updated entity {entity.Id}");
+
+                // TODO: relocate calculation to job
+
                 _transformAspectHandler.SyncPositionWithParent(entity, parentComponent.Value);
                 _stampComponents.Set(entity, new() { LastSyncIteration = _iterationNumber });
             }                

@@ -35,5 +35,12 @@ namespace ZE.MechBattle.Ecs {
             TriangularPos = TriangularMath.WorldToTrianglePos(WorldPos, triangleHeight);
             HexCoord = HexMath.DefineHex(WorldPos.xz, hexEdgeLength);
         }
+
+        public MoveTargetComponent(IntTriangularPos tripos, INavigationMap map)
+        {
+            TriangularPos = tripos;
+            WorldPos = map.GetWorldPos(tripos);
+            HexCoord = HexMath.DefineHex(WorldPos.xz, map.HexEdgeLength);
+        }
     }
 }

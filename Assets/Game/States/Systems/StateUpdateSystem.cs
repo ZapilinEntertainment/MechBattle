@@ -12,23 +12,11 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public sealed class StateUpdateSystem : ISystem 
     {
-        public struct StateHandlerKey
-        {
-            public StateKey State;
-            public BehaviourKey Behaviour;
-
-            public StateHandlerKey(BehaviourKey behaviour, StateKey state)
-            {
-                State = state;
-                Behaviour = behaviour;
-            }
-        }
-
         public World World { get; set;}
         private Filter _updateTag;
         private Stash<BehaviourKeyComponent> _behaviourKeys;
         private Stash<StateComponent> _currentStates;
-        private readonly Dictionary<StateHandlerKey, StateHandler> _behaviours;
+        private readonly Dictionary<long, StateHandler> _behaviours;
         private readonly IObjectResolver _resolver;
 
         [Inject]
@@ -66,10 +54,10 @@ namespace ZE.MechBattle.Ecs {
                 StateHandler currentBehaviour;
                 if (nextState != state)
                 {
-                    if (TryGetStateBehaviour(new StateHandlerKey(behaviour, state), out var oldBehaviour))
+                    if (TryGetStateBehaviour(StateHandlerKey.ToLong(state, behaviour), out var oldBehaviour))
                         oldBehaviour.Exit(entity);
 
-                    currentBehaviourExists = TryGetStateBehaviour(new StateHandlerKey(behaviour, nextState), out currentBehaviour);
+                    currentBehaviourExists = TryGetStateBehaviour(StateHandlerKey.ToLong(nextState, behaviour), out currentBehaviour);
                     if (currentBehaviourExists)
                         currentBehaviour.Enter(entity);
 
@@ -77,11 +65,10 @@ namespace ZE.MechBattle.Ecs {
                 }
                 else
                 {
-                    currentBehaviourExists = TryGetStateBehaviour(new StateHandlerKey(behaviour, state), out currentBehaviour);
+                    currentBehaviourExists = TryGetStateBehaviour(StateHandlerKey.ToLong(state,behaviour), out currentBehaviour);
                 }
 
-                if (currentBehaviourExists)
-                    stateComponent.NextState = currentBehaviour.Update(entity, dt);            
+               if (currentBehaviourExists)  stateComponent.NextState = currentBehaviour.Update(entity, dt);
             }
         }
 
@@ -95,14 +82,15 @@ namespace ZE.MechBattle.Ecs {
             _behaviours.Clear();
         }
 
-        private bool TryGetStateBehaviour(StateHandlerKey key, out StateHandler behaviour)
+        private bool TryGetStateBehaviour(long key, out StateHandler behaviour)
         {
             if (_behaviours.TryGetValue(key, out behaviour))
                 return true;
-            #if UNITY_EDITOR
-            Debug.LogWarning($"state behaviour not found: {key.Behaviour} : {key.State}");
             return false;
-            #endif
+            //#if UNITY_EDITOR
+            //Debug.LogWarning($"state behaviour not found: {key.Behaviour} : {key.State}");
+            //return false;
+            //#endif
         }
     }
 }

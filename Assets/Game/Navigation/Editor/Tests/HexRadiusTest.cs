@@ -53,6 +53,22 @@ namespace ZE.MechBattle.Navigation.Tests
                 Assert.IsTrue(results.Add(hex), $"Hex duplicate found: {hex}");
             }
         }
+
+        [Test]
+        public void CalculateMinHexRadius_InverseCheck()
+        {
+            for (int N = 1; N <= 100; N++)
+            {
+                int exactCount = 6 * N * N;
+                int overflowCount = exactCount + 1;
+
+                Assert.AreEqual(N, HexMath.GetMinHexRadius(exactCount),
+                    $"Failed for exact count of radius {N}");
+
+                Assert.AreEqual(N + 1, HexMath.GetMinHexRadius(overflowCount),
+                    $"Failed for overflow count of radius {N}");
+            }
+        }
     }
 
 }

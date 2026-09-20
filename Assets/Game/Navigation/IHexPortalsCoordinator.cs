@@ -14,10 +14,12 @@ namespace ZE.MechBattle.Navigation
         void OnPortalOutdated(int portalId);
         void ApplyPortalDistancesMap(CalculatePointDistancesResults results);
         bool TryGetPortalConnections(int portalId, out IReadOnlyDictionary<int, float> connections);
+        NavigationPortal GetPortal(int portalId);
 
         bool TryGetAssignedFlowMapId(int portalExitId, out int flowMapId);
         void OnFlowMapCalculated(int flowMapId, in FlowMapCalculationResults results);
         void GetHexPortalExits(int zone, int2 hexCoord, ICollection<HexExitOption> exits);
+        bool TryGetExit(int exitId, out NavigationPortalExit exit);
         
         IPathsList<PortalPathDestinationKey, int> GetPathsList();
     }

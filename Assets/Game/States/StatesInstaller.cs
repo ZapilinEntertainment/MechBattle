@@ -6,13 +6,13 @@ namespace ZE.MechBattle.Ecs.States
     [System.Serializable]
     public class StatesInstaller : IFeatureModule, ISceneFeatureScopeInstaller, ISceneFeatureInitializer
     { 
-        public static Dictionary<StateUpdateSystem.StateHandlerKey, StateHandler> PrepareStatesList(IObjectResolver resolver)
+        public static Dictionary<long, StateHandler> PrepareStatesList(IObjectResolver resolver)
         {
-            var dict = new Dictionary<StateUpdateSystem.StateHandlerKey, StateHandler>();
+            var dict = new Dictionary<long, StateHandler>();
 
             void AddStateInstance<T>(BehaviourKey behaviour, StateKey state, T stateHandler) where T : StateHandler
             {
-                dict.Add(new(behaviour, state), stateHandler);
+                dict.Add(StateHandlerKey.ToLong(state, behaviour), stateHandler);
             }
 
             T AddState<T>(BehaviourKey behaviour, StateKey state) where T : StateHandler

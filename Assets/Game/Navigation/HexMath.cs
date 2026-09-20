@@ -7,6 +7,17 @@ namespace ZE.MechBattle.Navigation
 {
     public static class HexMath
     {
+        // qwen generated
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetMinHexRadius(int triangleCount)
+        {
+            if (triangleCount <= 6)
+                return 1;
+
+            float radiusFloat = math.sqrt(triangleCount / 6f);
+            return (int)math.ceil(radiusFloat);
+        }
+
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int2 GetNeighbourCoord(int2 hexCoord, int edgeIndex)

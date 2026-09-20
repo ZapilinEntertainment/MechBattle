@@ -13,6 +13,7 @@ namespace ZE.MechBattle
         [SerializeField] private Image _energyLine;
         [SerializeField] private Image _damageLine;
         [SerializeField] private GameObject _repairMarker;
+        private bool _isActive = false;
         private IPoolElementReleaser<EnergyCellUiView> _releaser;
         
         public struct UpdateProtocol
@@ -27,6 +28,8 @@ namespace ZE.MechBattle
 
         public void UpdateValues(UpdateProtocol protocol)
         {
+            if (!_isActive)
+                return;
             _repairMarker.SetActive(protocol.EnableRepairMarker);
 
             _damageLine.enabled = protocol.EnableDamageLine;
@@ -49,15 +52,20 @@ namespace ZE.MechBattle
         public void Dispose()
         {
             _releaser.Release(this);
+            _isActive = false;
         }
 
-        public void OnGet() { }
+        public void OnGet() 
+        {
+            _isActive = true;
+        }
 
         public void OnRelease() 
         {
             _energyLine.fillAmount = 0f;
             _damageLine.fillAmount = 0f;
             _repairMarker.SetActive(false);
+            _isActive = false;
         }
     }
 }

@@ -14,6 +14,7 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<MoveTargetComponent> _moveTargetComponent;
         private readonly Stash<ClearHexPathTag> _clearHexPathTags;
 
+        private readonly float _triangleHeight;
         private readonly float _invertedTriangleHeight;
         private readonly float _hexEdgeLength;
 
@@ -27,6 +28,7 @@ namespace ZE.MechBattle.Ecs
             _changeMoveTargetsRequestComponent = world.GetStash<ChangeMoveTargetRequestComponent>();
             _moveTargetComponent = world.GetStash<MoveTargetComponent>();
 
+            _triangleHeight = map.TriangleHeight;
             _invertedTriangleHeight = map.InvertedTriangleHeight;
             _hexEdgeLength = map.HexEdgeLength;
 
@@ -45,6 +47,14 @@ namespace ZE.MechBattle.Ecs
         public void SetMoveTarget(Entity entity, float3 worldPos)
         {
             var tripos = TriangularMath.WorldToTrianglePosInvertedHeight(worldPos, _invertedTriangleHeight);
+            var hexCoord = HexMath.DefineHex(worldPos.xz, _hexEdgeLength);
+
+            _changeMoveTargetsRequestComponent.Set(entity, new(worldPos, tripos, hexCoord));
+        }
+
+        public void SetMoveTarget(Entity entity, IntTriangularPos tripos)
+        {
+            var worldPos = TriangularMath.TriangularToWorld(tripos, _triangleHeight);
             var hexCoord = HexMath.DefineHex(worldPos.xz, _hexEdgeLength);
 
             _changeMoveTargetsRequestComponent.Set(entity, new(worldPos, tripos, hexCoord));

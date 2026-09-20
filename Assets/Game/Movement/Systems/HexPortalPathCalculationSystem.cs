@@ -88,7 +88,6 @@ namespace ZE.MechBattle.Ecs {
                 endpoints.end);
 
             var launchData = new PortalConstructionProcessInput() { Request = request, ReservedPathId = _hexPathIds.Get(entity).PathId };
-
             token = _processesManager.TryLaunchProcess(launchData);
             return token.IsValid;
         }

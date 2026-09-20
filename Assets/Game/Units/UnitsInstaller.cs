@@ -23,6 +23,8 @@ namespace ZE.MechBattle
             builder.Register<FactionVisibleMarksApplier>(Lifetime.Scoped);
 
             builder.RegisterEntryPoint<SceneUnitsInitializer>();
+
+            SquadSubfeatureInstaller.InstallSceneScopeDependencies(builder);
         }
 
         protected override UnitSystemsInstallQueue CreateQueue() => new();

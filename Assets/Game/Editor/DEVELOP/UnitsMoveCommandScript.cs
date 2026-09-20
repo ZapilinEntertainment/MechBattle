@@ -25,7 +25,10 @@ namespace ZE.MechBattle.Develop
         {
             _moveTargetApplier = moveTargetApplier;
 
-            _filter = world.Filter.With<NavigationAgentComponent>().Build();
+            _filter = world.Filter
+                .With<NavigationAgentComponent>()
+                .With<UnitTag>()
+                .Build();
         }
 
         [EnableInPlayMode, Button("Set new random target")]

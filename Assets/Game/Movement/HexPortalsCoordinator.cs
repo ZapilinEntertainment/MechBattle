@@ -1,4 +1,3 @@
-using System.Buffers;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using VContainer;
@@ -19,7 +18,6 @@ namespace ZE.MechBattle.Navigation
         private readonly PortalConnectionsList _connectionsList;
         private readonly IUpdatableMap _map;
         
-        private readonly ArrayPool<int> _pool;
         private readonly IPortalsLogic _portalsLogic;
         private readonly IExitsLogic _exitsLogic;
 
@@ -47,8 +45,6 @@ namespace ZE.MechBattle.Navigation
             _portalsLogic = portalsLogic;
             _exitsLogic = exitsLogic;
             _map = map;
-
-            _pool = ArrayPool<int>.Shared;
         }
 
         public bool TryGetAssignedFlowMapId(int portalExitId, out int flowMapId)
@@ -134,6 +130,8 @@ namespace ZE.MechBattle.Navigation
                 }
             }
         }
+
+        public bool TryGetExit(int exitId, out NavigationPortalExit exit) => _exits.TryGetValue(exitId, out exit);
         #endregion
 
         #region PORTALS
@@ -145,6 +143,8 @@ namespace ZE.MechBattle.Navigation
 
         public int RegisterNewPortal(NavigationPortal portal) => _portalsLogic.RegisterNewPortal(portal);
         public void OnPortalOutdated(int portalId) => _portalsLogic.OnPortalOutdated(portalId);
+
+        public NavigationPortal GetPortal(int portalId) => _portalsList[portalId];
         #endregion
 
         // navigation package interface

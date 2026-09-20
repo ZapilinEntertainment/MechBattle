@@ -7,6 +7,8 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<SpawnersUpdateSystem>(SystemGroupOrder.RegularUpdate);
             installer.AddSystem<UnitsCreationSystem>(SystemGroupOrder.RegularUpdate);
             installer.AddSystem<AttackOpportunityCalculationSystem>(SystemGroupOrder.WeaponUpdates + 1);
+
+            SquadSubfeatureInstaller.InstallSystems(installer);
         }
     }
 }

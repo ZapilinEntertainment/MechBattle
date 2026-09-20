@@ -15,6 +15,7 @@ namespace ZE.MechBattle
         private readonly ViewSynchronizationApplier _viewSyncApplier;
         private readonly IUnitConfigsList _unitConfigs;
         private readonly WeaponFactory _weaponFactory;
+        private readonly SquadHandler _squadHandler;
 
         private readonly Stash<MoveSpeedComponent> _moveSpeeds;
         private readonly Stash<NavigationAgentComponent> _navigationAgents;
@@ -35,7 +36,8 @@ namespace ZE.MechBattle
             StatesApplier statesApplier,
             ViewSynchronizationApplier viewSyncApplier,
             IUnitConfigsList unitConfigsList,
-            WeaponFactory weaponFactory)
+            WeaponFactory weaponFactory,
+            SquadHandler squadHandler)
         {
             _world = world;
             _transformAspectHandler = transformAspectHandler;
@@ -45,6 +47,7 @@ namespace ZE.MechBattle
             _statesApplier = statesApplier;
             _weaponFactory = weaponFactory;
             _viewSyncApplier = viewSyncApplier;
+            _squadHandler = squadHandler;
 
             _moveSpeeds = world.GetStash<MoveSpeedComponent>();
             _navigationAgents = world.GetStash<NavigationAgentComponent>();
@@ -83,7 +86,7 @@ namespace ZE.MechBattle
             var entity = _viewFactory.CreateViewReceiver(unitConfig.ViewId);
             _transformAspectHandler.MoveToPoint(entity, point);
 
-            Setup(entity, unitConfig);           
+            Setup(entity, unitConfig);
                
             return entity;
         }

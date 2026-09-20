@@ -10,7 +10,7 @@ namespace ZE.MechBattle.Ecs
 
             // ATTENTION: TargetDefineSystem and next TargetValidation are in different systems group
             // because target define system launches a job with World.Handle
-            installer.AddSystem<AttackTargetDefineSystem>(SystemGroupOrder.EarlyUpdate);
+            //installer.AddSystem<AttackTargetDefineSystem>(SystemGroupOrder.EarlyUpdate);
             installer.AddSystem<AttackTargetValidationSystem>(SystemGroupOrder.Default);
             installer.AddSystem<AttackTargetSpecificationSystem>(SystemGroupOrder.Default);
             installer.AddSystem<CompositeTargetClearTagSystem>(SystemGroupOrder.AfterDispose);

@@ -71,5 +71,9 @@ namespace ZE.MechBattle.Navigation.Tests
         {
             throw new System.NotImplementedException();
         }
+
+        public NavigationPortal GetPortal(int portalId) => _portalsList[portalId];
+
+        public bool TryGetExit(int exitId, out NavigationPortalExit exit) => _exits.TryGetValue(exitId, out exit);
     }
 }
