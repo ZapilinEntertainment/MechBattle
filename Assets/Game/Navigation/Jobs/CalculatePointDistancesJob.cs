@@ -57,7 +57,7 @@ namespace ZE.MechBattle
                     if (!Cells.TryGetValue(neighbourPos, out var neighbourData) || !neighbourData.Passability.IsPassable)
                         continue;
 
-                    TryHandleNeighbour(neighbourPos, data.Distance + TriangularMath.GetPeakTransitionCost(direction));
+                    TryHandleNeighbour(neighbourPos, data.Distance + TrianglesTransitionLogic.GetPeakTransitionCost(direction));
                 }
             }
             else
@@ -69,7 +69,7 @@ namespace ZE.MechBattle
 
                     var direction = (ValleyNeighbour)i;
                     var neighbourPos = TriangularMath.GetValleyNeighbour(pos, direction);
-                    TryHandleNeighbour(neighbourPos, data.Distance + TriangularMath.GetValleyTransitionCost(direction));                    
+                    TryHandleNeighbour(neighbourPos, data.Distance + TrianglesTransitionLogic.GetValleyTransitionCost(direction));                    
                 }
             }            
         }

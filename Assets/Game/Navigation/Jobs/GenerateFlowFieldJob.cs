@@ -127,7 +127,7 @@ namespace ZE.MechBattle.Navigation
                         continue;
                     }
                     
-                    var cost = TriangularMath.GetTransitionCost(i, isPeak);
+                    var cost = TrianglesTransitionLogic.GetTransitionCost(i, isPeak);
 
                     var neighbourCalculationData = CalculationData[neighbourIndex];
                     var newIntegrationValue = integrationValue + neighbourPassabilityData.EntranceCost * cost;

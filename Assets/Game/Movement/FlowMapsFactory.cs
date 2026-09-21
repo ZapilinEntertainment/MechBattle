@@ -25,22 +25,34 @@ namespace ZE.MechBattle
             _rowsTable.Dispose();
         }
 
+        public MovementDensityMap CreateDensityMap(int2 hexCoord)
+        {
+            var coordsConverter = CreateHexCoordsConverter(hexCoord);
+            var densityMap = new MovementDensityMap(coordsConverter);
+            return densityMap;
+        }
+
         public PortalExitFlowMap CreateEmptyPortalExitFlowMap(int2 hexCoord, NavigationPortalExit portalExit)
         {
             var id = _nextId++;
-            var hexPos = new NavigationHexPosition(hexCoord, _map);
-            var coordsConverter = new FlattenedHexCoordsConverter(
-                hexPos.TriangularCenterPos, 
-                _map.TrianglesPerHexEdge, 
-                _map.HexEdgeLength, 
-                _map.TriangleHeight, 
-                _rowsTable.AsReadOnly());
+            var coordsConverter = CreateHexCoordsConverter(hexCoord);
 
             return new PortalExitFlowMap(
                 id,
                 hexCoord, 
                 coordsConverter, 
                 _flattenedArrayLength);
+        }
+
+        private FlattenedHexCoordsConverter CreateHexCoordsConverter(int2 hexCoord)
+        {
+            var hexPos = new NavigationHexPosition(hexCoord, _map);
+            return new (
+                hexPos.TriangularCenterPos,
+                _map.TrianglesPerHexEdge,
+                _map.HexEdgeLength,
+                _map.TriangleHeight,
+                _rowsTable.AsReadOnly());
         }
     
     }

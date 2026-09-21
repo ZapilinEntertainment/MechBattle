@@ -38,11 +38,11 @@ namespace ZE.MechBattle.Ecs
             builder.Register<HexDataCoordinator>(Lifetime.Scoped);
             builder.Register<FlowMapsFactory>(Lifetime.Scoped);
             builder.Register<IFlowMapsList, PortalFlowMapsList>(Lifetime.Scoped).AsSelf();
-            builder.Register<FlowMapAssignmentList>(Lifetime.Scoped);
-
-            builder.Register<IMovementCellsMap, MovementCellsMap>(Lifetime.Scoped).AsSelf();
+            builder.Register<FlowMapAssignmentList>(Lifetime.Scoped);            
 
             builder.RegisterEntryPoint<NavigationMapInitializer>();
+
+            CollisionAvoidanceSubfeatureInstaller.SceneScopeInstall(builder);
         }
 
         protected override MovementSystemsInstallQueue CreateQueue() => new();

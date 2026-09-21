@@ -8,6 +8,7 @@ namespace ZE.MechBattle.Navigation
     public readonly struct FlattenedHexCoordsConverter
     {
         public readonly int TrianglesPerSector;
+        public readonly int TotalTrianglesCount => 6 * TrianglesPerSector;
 
         private readonly float _hexEdgeLength;
         private readonly float _triangleHeight;

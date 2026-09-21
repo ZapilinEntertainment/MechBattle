@@ -81,7 +81,7 @@ namespace ZE.MechBattle.Navigation
                 return false;
             }
 
-            var transitionMeasurePoints = TriangularMath.GetTransitionMeasurePoints(checkCell.Tripos, neighbourCell.Tripos);
+            var transitionMeasurePoints = TrianglesTransitionLogic.GetTransitionMeasurePoints(checkCell.Tripos, neighbourCell.Tripos);
             return HeightLogic.IsTransitionPossible(checkCell.HeightData, neighbourCell.HeightData, transitionMeasurePoints, maxElevationDifference);
         }
 
@@ -104,6 +104,55 @@ namespace ZE.MechBattle.Navigation
             }
 
             return neighboursMask;
+        }
+
+
+        [BurstCompile]
+        public static float GetPeakTransitionCost(PeakNeighbour neighbour)
+        {
+            switch (neighbour)
+            {
+                case PeakNeighbour.VertexUp:
+                case PeakNeighbour.VertexDownRightValley:
+                case PeakNeighbour.VertexDownLeftValley:
+                    return NavigationConstants.VERTEX_PASS_COST;
+                case PeakNeighbour.EdgeDown:
+                case PeakNeighbour.EdgeUpLeft:
+                case PeakNeighbour.EdgeUpRight:
+                    return NavigationConstants.EDGE_PASS_COST;
+                default:
+                    return NavigationConstants.LONG_VERTEX_PASS_COST;
+            }
+        }
+
+        [BurstCompile]
+        public static float GetValleyTransitionCost(ValleyNeighbour neighbour)
+        {
+            switch (neighbour)
+            {
+                case ValleyNeighbour.VertexUpRightPeak:
+                case ValleyNeighbour.VertexDown:
+                case ValleyNeighbour.VertexUpLeftPeak:
+                    return NavigationConstants.VERTEX_PASS_COST;
+                case ValleyNeighbour.EdgeUp:
+                case ValleyNeighbour.EdgeDownLeft:
+                case ValleyNeighbour.EdgeDownRight:
+                    return NavigationConstants.EDGE_PASS_COST;
+                default:
+                    return NavigationConstants.LONG_VERTEX_PASS_COST;
+            }
+        }
+
+        [BurstCompile]
+        public static float GetTransitionCost(int neighbourIndex, bool isPeak) => isPeak ? GetPeakTransitionCost((PeakNeighbour)neighbourIndex) : GetValleyTransitionCost((ValleyNeighbour)neighbourIndex);
+
+        [BurstCompile]
+        public static TransitionMeasurePoints GetTransitionMeasurePoints(IntTriangularPos start, IntTriangularPos end)
+        {
+            if (start.IsPeak)
+                return TriangularMath.DefinePeakNeighbour(start, end).GetTransitionMeasurePoints();
+            else
+                return TriangularMath.DefineValleyNeighbour(start, end).GetTransitionMeasurePoints();
         }
     }
 }

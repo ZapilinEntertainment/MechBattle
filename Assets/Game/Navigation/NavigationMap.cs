@@ -47,6 +47,8 @@ namespace ZE.MechBattle.Navigation
         float3 GetWorldPos(int3 pos);
     }
 
+
+    // todo: rework all cells and hexes to entities
     public class NavigationMap : IUpdatableMap, IDisposable
     {        
         public Allocator ResourcesAllocator => _allocator;

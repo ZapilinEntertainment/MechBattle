@@ -76,7 +76,7 @@ namespace ZE.MechBattle.Ecs
                 if (dot < 1f)
                 {
                     // counter-direction
-                    // need some rvo
+                    // possible solution: half-speed, but co-existance in same cell
                     SolveYieldingCase(entity, moveCell);
                 }
                 else
@@ -86,6 +86,7 @@ namespace ZE.MechBattle.Ecs
                     var resultingTripos = TriangularMath.WorldToTrianglePosInvertedHeight(new float3(nextPos.x, 0f, nextPos.y), _invertedTriangleHeight);                                      
                     if (_vectorsList.TryGetValue(resultingTripos, out var alreadyOccupiedCell))
                     {
+                        // todo: check for detour
                         var currentTripos = _triangularPosComponents.Get(entity).Value;
                         _nextPositionComponents.Set(entity, new(currentPos, currentTripos));
                     }                        

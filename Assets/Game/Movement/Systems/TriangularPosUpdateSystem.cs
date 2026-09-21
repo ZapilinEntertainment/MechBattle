@@ -10,7 +10,7 @@ namespace ZE.MechBattle.Ecs {
     public sealed class TriangularPosUpdateSystem : ISystem 
     {
         public World World { get; set;}
-        public const SystemGroupOrder GroupOrder = SystemGroupOrder.RegularUpdate;
+        public const SystemGroupOrder GroupOrder = SystemGroupOrder.Pathfinding;
 
         private Filter _filter;
         private Stash<TriangularPosComponent> _tripos;

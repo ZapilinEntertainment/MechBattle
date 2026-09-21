@@ -90,7 +90,7 @@ namespace ZE.MechBattle.Navigation
                 if (!PassabilityData.TryGetValue(neighbourPos, out var neighbourPassabilityData, out var neighbourIndex))
                     continue;
 
-                var cost = TriangularMath.GetTransitionCost(neighbourDirection, isPeak);
+                var cost = TrianglesTransitionLogic.GetTransitionCost(neighbourDirection, isPeak);
                 AstarLogic.HandleNeighbour(activeNodeData, neighbourIndex, OpenedList, CalculationData, cost);
             }
         }

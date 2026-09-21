@@ -67,5 +67,10 @@ namespace ZE.MechBattle
             _repairMarker.SetActive(false);
             _isActive = false;
         }
+
+        private void OnDestroy()
+        {
+            _isActive = false;
+        }
     }
 }

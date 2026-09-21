@@ -6,52 +6,52 @@ namespace ZE.MechBattle.Ecs
     {
         protected override void Configure(ISystemsOperator installer)
         {
-            installer.AddSystem<HexRaycastUpdateSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<ActualEdgeExitDataCalculationSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<PortalEdgeExitsUpdateSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<PortalsActualizationSystem>(SystemGroupOrder.RegularUpdate);
+            installer.AddSystem<HexRaycastUpdateSystem>(SystemGroupOrder.Pathfinding);
+            installer.AddSystem<ActualEdgeExitDataCalculationSystem>(SystemGroupOrder.Pathfinding);
+            installer.AddSystem<PortalEdgeExitsUpdateSystem>(SystemGroupOrder.Pathfinding);
+            installer.AddSystem<PortalsActualizationSystem>(SystemGroupOrder.Pathfinding);
 
-            installer.AddSystem<OutdatedExitsClearSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<OutdatedPortalsClearSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<PortalDistancesCalculationSystem>(SystemGroupOrder.RegularUpdate);
+            installer.AddSystem<OutdatedExitsClearSystem>(SystemGroupOrder.Pathfinding);
+            installer.AddSystem<OutdatedPortalsClearSystem>(SystemGroupOrder.Pathfinding);
+            installer.AddSystem<PortalDistancesCalculationSystem>(SystemGroupOrder.Pathfinding);
 
             installer.AddSystem<TriangularPosUpdateSystem>(TriangularPosUpdateSystem.GroupOrder);
-            installer.AddSystem<NoTargetPathsClearingSystem>(SystemGroupOrder.RegularUpdate);
+            installer.AddSystem<NoTargetPathsClearingSystem>(SystemGroupOrder.Pathfinding);
 
-            installer.AddSystem<HexPathDefineSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<HexPathSearchSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<HexPortalPathCalculationSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<HexPortalPathAccountingSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<HexPathReadyCheckSystem>(SystemGroupOrder.RegularUpdate);
+            installer.AddSystem<HexPathDefineSystem>(SystemGroupOrder.Pathfinding);
+            installer.AddSystem<HexPathSearchSystem>(SystemGroupOrder.Pathfinding);
+            installer.AddSystem<HexPortalPathCalculationSystem>(SystemGroupOrder.Pathfinding);
+            installer.AddSystem<HexPortalPathAccountingSystem>(SystemGroupOrder.Pathfinding);
+            installer.AddSystem<HexPathReadyCheckSystem>(SystemGroupOrder.Pathfinding);
 
-            installer.AddSystem<TrianglePathDefineSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<FlowPathSearchSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<FlowMapCalculationSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<TrianglePathSearchSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<TrianglePathCalculationSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<RegularTrianglePathReadyCheckSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<FlowTrianglePathReadyCheckSystem>(SystemGroupOrder.RegularUpdate);
+            installer.AddSystem<TrianglePathDefineSystem>(SystemGroupOrder.Pathfinding);
+            installer.AddSystem<FlowPathSearchSystem>(SystemGroupOrder.Pathfinding);
+            installer.AddSystem<FlowMapCalculationSystem>(SystemGroupOrder.Pathfinding);
+            installer.AddSystem<TrianglePathSearchSystem>(SystemGroupOrder.Pathfinding);
+            installer.AddSystem<TrianglePathCalculationSystem>(SystemGroupOrder.Pathfinding);
+            installer.AddSystem<RegularTrianglePathReadyCheckSystem>(SystemGroupOrder.Pathfinding);
+            installer.AddSystem<FlowTrianglePathReadyCheckSystem>(SystemGroupOrder.Pathfinding);
 
-            installer.AddSystem<RegularTrianglePathsAccountingSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<FlowMapsAccountingSystem>(SystemGroupOrder.RegularUpdate);
+            installer.AddSystem<RegularTrianglePathsAccountingSystem>(SystemGroupOrder.Pathfinding);
+            installer.AddSystem<FlowMapsAccountingSystem>(SystemGroupOrder.Pathfinding);
 
-            installer.AddSystem<RegularTrianglePathWaypointSetSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<FlowTrianglePathWaypointSetSystem>(SystemGroupOrder.RegularUpdate);
+            installer.AddSystem<RegularTrianglePathWaypointSetSystem>(SystemGroupOrder.Pathfinding);
+            installer.AddSystem<FlowTrianglePathWaypointSetSystem>(SystemGroupOrder.Pathfinding);
 
-            installer.AddSystem<MovementVectorsMapUpdateSystem>(SystemGroupOrder.RegularUpdate);           
-            installer.AddSystem<WaypointsMovementSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<MovementCollisionAvoidanceSystem>(SystemGroupOrder.RegularUpdate);
+            installer.AddSystem<WaypointsMovementSystem>(SystemGroupOrder.UnitsNextPositionCalculation);            
 
-            installer.AddSystem<NextPositionApplySystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<WaypointsCheckSystem>(SystemGroupOrder.RegularUpdate);
+            installer.AddSystem<NextPositionApplySystem>(SystemGroupOrder.UnitsMovement);
+            installer.AddSystem<WaypointsCheckSystem>(SystemGroupOrder.PostMovement);
 
-            installer.AddSystem<TrianglePathProgressionUpdateSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<HexPathProgressionUpdateSystem>(SystemGroupOrder.RegularUpdate);
+            installer.AddSystem<TrianglePathProgressionUpdateSystem>(SystemGroupOrder.PostMovement);
+            installer.AddSystem<HexPathProgressionUpdateSystem>(SystemGroupOrder.PostMovement);
 
-            installer.AddSystem<PortalsPathInvalidationSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<ChangeMovementTargetSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<HexPortalPathClearSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<TrianglePathClearSystem>(SystemGroupOrder.RegularUpdate);
+            installer.AddSystem<PortalsPathInvalidationSystem>(SystemGroupOrder.PostMovement);
+            installer.AddSystem<ChangeMovementTargetSystem>(SystemGroupOrder.PostMovement);
+            installer.AddSystem<HexPortalPathClearSystem>(SystemGroupOrder.PostMovement);
+            installer.AddSystem<TrianglePathClearSystem>(SystemGroupOrder.PostMovement);
+
+            CollisionAvoidanceSubfeatureInstaller.InstallSystems(installer);
         }
     }
 }
