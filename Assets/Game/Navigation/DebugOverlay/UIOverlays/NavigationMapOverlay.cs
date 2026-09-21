@@ -122,7 +122,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         {
             if (_map == null)
             {
-                var settings = settingsSO.ToStruct();
+                var settings = settingsSO.ToSettingsObject();
                 _map = new(settings, Allocator.Persistent);
                 NavigationDebugDataContainer.SetMap(_map);
 

@@ -5,10 +5,11 @@ namespace ZE.MechBattle.Navigation
         public static NavigationCell CreateDefaultCell(NavigationMap map, IntTriangularPos pos) =>
             new()
             {
-                HeightData = new(NavigationConstants.DEFAULT_HEIGHT),
-                Passability = GetDefaultPassability(map),
+                HeightData = GetDefaultHeightData(),
+                Passability = GetDefaultPassability(map.DefaultPassability),
             };
 
-        public static CellPassabilityData GetDefaultPassability(INavigationMap map) => new (map.DefaultPassability, int.MaxValue, NavigationConstants.DEFAULT_CELL_ZONE, NavigationConstants.DEFAULT_TRIANGLE_ENTRANCE_COST);
+        public static CellPassabilityData GetDefaultPassability(bool defaultPassability) => new (defaultPassability, int.MaxValue, NavigationConstants.DEFAULT_CELL_ZONE, NavigationConstants.DEFAULT_TRIANGLE_ENTRANCE_COST);
+        public static CellHeightData GetDefaultHeightData() => new(NavigationConstants.DEFAULT_HEIGHT);
     }
 }

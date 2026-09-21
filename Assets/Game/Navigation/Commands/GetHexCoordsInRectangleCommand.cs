@@ -18,7 +18,7 @@ namespace ZE.MechBattle.Navigation
             return Execute(mapSettings.BottomLeftCorner, mapSettings.TopRightCorner, hexEdgeSize, triangleEdgeSize, allocator);
         }
 
-        public static NativeList<int2> Execute(MapSettingsSO mapSettings, Allocator allocator) => Execute(mapSettings.ToStruct(), allocator);
+        public static NativeList<int2> Execute(MapSettingsSO mapSettings, Allocator allocator) => Execute(mapSettings.ToSettingsObject(), allocator);
 
         public static NativeList<int2> Execute(
             float2 worldMin,

@@ -2459,6 +2459,7 @@ GameObject:
   - component: {fileID: 1259888753}
   - component: {fileID: 1259888768}
   - component: {fileID: 1259888769}
+  - component: {fileID: 1259888770}
   m_Layer: 0
   m_Name: DEVELOP
   m_TagString: Untagged
@@ -2515,6 +2516,20 @@ MonoBehaviour:
   _endHex:
     x: 0
     y: 2
+--- !u!114 &1259888770
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259888751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9c5a58d6461f9245b7bdb8bbd107741, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.ExitAndPortalsIdsDrawer
+  _drawPortalIds: 1
+  _drawExitIds: 1
 --- !u!1 &1324568865
 GameObject:
   m_ObjectHideFlags: 0

@@ -186,14 +186,11 @@ namespace ZE.MechBattle
                 var index = 0;
                 foreach (var tripos in new HexTrianglesEnumerator(hexCenter, _hexRadius))
                 {
-                    var cellData = _map.GetNavigationCell(tripos);
-                    cellData.HeightData = _heightData[index];
-
+                    _map.UpdateHeightData(tripos, _heightData[index]);
+                    
                     var passability = _resultingPassabilityData[index];
-                    passability.ZoneIndex = _zones[index];                
-                    cellData.Passability = passability;
-
-                    _map.UpdateNavigationCell(tripos, cellData);
+                    passability.ZoneIndex = _zones[index];
+                    _map.UpdateCellPassability(tripos, passability);
 
                     index++;
                 }

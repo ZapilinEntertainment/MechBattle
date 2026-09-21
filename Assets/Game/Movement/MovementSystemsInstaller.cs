@@ -4,6 +4,7 @@ using VContainer;
 using VContainer.Unity;
 using Scellecs.Morpeh;
 using ZE.MechBattle.Navigation;
+using ZE.MechBattle.Navigation.Ecs;
 
 namespace ZE.MechBattle.Ecs
 {
@@ -42,6 +43,7 @@ namespace ZE.MechBattle.Ecs
 
             builder.RegisterEntryPoint<NavigationMapInitializer>();
 
+            EntitiesMapSubfeatureInstaller.SceneScopeInstall(builder);
             CollisionAvoidanceSubfeatureInstaller.SceneScopeInstall(builder);
         }
 

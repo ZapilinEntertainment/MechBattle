@@ -70,7 +70,7 @@ namespace ZE.MechBattle.Navigation
             _raycastPointsArray = new (raycastsCountPerTriangle, allocator, NativeArrayOptions.UninitializedMemory);
         }
 
-        public NavigationCaster(Allocator allocator, MapSettingsSO mapSettings, QueryParameters queryParameters ) : this(allocator, mapSettings.ToStruct(), queryParameters) { }
+        public NavigationCaster(Allocator allocator, MapSettingsSO mapSettings, QueryParameters queryParameters ) : this(allocator, mapSettings.ToSettingsObject(), queryParameters) { }
 
         public PrepareHexRaycastCommandsJob ConstructPositionsJob(NavigationHexPosition hexPos, int trianglesPerEdge)
         {

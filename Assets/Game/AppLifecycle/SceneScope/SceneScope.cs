@@ -29,9 +29,7 @@ namespace ZE.MechBattle
 
             builder.Register<ColouredMaterialsDepot>(Lifetime.Scoped);
 
-            var map = new NavigationMap(_mapSettings.ToStruct(), Allocator.Persistent);
-            builder.RegisterInstance<INavigationMap, IUpdatableMap>(map);
-            builder.Register(resolver => new NavigationMapController(map), Lifetime.Scoped);
+            builder.RegisterInstance(_mapSettings.ToSettingsObject());
 
             builder.RegisterInstance(_levelSettings);
 

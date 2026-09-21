@@ -22,7 +22,7 @@ namespace ZE.MechBattle.Navigation
         [ShowInInspector]
         public float TriangleEdgeSize => HexEdgeSize / TrianglesPerHexEdge;
        public float TriangleHeight => TriangleEdgeSize * NavigationConstants.SQRT_OF_THREE_HALVED;
-        public MapSettings ToStruct() => new MapSettings(this);
+        public MapSettings ToSettingsObject() => new MapSettings(this);
     }
 
     public record MapSettings

@@ -29,7 +29,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             if (HexRadius == 0)
                 return;
 
-            var mapData = mapSettings.ToStruct();
+            var mapData = mapSettings.ToSettingsObject();
             using (var list = new NativeArray<IntTriangularPos>(TriangularMath.GetTrianglesCountInHex(HexRadius), Allocator.TempJob))
             {
                 var navHex = new NavigationHexPosition(HexCoord.x, HexCoord.y, mapData.HexEdgeSize, mapData.TriangleHeight);
