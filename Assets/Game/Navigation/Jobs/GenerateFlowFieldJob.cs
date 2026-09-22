@@ -143,22 +143,21 @@ namespace ZE.MechBattle.Navigation
             }
         }
 
+        // optimized by Qwen
         private void BuildFlowField()
         {
-            for (var i = 0; i< PassabilityData.Length; i++)
+            for (var i = 0; i < PassabilityData.Length; i++)
             {
                 var setupData = PassabilityData[i];
                 var calculationData = CalculationData[i];
                 if (calculationData.IsCalculated)
-                    continue;                
-
-                // ignore exit cells
-                // however, fill blocked cells - for cases, when unit moved off-grid
+                    continue;
 
                 var pos = PassabilityData.IndexToTriangular(i);
                 var direction = 0;
                 var minIntegration = float.MaxValue;
                 var isPeak = pos.IsPeak;
+                var targetDir = isPeak ? _exitFlowDirectionPeak : _exitFlowDirectionValley;
 
                 for (var j = 0; j < NEIGHBOURS_COUNT; j++)
                 {
@@ -167,31 +166,33 @@ namespace ZE.MechBattle.Navigation
                         continue;
 
                     var neighbourPassabilityData = PassabilityData[neighbourDataIndex];
-                    if (!neighbourPassabilityData.IsPassable | !setupData.IsNeighbourAccessible(j))
+                    if (!neighbourPassabilityData.IsPassable || !setupData.IsNeighbourAccessible(j))
                         continue;
-
 
                     var neighbourData = CalculationData[neighbourDataIndex];
                     var neighbourIntegration = neighbourData.IntegrationValue;
+
                     var isNewMinIntegration = neighbourIntegration < minIntegration;
-                    if (!isNewMinIntegration & (neighbourIntegration == minIntegration))
+
+                    if (!isNewMinIntegration && neighbourIntegration == minIntegration)
                     {
-                        var targetDir = isPeak ? _exitFlowDirectionPeak : _exitFlowDirectionValley;
-                        var prevMinElementDelta = TriangularMath.GetDirectionsDelta(targetDir, direction);
-                        var newOptionDelta = TriangularMath.GetDirectionsDelta(targetDir, j);
-                        if (newOptionDelta < prevMinElementDelta) 
-                            isNewMinIntegration = true; 
+                        int diffPrev = math.abs(targetDir - direction);
+                        int prevDelta = math.min(diffPrev, NEIGHBOURS_COUNT - diffPrev);
+
+                        int diffNew = math.abs(targetDir - j);
+                        int newDelta = math.min(diffNew, NEIGHBOURS_COUNT - diffNew);
+
+                        isNewMinIntegration = newDelta < prevDelta;
                     }
 
                     minIntegration = math.select(minIntegration, neighbourIntegration, isNewMinIntegration);
                     direction = math.select(direction, j, isNewMinIntegration);
                 }
+
                 var isLesserValueFound = minIntegration < calculationData.IntegrationValue;
                 calculationData.FlowDirection = math.select(calculationData.FlowDirection, direction, isLesserValueFound);
 
-
                 calculationData.IsCalculated = true;
-
                 CalculationData[i] = calculationData;
             }
         }

@@ -5,6 +5,7 @@ using VContainer.Unity;
 using Scellecs.Morpeh;
 using ZE.MechBattle.Navigation;
 using ZE.MechBattle.Navigation.Ecs;
+using ZE.MechBattle.Movement.CollisionAvoidance;
 
 namespace ZE.MechBattle.Ecs
 {

@@ -31,7 +31,7 @@ namespace ZE.MechBattle.Develop
             _portals = portals;
         }
 
-        [Button("Draw portal exits")]
+        [EnableInPlayMode, Button("Draw portal exits")]
         private void DrawPortalExits()
         {
             _drawDataA.Clear();

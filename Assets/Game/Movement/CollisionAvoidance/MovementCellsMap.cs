@@ -4,7 +4,7 @@ using VContainer;
 using ZE.MechBattle.Ecs;
 using ZE.MechBattle.Navigation;
 
-namespace ZE.MechBattle
+namespace ZE.MechBattle.Movement.CollisionAvoidance
 {
     public class MovementCellsMap : IMovementCellsMap
     {
@@ -20,8 +20,6 @@ namespace ZE.MechBattle
             _cellMovementDatas = world.GetStash<CellMovementDataComponent>();
             _avoidances = world.GetStash<MovementCollisionAvoidanceComponent>();
         }
-
-        public void Clear() => _cellMovementDatas.RemoveAll();
 
         public bool TryGetValue(IntTriangularPos tripos, out CellMovementData cellData)
         {
@@ -68,5 +66,7 @@ namespace ZE.MechBattle
             var cellData = new CellMovementData(entity, exists ? avoidance.Priority : MovementCollisionAvoidancePriority.None, moveDir, projectionIndex);
             return TryWriteCell(tripos, cellData);
         }
+
+        public void Clear() => _cellMovementDatas.RemoveAll();
     }
 }

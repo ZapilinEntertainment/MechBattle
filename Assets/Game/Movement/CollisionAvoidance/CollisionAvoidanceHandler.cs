@@ -6,19 +6,17 @@ namespace ZE.MechBattle
 {
     public class CollisionAvoidanceHandler
     {
-        private readonly MovementDensityMapsManager _densityMapsManager;
+        private readonly IMovementDensityMap _densityMap;
 
         [Inject]
-        public CollisionAvoidanceHandler(MovementDensityMapsManager movementDensityMapsManager)
+        public CollisionAvoidanceHandler(IMovementDensityMap densityMap)
         {
-            _densityMapsManager = movementDensityMapsManager;
+            _densityMap = densityMap;
         }
-
 
         public int CorrectFlowMapDirection(int2 hexCoord, IntTriangularPos tripos, FlowMap flowMap, int originalDirection)
         {
-            var densityMap = _densityMapsManager.GetDensityMap(hexCoord);
-            var bestOption = GetBestNextTriangleOptionCommand.Execute(tripos, flowMap, densityMap, originalDirection);
+            var bestOption = GetBestNextTriangleOptionCommand.Execute(tripos, flowMap, _densityMap, originalDirection);
             return bestOption.Direction;
         }
     

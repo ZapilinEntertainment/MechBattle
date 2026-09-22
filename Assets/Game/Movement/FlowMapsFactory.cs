@@ -25,13 +25,6 @@ namespace ZE.MechBattle
             _rowsTable.Dispose();
         }
 
-        public MovementDensityMap CreateDensityMap(int2 hexCoord)
-        {
-            var coordsConverter = CreateHexCoordsConverter(hexCoord);
-            var densityMap = new MovementDensityMap(coordsConverter);
-            return densityMap;
-        }
-
         public PortalExitFlowMap CreateEmptyPortalExitFlowMap(int2 hexCoord, NavigationPortalExit portalExit)
         {
             var id = _nextId++;

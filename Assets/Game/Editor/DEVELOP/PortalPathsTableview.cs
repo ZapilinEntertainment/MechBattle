@@ -24,7 +24,7 @@ namespace ZE.MechBattle.Develop
             _portalPaths = portalPaths;
         }
 
-        [Button("UpdateList")]
+        [EnableInPlayMode, Button("UpdateList")]
         private void UpdateList()
         {
             var count = _portalPaths.Count;

@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using Scellecs.Morpeh;
-using UnityEngine;
 using Unity.IL2CPP.CompilerServices;
 using Unity.Mathematics;
-using ZE.MechBattle.Navigation;
+using TriInspector;
 
 namespace ZE.MechBattle.Ecs {
     [System.Serializable]
@@ -13,8 +9,8 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public readonly struct FlowTrianglePathComponent : IPathUserComponent<int>, ITrianglePathComponent
     {
-        public readonly int FlowMapId;
-        public readonly int2 MapHexCoord;
+        [ShowInInspector, ReadOnly] public readonly int FlowMapId;
+        [ShowInInspector, ReadOnly] public readonly int2 MapHexCoord;
 
         public int PathKey => FlowMapId;
 

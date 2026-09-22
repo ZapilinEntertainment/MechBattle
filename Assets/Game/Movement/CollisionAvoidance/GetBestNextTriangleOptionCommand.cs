@@ -22,15 +22,15 @@ namespace ZE.MechBattle
                 ScorePoints = CalculateScorePoints(dotValue, densityValue);
             }
 
-            private static float CalculateScorePoints(float dotValue, float densityValue) => dotValue * 100f / (densityValue * densityValue);
+            private static float CalculateScorePoints(float dotValue, float densityValue) => dotValue * 100f / ((1f+densityValue) * (1f+densityValue));
         }
 
         private struct DensityMapChecker<T> where T : ITriangleNeighbourOffsets
         {
             private readonly T _offsets;
-            private readonly MovementDensityMap _densityMap;
+            private readonly IMovementDensityMap _densityMap;
 
-            public DensityMapChecker(T offsets, MovementDensityMap densityMap)
+            public DensityMapChecker(T offsets, IMovementDensityMap densityMap)
             {
                 _offsets = offsets;
                 _densityMap = densityMap;
@@ -48,25 +48,28 @@ namespace ZE.MechBattle
                 var originalDirectionVector = _offsets[originalDirection];
                 var direction = -1;
 
+                //var changed = false;
                 foreach (var neighbourPos in new TriangleNeighboursEnumerator<T>(tripos, _offsets))
                 {
                     direction++;
                     if (!_densityMap.TryGetDensity(neighbourPos, out var density))
-                        continue;
+                        density = 0f;
 
                     var currentDirVector = _offsets[direction];
-                    var dot = math.dot(originalDirection, currentDirVector);
+                    var dot = math.dot(originalDirectionVector, currentDirVector);
                     var option = new NextTriangleOption(dot, density, neighbourPos, direction);
-
+                    
                     if (option.ScorePoints > bestOption.ScorePoints)
+                    {
                         bestOption = option;
+                    }
                 }
 
                 return bestOption;
             }
         }
 
-        public static NextTriangleOption Execute(IntTriangularPos tripos, FlowMap flowMap, MovementDensityMap densityMap, int originalDirection)
+        public static NextTriangleOption Execute(IntTriangularPos tripos, FlowMap flowMap, IMovementDensityMap densityMap, int originalDirection)
         {
             NextTriangleOption bestOption;
 

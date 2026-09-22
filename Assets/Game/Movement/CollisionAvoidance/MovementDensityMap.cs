@@ -1,31 +1,33 @@
-using System;
+using Scellecs.Morpeh;
+using UnityEngine;
+using VContainer;
+using ZE.MechBattle.Ecs;
 using ZE.MechBattle.Navigation;
 
-namespace ZE.MechBattle
+namespace ZE.MechBattle.Movement.CollisionAvoidance
 {
-    public class MovementDensityMap
+    public class MovementDensityMap : IMovementDensityMap
     {
-        private readonly float[] _values;
-        private readonly FlattenedHexCoordsConverter _coordsConverter;
-    
-        public MovementDensityMap(in FlattenedHexCoordsConverter coordsConverter)
+        private readonly IEntitiesNavigationMap _map;
+        private readonly Stash<CellMovementDensityComponent> _cellMovementDensity;
+
+        [Inject]
+        public MovementDensityMap(IEntitiesNavigationMap entitiesNavigationMap, World world)
         {
-            _coordsConverter = coordsConverter;
-            _values = new float[_coordsConverter.TotalTrianglesCount];
+            _map = entitiesNavigationMap;
+
+            _cellMovementDensity = world.GetStash<CellMovementDensityComponent>();
         }
 
-        public float GetDensityUnsafe(IntTriangularPos tripos) => _values[_coordsConverter.TriangularToIndex(tripos)];
 
         public bool TryGetDensity(IntTriangularPos tripos, out float density)
         {
-            if (!_coordsConverter.TryGetIndex(tripos, out var index))
-            {
-                density = float.MaxValue;
+            density = 0f;
+            if (!_map.TryGetEntity(tripos, out var cellEntity))
                 return false;
-            }
 
-            density = _values[index];
-            return true;
+            density = GetComponentOrDefaultValueCommand.Execute(cellEntity, _cellMovementDensity, 0f);
+            return density != 0f;
         }
     }
 }

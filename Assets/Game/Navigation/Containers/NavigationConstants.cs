@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using Unity.Mathematics;
+using Codice.CM.Common;
 
 namespace ZE.MechBattle.Navigation
 {
@@ -13,9 +14,9 @@ namespace ZE.MechBattle.Navigation
 
         public const short DEFAULT_HEIGHT = 0;
 
-        public const float EDGE_PASS_COST = 1f;
-        public const float VERTEX_PASS_COST = 2.01f;
-        public const float LONG_VERTEX_PASS_COST = SQRT_OF_THREE;
+        public const float EDGE_PASS_COST = NavigationConstants.DIV_SQRT_OF_THREE;
+        public const float VERTEX_PASS_COST = 2f * EDGE_PASS_COST + 0.01f;
+        public const float LONG_VERTEX_PASS_COST = 1f + 0.01f;
 
         //public const int PEAK_EDGES_MASK = (1 << (int)PeakNeighbour.EdgeDown) + (1 << (int)PeakNeighbour.EdgeUpLeft) + (1 << (int)PeakNeighbour.EdgeUpRight);
        // public const int PEAK_LONG_VERTEX_MASK = (1 << (int)PeakNeighbour.EdgeUpRight) + (1 << (int)PeakNeighbour.VertexRight) + (1 << (int)PeakNeighbour.VertexDownRightPeak) + ()

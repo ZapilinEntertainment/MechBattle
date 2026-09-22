@@ -70,7 +70,11 @@ namespace ZE.MechBattle.Ecs {
 
         protected override void OnPathCalculated(Entity entity, HexPortalsPath path)
         {
-            //UnityEngine.Debug.Log($"hex path calculated: {path.Id} for entity {entity.Id}");
+#if ZE_NAVIGATION_DEBUG
+            if (NavigationLogger.Settings.HasFlag(NavigationLogEvents.EntityPathCalculated))
+                UnityEngine.Debug.Log($"hex path calculated: {path.Id} for entity {entity.Id}");
+#endif
+
             _progressionComponents.Add(entity, new(path.NodesCount));
             _calculationTags.Remove(entity);
         }
