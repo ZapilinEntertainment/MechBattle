@@ -1,8 +1,8 @@
 using System;
 using UnityEngine;
 using Unity.Collections;
-using Unity.Mathematics;
 using Unity.Jobs;
+using Unity.Mathematics;
 using Scellecs.Morpeh;
 using Scellecs.Morpeh.Native;
 using ZE.MechBattle.Navigation;
@@ -13,19 +13,24 @@ namespace ZE.MechBattle.Ecs
     {
         private TargetDefineJob _job;
         private NativeArray<PlayerRelationsMask> _relationMasks;
-        private NativeList<Entity> _entities;
+        private NativeList<Entity> _entitiesList;
         private JobHandle _activeJobHandle;
+        private NativeParallelHashMap<IntTriangularPos, Entity> _entitiesMap;
 
         private readonly float _hexEdgeLength;
-        private readonly int _trianglesPerHexEdge;
         private readonly World _world;
-        private readonly PlayerRelations _relations;
+        private readonly PlayerRelations _relations;       
 
         private readonly Stash<PlayerAffiliationComponent> _affiliationComponents;
         private readonly Stash<AttackTargetComponent> _attackTargets;
         private readonly Stash<PositionComponent> _positionComponents;
         private readonly Stash<HexCoordComponent> _hexCoordComponents;
         private readonly Stash<TargetSearchRadiusComponent> _targetSearchRadiusComponents;
+
+        private readonly Filter _movementCellsFilter;
+        private readonly Stash<CellMovementDataComponent> _movementCells;
+        private readonly Stash<CellEntityComponent> _cellComponents;
+        private const Allocator ALLOCATOR = Allocator.Persistent;
 
         public TargetDefineProcess(
             INavigationMap map, 
@@ -38,7 +43,6 @@ namespace ZE.MechBattle.Ecs
             _world = world;
 
             _hexEdgeLength = map.HexEdgeLength;
-            _trianglesPerHexEdge = map.TrianglesPerHexEdge;
 
             _affiliationComponents = _world.GetStash<PlayerAffiliationComponent>();
             _attackTargets = _world.GetStash<AttackTargetComponent>();
@@ -46,41 +50,52 @@ namespace ZE.MechBattle.Ecs
             _hexCoordComponents = _world.GetStash<HexCoordComponent>();
             _targetSearchRadiusComponents = _world.GetStash<TargetSearchRadiusComponent>();
 
-            _relationMasks = new NativeArray<PlayerRelationsMask>(playersList.Count, Allocator.Persistent);     
-            _entities = new NativeList<Entity>(Allocator.Persistent);   
+            _relationMasks = new NativeArray<PlayerRelationsMask>(playersList.Count, ALLOCATOR);     
+            _entitiesList = new NativeList<Entity>(ALLOCATOR);
+            _entitiesMap = new NativeParallelHashMap<IntTriangularPos, Entity>(128, ALLOCATOR);
+
+            _movementCellsFilter = _world.Filter.With<CellMovementDataComponent>().Build();
+            _movementCells = _world.GetStash<CellMovementDataComponent>();
+            _cellComponents = _world.GetStash<CellEntityComponent>();
 
             _job = new()
             {
                 HexEdgeLength = _hexEdgeLength,
                 EnemiesMask = _relationMasks,
-                MovementCells = movementCellsMap.AsReadonlyMap(),
                 TriangleHeight = map.TriangleHeight
             };
         }
 
         public JobHandle Launch(Filter filter)
         {
-            _entities.Clear();
+            _entitiesList.Clear();
             foreach (var entity in filter)
             {
                 _attackTargets.Set(entity);
-                _entities.Add(entity);
+                _entitiesList.Add(entity);
             }
 
             _world.Commit();
 
 
             // WARNING: Native stashes and filters exists only for one frame!
-            // TODO: check if Units grid can be used instead of MovementCellsMap
-            _job.Entities = _entities;
+            _job.Entities = _entitiesList;
             _job.AffiliationsStash = _affiliationComponents.AsNative();
             _job.AttackTargets = _attackTargets.AsNative();
             _job.HexCoordComponents = _hexCoordComponents.AsNative();
             _job.PositionComponents = _positionComponents.AsNative();
             _job.TargetSearchRadius = _targetSearchRadiusComponents.AsNative();
+
+            _entitiesMap = FormTargetsMapCommand.Execute(
+                _entitiesMap,
+                ALLOCATOR,
+                _movementCellsFilter,
+                _movementCells,
+                _cellComponents);
+            _job.EntitiesMap = _entitiesMap;
             UpdateRelationsMask();
 
-            _activeJobHandle = _job.Schedule(_entities.Length, 32);
+            _activeJobHandle = _job.Schedule(_entitiesList.Length, 32);
             return _activeJobHandle;
         }
 
@@ -117,7 +132,8 @@ namespace ZE.MechBattle.Ecs
         private void FinalDispose()
         {
             _relationMasks.Dispose();
-            _entities.Dispose();
+            _entitiesList.Dispose();
+            _entitiesMap.Dispose();
         }
 
         private void UpdateRelationsMask()

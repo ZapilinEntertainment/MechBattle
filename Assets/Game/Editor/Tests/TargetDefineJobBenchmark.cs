@@ -18,7 +18,7 @@ namespace ZE.MechBattle.Editor.Tests
         private NavigationMap _map;
         private NativeArray<PlayerRelationsMask> _relations;
         private NativeList<Entity> _entities;
-        private NativeParallelHashMap<IntTriangularPos, CellMovementData> _movementCells;
+        private NativeParallelHashMap<IntTriangularPos, Entity> _entitiesMap;
 
         private Stash<PlayerAffiliationComponent> _affiliationsStash;
         private Stash<AttackTargetComponent> _targetsStash;
@@ -26,15 +26,21 @@ namespace ZE.MechBattle.Editor.Tests
         private Stash<PositionComponent> _positionsStash;
         private Stash<TargetSearchRadiusComponent> _targetSearchRadiusStash;
 
+        private Filter _movementCellsFilter;
+        private Stash<CellMovementDataComponent> _movementCellComponents;
+        private Stash<CellEntityComponent> _cellComponents;
+
+        private const Allocator ALLOCATOR = Allocator.TempJob;
+
         [SetUp]
         public void Setup()
         {
            // BurstCompiler.Options.EnableBurstCompilation = true;
             _world = World.Create();
-            _map = PrepareTestingMap(Allocator.TempJob, 10);
+            _map = PrepareTestingMap(ALLOCATOR, 10);
             _relations = PrepareRelationsMask();
-            _movementCells = new NativeParallelHashMap<IntTriangularPos, CellMovementData>(4200, Allocator.TempJob);
-            _entities = new NativeList<Entity>(Allocator.TempJob);
+            _entitiesMap = new NativeParallelHashMap<IntTriangularPos, Entity>(4200, ALLOCATOR);
+            _entities = new NativeList<Entity>(ALLOCATOR);
 
             _affiliationsStash = _world.GetStash<PlayerAffiliationComponent>();
             _targetsStash = _world.GetStash<AttackTargetComponent>();
@@ -42,7 +48,9 @@ namespace ZE.MechBattle.Editor.Tests
             _positionsStash = _world.GetStash<PositionComponent>();
             _targetSearchRadiusStash = _world.GetStash<TargetSearchRadiusComponent>();
 
-            
+            _movementCellsFilter = _world.Filter.With<CellMovementDataComponent>().Build();
+            _movementCellComponents = _world.GetStash<CellMovementDataComponent>();
+            _cellComponents = _world.GetStash<CellEntityComponent>();
         }
 
         [TearDown]
@@ -51,7 +59,7 @@ namespace ZE.MechBattle.Editor.Tests
             _world.Dispose();
             _map.Dispose();
             _relations.Dispose();
-            _movementCells.Dispose();
+            _entitiesMap.Dispose();
             _entities.Dispose();
         }
 
@@ -91,11 +99,12 @@ namespace ZE.MechBattle.Editor.Tests
                 _entities.Add(entity);
             }
 
+            _entitiesMap = FormTargetsMapCommand.Execute(_entitiesMap, ALLOCATOR, _movementCellsFilter, _movementCellComponents, _cellComponents);
             var job = new TargetDefineJob()
             {
                 HexEdgeLength = _map.HexEdgeLength,
                 EnemiesMask = _relations,
-                MovementCells = _movementCells.AsReadOnly(),
+                EntitiesMap = _entitiesMap,
                 TriangleHeight = _map.TriangleHeight,
             };
 

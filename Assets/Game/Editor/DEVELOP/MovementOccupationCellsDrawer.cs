@@ -14,25 +14,29 @@ namespace ZE.MechBattle.Develop
     {
         private bool _isInitialized = false;
         private INavigationMap _map;
-        private NativeParallelHashMap<IntTriangularPos, CellMovementData>.ReadOnly _readonlyMap;
+        private Filter _cellsFilter;
+        private Stash<CellEntityComponent> _cellComponents;
 
         [Inject]
-        public void Inject(INavigationMap map, IMovementCellsMap movementCells)
+        public void Inject(INavigationMap map, World world)
         {
             _map = map;
-            _readonlyMap = movementCells.AsReadonlyMap();
+            _cellsFilter = world.Filter.With<CellMovementDataComponent>().Build();
+            _cellComponents = world.GetStash<CellEntityComponent>();
+
             _isInitialized = true;
         }
 
         public void OnDrawGizmosSelected()
         {
-            if (!(enabled & _isInitialized & _readonlyMap.IsCreated))
+            if (!enabled || !_isInitialized || _cellsFilter.IsEmpty())
                 return;
 
             Handles.color = Color.yellow;
-            foreach (var cellKvp in _readonlyMap)
+            foreach (var cellEntity in _cellsFilter)
             {
-                var drawVertices = TrianglesDrawHelper.GetDrawVertices(cellKvp.Key, _map);
+                var tripos = _cellComponents.Get(cellEntity).Tripos;
+                var drawVertices = TrianglesDrawHelper.GetDrawVertices(tripos, _map);
                 TrianglesDrawHelper.DrawHandles(drawVertices, false);
             }
         }

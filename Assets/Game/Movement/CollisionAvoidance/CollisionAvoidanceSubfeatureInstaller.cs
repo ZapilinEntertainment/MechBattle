@@ -8,7 +8,7 @@ namespace ZE.MechBattle
     {
         public static void SceneScopeInstall(IContainerBuilder builder)
         {
-            builder.Register<IMovementCellsMap, MovementCellsMap>(Lifetime.Singleton).AsSelf();
+            builder.Register<IMovementCellsMap, MovementCellsMap>(Lifetime.Singleton);
             builder.Register<MovementDensityMapsManager>(Lifetime.Singleton);
             builder.Register<CollisionAvoidanceHandler>(Lifetime.Singleton);
         }

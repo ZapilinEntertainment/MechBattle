@@ -19,18 +19,18 @@ namespace ZE.MechBattle.Ecs {
         private Stash<NextPositionComponent> _nextPositionComponents;
         private Stash<TriangularPosComponent> _triangularPosComponents;
 
-        private readonly MovementCellsMap _vectorsList;
+        private readonly IMovementCellsMap _movementCells;
         private readonly INavigationMap _map;
         private readonly NativeList<IntTriangularPos> _resultsList;
       
 
         [Inject]
         public MovementVectorsMapUpdateSystem(
-            SceneFlagsManager flags, 
-            MovementCellsMap vectorsList,
+            SceneFlagsManager flags,
+            IMovementCellsMap movementCells,
             INavigationMap map) : base(flags)
         {
-            _vectorsList = vectorsList;
+            _movementCells = movementCells;
             _map = map;
 
             _resultsList = new NativeList<IntTriangularPos>(Allocator.Persistent);
@@ -52,7 +52,7 @@ namespace ZE.MechBattle.Ecs {
             if (IsPaused)
                 return;
 
-            _vectorsList.Clear();
+            _movementCells.Clear();
 
             // current occupation cells
             foreach (var entity in _occupationCellsFilter)
@@ -81,7 +81,7 @@ namespace ZE.MechBattle.Ecs {
                    moveDir,
                    projectionIndex: 0);
 
-                   _vectorsList.TryWriteCell(currentTripos, currentCellData);
+                    _movementCells.TryWriteCell(currentTripos, currentCellData);
                 }
                 else
                 {
@@ -101,7 +101,7 @@ namespace ZE.MechBattle.Ecs {
                            avoidanceComponent.Priority,
                            moveDir,
                            projectionIndex: TriangularMath.CalculateDistance(tripos, currentTripos));
-                        _vectorsList.TryWriteCell(tripos, cellData);
+                        _movementCells.TryWriteCell(tripos, cellData);
                     }
                     _resultsList.Clear();
                 }
@@ -128,7 +128,7 @@ namespace ZE.MechBattle.Ecs {
                         avoidanceComponent.Priority,
                         moveDir,
                         projectionIndex: 1);
-                    _vectorsList.TryWriteCell(nextTripos, nextCellData);
+                    _movementCells.TryWriteCell(nextTripos, nextCellData);
                 }
             }
         }

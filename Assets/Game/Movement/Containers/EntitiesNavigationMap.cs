@@ -8,7 +8,9 @@ using ZE.MechBattle.Navigation.Ecs;
 
 namespace ZE.MechBattle
 {
-    public class EntitiesNavigationMap : NavigationMapBase, IUpdatableMap
+    public interface IEntitiesNavigationMap : IEntitiesMap { }
+
+    public class EntitiesNavigationMap : NavigationMapBase, IUpdatableMap, IEntitiesNavigationMap
     {
         public IEnumerable<IUpdatableNavigationHex> Hexes => _hexes.Values;
         public IEnumerable<int2> HexCoords => _hexes.Keys;
@@ -25,10 +27,11 @@ namespace ZE.MechBattle
         public EntitiesNavigationMap(
             MapSettings settings, 
             CellEntitiesHandler cellEntitiesHandler,
-            HexEntitiesHandler hexEntitiesHandler) : base(settings, Allocator.Persistent)
+            HexEntitiesHandler hexEntitiesHandler) 
+            : base(settings, Allocator.Persistent)
         {
             _cellsHandler = cellEntitiesHandler;
-            _hexHandler = hexEntitiesHandler;    
+            _hexHandler = hexEntitiesHandler;
         }
 
         #region HEXES
@@ -98,8 +101,9 @@ namespace ZE.MechBattle
 
             return cellEntity;
         }
+
+        public bool TryGetEntity(IntTriangularPos tripos, out Entity entity) => 
+            _cells.TryGetValue(tripos, out entity);
         #endregion
-
-
     }
 }

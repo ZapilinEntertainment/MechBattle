@@ -1,74 +1,72 @@
-using System;
-using System.Collections.Generic;
 using Scellecs.Morpeh;
 using Unity.Mathematics;
-using Unity.Collections;
-using Unity.Burst;
+using VContainer;
+using ZE.MechBattle.Ecs;
 using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle
 {
-    [BurstCompile]
-    public readonly struct CellMovementData
+    public class MovementCellsMap : IMovementCellsMap
     {
-        public readonly Entity Entity;
-        public readonly float2 MoveVector; // zero if inner cell of occupation zone or entity is not moving
-        public readonly int ProjectionStepIndex; // 0 is current object position, 1+ is next pos projections
-        public readonly MovementCollisionAvoidancePriority Priority;
+        private Stash<CellMovementDataComponent> _cellMovementDatas;
+        private Stash<MovementCollisionAvoidanceComponent> _avoidances;
+        private readonly IEntitiesNavigationMap _entitiesMap;
 
-        public bool IsRealOccupationCell => ProjectionStepIndex == 0; // other can be virtual = projection of move speed
-
-        public CellMovementData(Entity entity, MovementCollisionAvoidancePriority priority, float2 moveVector, int projectionIndex)
+        [Inject]
+        public MovementCellsMap(World world, IEntitiesNavigationMap entitiesNavigationMap)
         {
-            Entity = entity;
-            Priority = priority;
-            MoveVector = moveVector;
-            ProjectionStepIndex = projectionIndex;
-        }
-    }
+            _entitiesMap = entitiesNavigationMap;
 
-    public interface IMovementCellsMap
-    {
-        bool TryGetValue(IntTriangularPos tripos, out CellMovementData cellValue);
-        NativeParallelHashMap<IntTriangularPos, CellMovementData>.ReadOnly AsReadonlyMap();
-    }
-
-    public class MovementCellsMap : IMovementCellsMap, IDisposable
-    {
-        public NativeParallelHashMap<IntTriangularPos, CellMovementData> AsNative() => _map;
-        private NativeParallelHashMap<IntTriangularPos, CellMovementData> _map;    
-        private const int INITIAL_CAPACITY = 512;
-
-        public MovementCellsMap()
-        {
-            _map = new NativeParallelHashMap<IntTriangularPos, CellMovementData>(INITIAL_CAPACITY, Allocator.Persistent);
+            _cellMovementDatas = world.GetStash<CellMovementDataComponent>();
+            _avoidances = world.GetStash<MovementCollisionAvoidanceComponent>();
         }
 
-        public bool TryGetValue(IntTriangularPos tripos, out CellMovementData cellValue) => _map.TryGetValue(tripos, out cellValue);
+        public void Clear() => _cellMovementDatas.RemoveAll();
 
-        public bool TryWriteCell(IntTriangularPos tripos, CellMovementData newData)
+        public bool TryGetValue(IntTriangularPos tripos, out CellMovementData cellData)
         {
-            if (_map.TryGetValue(tripos, out var currentData) && (currentData.IsRealOccupationCell || currentData.Priority >= newData.Priority))
-            {
+            if (_entitiesMap.TryGetEntity(tripos, out var entity) && TryGetCellData(entity, out cellData))
+                return true;
+
+            cellData = default;
+            return false;
+        }
+
+        public bool TryWriteCell(IntTriangularPos tripos, CellMovementData cellData)
+        {
+            if (!_entitiesMap.TryGetEntity(tripos, out var cellEntity))
                 return false;
-            }
 
-            _map.Add(tripos, newData);
+            if (TryGetCellData(cellEntity, out var existingCellData) && existingCellData > cellData)
+                return false;
+
+            SetCellData(cellEntity, cellData);
             return true;
         }
 
-        public void Add(IntTriangularPos tripos, CellMovementData movementData) 
+        private bool TryGetCellData(Entity entity, out CellMovementData cellData)
         {
-            if (_map.Count() == _map.Capacity)
+            var component = _cellMovementDatas.Get(entity, out var exists);
+            if (exists)
             {
-                _map.Capacity *= 2;
+                cellData = component.Value;
+                return true;
             }
-            _map.Add(tripos, movementData);
-        } 
-        public void Clear() => _map.Clear();
+            else
+            {
+                cellData = default;
+                return false;
+            }
+        }
 
-        public void Dispose() => _map.Dispose();
+        private void SetCellData(Entity entity, CellMovementData cellData) =>
+            _cellMovementDatas.Set(entity, new(cellData));
 
-        public NativeParallelHashMap<IntTriangularPos, CellMovementData>.ReadOnly AsReadonlyMap() => _map.AsReadOnly();
+        public bool TryWriteCell(IntTriangularPos tripos, Entity entity, float2 moveDir, int projectionIndex)
+        {
+            var avoidance = _avoidances.Get(entity, out var exists);
+            var cellData = new CellMovementData(entity, exists ? avoidance.Priority : MovementCollisionAvoidancePriority.None, moveDir, projectionIndex);
+            return TryWriteCell(tripos, cellData);
+        }
     }
 }

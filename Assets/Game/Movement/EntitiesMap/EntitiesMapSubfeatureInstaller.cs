@@ -9,7 +9,7 @@ namespace ZE.MechBattle.Navigation.Ecs
             builder.Register<HexEntitiesHandler>(Lifetime.Singleton);
             builder.Register<CellEntitiesHandler>(Lifetime.Singleton);
 
-            builder.Register<INavigationMap, IUpdatableMap, EntitiesNavigationMap>(Lifetime.Singleton);
+            builder.Register<INavigationMap, IUpdatableMap, IEntitiesNavigationMap, EntitiesNavigationMap>(Lifetime.Singleton);
         }
     
     }

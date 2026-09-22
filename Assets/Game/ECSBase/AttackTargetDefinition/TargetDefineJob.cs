@@ -16,7 +16,7 @@ namespace ZE.MechBattle.Ecs
         [ReadOnly]public NativeArray<PlayerRelationsMask> EnemiesMask;
 
         [ReadOnly] public NativeList<Entity> Entities;
-        [ReadOnly] public NativeParallelHashMap<IntTriangularPos, CellMovementData>.ReadOnly MovementCells;        
+        [ReadOnly] public NativeParallelHashMap<IntTriangularPos, Entity> EntitiesMap;        
         [ReadOnly] public NativeStash<PlayerAffiliationComponent> AffiliationsStash;
         [ReadOnly] public NativeStash<HexCoordComponent> HexCoordComponents;
         [ReadOnly] public NativeStash<PositionComponent> PositionComponents;
@@ -43,10 +43,9 @@ namespace ZE.MechBattle.Ecs
             // note: it will be much cheaper, if we enumerate radially
             foreach (var tripos in new HexTrianglesEnumerator(closestVirtualHexCenter, searchRadiusInTriangles))
             {
-                if (!MovementCells.TryGetValue(tripos, out var cellData) || !cellData.IsRealOccupationCell)
+                if (!EntitiesMap.TryGetValue(tripos, out var targetEntity))
                     continue;
 
-                var targetEntity = cellData.Entity;
                 var targetAffiliationComponent = AffiliationsStash.Get(targetEntity, out var affiliated);
                 if (!affiliated)
                     continue;

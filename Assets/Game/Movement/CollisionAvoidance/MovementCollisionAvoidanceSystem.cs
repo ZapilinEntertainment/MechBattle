@@ -15,15 +15,14 @@ namespace ZE.MechBattle.Ecs
         private Stash<NextPositionComponent> _nextPositionComponents;
         private Stash<PositionComponent> _positionComponents;
         private Stash<TriangularPosComponent> _triangularPosComponents;
-        private Stash<MovementCollisionAvoidanceComponent> _movementCollisionAvoidanceComponents;
 
-        private readonly MovementCellsMap _vectorsList;
+        private readonly IMovementCellsMap _movementCells;
         private readonly float _invertedTriangleHeight;
 
         [Inject]
-        public MovementCollisionAvoidanceSystem(SceneFlagsManager flags, MovementCellsMap vectorsList, INavigationMap map) : base(flags)
+        public MovementCollisionAvoidanceSystem(SceneFlagsManager flags, IMovementCellsMap movementCells, INavigationMap map) : base(flags)
         {
-            _vectorsList = vectorsList;
+            _movementCells = movementCells;
             _invertedTriangleHeight = map.InvertedTriangleHeight;
         }
 
@@ -34,7 +33,6 @@ namespace ZE.MechBattle.Ecs
             _nextPositionComponents = World.GetStash<NextPositionComponent>();
             _positionComponents = World.GetStash<PositionComponent>();
             _triangularPosComponents = World.GetStash<TriangularPosComponent>();
-            _movementCollisionAvoidanceComponents = World.GetStash<MovementCollisionAvoidanceComponent>();
         }
 
         public override void OnUpdate(float deltaTime)
@@ -49,10 +47,9 @@ namespace ZE.MechBattle.Ecs
                 var currentPos = _positionComponents.Get(entity).Value.xz;
                 var moveDir = nextPosComponent.WorldPosXZ - currentPos;
 
-                if (!_vectorsList.TryGetValue(nextTripos, out var moveCell))
+                if (!_movementCells.TryGetValue(nextTripos, out var moveCell))
                 {
-                    var collisionAvoidance = _movementCollisionAvoidanceComponents.Get(entity);
-                    _vectorsList.Add(nextTripos, new(entity, collisionAvoidance.Priority, moveDir, 0));
+                    _movementCells.TryWriteCell(nextTripos, entity, moveDir, 0);
                     continue;
                 }
                 else
@@ -84,16 +81,15 @@ namespace ZE.MechBattle.Ecs
                     var moveCf = dot * math.lengthsq(moveDir);
                     var nextPos = currentPos + moveCf * moveDir;
                     var resultingTripos = TriangularMath.WorldToTrianglePosInvertedHeight(new float3(nextPos.x, 0f, nextPos.y), _invertedTriangleHeight);                                      
-                    if (_vectorsList.TryGetValue(resultingTripos, out var alreadyOccupiedCell))
+                    if (_movementCells.TryGetValue(resultingTripos, out var alreadyOccupiedCell))
                     {
-                        // todo: check for detour
                         var currentTripos = _triangularPosComponents.Get(entity).Value;
                         _nextPositionComponents.Set(entity, new(currentPos, currentTripos));
                     }                        
                     else
                     {
                         _nextPositionComponents.Set(entity, new(nextPos, nextPosComponent.Tripos));
-                        _vectorsList.Add(resultingTripos, default);
+                        _movementCells.TryWriteCell(resultingTripos, entity, moveDir, 1);
                     }                    
                 }
             }
