@@ -10,13 +10,19 @@ namespace ZE.MechBattle
     {
         private readonly IMovementCellsMap _movementCellsList;
         private readonly IHexPortalsCoordinator _portalsCoordinator;
+        private readonly INavigationMap _navigationMap;
         private readonly Stash<HexCoordComponent> _hexCoords;
 
         [Inject]
-        public NavigationGridHandler(IMovementCellsMap movementCellsList, IHexPortalsCoordinator portalsCoordinator, World world)
+        public NavigationGridHandler(
+            IMovementCellsMap movementCellsList, 
+            IHexPortalsCoordinator portalsCoordinator, 
+            INavigationMap navigationMap,
+            World world)
         {
             _movementCellsList = movementCellsList;
             _portalsCoordinator = portalsCoordinator;
+            _navigationMap = navigationMap;
             _hexCoords = world.GetStash<HexCoordComponent>();
         }
 
@@ -32,5 +38,6 @@ namespace ZE.MechBattle
 
         public bool IsCellOccupied(IntTriangularPos pos) => _movementCellsList.TryGetValue(pos, out var cellValue) && cellValue.ProjectionStepIndex == 0;
 
+        public bool IsCellObstructed(IntTriangularPos pos) => !_navigationMap.GetPassabilityData(pos).IsPassable;
     }
 }

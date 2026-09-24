@@ -105,6 +105,7 @@ namespace ZE.MechBattle.Ecs
             tripos = _triangularPositions.Get(entity).Value;
             moveDirection = flowMap.GetDirectionUnsafe(tripos);
             var correctedDir = _avoidanceHandler.CorrectFlowMapDirection(hexCoord, tripos, moveDirection);
+            //if (correctedDir != moveDirection)  UnityEngine.Debug.Log($"corrected at {tripos}: {moveDirection} -> {correctedDir}");
             moveDirection = correctedDir;
 
             return DirectionSearchResult.Success;

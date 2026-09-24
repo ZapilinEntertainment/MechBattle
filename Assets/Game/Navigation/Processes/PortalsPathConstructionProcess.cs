@@ -157,21 +157,33 @@ namespace ZE.MechBattle.Navigation
             await PreparePortalOptions(request.EndHexZoneIndex, request.EndHexCoord, request.StartHexCoord, request.EndTripos, _endPortals);
 
             if (_startPortals.Count == 0)
-                throw new System.NotImplementedException($"start hex {input.Request.StartHexCoord} has no portals");
+            {
+                UnityEngine.Debug.LogError($"start hex {input.Request.StartHexCoord} has no portals");
+                return;
+            }
 
             if (_endPortals.Count == 0)
-                throw new System.NotImplementedException($"end hex {input.Request.EndHexCoord} has no portals");
-
+            {
+                UnityEngine.Debug.LogError($"end hex {input.Request.StartHexCoord} has no portals");
+                return;
+            }
             //  sort start portals from closest to farthest
             _startPortals.Sort((optionA, optionB) => optionA.MinDist.CompareTo(optionB.MinDist));
 
 #if ZE_NAVIGATION_DEBUG
             if (NavigationLogger.Settings.HasFlag(NavigationLogEvents.FullPortalSelectionLog))
                 DEBUG_LogPortalOptions(input.Request);
- #endif
+#endif
 
-            var pathCost = PreparePortalsPath(input.Request.EndTripos, input.Request.StartHexCoord);
-            _pathsBuffer.AddCalculatedPath(input.ReservedPathId, FormResult(request, pathCost));
+            try
+            {
+                var pathCost = PreparePortalsPath(input.Request.EndTripos, input.Request.StartHexCoord);
+                _pathsBuffer.AddCalculatedPath(input.ReservedPathId, FormResult(request, pathCost));
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogError("failed: " + ex.ToString());
+            }
 
 #if ZE_NAVIGATION_DEBUG
             if (NavigationLogger.Settings.HasFlag(NavigationLogEvents.HexPathCalculationEnd))
@@ -244,6 +256,15 @@ namespace ZE.MechBattle.Navigation
             }
 
             _resultingPath[0] = observingNode.PortalId;
+
+            var strBuilder = new System.Text.StringBuilder();
+            strBuilder.AppendLine($"start hex: {startHexCoord}");
+            for (var i = 0; i < _resultingPath.Length; i++)
+            {
+                strBuilder.AppendLine($"{i}: {_resultingPath[i]}");
+            }
+            UnityEngine.Debug.Log(strBuilder);
+
             _resultingPath = FilterPathByHexes(_resultingPath, startHexCoord);
 
             return resultingPathCost;
@@ -255,12 +276,28 @@ namespace ZE.MechBattle.Navigation
             if (length == 1)
                 return path;
 
+#if UNITY_EDITOR
+            if (length == 0)
+            {
+                UnityEngine.Debug.LogError("zero length");
+                return path;
+            }               
+#endif
+
             Span<int> filteredPath = stackalloc int[length];
             var filteredPathIndex = 0;
             var currentHexCoord = startHexCoord;
             var nextHexCoord = currentHexCoord;
 
-            for (var i = 0; i < path.Length; i++)
+
+#if UNITY_EDITOR
+            var zeroPortal = _portalsCoordinator.GetPortal(path[0]);
+            if (math.any(zeroPortal.HexCoordA != startHexCoord) && math.any(zeroPortal.HexCoordB != startHexCoord))
+                UnityEngine.Debug.LogError($"start hex coord is not correct: portal {path[0]}, hex: {startHexCoord}");
+#endif
+
+
+            for (var i = 0; i < length; i++)
             {
                 var portalId = path[i];
                 var portal = _portalsCoordinator.GetPortal(portalId);
@@ -276,6 +313,38 @@ namespace ZE.MechBattle.Navigation
                 }
                 else
                 {
+
+#if UNITY_EDITOR
+                    if (filteredPathIndex + 1 >= length) 
+                    {
+                        var strBuilder = new System.Text.StringBuilder();
+                        strBuilder.AppendLine("path:");
+                        currentHexCoord = startHexCoord;
+                        filteredPathIndex = 0;
+
+                        foreach (var node in path)
+                        {
+                            portal = _portalsCoordinator.GetPortal(node);
+
+                            useExitA = math.all(portal.HexCoordA == currentHexCoord);
+                            useExitB = math.all(portal.HexCoordB == currentHexCoord);
+
+                            if (useExitA | useExitB)
+                            {
+                                nextHexCoord = useExitA ? portal.HexCoordB : portal.HexCoordA;
+                            }
+                            else
+                            {
+                                filteredPathIndex++;
+                                currentHexCoord = nextHexCoord;
+                            }
+
+                            strBuilder.AppendLine($"{node} | {filteredPathIndex}: {currentHexCoord}");
+                        }
+                        UnityEngine.Debug.LogError(strBuilder.ToString());
+                    }
+#endif
+
                     filteredPath[++filteredPathIndex] = portalId;
                     // transition done, update current hexcoord
                     currentHexCoord = nextHexCoord;

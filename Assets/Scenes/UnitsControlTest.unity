@@ -2912,6 +2912,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1259888753}
+  - component: {fileID: 1259888776}
   - component: {fileID: 1259888775}
   - component: {fileID: 1259888768}
   - component: {fileID: 1259888769}
@@ -2920,6 +2921,7 @@ GameObject:
   - component: {fileID: 1259888773}
   - component: {fileID: 1259888772}
   - component: {fileID: 1259888774}
+  - component: {fileID: 1259888777}
   m_Layer: 0
   m_Name: DEVELOP
   m_TagString: Untagged
@@ -3087,6 +3089,165 @@ MonoBehaviour:
     m_NumColorKeys: 3
     m_NumAlphaKeys: 2
   _maxDensity: 2
+--- !u!114 &1259888776
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259888751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dd1b505d3867e746a6f01c847b469d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.SquadsMassSpawnUtility
+  _setups:
+  - IsActive: 1
+    UnitsCount: 500
+    UnitId: tank
+    PlayerId: 0
+    SquadDecree: 1
+    SpawnHex:
+      x: -3
+      y: 1
+    TargetHex:
+      x: -3
+      y: 4
+  - IsActive: 1
+    UnitsCount: 500
+    UnitId: tank
+    PlayerId: 0
+    SquadDecree: 1
+    SpawnHex:
+      x: -2
+      y: 1
+    TargetHex:
+      x: -2
+      y: 4
+  - IsActive: 0
+    UnitsCount: 500
+    UnitId: tank
+    PlayerId: 0
+    SquadDecree: 1
+    SpawnHex:
+      x: -1
+      y: 0
+    TargetHex:
+      x: -1
+      y: 3
+  - IsActive: 0
+    UnitsCount: 500
+    UnitId: tank
+    PlayerId: 0
+    SquadDecree: 1
+    SpawnHex:
+      x: 0
+      y: 0
+    TargetHex:
+      x: 0
+      y: 3
+  - IsActive: 0
+    UnitsCount: 500
+    UnitId: tank
+    PlayerId: 0
+    SquadDecree: 1
+    SpawnHex:
+      x: 1
+      y: -1
+    TargetHex:
+      x: 1
+      y: 2
+  - IsActive: 0
+    UnitsCount: 500
+    UnitId: tank
+    PlayerId: 0
+    SquadDecree: 1
+    SpawnHex:
+      x: 2
+      y: -1
+    TargetHex:
+      x: 2
+      y: 2
+  - IsActive: 1
+    UnitsCount: 500
+    UnitId: tank
+    PlayerId: 1
+    SquadDecree: 1
+    SpawnHex:
+      x: -3
+      y: 4
+    TargetHex:
+      x: -3
+      y: 1
+  - IsActive: 1
+    UnitsCount: 500
+    UnitId: tank
+    PlayerId: 1
+    SquadDecree: 1
+    SpawnHex:
+      x: -2
+      y: 4
+    TargetHex:
+      x: -2
+      y: 1
+  - IsActive: 0
+    UnitsCount: 500
+    UnitId: tank
+    PlayerId: 1
+    SquadDecree: 1
+    SpawnHex:
+      x: -1
+      y: 3
+    TargetHex:
+      x: -1
+      y: 0
+  - IsActive: 0
+    UnitsCount: 500
+    UnitId: tank
+    PlayerId: 1
+    SquadDecree: 1
+    SpawnHex:
+      x: 0
+      y: 3
+    TargetHex:
+      x: 0
+      y: 0
+  - IsActive: 0
+    UnitsCount: 500
+    UnitId: tank
+    PlayerId: 1
+    SquadDecree: 1
+    SpawnHex:
+      x: 1
+      y: 2
+    TargetHex:
+      x: 1
+      y: -1
+  - IsActive: 0
+    UnitsCount: 500
+    UnitId: tank
+    PlayerId: 1
+    SquadDecree: 1
+    SpawnHex:
+      x: 2
+      y: 2
+    TargetHex:
+      x: 2
+      y: -1
+--- !u!114 &1259888777
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259888751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9c5a58d6461f9245b7bdb8bbd107741, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.ExitAndPortalsIdsDrawer
+  _drawPortalIds: 1
+  _drawExitIds: 1
 --- !u!1001 &1305719369
 PrefabInstance:
   m_ObjectHideFlags: 0

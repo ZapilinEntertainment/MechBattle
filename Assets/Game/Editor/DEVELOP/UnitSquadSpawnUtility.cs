@@ -9,7 +9,7 @@ using ZE.MechBattle.Units.Squads;
 
 namespace ZE.MechBattle.Develop
 {
-    public class UnitSquadSpawnUtility : MonoBehaviour
+    public class UnitSquadSpawnUtility : SquadSpawnUtilityBase
     {
         [SerializeField] private bool _spawnByClick = false;
         [Space]
@@ -20,33 +20,8 @@ namespace ZE.MechBattle.Develop
         [SerializeField] private int2 _startHex;
         [SerializeField] private int2 _endHex;
 
-        private CameraController _cameraController;
-        private INavigationMap _map;
-        private UnitSpawnRequestsFactory _unitSpawnRequestFactory;
-        private StringDataDictionary _stringDictionary;
+        [Inject] private CameraController _cameraController;
 
-        private SquadFactory _squadFactory;
-        private SquadDecreeApplier _decreeApplier;
-
-
-        [Inject]
-        public void Inject(
-            CameraController cameraController, 
-            INavigationMap map, 
-            UnitSpawnRequestsFactory unitSpawnRequestsFactory,
-            StringDataDictionary stringDict,
-            
-            SquadFactory squadFactory,
-            SquadDecreeApplier decreeApplier)
-        {
-            _cameraController = cameraController;
-            _map = map;
-            _unitSpawnRequestFactory = unitSpawnRequestsFactory;
-            _stringDictionary = stringDict;
-
-            _squadFactory = squadFactory;
-            _decreeApplier = decreeApplier;
-        }
 
 
         private void Update()
@@ -62,7 +37,7 @@ namespace ZE.MechBattle.Develop
         private void SpawnAndCommand()
         {
             var squadEntity = SpawnSquadAtHex(_startHex);
-            var hexPos = new NavigationHexPosition(_endHex, _map);
+            var hexPos = new NavigationHexPosition(_endHex, _navigationMap);
             _decreeApplier.SetSquadMoveDecree(squadEntity, hexPos.InnerRingTopValleyTriangle);
         }
 
@@ -72,28 +47,11 @@ namespace ZE.MechBattle.Develop
                 return;
 
             float3 pos = raycastHit.point;
-            var hexCoord = HexMath.DefineHex(pos.xz, _map.HexEdgeLength);
+            var hexCoord = HexMath.DefineHex(pos.xz, _navigationMap.HexEdgeLength);
             SpawnSquadAtHex(hexCoord);
         }
 
-        private Entity SpawnSquadAtHex(int2 hexCoord)
-        {
-            var hexPos = new NavigationHexPosition(hexCoord, _map.HexEdgeLength, _map.TrianglesPerHexEdge);
-
-            var unitKey = new UnitKey(_stringDictionary.StringToKey(_unitId));
-            var playerKey = new PlayerKey(_playerId);
-            var count = 0;
-            var (squadEntity, squadId) = _squadFactory.Create();
-
-            foreach (var tripos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, _spawnRadius))
-            {
-                _unitSpawnRequestFactory.CreateSpawnRequest(unitKey, tripos, playerKey, squadId);
-                count++;
-            }
-
-            UnityEngine.Debug.Log($"requested {count} units at {hexCoord}");
-
-            return squadEntity;
-        }
+        private Entity SpawnSquadAtHex(int2 hexCoord) =>
+            SpawnSquadAtHex(hexCoord, _unitId, new(_playerId), _spawnRadius, TriangularMath.GetTrianglesCountInHex(_spawnRadius));
     }
 }

@@ -42,6 +42,7 @@ namespace ZE.MechBattle.Navigation
        
 
         float3 GetWorldPos(int3 pos);
+        bool IsCellPassable(IntTriangularPos tripos) => GetPassabilityData(tripos).IsPassable;
     }
 
 

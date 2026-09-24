@@ -9,18 +9,20 @@ namespace ZE.MechBattle
     public class CollisionAvoidanceHandler
     {
         private readonly IMovementDensityMap _densityMap;
+        private readonly INavigationMap _navigationMap;
         private readonly AffinityHandler _affinityHandler;
 
         [Inject]
-        public CollisionAvoidanceHandler(IMovementDensityMap densityMap, AffinityHandler affinityHandler)
+        public CollisionAvoidanceHandler(IMovementDensityMap densityMap, INavigationMap navigationMap, AffinityHandler affinityHandler)
         {
             _densityMap = densityMap;
             _affinityHandler = affinityHandler;
+            _navigationMap = navigationMap;
         }
 
         public int CorrectFlowMapDirection(int2 hexCoord, IntTriangularPos tripos, int originalDirection)
         {
-            var bestOption = GetBestNextTriangleOptionCommand.Execute(tripos, _densityMap, originalDirection);
+            var bestOption = GetBestNextTriangleOptionCommand.Execute(tripos, _densityMap, _navigationMap, originalDirection);
             return bestOption.Direction;
         }
 
@@ -30,7 +32,7 @@ namespace ZE.MechBattle
                 ? (int)TriangularMath.DefinePeakNeighbour(currentTripos, nextTripos)
                 : (int)TriangularMath.DefineValleyNeighbour(currentTripos, nextTripos);
 
-            var bestOption = GetBestNextTriangleOptionCommand.Execute(currentTripos, _densityMap, direction);
+            var bestOption = GetBestNextTriangleOptionCommand.Execute(currentTripos, _densityMap, _navigationMap, direction);
             if (bestOption.Direction != direction)
             {
                 detourTripos = bestOption.Tripos;
@@ -47,6 +49,7 @@ namespace ZE.MechBattle
 
         public bool CanEntitiesGoThrough(Entity entityA, Entity entityB)
         {
+            return true;
             return !_affinityHandler.AreEntitiesHostile(entityA, entityB);
             //var agentA = _navigationAgents.Get(entityA);
             //var agentB = _navigationAgents.Get(entityB);

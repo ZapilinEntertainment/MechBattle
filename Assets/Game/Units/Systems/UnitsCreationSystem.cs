@@ -46,7 +46,7 @@ namespace ZE.MechBattle.Ecs {
             var cellPoint = spawnRequest.CellPoint;
 
             // note: request will not be deleted, it just spawns when cell will be empty or will be cleared in UNSUCCESSFUL_REQUEST_CLEAR_TIME
-            if (_gridHandler.IsCellOccupied(cellPoint.Tripos))
+            if (_gridHandler.IsCellOccupied(cellPoint.Tripos) || _gridHandler.IsCellObstructed(cellPoint.Tripos))
             {
                 if (!_delayApplier.HasDestructionDelay(requestEntity))
                     _delayApplier.ApplyDestructionDelay(requestEntity, UNSUCCESSFUL_REQUEST_CLEAR_TIME);
