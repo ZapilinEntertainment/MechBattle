@@ -44,7 +44,6 @@ namespace ZE.Utils
                     case CalculationProcessStage.Complete:
                         {
                             HandleResults(calculationProcess);
-                            idleProcesses++;
                             break;
                         }
                     case CalculationProcessStage.Idle:

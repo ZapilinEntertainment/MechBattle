@@ -107,6 +107,10 @@ namespace ZE.MechBattle.Ecs {
                             if (!TryStartCalculation(entity, path, out var token))
                             {
                                 idleProcessesCount = 0;
+#if UNITY_EDITOR
+                                // this is unexpected behaviour
+                                UnityEngine.Debug.LogWarning($"cannot start new process at {GetType().Name} for some reason");
+#endif
                                 continue;
                             }
 

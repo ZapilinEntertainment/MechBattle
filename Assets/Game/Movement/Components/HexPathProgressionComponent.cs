@@ -1,6 +1,6 @@
-using Scellecs.Morpeh;
-using UnityEngine;
 using Unity.IL2CPP.CompilerServices;
+using TriInspector;
+using Unity.Mathematics;
 
 namespace ZE.MechBattle.Ecs {
     [System.Serializable]
@@ -9,13 +9,15 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public struct HexPathProgressionComponent : IHexPathComponent
     {
-        public readonly int StepsCount;
+        [ShowInInspector, ReadOnly] public readonly int StepsCount;
         public int StepIndex;
+        public int2 TargetHexCoord;
 
-        public HexPathProgressionComponent(int stepsCount)
+        public HexPathProgressionComponent(int stepsCount, int2 targetHexCoord)
         {
             StepsCount = stepsCount;
             StepIndex = 0;
+            TargetHexCoord = targetHexCoord;
         }
     }
 }

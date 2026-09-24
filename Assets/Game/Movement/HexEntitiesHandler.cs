@@ -32,7 +32,7 @@ namespace ZE.MechBattle.Navigation.Ecs
             .Execute(entity, _passabilityVersion, 0);
 
         public void IncreasePassabilityVersion(Entity entity) =>
-            IncrementComponentValueCommand
+            IncreaseComponentValueCommand
             .Execute(entity, _passabilityVersion);
     
     }

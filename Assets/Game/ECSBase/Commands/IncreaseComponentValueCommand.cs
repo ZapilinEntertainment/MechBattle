@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace ZE.MechBattle
 {
-    public static class IncrementComponentValueCommand
+    public static class IncreaseComponentValueCommand
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Execute<ComponentType>(Entity entity, Stash<ComponentType> stash)
@@ -16,6 +16,18 @@ namespace ZE.MechBattle
                 stash.Set(entity, new() { Value = 1 });
 
         }
-    
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Execute<ComponentType>(Entity entity, Stash<ComponentType> stash, float value)
+            where ComponentType : struct, IValueComponent<float>
+        {
+            ref var component = ref stash.Get(entity, out var exist);
+            if (exist)
+                component.Value+=value;
+            else
+                stash.Set(entity, new() { Value = value });
+
+        }
+
     }
 }

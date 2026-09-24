@@ -147,6 +147,12 @@ namespace ZE.MechBattle.Navigation
         protected override async Awaitable ExecuteAsync(PortalConstructionProcessInput input)
         {
             var request = input.Request;
+
+#if ZE_NAVIGATION_DEBUG
+            if (NavigationLogger.Settings.HasFlag(NavigationLogEvents.HexPathCalculationStart))
+                UnityEngine.Debug.Log($"hex path calculation started: {input.ReservedPathId}");
+#endif
+
             await PreparePortalOptions(request.StartHexZoneIndex, request.StartHexCoord, request.EndHexCoord, request.StartTripos, _startPortals);
             await PreparePortalOptions(request.EndHexZoneIndex, request.EndHexCoord, request.StartHexCoord, request.EndTripos, _endPortals);
 
@@ -167,8 +173,13 @@ namespace ZE.MechBattle.Navigation
             var pathCost = PreparePortalsPath(input.Request.EndTripos, input.Request.StartHexCoord);
             _pathsBuffer.AddCalculatedPath(input.ReservedPathId, FormResult(request, pathCost));
 
+#if ZE_NAVIGATION_DEBUG
+            if (NavigationLogger.Settings.HasFlag(NavigationLogEvents.HexPathCalculationEnd))
+                UnityEngine.Debug.Log($"hex path calculated: {input.ReservedPathId}");
+#endif
+
             _nodes.Clear();
-            _activeNodeIds.Clear();
+            _activeNodeIds.Clear();            
         }
 
 

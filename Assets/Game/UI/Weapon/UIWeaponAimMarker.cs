@@ -18,10 +18,13 @@ namespace ZE.MechBattle
         [SerializeField] private Image _energyProgressBar;
         [SerializeField] private Gradient _gradient;
         private Color _tint;
-        public void SetVisibility(bool isVisible) => gameObject.SetActive(isVisible);
+        public void SetVisibility(bool isVisible) => gameObject?.SetActive(isVisible);
 
         public void UpdateData(UpdateProtocol protocol) 
         {
+            if (IsDisposed)
+                return;
+
             transform.position = protocol.ScreenPos;
 
             _readyProgressBar.fillAmount = protocol.GunLoadingProgress;

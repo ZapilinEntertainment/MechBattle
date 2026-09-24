@@ -47,6 +47,7 @@ namespace ZE.MechBattle.Ecs
             _waypoints = World.GetStash<WaypointMoveTarget>();
             _triangularPositions = World.GetStash<TriangularPosComponent>();
             _hexCoordComponents = World.GetStash<HexCoordComponent>();
+            _invalidTrianglePaths = World.GetStash<ClearTrianglePathTag>();
         }
 
         private enum DirectionSearchResult : byte { Undefined, FlowMapNotCalculated, InvalidTrianglePath, Success}
@@ -103,7 +104,8 @@ namespace ZE.MechBattle.Ecs
 
             tripos = _triangularPositions.Get(entity).Value;
             moveDirection = flowMap.GetDirectionUnsafe(tripos);
-            moveDirection = _avoidanceHandler.CorrectFlowMapDirection(hexCoord, tripos, flowMap, moveDirection);            
+            var correctedDir = _avoidanceHandler.CorrectFlowMapDirection(hexCoord, tripos, moveDirection);
+            moveDirection = correctedDir;
 
             return DirectionSearchResult.Success;
         }

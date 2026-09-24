@@ -1,5 +1,4 @@
 using Scellecs.Morpeh;
-using UnityEngine;
 using Unity.Mathematics;
 using Unity.IL2CPP.CompilerServices;
 using ZE.MechBattle.Navigation;

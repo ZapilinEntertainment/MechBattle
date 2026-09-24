@@ -18,7 +18,11 @@ namespace ZE.MechBattle.Navigation
         EntityPortalPathStatuses = 1 << 7,
         HexPathCleared = 1 << 8,
         MoveTargetSet = 1 << 9,
-        EntityPathCalculated = 1 << 10
+
+        HexPathCalculationStart = 1 << 10,
+        HexPathCalculationEnd = 1 << 11,
+
+        EntityLosePath = 1 << 12
     }
 
     public class NavigationLoggerSetup : MonoBehaviour

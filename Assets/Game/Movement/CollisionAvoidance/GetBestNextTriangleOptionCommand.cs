@@ -45,21 +45,23 @@ namespace ZE.MechBattle
                     Tripos = tripos,
                     Direction = originalDirection};
 
-                var originalDirectionVector = _offsets[originalDirection];
+                var originalDirectionVector = math.normalize(_offsets[originalDirection]);
                 var direction = -1;
 
-                //var changed = false;
                 foreach (var neighbourPos in new TriangleNeighboursEnumerator<T>(tripos, _offsets))
                 {
                     direction++;
                     if (!_densityMap.TryGetDensity(neighbourPos, out var density))
                         density = 0f;
 
-                    var currentDirVector = _offsets[direction];
+                    var currentDirVector = math.normalize(_offsets[direction]);
                     var dot = math.dot(originalDirectionVector, currentDirVector);
                     var option = new NextTriangleOption(dot, density, neighbourPos, direction);
-                    
-                    if (option.ScorePoints > bestOption.ScorePoints)
+                    //UnityEngine.Debug.Log($"{direction} : score {option.ScorePoints} : dot {option.DotValue} : density {option.DensityValue}");
+
+                    // yes, there is score logics, hovewer simple density check works better
+                    // todo: investigate
+                    if (option.DensityValue < bestOption.DensityValue)
                     {
                         bestOption = option;
                     }
@@ -69,7 +71,7 @@ namespace ZE.MechBattle
             }
         }
 
-        public static NextTriangleOption Execute(IntTriangularPos tripos, FlowMap flowMap, IMovementDensityMap densityMap, int originalDirection)
+        public static NextTriangleOption Execute(IntTriangularPos tripos, IMovementDensityMap densityMap, int originalDirection)
         {
             NextTriangleOption bestOption;
 

@@ -9,7 +9,7 @@ namespace ZE.Utils
         protected bool StopProcessRequired { get;private set;} = false;
         protected abstract bool IsDisposeAvailable { get; }
 
-        public async void LaunchAsync(Input input)
+        public async Awaitable LaunchAsync(Input input)
         {
             Stage = CalculationProcessStage.Calculating;
             await ExecuteAsync(input);
@@ -26,6 +26,12 @@ namespace ZE.Utils
                 await Awaitable.NextFrameAsync();
             }
             DisposeResources();
+        }
+
+        public void OnResultsApplied()
+        {
+            if (Stage == CalculationProcessStage.Complete)
+                Stage = CalculationProcessStage.Idle;
         }
 
         protected abstract Awaitable ExecuteAsync(Input input);

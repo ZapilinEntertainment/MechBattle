@@ -1,7 +1,5 @@
-using Scellecs.Morpeh;
-using UnityEngine;
 using Unity.IL2CPP.CompilerServices;
-using ZE.MechBattle.Navigation;
+using TriInspector;
 
 namespace ZE.MechBattle.Ecs 
 {
@@ -12,7 +10,7 @@ namespace ZE.MechBattle.Ecs
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public struct HexPathIdComponent : IPathUserComponent<int>, IHexPathComponent
     {
-        public readonly int PathId;
+        [ReadOnly, ShowInInspector]public readonly int PathId;
         public int PathKey => PathId;
 
 

@@ -38,7 +38,10 @@ namespace ZE.MechBattle.Ecs {
 
         public override void OnAwake()
         {
-            _movementProjectionsFilter = World.Filter.With<MovementCollisionAvoidanceComponent>().With<NextPositionComponent>().Build();
+            _movementProjectionsFilter = World.Filter
+                .With<MovementCollisionAvoidanceComponent>()
+                .With<NextPositionComponent>()
+                .Build();
             _occupationCellsFilter = World.Filter.With<MovementCollisionAvoidanceComponent>().Build();
 
             _avoidanceComponents = World.GetStash<MovementCollisionAvoidanceComponent>();
@@ -109,6 +112,7 @@ namespace ZE.MechBattle.Ecs {
             }
 
             // move cells
+
             foreach (var entity in _movementProjectionsFilter)
             {
                 var avoidanceComponent = _avoidanceComponents.Get(entity);
@@ -128,9 +132,11 @@ namespace ZE.MechBattle.Ecs {
                         avoidanceComponent.Priority,
                         moveDir,
                         projectionIndex: 1);
+
                     _movementCells.TryWriteCell(nextTripos, nextCellData);
                 }
             }
+            //UnityEngine.Debug.Log($"-------");
         }
 
         protected override void InternalDispose()

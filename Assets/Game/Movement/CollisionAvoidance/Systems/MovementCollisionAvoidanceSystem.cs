@@ -15,24 +15,38 @@ namespace ZE.MechBattle.Ecs
         private Stash<NextPositionComponent> _nextPositionComponents;
         private Stash<PositionComponent> _positionComponents;
         private Stash<TriangularPosComponent> _triangularPosComponents;
+        private Stash<WaypointMoveTarget> _waypoints;
 
         private readonly IMovementCellsMap _movementCells;
         private readonly float _invertedTriangleHeight;
+        private readonly float _triangleHeight;
+        private readonly CollisionAvoidanceHandler _collisionAvoidanceHandler;
 
         [Inject]
-        public MovementCollisionAvoidanceSystem(SceneFlagsManager flags, IMovementCellsMap movementCells, INavigationMap map) : base(flags)
+        public MovementCollisionAvoidanceSystem(
+            SceneFlagsManager flags, 
+            IMovementCellsMap movementCells, 
+            INavigationMap map,
+            CollisionAvoidanceHandler collisionAvoidanceHandler) : base(flags)
         {
-            _movementCells = movementCells;
+            _movementCells = movementCells;            
+            _collisionAvoidanceHandler = collisionAvoidanceHandler;
+
             _invertedTriangleHeight = map.InvertedTriangleHeight;
+            _triangleHeight = map.TriangleHeight;
         }
 
         public override void OnAwake()
         {
-            _filter = World.Filter.With<NextPositionComponent>().With<MovementCollisionAvoidanceComponent>().Build();
+            _filter = World.Filter
+                .With<NextPositionComponent>()
+                .With<MovementCollisionAvoidanceComponent>()
+                .Build();
 
             _nextPositionComponents = World.GetStash<NextPositionComponent>();
             _positionComponents = World.GetStash<PositionComponent>();
             _triangularPosComponents = World.GetStash<TriangularPosComponent>();
+            _waypoints = World.GetStash<WaypointMoveTarget>();
         }
 
         public override void OnUpdate(float deltaTime)
@@ -43,13 +57,19 @@ namespace ZE.MechBattle.Ecs
             foreach (var entity in _filter)
             {
                 var nextPosComponent = _nextPositionComponents.Get(entity);
-                var nextTripos = nextPosComponent.Tripos;
-                var currentPos = _positionComponents.Get(entity).Value.xz;
-                var moveDir = nextPosComponent.WorldPosXZ - currentPos;
+
+                // NOTE: target tripos may be in jump-triangle (vertex neighbourhood only), 
+                // so we use waypoint target, not nextPosition.Tripos
+                // it may cause some problems someday, need more complicated check logic here
+                var nextTripos = _waypoints.Get(entity).TriangularPos;
+                var currentTripos = _triangularPosComponents.Get(entity).Value;
+
+                var currentWorldPos = _positionComponents.Get(entity).Value.xz;
+                var moveDir = nextPosComponent.WorldPosXZ - currentWorldPos;
 
                 if (!_movementCells.TryGetValue(nextTripos, out var moveCell))
                 {
-                    _movementCells.TryWriteCell(nextTripos, entity, moveDir, 0);
+                    _movementCells.TryWriteCell(nextTripos, entity, moveDir, 1);
                     continue;
                 }
                 else
@@ -58,56 +78,89 @@ namespace ZE.MechBattle.Ecs
                     {
                         continue;
                     }
+                    else
+                    {
+                        if (nextTripos == currentTripos)
+                        {
+                            GoThrough(entity, currentWorldPos, nextPosComponent.WorldPosXZ, 0.1f);
+                            continue;
+                        }
+                        else
+                        {
+                            StandStill(entity);
+                            continue;
+                        }
+                    }
                         
                 }
 
-                if (math.lengthsq( moveCell.MoveVector) == 0f)
+                // if obstacling unit is standing
+                if (math.all(moveCell.MoveVector == 0f))
                 {
-                    SearchForDetour(entity);
+                    if (!TryDetour(entity, nextTripos, currentWorldPos, nextPosComponent.MoveDistance)) 
+                    {
+                        //if (_collisionAvoidanceHandler.CanEntitiesGoThrough(entity, moveCell.Entity))
+                        //    GoThrough(entity, currentWorldPos, nextPosComponent.WorldPosXZ, 0.5f);
+                        //else
+                            StandStill(entity);
+                    }
                     continue;
-                }
-
-                
-                var dot = math.dot(moveCell.MoveVector, moveDir);
-
-                if (dot < 1f)
-                {
-                    // counter-direction
-                    // possible solution: half-speed, but co-existance in same cell
-                    SolveYieldingCase(entity, moveCell);
                 }
                 else
                 {
-                    var moveCf = dot * math.lengthsq(moveDir);
-                    var nextPos = currentPos + moveCf * moveDir;
-                    var resultingTripos = TriangularMath.WorldToTrianglePosInvertedHeight(new float3(nextPos.x, 0f, nextPos.y), _invertedTriangleHeight);                                      
-                    if (_movementCells.TryGetValue(resultingTripos, out var alreadyOccupiedCell))
-                    {
-                        var currentTripos = _triangularPosComponents.Get(entity).Value;
-                        _nextPositionComponents.Set(entity, new(currentPos, currentTripos));
-                    }                        
-                    else
-                    {
-                        _nextPositionComponents.Set(entity, new(nextPos, nextPosComponent.Tripos));
-                        _movementCells.TryWriteCell(resultingTripos, entity, moveDir, 1);
-                    }                    
+                    StandStill(entity);
+                    //if (_collisionAvoidanceHandler.CanEntitiesGoThrough(entity, moveCell.Entity))
+                    //{
+                    //    var dot = math.dot(moveCell.MoveVector, moveDir);
+                    //    var speedCf = dot < 0f ? 0.25f : (dot * 0.5f + 0.5f);
+                    //    GoThrough(entity, currentWorldPos, nextPosComponent.WorldPosXZ, speedCf);
+                    //}
+                    //else
+                    //{
+                    //    StandStill(entity);
+                    //}
                 }
             }
         }
 
-        private void SearchForDetour(Entity entity)
+        private bool TryDetour(
+            Entity entity, 
+            IntTriangularPos nextTripos, 
+            float2 currentWorldPos, 
+            float moveDistance)
         {
-            //UnityEngine.Debug.Log($"need detour for {entity}");
-            var currentPos = _positionComponents.Get(entity).Value.xz;
-            var nextPosComponent = new NextPositionComponent(currentPos, _triangularPosComponents.Get(entity).Value);
-            _nextPositionComponents.Set(entity, nextPosComponent);
-            //UnityEngine.Debug.Log($"entity {entity.Id} CAS SET: {currentPos} / {nextPosComponent.WorldPos}");
+            var currentTripos = _triangularPosComponents.Get(entity).Value;
+            var detourFound = _collisionAvoidanceHandler.TryGetDetour(currentTripos, nextTripos, out var detourTripos);
+
+            if (detourFound)
+            {
+                var detourWorldPos = TriangularMath.TriangularToWorld(detourTripos, _triangleHeight).xz;
+                var dir = math.normalizesafe(detourWorldPos - currentWorldPos);
+                detourWorldPos = moveDistance * dir + currentWorldPos;
+                _nextPositionComponents.Set(entity, new(detourWorldPos, detourTripos, moveDistance));
+
+               // UnityEngine.Debug.Log($"detour found: {currentTripos} -> {detourTripos}");
+            }
+            else
+            {
+               // UnityEngine.Debug.Log($"cannot find detour on {currentTripos}");
+            }
+
+            return detourFound;
         }
 
-        private void SolveYieldingCase(Entity entity, CellMovementData nextCellData)
+        private void GoThrough(Entity entity, float2 currentWorldPos, float2 prevNextWorldPos, float speedCf)
         {
-            //UnityEngine.Debug.Log($"solve yielding case for {entity}");
-            _nextPositionComponents.Set(entity, new(_positionComponents.Get(entity).Value.xz, _triangularPosComponents.Get(entity).Value));
+            var moveDir = speedCf * (prevNextWorldPos - currentWorldPos);
+            var nextPos = currentWorldPos + moveDir;
+            var nextTripos = TriangularMath.WorldToTrianglePosInvertedHeight(new float3(nextPos.x, 0f, nextPos.y), _invertedTriangleHeight);
+            _nextPositionComponents.Set(entity, new(nextPos, nextTripos, math.length(moveDir)));
+        }
+
+        private void StandStill(Entity entity)
+        {
+            _nextPositionComponents.Set(entity, new(_positionComponents.Get(entity).Value.xz, _triangularPosComponents.Get(entity).Value, 0f));
+            _waypoints.Remove(entity);
         }
     }
 }

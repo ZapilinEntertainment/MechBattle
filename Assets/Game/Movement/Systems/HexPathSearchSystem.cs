@@ -43,10 +43,20 @@ namespace ZE.MechBattle.Ecs {
                 if (_hexPaths.TryGetPathByEndpoints(start, end, out var path, updateUsingTime: true))
                 {
                     pathId = path.Id;
+
+#if ZE_NAVIGATION_DEBUG
+                    if (NavigationLogger.Settings.HasFlag(NavigationLogEvents.HexPathSet))
+                        UnityEngine.Debug.Log($"existing hex path defined for entity {entity.Id}: {pathId}");
+#endif
                 }
                 else
                 {
-                    pathId = _hexPaths.ReservePath(start, end).Id;                    
+                    pathId = _hexPaths.ReservePath(start, end).Id;
+
+#if ZE_NAVIGATION_DEBUG
+                    if (NavigationLogger.Settings.HasFlag(NavigationLogEvents.HexPathSet))
+                        UnityEngine.Debug.Log($"hex path reserved for entity {entity.Id}: {pathId}");
+#endif
                 }
 
                 _calculationTags.Add(entity);

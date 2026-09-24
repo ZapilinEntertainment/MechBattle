@@ -39,7 +39,7 @@ namespace ZE.MechBattle.Vfx
 
         private void OnRelease(T instance)
         {
-            instance.gameObject.SetActive(false);
+            instance.gameObject?.SetActive(false);
             instance.OnRelease();            
             instance.transform.SetParent(_hostObject);
         }

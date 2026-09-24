@@ -48,7 +48,7 @@ namespace ZE.MechBattle.Ecs {
             {
                 var tripos = _cellEntities.Get(cellEntity).Tripos;
                 var movementData = _movementData.Get(cellEntity).Value;
-                if (movementData.Priority == 0)
+                if (movementData.ProjectionStepIndex == 0)
                 {
                     _movementDensity.Set(cellEntity, new(OCCUPIED_CELL_DENSITY));
 

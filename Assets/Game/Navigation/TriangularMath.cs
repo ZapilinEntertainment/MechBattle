@@ -54,7 +54,6 @@ namespace ZE.MechBattle.Navigation
             return math.normalize(nextPos.DownLeft * TriangularMath.DirX + nextPos.Up * TriangularMath.DirY + nextPos.DownRight * TriangularMath.DirZ);
         }
 
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetTrianglesCountInHex(int hexRadius) => hexRadius * hexRadius * 6;
 
@@ -107,7 +106,7 @@ namespace ZE.MechBattle.Navigation
 
         
         [BurstCompile]
-        public static IntTriangularPos WorldToTrianglePos(float3 pos, float triangleHeight) => WorldToTrianglePosInvertedHeight(pos, 1.0f / triangleHeight);
+        public static IntTriangularPos WorldToTrianglePos(float3 pos, float triangleHeight) => WorldToTrianglePosInvertedHeight(pos, 1f / triangleHeight);
 
         // Optimized by Google AI
         [BurstCompile]

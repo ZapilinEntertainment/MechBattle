@@ -13,11 +13,13 @@ namespace ZE.MechBattle.Ecs {
     {
         public readonly float2 WorldPosXZ;    
         public readonly IntTriangularPos Tripos;
+        public readonly float MoveDistance;
 
-        public NextPositionComponent(float2 worldPosXZ, IntTriangularPos tripos)
+        public NextPositionComponent(float2 worldPosXZ, IntTriangularPos tripos, float moveDistance)
         {
             WorldPosXZ = worldPosXZ;
             Tripos = tripos;
+            MoveDistance = moveDistance;
         }
     }
 }

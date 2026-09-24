@@ -19,13 +19,16 @@ namespace ZE.MechBattle.Ecs {
         private Stash<ClearTrianglePathTag> _clearTrianglePathTags;
         private Stash<TriangularPosComponent> _triangularPos;
         private Stash<MoveTargetComponent> _moveTarget;
+        private Stash<HexCoordComponent> _hexCoords;
 
-        private readonly HexPortalsList _portalsList;
+        private readonly HexPortalPathsLRUBuffer _portalPaths;
+        private readonly NavigationGridHandler _gridHandler;
 
         [Inject]
-        public HexPathProgressionUpdateSystem(HexPortalsList portalsList)
+        public HexPathProgressionUpdateSystem(HexPortalPathsLRUBuffer portalsPaths, NavigationGridHandler gridHandler)
         {
-            _portalsList = portalsList;
+            _portalPaths = portalsPaths;
+            _gridHandler = gridHandler;
         }
 
         public void OnAwake() 
@@ -41,6 +44,7 @@ namespace ZE.MechBattle.Ecs {
             _clearTrianglePathTags = World.GetStash<ClearTrianglePathTag>();
             _triangularPos = World.GetStash<TriangularPosComponent>();
             _moveTarget = World.GetStash<MoveTargetComponent>();
+            _hexCoords = World.GetStash<HexCoordComponent>();
         }
 
         public void OnUpdate(float deltaTime) 
@@ -48,13 +52,27 @@ namespace ZE.MechBattle.Ecs {
             foreach (var entity in _filter)
             {
                 var pathId = _hexPaths.Get(entity).PathId;
-                if (!_portalsList.ContainsKey(pathId))
+                if (!_portalPaths.TryGetPathById(pathId, out var path))
                 {
                     _clearHexPathTags.Add(entity);
                     continue;
                 }
 
                 ref var progression = ref _hexProgression.Get(entity);
+                var hexCoord = _hexCoords.Get(entity).Value;
+                if (math.any(hexCoord != progression.TargetHexCoord))
+                {
+#if ZE_NAVIGATION_DEBUG
+                    if (NavigationLogger.Settings.HasFlag(NavigationLogEvents.EntityLosePath))
+                        UnityEngine.Debug.Log($"entity {entity.Id} lose its path: {pathId}");
+#endif
+
+                    // deviated from route
+                    _clearHexPathTags.Add(entity);
+                    continue;
+                }
+
+
                 var currentStep = progression.StepIndex;
 
                 #if ZE_NAVIGATION_DEBUG
@@ -70,6 +88,11 @@ namespace ZE.MechBattle.Ecs {
                 else
                 {
                     progression.StepIndex = currentStep + 1;
+
+                    progression.TargetHexCoord =
+                        path.TryGetNode(progression.StepIndex, out var pathNode)
+                        ? _gridHandler.GetTargetHexCoord(entity, pathNode)
+                        : path.End.HexCoord;
                 }
 
                 ClearTrianglePathData(entity);

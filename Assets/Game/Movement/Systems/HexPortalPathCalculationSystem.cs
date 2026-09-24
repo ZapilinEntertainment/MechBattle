@@ -34,6 +34,7 @@ namespace ZE.MechBattle.Ecs {
         private readonly INavigationMap _map;
         private readonly PortalPathConstructionProcessManager _processesManager;
         private readonly HexPortalsCoordinator _portalsCoordinator;
+        private readonly NavigationGridHandler _navHandler;
 
         private const int MAX_PROCESSES = 4;
 
@@ -42,10 +43,12 @@ namespace ZE.MechBattle.Ecs {
         public HexPortalPathCalculationSystem(
             INavigationMap map,
             HexPortalsCoordinator portalsCoordinator,
-            IPortalsLogic portalsLogic)
+            IPortalsLogic portalsLogic,
+            NavigationGridHandler navGridHandler)
         {
             _map = map;
             _portalsCoordinator = portalsCoordinator;
+            _navHandler = navGridHandler;
             _processesManager = new PortalPathConstructionProcessManager(Allocator.Persistent, _map, MAX_PROCESSES, _portalsCoordinator, portalsLogic);
         }
 
@@ -70,12 +73,8 @@ namespace ZE.MechBattle.Ecs {
 
         protected override void OnPathCalculated(Entity entity, HexPortalsPath path)
         {
-#if ZE_NAVIGATION_DEBUG
-            if (NavigationLogger.Settings.HasFlag(NavigationLogEvents.EntityPathCalculated))
-                UnityEngine.Debug.Log($"hex path calculated: {path.Id} for entity {entity.Id}");
-#endif
-
-            _progressionComponents.Add(entity, new(path.NodesCount));
+            var firstPortalId = path.Points[0];
+            _progressionComponents.Add(entity, new(path.NodesCount, _navHandler.GetTargetHexCoord(entity, firstPortalId)));
             _calculationTags.Remove(entity);
         }
 

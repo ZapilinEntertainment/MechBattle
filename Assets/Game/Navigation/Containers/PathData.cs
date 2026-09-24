@@ -10,6 +10,7 @@ namespace ZE.MechBattle.Navigation
     {
         public readonly int Id;
         public readonly (DestinationKey start, DestinationKey end) DestinationKeys;
+        public DestinationKey End => DestinationKeys.end;
 
         public bool IsCalculated { get; private set; }
         public bool HasReachedTarget { get; private set; }

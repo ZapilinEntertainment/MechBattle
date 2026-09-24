@@ -9,7 +9,6 @@ namespace ZE.MechBattle.Navigation
         private readonly INavigationMap _map;
         private readonly IHexPortalsCoordinator _portalsCoordinator;
         private readonly IPortalsLogic _portalsLogic;
-        private readonly IPathsList<PortalPathDestinationKey, int> _pathsBuffer;
 
         public PortalPathConstructionProcessManager(
             Allocator allocator,
@@ -22,7 +21,6 @@ namespace ZE.MechBattle.Navigation
             _allocator = allocator;
             _map = map;            
             _portalsCoordinator = portalsCoordinator;
-            _pathsBuffer = _portalsCoordinator.GetPathsList();
             _portalsLogic = portalsLogic;
         }
 
@@ -31,12 +29,21 @@ namespace ZE.MechBattle.Navigation
 
 
         // add to list inside process
-        protected override void HandleResults(PortalsPathConstructionProcess process) { }
+        protected override void HandleResults(PortalsPathConstructionProcess process) 
+        {
+            process.OnResultsApplied();
+        }
 
         protected override PathCalculationProcessToken LaunchProcess(PortalConstructionProcessInput launchData, PortalsPathConstructionProcess process, int index)
         {
+            var token = new PathCalculationProcessToken(launchData.ReservedPathId, index, process.ProcessIteration);
+            LaunchProcess(launchData, process);
+            return token;
+        }
+
+        private void LaunchProcess(PortalConstructionProcessInput launchData, PortalsPathConstructionProcess process)
+        {
             process.LaunchAsync(launchData);
-            return new PathCalculationProcessToken(launchData.ReservedPathId, index, process.ProcessIteration);
         }
     }
 }

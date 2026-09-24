@@ -15,8 +15,8 @@ namespace ZE.MechBattle.Movement.CollisionAvoidance
     
         public static void InstallSystems(FeatureSystemsInstallQueue.ISystemsOperator installer)
         {
-            installer.AddSystem<MovementVectorsMapUpdateSystem>(SystemGroupOrder.Pathfinding);
-            installer.AddSystem<MovementDensityMapUpdateSystem>(SystemGroupOrder.Pathfinding);
+            installer.AddSystem<MovementVectorsMapUpdateSystem>(SystemGroupOrder.UnitsNextPositionCalculation);
+            installer.AddSystem<MovementDensityMapUpdateSystem>(SystemGroupOrder.UnitsNextPositionCalculation);
             installer.AddSystem<MovementCollisionAvoidanceSystem>(SystemGroupOrder.UnitsNextPositionCalculation);
         }
     }

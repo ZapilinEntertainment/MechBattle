@@ -33,7 +33,7 @@ namespace ZE.MechBattle.Ecs {
 
         public override void OnUpdate(float deltaTime)
         {
-            if (IsPaused) 
+            if (IsPaused || _filter.IsEmpty()) 
                 return;
 
             foreach (var entity in _filter)
