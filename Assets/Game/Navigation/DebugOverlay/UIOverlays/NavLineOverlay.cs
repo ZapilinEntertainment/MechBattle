@@ -1,5 +1,3 @@
-using R3;
-using Unity.Mathematics;
 using UnityEditor;
 using UnityEditor.Overlays;
 using UnityEngine;

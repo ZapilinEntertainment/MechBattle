@@ -1,17 +1,14 @@
-using System.Collections.Generic;
 using VContainer;
-using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
-    public class HexPortalsLogic : HexPortalsLogicBase
+    public class HexPortalsHandler : HexPortalsHandlerBase
     {       
         private readonly PortalDistancesCalculationRequests _distanceCalculationRequests;
         private readonly OutdatedPortalsList _outdatedPortals;
-        private readonly List<(int portalId, int exitId, NavigationPortalExit exit)> _hexPointsList = new();
 
         [Inject]
-        public HexPortalsLogic(
+        public HexPortalsHandler(
             HexPortalsList portals, 
             PortalDistancesCalculationRequests distanceCalculationRequests,
             OutdatedPortalsList outdatedPortals,

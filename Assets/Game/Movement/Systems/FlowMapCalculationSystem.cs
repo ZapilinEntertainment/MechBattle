@@ -40,11 +40,11 @@ namespace ZE.MechBattle.Ecs {
         {
             _filter = World.Filter.With<FlowMapCalculationTag>().Build();
 
-            _validator = new(World, PathStatusesLRU, _flowMapsCoordinator.MapsList);
+            _validator = new(World, PathStatuses, _flowMapsCoordinator.MapsList);
             _calculationTag = World.GetStash<FlowMapCalculationTag>();
         }
 
-        protected override void OnPathCalculated(Entity entity, PortalExitFlowMap path)
+        protected override void OnEntityPathCalculated(Entity entity, PortalExitFlowMap path)
         {
             _calculationTag.Remove(entity);
         }
@@ -68,6 +68,9 @@ namespace ZE.MechBattle.Ecs {
             return token.IsValid;
         }
 
-        
+        protected override void OnEntityPathFailed(Entity entity, PortalExitFlowMap path)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

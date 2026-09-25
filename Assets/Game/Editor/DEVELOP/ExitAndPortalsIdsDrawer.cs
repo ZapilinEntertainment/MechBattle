@@ -14,13 +14,13 @@ namespace ZE.MechBattle.Develop
 
         private IHexPortalsList _portals;
         private IPortalExitsList _exits;
-        private IPortalsLogic _portalLogic;
+        private IPortalsHandler _portalLogic;
         private INavigationMap _map;
         private List<(Vector3 pos, int id)> _ids = new();
 
 
         [Inject]
-        public void Inject(IPortalExitsList exitsList, INavigationMap map, IHexPortalsList portals, IPortalsLogic portalsLogic)
+        public void Inject(IPortalExitsList exitsList, INavigationMap map, IHexPortalsList portals, IPortalsHandler portalsLogic)
         {
             _portals = portals;
             _exits = exitsList;

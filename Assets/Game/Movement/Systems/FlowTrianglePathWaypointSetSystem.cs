@@ -50,27 +50,23 @@ namespace ZE.MechBattle.Ecs
             _invalidTrianglePaths = World.GetStash<ClearTrianglePathTag>();
         }
 
-        private enum DirectionSearchResult : byte { Undefined, FlowMapNotCalculated, InvalidTrianglePath, Success}
+        private enum DirectionSearchResult : byte { Undefined, FlowMapNotCalculated, InvalidTrianglePath, Success, HexCoordMiss}
 
         public void OnUpdate(float deltaTime)
         {
             foreach (var entity in _flowPathsFilter)
             {
                 var result = TryGetMoveDirection(entity, out var moveDirection, out var tripos);
-                switch (result)
+                if (result == DirectionSearchResult.InvalidTrianglePath)
                 {
-                    case DirectionSearchResult.InvalidTrianglePath:
-                        {
-                            UnityEngine.Debug.Log("invalid triangle path");
-                            _invalidTrianglePaths.Set(entity);
-                            break;
-                        }
-                    case DirectionSearchResult.FlowMapNotCalculated:
-                        {
-                            //UnityEngine.Debug.Log("flow map is not yet calculated");
-                            break;
-                        }
+#if UNITY_EDITOR
+                    UnityEngine.Debug.Log("invalid triangle path");
+#endif
+                    _invalidTrianglePaths.Set(entity);
                 }
+
+                if (result == DirectionSearchResult.HexCoordMiss)
+                    UnityEngine.Debug.LogWarning("FLOW MAP MISS");
 
                 if (result != DirectionSearchResult.Success)
                     continue;
@@ -102,8 +98,12 @@ namespace ZE.MechBattle.Ecs
             if (!flowMap.IsCalculated)
                 return DirectionSearchResult.FlowMapNotCalculated;
 
+            if (math.any(hexCoord != flowMap.HexCoord))
+                return DirectionSearchResult.HexCoordMiss;
+
             tripos = _triangularPositions.Get(entity).Value;
             moveDirection = flowMap.GetDirectionUnsafe(tripos);
+
             var correctedDir = _avoidanceHandler.CorrectFlowMapDirection(hexCoord, tripos, moveDirection);
             //if (correctedDir != moveDirection)  UnityEngine.Debug.Log($"corrected at {tripos}: {moveDirection} -> {correctedDir}");
             moveDirection = correctedDir;

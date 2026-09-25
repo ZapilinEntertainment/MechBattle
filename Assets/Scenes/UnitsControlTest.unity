@@ -3018,7 +3018,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 264bf5fe09f5b8e4c853ef0700a6f891, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ZE.Navigation::ZE.MechBattle.Navigation.NavigationLoggerSetup
-  _eventSettings: 3072
+  _eventSettings: 0
 --- !u!114 &1259888773
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3103,7 +3103,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.SquadsMassSpawnUtility
   _setups:
   - IsActive: 1
-    UnitsCount: 500
+    UnitsCount: 250
     UnitId: tank
     PlayerId: 0
     SquadDecree: 1
@@ -3114,7 +3114,7 @@ MonoBehaviour:
       x: -3
       y: 4
   - IsActive: 1
-    UnitsCount: 500
+    UnitsCount: 250
     UnitId: tank
     PlayerId: 0
     SquadDecree: 1
@@ -3124,8 +3124,8 @@ MonoBehaviour:
     TargetHex:
       x: -2
       y: 4
-  - IsActive: 0
-    UnitsCount: 500
+  - IsActive: 1
+    UnitsCount: 250
     UnitId: tank
     PlayerId: 0
     SquadDecree: 1
@@ -3135,8 +3135,8 @@ MonoBehaviour:
     TargetHex:
       x: -1
       y: 3
-  - IsActive: 0
-    UnitsCount: 500
+  - IsActive: 1
+    UnitsCount: 250
     UnitId: tank
     PlayerId: 0
     SquadDecree: 1
@@ -3146,8 +3146,8 @@ MonoBehaviour:
     TargetHex:
       x: 0
       y: 3
-  - IsActive: 0
-    UnitsCount: 500
+  - IsActive: 1
+    UnitsCount: 250
     UnitId: tank
     PlayerId: 0
     SquadDecree: 1
@@ -3157,8 +3157,8 @@ MonoBehaviour:
     TargetHex:
       x: 1
       y: 2
-  - IsActive: 0
-    UnitsCount: 500
+  - IsActive: 1
+    UnitsCount: 250
     UnitId: tank
     PlayerId: 0
     SquadDecree: 1
@@ -3169,7 +3169,7 @@ MonoBehaviour:
       x: 2
       y: 2
   - IsActive: 1
-    UnitsCount: 500
+    UnitsCount: 250
     UnitId: tank
     PlayerId: 1
     SquadDecree: 1
@@ -3180,7 +3180,7 @@ MonoBehaviour:
       x: -3
       y: 1
   - IsActive: 1
-    UnitsCount: 500
+    UnitsCount: 250
     UnitId: tank
     PlayerId: 1
     SquadDecree: 1
@@ -3190,8 +3190,8 @@ MonoBehaviour:
     TargetHex:
       x: -2
       y: 1
-  - IsActive: 0
-    UnitsCount: 500
+  - IsActive: 1
+    UnitsCount: 250
     UnitId: tank
     PlayerId: 1
     SquadDecree: 1
@@ -3201,8 +3201,8 @@ MonoBehaviour:
     TargetHex:
       x: -1
       y: 0
-  - IsActive: 0
-    UnitsCount: 500
+  - IsActive: 1
+    UnitsCount: 250
     UnitId: tank
     PlayerId: 1
     SquadDecree: 1
@@ -3212,8 +3212,8 @@ MonoBehaviour:
     TargetHex:
       x: 0
       y: 0
-  - IsActive: 0
-    UnitsCount: 500
+  - IsActive: 1
+    UnitsCount: 250
     UnitId: tank
     PlayerId: 1
     SquadDecree: 1
@@ -3223,8 +3223,8 @@ MonoBehaviour:
     TargetHex:
       x: 1
       y: -1
-  - IsActive: 0
-    UnitsCount: 500
+  - IsActive: 1
+    UnitsCount: 250
     UnitId: tank
     PlayerId: 1
     SquadDecree: 1
@@ -3247,7 +3247,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.ExitAndPortalsIdsDrawer
   _drawPortalIds: 1
-  _drawExitIds: 1
+  _drawExitIds: 0
 --- !u!1001 &1305719369
 PrefabInstance:
   m_ObjectHideFlags: 0

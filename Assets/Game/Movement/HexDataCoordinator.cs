@@ -18,7 +18,7 @@ namespace ZE.MechBattle
 
         public bool DoesHexRequireUpdate(int2 hexCoord) => _hexRaycastRequests.Contains(hexCoord);
 
-        public bool IsHexCalculated(int2 hexCoord) => _map.GetOrCreateHex(hexCoord).PassabilityVersion != 0;
+        public bool IsHexCalculated(int2 hexCoord) => _map.TryGetHex(hexCoord, out var hex) ? (hex.PassabilityVersion != 0) : false;
     
     }
 }

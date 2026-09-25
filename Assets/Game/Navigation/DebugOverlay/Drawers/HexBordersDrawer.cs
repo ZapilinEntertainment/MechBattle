@@ -5,18 +5,22 @@ using UnityEditor;
 
 namespace ZE.MechBattle.Navigation.DebugOverlay
 {
-    public class HexBordersDrawer
+    public readonly struct HexBordersDrawer
     {
         private readonly HexPointsPreset _hexPointsPreset;
-        private readonly MapSettings _mapSettings;
+        private readonly float _hexEdgeSize;
+        private readonly float _triangleHeight;
 
-        public HexBordersDrawer(in MapSettings mapSettings)
+        public HexBordersDrawer(in MapSettings mapSettings) : this(mapSettings.HexEdgeSize, mapSettings.TriangleHeight) { }
+
+        public HexBordersDrawer(float hexEdgeSize, float triangleHeight)
         {
-            _mapSettings = mapSettings;
-            _hexPointsPreset = new HexPointsPreset(_mapSettings.HexEdgeSize);
+            _hexEdgeSize = hexEdgeSize;
+            _triangleHeight = triangleHeight;
+            _hexPointsPreset = new HexPointsPreset(_hexEdgeSize);
         }
 
-        public void DrawHex(int2 hexCoord)
+        public readonly void DrawHex(int2 hexCoord)
         {
             var centerPos = GetHexCenter(hexCoord);
 
@@ -33,7 +37,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             DrawLine(_hexPointsPreset.TopRight, _hexPointsPreset.TopLeft);
         }
 
-        public void WriteHexBorders(int2 hexCoord, List<(Vector3, Vector3)> lines)
+        public readonly void WriteHexBorders(int2 hexCoord, List<(Vector3, Vector3)> lines)
         {
             var centerPos = GetHexCenter(hexCoord);
 
@@ -50,7 +54,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             AddPoints(_hexPointsPreset.TopRight, _hexPointsPreset.TopLeft);
         }
 
-        private Vector3 GetHexCenter(int2 hexCoord) => (Vector3)new NavigationHexPosition(hexCoord, _mapSettings.HexEdgeSize, _mapSettings.TrianglesPerHexEdge)
+        private Vector3 GetHexCenter(int2 hexCoord) => (Vector3)new NavigationHexPosition(hexCoord.x, hexCoord.y, _hexEdgeSize, _triangleHeight)
                 .CenterPos3DWorld;
 
     }

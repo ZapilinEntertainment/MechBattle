@@ -43,7 +43,7 @@ namespace ZE.MechBattle.Ecs {
         public HexPortalPathCalculationSystem(
             INavigationMap map,
             HexPortalsCoordinator portalsCoordinator,
-            IPortalsLogic portalsLogic,
+            IPortalsHandler portalsLogic,
             NavigationGridHandler navGridHandler)
         {
             _map = map;
@@ -63,7 +63,7 @@ namespace ZE.MechBattle.Ecs {
             _moveTargets = World.GetStash<MoveTargetComponent>();
             _hexPathIds = World.GetStash<HexPathIdComponent>();
 
-            _validator = new EntityPathValidator<HexPortalsPath, HexPathIdComponent, ClearHexPathTag>(World, PathStatusesLRU, _portalsCoordinator.GetPortalPaths());
+            _validator = new EntityPathValidator<HexPortalsPath, HexPathIdComponent, ClearHexPathTag>(World, PathStatuses, _portalsCoordinator.GetPortalPaths());
         }
 
         public override void Dispose()
@@ -71,10 +71,15 @@ namespace ZE.MechBattle.Ecs {
             _processesManager.Dispose();
         }
 
-        protected override void OnPathCalculated(Entity entity, HexPortalsPath path)
+        protected override void OnEntityPathCalculated(Entity entity, HexPortalsPath path)
         {
             var firstPortalId = path.Points[0];
             _progressionComponents.Add(entity, new(path.NodesCount, _navHandler.GetTargetHexCoord(entity, firstPortalId)));
+            _calculationTags.Remove(entity);
+        }
+
+        protected override void OnEntityPathFailed(Entity entity, HexPortalsPath path)
+        {
             _calculationTags.Remove(entity);
         }
 
@@ -83,6 +88,17 @@ namespace ZE.MechBattle.Ecs {
             var startTripos = _triangularPosComponents.Get(entity).Value;
             var endTripos = _moveTargets.Get(entity).TriangularPos;
             var endpoints = path.DestinationKeys;
+
+            if (!_map.ContainsHex(endpoints.start.HexCoord) || !_map.ContainsHex(endpoints.end.HexCoord))
+            {
+#if UNITY_EDITOR
+                UnityEngine.Debug.LogWarning($"invalid hex destination: {endpoints.start.HexCoord} -> {endpoints.end.HexCoord}");
+#endif
+                OnPathCalculationFailed(path.Id);
+
+                token = PathCalculationProcessToken.Invalid;
+                return false;
+            }
 
             var request = new HexPathSearchRequest(
                 startTripos,

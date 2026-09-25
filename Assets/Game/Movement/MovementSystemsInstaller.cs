@@ -34,7 +34,7 @@ namespace ZE.MechBattle.Ecs
             builder.Register<IPortalExitsList, PortalExitsList>(Lifetime.Scoped).AsSelf();
             builder.Register<IPortalConnectionsList, PortalConnectionsList>(Lifetime.Scoped).AsSelf();
             builder.Register<IHexPortalsCoordinator, HexPortalsCoordinator>(Lifetime.Scoped).AsSelf();
-            builder.Register<IPortalsLogic, HexPortalsLogic>(Lifetime.Scoped);
+            builder.Register<IPortalsHandler, HexPortalsHandler>(Lifetime.Scoped);
             builder.Register<IExitsLogic, HexExitsLogic>(Lifetime.Scoped);
 
             builder.Register<HexDataCoordinator>(Lifetime.Scoped);

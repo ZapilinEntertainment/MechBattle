@@ -11,10 +11,10 @@ namespace ZE.MechBattle.Ecs {
     {
         public World World { get; set;}
         private readonly OutdatedPortalsList _outdatedPortalsList;
-        private readonly IPortalsLogic _portalsLogic;
+        private readonly IPortalsHandler _portalsLogic;
 
         [Inject]
-        public OutdatedPortalsClearSystem(OutdatedPortalsList outdatedPortalsList, IPortalsLogic portalsLogic)
+        public OutdatedPortalsClearSystem(OutdatedPortalsList outdatedPortalsList, IPortalsHandler portalsLogic)
         {
             _outdatedPortalsList = outdatedPortalsList;
             _portalsLogic = portalsLogic;

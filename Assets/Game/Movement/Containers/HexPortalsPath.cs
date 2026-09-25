@@ -10,7 +10,6 @@ namespace ZE.MechBattle
         public HexPortalsPath(int id, (PortalPathDestinationKey, PortalPathDestinationKey) destinationKey) : base(id, destinationKey)
         {
         }
-
         
     }
 }

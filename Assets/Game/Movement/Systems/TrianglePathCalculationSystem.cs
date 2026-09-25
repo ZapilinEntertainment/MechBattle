@@ -51,10 +51,10 @@ namespace ZE.MechBattle.Ecs
             _calculationTags = World.GetStash<TrianglePathCalculationTag>();
             _tripathComponents = World.GetStash<RegularTrianglePathComponent>();
 
-            _pathValidator = new(World,  PathStatusesLRU, _paths);
+            _pathValidator = new(World,  PathStatuses, _paths);
         }
 
-        protected override void OnPathCalculated(Entity entity, TrianglesPath path)
+        protected override void OnEntityPathCalculated(Entity entity, TrianglesPath path)
         {
             _progressionComponents.Set(entity, new(path.NodesCount));
             _calculationTags.Remove(entity);
@@ -66,6 +66,11 @@ namespace ZE.MechBattle.Ecs
             var id = _tripathComponents.Get(entity).PathId;
             token = _processesManager.TryLaunchProcess(new(id, endpoints.start, endpoints.end));
             return token.IsValid;
+        }
+
+        protected override void OnEntityPathFailed(Entity entity, TrianglesPath path)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

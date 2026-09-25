@@ -1,6 +1,7 @@
 using ZE.MechBattle.Navigation;
 using Scellecs.Morpeh;
 using ZE.Utils;
+using System.Collections.Generic;
 
 namespace ZE.MechBattle.Ecs
 {
@@ -22,12 +23,12 @@ namespace ZE.MechBattle.Ecs
     {
         private readonly Stash<PathComponent> _pathComponents;
         private readonly Stash<PathClearTag> _clearTags;
-        private readonly LRUDictionaryCache<int, PathCalculationStatus> _pathStatuses;
+        private readonly Dictionary<int, PathCalculationStatus> _pathStatuses;
         private readonly IPathStorage<PathType> _pathsList;
 
         public EntityPathValidator(
-            World world, 
-            LRUDictionaryCache<int, PathCalculationStatus> statuses,
+            World world,
+            Dictionary<int, PathCalculationStatus> statuses,
             IPathStorage<PathType> pathsList)
         {
             _pathComponents = world.GetStash<PathComponent>();
@@ -38,7 +39,7 @@ namespace ZE.MechBattle.Ecs
         public bool ValidateAndGetCalculationStatus(Entity entity, out PathCalculationStatus status, out PathType path)
         {
             var pathId = _pathComponents.Get(entity).PathKey;
-            status = _pathStatuses.TryGetCachedValue(pathId, out status) ? status : PathCalculationStatus.Undefined;
+            status = _pathStatuses.TryGetValue(pathId, out status) ? status : PathCalculationStatus.Undefined;
             if (!_pathsList.TryGetPathById(pathId, out path))
             {
                 _clearTags.Add(entity);

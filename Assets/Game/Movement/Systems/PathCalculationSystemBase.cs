@@ -8,7 +8,7 @@ namespace ZE.MechBattle.Ecs {
 
     public enum PathCalculationStatus : byte
     {
-        Undefined, Calculating, Completed
+        Undefined, Calculating, Completed, Invalid
     }
 
     public interface ICalculationSystemPath
@@ -29,13 +29,13 @@ namespace ZE.MechBattle.Ecs {
         protected abstract IEntityPathValidator<PathType> PathValidator { get; }
 
 
-        protected readonly LRUDictionaryCache<int, PathCalculationStatus> PathStatusesLRU;
+        protected readonly Dictionary<int, PathCalculationStatus> PathStatuses;
         private readonly Dictionary<int, PathCalculationProcessToken> _calculationProcessTokens = new();
         private readonly ArrayPool<int> _pool;
 
         public PathCalculationSystemBase()
         {
-            PathStatusesLRU = new(MAX_CACHED_STATUSES_COUNT);
+            PathStatuses = new(MAX_CACHED_STATUSES_COUNT);
             _pool = ArrayPool<int>.Shared;
         }
 
@@ -49,9 +49,24 @@ namespace ZE.MechBattle.Ecs {
             HandleReceivedRequests(idleProcessesCount);
         }        
 
-        protected abstract void OnPathCalculated(Entity entity, PathType path);
+        protected void OnPathCalculationFailed(int pathId)
+        {
+            _calculationProcessTokens.Remove(pathId);
+            PathStatuses[pathId]= PathCalculationStatus.Invalid;
+        }
+
+        protected abstract void OnEntityPathFailed(Entity entity, PathType path);
+        protected abstract void OnEntityPathCalculated(Entity entity, PathType path);
 
         protected abstract bool TryStartCalculation(Entity entity, PathType path, out PathCalculationProcessToken token);
+
+        protected virtual void OnImpossibleRequestFound(Entity entity, PathType path)
+        {
+#if UNITY_EDITOR
+            // this is unexpected behaviour
+            UnityEngine.Debug.LogWarning($"cannot start new process at {GetType().Name} for some reason");
+#endif
+        }
 
         private void HandleActiveProcesses()
         {
@@ -73,7 +88,7 @@ namespace ZE.MechBattle.Ecs {
             {
                 var pathId = clearArray[i];
                 _calculationProcessTokens.Remove(pathId);
-                PathStatusesLRU.SetCachedValue(pathId, PathCalculationStatus.Completed);
+                PathStatuses[pathId]  = PathCalculationStatus.Completed;
             }
 
             _pool.Return(clearArray);
@@ -89,12 +104,18 @@ namespace ZE.MechBattle.Ecs {
 
                 switch (status)
                 {
-                    case PathCalculationStatus.Completed:
+                    case PathCalculationStatus.Completed:                   
                         {
-                            OnPathCalculated(entity, path);
+                           OnEntityPathCalculated(entity, path);
+                           break;
+                        }
+                    case PathCalculationStatus.Invalid:
+                        {
+                            OnEntityPathFailed(entity, path);
                             break;
                         }
                     case PathCalculationStatus.Calculating:
+                    
                         {
                             continue;
                         }
@@ -106,17 +127,13 @@ namespace ZE.MechBattle.Ecs {
                             
                             if (!TryStartCalculation(entity, path, out var token))
                             {
-                                idleProcessesCount = 0;
-#if UNITY_EDITOR
-                                // this is unexpected behaviour
-                                UnityEngine.Debug.LogWarning($"cannot start new process at {GetType().Name} for some reason");
-#endif
+                                OnImpossibleRequestFound(entity, path);
                                 continue;
                             }
 
                             var pathId = path.Id;
                             _calculationProcessTokens.Add(pathId, token);
-                            PathStatusesLRU.SetCachedValue(pathId, PathCalculationStatus.Calculating);
+                            PathStatuses[pathId] = PathCalculationStatus.Calculating;
                             idleProcessesCount--;
                             break;
                         }

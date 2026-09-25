@@ -1,4 +1,4 @@
-using UnityEngine;
+using System;
 
 namespace ZE.MechBattle.Navigation
 {
@@ -6,6 +6,6 @@ namespace ZE.MechBattle.Navigation
         where NodeKey : unmanaged
         where DestinationKey : unmanaged
     {
-        void AddCalculatedPath(int pathKey, PathCalculationResult<DestinationKey, NodeKey> calculatedData);
+        void AddCalculatedPath(int pathKey, PathCalculationResult<DestinationKey, NodeKey> calculatedData, IDisposable disposableResource = null);
     }
 }

@@ -16,5 +16,7 @@ namespace ZE.MechBattle
             ProcessIteration = processIteration;
             IsValid = true;
         }
+
+        public static readonly PathCalculationProcessToken Invalid = new();
     }
 }

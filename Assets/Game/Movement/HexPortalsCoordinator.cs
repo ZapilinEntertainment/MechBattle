@@ -18,7 +18,7 @@ namespace ZE.MechBattle.Navigation
         private readonly PortalConnectionsList _connectionsList;
         private readonly IUpdatableMap _map;
         
-        private readonly IPortalsLogic _portalsLogic;
+        private readonly IPortalsHandler _portalsLogic;
         private readonly IExitsLogic _exitsLogic;
 
         [Inject]
@@ -30,7 +30,7 @@ namespace ZE.MechBattle.Navigation
             PortalExitsList portalExitsList,
             HexPortalsList portalsList,
             PortalConnectionsList connectionsList,
-            IPortalsLogic portalsLogic,
+            IPortalsHandler portalsLogic,
             IExitsLogic exitsLogic,
             IUpdatableMap map)
         {

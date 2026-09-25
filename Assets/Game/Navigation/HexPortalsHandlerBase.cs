@@ -3,7 +3,7 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Navigation
 {
-    public interface IPortalsLogic
+    public interface IPortalsHandler
     {
         void OnPortalOutdated(int id);
         void ApplyPortalDistancesMap(CalculatePointDistancesResults results);
@@ -14,7 +14,7 @@ namespace ZE.MechBattle.Navigation
 
     }
 
-    public class HexPortalsLogicBase : IPortalsLogic
+    public class HexPortalsHandlerBase : IPortalsHandler
     {
         protected readonly struct EnumerationResult
         {
@@ -36,7 +36,7 @@ namespace ZE.MechBattle.Navigation
         protected readonly PortalConnectionsList _connectionsList;        
         private readonly List<(int portalId, int exitId, NavigationPortalExit exit)> _cachedPointsList = new();
 
-        public HexPortalsLogicBase(
+        public HexPortalsHandlerBase(
             HexPortalsList portals,            
             PortalConnectionsList connectionsList,
             IExitsLogic exitsLogic,

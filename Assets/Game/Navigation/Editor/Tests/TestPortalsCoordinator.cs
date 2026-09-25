@@ -12,7 +12,7 @@ namespace ZE.MechBattle.Navigation.Tests
         private readonly PortalConnectionsList _connectionsList;
         private readonly IUpdatableMap _map;
 
-        private readonly IPortalsLogic _portalsLogic;
+        private readonly IPortalsHandler _portalsLogic;
 
 
         public TestCoordinator(PortalExitsList exits, HexPortalsList portalsList, IUpdatableMap map, PortalConnectionsList connectionsList)
@@ -23,7 +23,7 @@ namespace ZE.MechBattle.Navigation.Tests
             _connectionsList = connectionsList;
 
             ExitsLogic = new HexExitsLogicBase(_exits, _map, _portalsList);
-            _portalsLogic = new HexPortalsLogicBase(_portalsList, _connectionsList, ExitsLogic, _exits);
+            _portalsLogic = new HexPortalsHandlerBase(_portalsList, _connectionsList, ExitsLogic, _exits);
         }
 
         public void ApplyPortalDistancesMap(CalculatePointDistancesResults results) => _portalsLogic.ApplyPortalDistancesMap(results);
