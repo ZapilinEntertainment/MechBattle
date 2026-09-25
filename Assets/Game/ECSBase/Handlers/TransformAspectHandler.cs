@@ -4,6 +4,7 @@ using Scellecs.Morpeh;
 using VContainer;
 using Unity.Burst;
 using System.Runtime.CompilerServices;
+using Scellecs.Morpeh.Native;
 
 namespace ZE.MechBattle.Ecs
 {
@@ -261,9 +262,35 @@ namespace ZE.MechBattle.Ecs
             var localPos = _localPositions.Get(childEntity).Value;
             var localRot = _localRotation.Get(childEntity).Value;
 
-            CalculateGlobalPos(childEntity, parentEntity, localPos, localRot);
-            
+            UpdateChildGlobalPos(childEntity, parentEntity, localPos, localRot);            
         }
+
+        [BurstCompile]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void SyncPositionWithParent(
+            Entity childEntity, 
+            Entity parentEntity, 
+            NativeStash<TriangularPosComponent> triangularPositions,
+            NativeStash<HexCoordComponent> hexCoords,
+            NativeStash<LocalPositionComponent> localPositions,
+            NativeStash<LocalRotationComponent> localRotations,
+            NativeStash<PositionComponent> positions,
+            NativeStash<RotationComponent> rotations)
+        {
+            SyncComponentsCommand.Execute<TriangularPosComponent>(childEntity, parentEntity, triangularPositions);
+            SyncComponentsCommand.Execute<HexCoordComponent>(childEntity, parentEntity, hexCoords);
+
+            var localPos = localPositions.Get(childEntity).Value;
+            var localRot = localRotations.Get(childEntity).Value;
+
+            var parentWorldPos = positions.Get(parentEntity).Value;
+            var parentWorldRot = rotations.Get(parentEntity).Value;
+            var childWorldPoint = LocalToWorld(parentWorldPos, parentWorldRot, localPos, localRot);
+
+            positions.Get(childEntity).Value = childWorldPoint.pos;
+            rotations.Get(childEntity).Value = childWorldPoint.rot;
+        }
+
 
         // yes, ignore tripos & hexcoord local offset for child
 
@@ -272,10 +299,10 @@ namespace ZE.MechBattle.Ecs
             SyncComponentsCommand.Execute<TriangularPosComponent>(childEntity, parentEntity, _triangularPositions);
             SyncComponentsCommand.Execute<HexCoordComponent>(childEntity, parentEntity, _hexCoordComponents);
 
-            CalculateGlobalPos(childEntity, parentEntity, localPos, localRot);
+            UpdateChildGlobalPos(childEntity, parentEntity, localPos, localRot);
         }
 
-        private void CalculateGlobalPos(Entity entity, Entity parent, float3 localPos, quaternion localRot) 
+        private void UpdateChildGlobalPos(Entity entity, Entity parent, float3 localPos, quaternion localRot) 
         {
             var globalPoint = LocalToWorld(localPos, localRot, parent);
             MoveToPoint(entity, globalPoint);

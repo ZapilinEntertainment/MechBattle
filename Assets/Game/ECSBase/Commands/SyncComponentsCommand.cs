@@ -1,4 +1,7 @@
 using Scellecs.Morpeh;
+using Scellecs.Morpeh.Native;
+using System.Runtime.CompilerServices;
+using Unity.Burst;
 
 namespace ZE.MechBattle.Ecs
 {
@@ -15,6 +18,13 @@ namespace ZE.MechBattle.Ecs
 
             stash.Set(receivingEntity, originalComponent);
         }
-    
+
+        [BurstCompile]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Execute<T>(Entity receivingEntity, Entity componentOwnerEntity, NativeStash<T> stash) where T : unmanaged, IComponent
+        {
+            var originalComponent = stash.Get(componentOwnerEntity, out var exists);
+            stash.Get(receivingEntity) = originalComponent;
+        }
     }
 }
