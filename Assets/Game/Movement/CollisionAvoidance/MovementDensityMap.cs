@@ -19,6 +19,7 @@ namespace ZE.MechBattle.Movement.CollisionAvoidance
             _cellMovementDensity = world.GetStash<CellMovementDensityComponent>();
         }
 
+        public float GetMovementDensity(IntTriangularPos tripos) => TryGetDensity(tripos, out var density) ? density : 0f;
 
         public bool TryGetDensity(IntTriangularPos tripos, out float density)
         {

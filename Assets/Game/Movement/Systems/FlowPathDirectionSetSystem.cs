@@ -9,29 +9,25 @@ namespace ZE.MechBattle.Ecs
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public sealed class FlowTrianglePathWaypointSetSystem : ISystem
+    public sealed class FlowPathDirectionSetSystem : ISystem
     {
+        // defines primary movement direction
+
         public World World { get; set; }
         private Filter _flowPathsFilter;
         private Stash<FlowTrianglePathComponent> _flowPaths;
-        private Stash<WaypointMoveTarget> _waypoints;
         private Stash<TriangularPosComponent> _triangularPositions;
         private Stash<ClearTrianglePathTag> _invalidTrianglePaths;
         private Stash<HexCoordComponent> _hexCoordComponents;
+        private Stash<FlowMapPrimaryDirectionComponent> _correctionComponents;
+        private Stash<WaypointMoveTarget> _waypointMoveTargets;
 
-        private readonly float _triangleHeight;
-        private readonly INavigationMap _map;
         private readonly PortalFlowMapsList _flowMaps;
-        private readonly CollisionAvoidanceHandler _avoidanceHandler;
 
         [Inject]
-        public FlowTrianglePathWaypointSetSystem(INavigationMap map, PortalFlowMapsList flowMaps, CollisionAvoidanceHandler avoidanceHandler)
+        public FlowPathDirectionSetSystem(PortalFlowMapsList flowMaps)
         {
-            _map = map;
             _flowMaps = flowMaps;
-            _avoidanceHandler = avoidanceHandler;
-
-            _triangleHeight = _map.TriangleHeight;
         }
 
         public void OnAwake()
@@ -43,11 +39,11 @@ namespace ZE.MechBattle.Ecs
                 .Build();
 
             _flowPaths = World.GetStash<FlowTrianglePathComponent>();
-
-            _waypoints = World.GetStash<WaypointMoveTarget>();
             _triangularPositions = World.GetStash<TriangularPosComponent>();
             _hexCoordComponents = World.GetStash<HexCoordComponent>();
             _invalidTrianglePaths = World.GetStash<ClearTrianglePathTag>();
+            _correctionComponents = World.GetStash<FlowMapPrimaryDirectionComponent>();
+            _waypointMoveTargets = World.GetStash<WaypointMoveTarget>();
         }
 
         private enum DirectionSearchResult : byte { Undefined, FlowMapNotCalculated, InvalidTrianglePath, Success, HexCoordMiss}
@@ -71,10 +67,8 @@ namespace ZE.MechBattle.Ecs
                 if (result != DirectionSearchResult.Success)
                     continue;
 
-                var nextTripos = TriangularMath.GetNeighbourByDirection(tripos, moveDirection);
-                var nextWorldPos = TriangularMath.TriangularToWorld(nextTripos, _triangleHeight);
-                _waypoints.Set(entity, new(worldPos: nextWorldPos, tripos: nextTripos));
-                //UnityEngine.Debug.Log($"new flow waypoint: {nextTripos}");
+                _correctionComponents.Set(entity, new(moveDirection));
+                _waypointMoveTargets.Add(entity);
             }
         }
 
@@ -103,10 +97,6 @@ namespace ZE.MechBattle.Ecs
 
             tripos = _triangularPositions.Get(entity).Value;
             moveDirection = flowMap.GetDirectionUnsafe(tripos);
-
-            var correctedDir = _avoidanceHandler.CorrectFlowMapDirection(hexCoord, tripos, moveDirection);
-            //if (correctedDir != moveDirection)  UnityEngine.Debug.Log($"corrected at {tripos}: {moveDirection} -> {correctedDir}");
-            moveDirection = correctedDir;
 
             return DirectionSearchResult.Success;
         }
