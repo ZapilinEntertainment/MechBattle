@@ -50,6 +50,7 @@ namespace ZE.MechBattle.Ecs
 
         public void OnUpdate(float deltaTime)
         {
+            _correctionComponents.RemoveAll();
             foreach (var entity in _flowPathsFilter)
             {
                 var result = TryGetMoveDirection(entity, out var moveDirection, out var tripos);

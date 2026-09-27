@@ -3,9 +3,9 @@ using Scellecs.Morpeh.Native;
 using Unity.Collections;
 using Unity.IL2CPP.CompilerServices;
 using Unity.Jobs;
-using Unity.Mathematics;
 using VContainer;
 using ZE.MechBattle.Navigation;
+using ZE.Utils;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -54,7 +54,7 @@ namespace ZE.MechBattle.Ecs {
 
             // 1. prepare avoidance map
             var cellsNativeFilter = _cellsFilter.AsNative();
-            PrepareAvoidanceMap(cellsNativeFilter.length);
+            _avoidanceMap = ExtendOrClearNativeMapCommand.Execute(_avoidanceMap, cellsNativeFilter.length, ALLOCATOR);
             var prepareJob = new PrepareAvoidanceMapDataJob()
             {
                 CellEntities = _cellEntities.AsNative(),
@@ -85,31 +85,6 @@ namespace ZE.MechBattle.Ecs {
         {
             _activeJobHandle.Complete();
             _avoidanceMap.Dispose();
-        }
-
-        private void PrepareAvoidanceMap(int capacity)
-        {
-            var rebuild = false;
-
-            if (_avoidanceMap.IsCreated)
-            {
-                if (_avoidanceMap.Capacity < capacity)
-                {
-                    _avoidanceMap.Dispose();
-                    rebuild = true;
-                }
-                else
-                {
-                    _avoidanceMap.Clear();
-                }
-            }
-            else
-            {
-                rebuild = true;
-            }
-
-            if (rebuild)
-                _avoidanceMap = new NativeParallelHashMap<IntTriangularPos, AvoidanceMapData>(math.ceilpow2(capacity), ALLOCATOR);
         }
     }
 }

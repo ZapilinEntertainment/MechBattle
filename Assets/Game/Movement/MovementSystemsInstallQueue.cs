@@ -39,8 +39,8 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<RegularTrianglePathWaypointSetSystem>(SystemGroupOrder.Pathfinding);
             installer.AddSystem<FlowPathDirectionSetSystem>(SystemGroupOrder.Pathfinding);
             installer.AddSystem<FlowPathCorrectionApplySystem>(SystemGroupOrder.Pathfinding);
-            // job - requires group changing
-            installer.AddSystem<WaypointsMovementSystem>(SystemGroupOrder.UnitsNextPositionCalculation);            
+            // --- requires job completion---
+            installer.AddSystem<WaypointsMovementSystem>(SystemGroupOrder.UnitsNextPositionCalculation3);            
 
             installer.AddSystem<NextPositionApplySystem>(SystemGroupOrder.UnitsMovement);
             installer.AddSystem<WaypointsCheckSystem>(SystemGroupOrder.PostMovement);

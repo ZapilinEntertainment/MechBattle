@@ -7,26 +7,21 @@ namespace ZE.MechBattle.Navigation.Ecs
     public class CellEntitiesHandler
     {
         private readonly World _world;
-        private readonly Stash<CellEntityComponent> _cellEntities;
         private readonly Stash<CellHeightComponent> _heights;
         private readonly Stash<CellPassabilityComponent> _passabilities;
+        private readonly NavigationCellEntitiesFactory _factory;
 
         [Inject]
-        public CellEntitiesHandler(World world)
+        public CellEntitiesHandler(World world, NavigationCellEntitiesFactory navigationCellEntitiesFactory)
         {
             _world = world;
+            _factory = navigationCellEntitiesFactory;
 
-            _cellEntities = _world.GetStash<CellEntityComponent>();
             _heights = _world.GetStash<CellHeightComponent>();
             _passabilities = _world.GetStash<CellPassabilityComponent>();
         }
 
-        public Entity CreateCellEntity(IntTriangularPos tripos)
-        {
-            var entity = _world.CreateEntity();
-            _cellEntities.Set(entity, new(tripos));
-            return entity;
-        }
+        public Entity CreateCellEntity(IntTriangularPos tripos) => _factory.Build(tripos);
 
         public void SetEntityPassability(Entity entity, CellPassabilityData passability) => _passabilities.Set(entity, new() { Value = passability });
         public void SetEntityHeight(Entity entity, CellHeightData heightData) => _heights.Set(entity, new() { Value = heightData });

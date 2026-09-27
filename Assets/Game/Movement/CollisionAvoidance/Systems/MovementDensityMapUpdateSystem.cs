@@ -1,7 +1,11 @@
 using Scellecs.Morpeh;
+using Scellecs.Morpeh.Native;
+using Unity.Collections;
 using Unity.IL2CPP.CompilerServices;
+using Unity.Jobs;
 using Unity.Mathematics;
 using ZE.MechBattle.Navigation;
+using ZE.Utils;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -9,27 +13,22 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public sealed class MovementDensityMapUpdateSystem : PausableSystem 
     {
-        private Filter _movementCellsFilter;
+        private Filter _cellsFilter;
         private Stash<CellEntityComponent> _cellEntities;
         private Stash<CellMovementDensityComponent> _movementDensity;
         private Stash<CellMovementDataComponent> _movementData;
+        private JobHandle _activeJobHandle;
+        private NativeParallelHashMap<IntTriangularPos, Entity> _map = default;
+        private const Allocator ALLOCATOR = Allocator.Persistent;
 
-        private readonly IEntitiesNavigationMap _map;
-
-        private const float OCCUPIED_CELL_DENSITY = 1f;
-        private const float NEIGHBOUR_CELL_DENSITY = 0.5f;
-        private const float RESERVED_CELL_DENSITY = 0.3f;
-
-        public MovementDensityMapUpdateSystem(SceneFlagsManager flags, IEntitiesNavigationMap map) : base(flags)
+        public MovementDensityMapUpdateSystem(SceneFlagsManager flags) : base(flags)
         {
-            _map = map;
         }
 
         public override void OnAwake() 
         {
-            _movementCellsFilter = World.Filter
+            _cellsFilter = World.Filter
                 .With<CellEntityComponent>()
-                .With<CellMovementDataComponent>()
                 .Build();
 
             _cellEntities = World.GetStash<CellEntityComponent>();
@@ -39,54 +38,41 @@ namespace ZE.MechBattle.Ecs {
 
         public override void OnUpdate(float deltaTime)
         {
-            if (IsPaused)
+            if (IsPaused || _cellsFilter.IsEmpty())
                 return;
 
-            _movementDensity.RemoveAll();
+            var cellsNativeFilter = _cellsFilter.AsNative();
+            _map = ExtendOrClearNativeMapCommand.Execute(_map, cellsNativeFilter.length, ALLOCATOR);
 
-            foreach (var cellEntity in _movementCellsFilter)
+
+            var prepareJob = new PrepareCellsMapJob()
             {
-                var tripos = _cellEntities.Get(cellEntity).Tripos;
-                var movementData = _movementData.Get(cellEntity).Value;
-                if (movementData.ProjectionStepIndex == 0)
-                {
-                    _movementDensity.Set(cellEntity, new(OCCUPIED_CELL_DENSITY));
+                CellComponents = _cellEntities.AsNative(),
+                CellsFilter = cellsNativeFilter,
+                MapWriter = _map.AsParallelWriter()
+            };
+            var prepareJobHandle = prepareJob.Schedule(cellsNativeFilter.length, 16);
 
-                    if (tripos.IsPeak)
-                    {
-                        var offset = new PeakNeighbourOffsets();
-                        foreach (var neighbourPos in new TriangleNeighboursEnumerator<PeakNeighbourOffsets>(tripos, offset))
-                        {
-                            if (_map.TryGetEntity(neighbourPos, out var neighbourCellEntity))
-                                UpdateCellDensity(neighbourCellEntity, NEIGHBOUR_CELL_DENSITY);
-                        }
-                    }
-                    else
-                    {
-                        var offset = new ValleyNeighbourOffsets();
-                        foreach (var neighbourPos in new TriangleNeighboursEnumerator<ValleyNeighbourOffsets>(tripos, offset))
-                        {
-                            if (_map.TryGetEntity(neighbourPos, out var neighbourCellEntity))
-                                UpdateCellDensity(neighbourCellEntity, NEIGHBOUR_CELL_DENSITY);
-                        }
-                    }
-                }
-                else
-                {
-                    // note: entity's own reservation may affect
-                   // _movementDensity.Set(cellEntity, new(RESERVED_CELL_DENSITY));
-                }
-                
-            }
+
+
+            var updateJob= new MovementDensityUpdateJob()
+            {
+                Filter = cellsNativeFilter,
+                CellsMap = _map,
+                MovementData = _movementData.AsNative(),
+                MovementDensity = _movementDensity.AsNative(),
+                Cells = _cellEntities.AsNative()
+            };
+            var updateJobHandle = updateJob.Schedule(prepareJobHandle);
+            _activeJobHandle = updateJobHandle;
+            World.JobHandle = _activeJobHandle;
         }
 
-        private void UpdateCellDensity(Entity cellEntity, float newValue)
+
+        protected override void InternalDispose()
         {
-            ref var densityComponent = ref _movementDensity.Get(cellEntity, out var exists);
-            if (exists)
-                densityComponent.Value = math.max(densityComponent.Value, newValue);
-            else
-                _movementDensity.Set(cellEntity, new(newValue));
+            _activeJobHandle.Complete();
+            _map.Dispose();
         }
     }
 }
