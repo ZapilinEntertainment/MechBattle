@@ -21,10 +21,12 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<ProjectileMoveSystem>(SystemGroupOrder.RegularUpdate);
             installer.AddSystem<ProjectilesExplodeSystem>(SystemGroupOrder.RegularUpdate);
 
-            installer.AddSystem<LocalRotationTargetingSystem>(SystemGroupOrder.TransformUpdates);
-            installer.AddSystem<HierarchyTransformUpdateTagSync>(SystemGroupOrder.TransformUpdates);
-            installer.AddSystem<ChildPointsUpdateSystem>(SystemGroupOrder.TransformUpdates);
-            installer.AddSystem<TransformsSyncSystem>(SystemGroupOrder.TransformUpdates);
+            // requires job completion
+            installer.AddSystem<LocalRotationTargetingSystem>(SystemGroupOrder.TransformUpdates1);
+
+            installer.AddSystem<HierarchyTransformUpdateTagSync>(SystemGroupOrder.TransformUpdates2);
+            installer.AddSystem<ChildPointsUpdateSystem>(SystemGroupOrder.TransformUpdates2);
+            installer.AddSystem<TransformsSyncSystem>(SystemGroupOrder.TransformUpdates2);
 
             installer.AddSystem<EntityDestructionDelaySystem>(SystemGroupOrder.DisposeTagsSharing);
             installer.AddSystem<HierarchyDisposeSyncSystem>(SystemGroupOrder.DisposeTagsSharing);

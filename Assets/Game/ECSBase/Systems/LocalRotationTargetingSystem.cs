@@ -1,6 +1,7 @@
 using Scellecs.Morpeh;
+using Scellecs.Morpeh.Native;
 using Unity.IL2CPP.CompilerServices;
-using Unity.Mathematics;
+using Unity.Jobs;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -13,6 +14,7 @@ namespace ZE.MechBattle.Ecs {
         private Stash<LocalTargetRotationComponent> _localTargetRotations;
         private Stash<RotationSpeedComponent> _rotationSpeeds;
         private Stash<LocalRotationLimitComponent> _localRotationLimits;
+        private Stash<LocalRotationComponent> _localRotations;
         private readonly TransformAspectHandler _transformAspectHandler;
 
         public LocalRotationTargetingSystem(SceneFlagsManager flags, TransformAspectHandler transformAspectHandler) : base(flags)
@@ -37,6 +39,7 @@ namespace ZE.MechBattle.Ecs {
             _localTargetRotations = World.GetStash<LocalTargetRotationComponent>();
             _rotationSpeeds = World.GetStash<RotationSpeedComponent>();
             _localRotationLimits = World.GetStash<LocalRotationLimitComponent>();
+            _localRotations = World.GetStash<LocalRotationComponent>();
         }
 
         public override void OnUpdate(float deltaTime)
@@ -51,14 +54,27 @@ namespace ZE.MechBattle.Ecs {
                 _transformAspectHandler.RotateLocal(entity, targetRotation, rotationSpeed * deltaTime);
             }
 
-            foreach (var entity in _limitedRotationsFilter)
+            if (_limitedRotationsFilter.IsNotEmpty())
             {
-                var targetRotation = _localTargetRotations.Get(entity).Value;
-                var rotationSpeed = _rotationSpeeds.Get(entity).RadianValue;
-                var limits = _localRotationLimits.Get(entity).DotLimits;
+                foreach (var entity in _limitedRotationsFilter)
+                {
+                    _transformAspectHandler.AddUpdateTag(entity);
+                }
+                World.Commit();
 
-                _transformAspectHandler.RotateLocalWithLimits(entity, targetRotation, rotationSpeed * deltaTime, limits);
+                var filter = _limitedRotationsFilter.AsNative();
+                var job = new LocalLimitedRotationJob()
+                {
+                    Filter = filter,
+                    DeltaTime = deltaTime,
+                    Limits = _localRotationLimits.AsNative(),
+                    LocalRotations = _localRotations.AsNative(),
+                    LocalTargetRotations = _localTargetRotations.AsNative(),
+                    RotationSpeeds = _rotationSpeeds.AsNative()
+                };
+                World.JobHandle = job.Schedule(filter.length, 16);
             }
+           
         }
     }
 }

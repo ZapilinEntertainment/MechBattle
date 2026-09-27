@@ -141,9 +141,14 @@ namespace ZE.MechBattle.Ecs
         public void RotateLocalWithLimits(Entity entity, quaternion targetRotation, float step, ForwardRotationLimits limits)
         {
             ref var localRotationComponent = ref _localRotation.Get(entity);
-            var resultingRotation = MathExtensions.RotateTowards(localRotationComponent.Value, targetRotation, step);
-            localRotationComponent.Value = MathExtensions.ClampRotation(resultingRotation, limits.GetDotLimits());
+            localRotationComponent.Value = RotateLimited(localRotationComponent.Value, targetRotation, step, limits);
             AddUpdateTag(entity);
+        }
+
+        public static quaternion RotateLimited(quaternion localRotation, quaternion targetRotation, float step, ForwardRotationLimits limits)
+        {
+            var resultingRotation = MathExtensions.RotateTowards(localRotation, targetRotation, step);
+            return MathExtensions.ClampRotation(resultingRotation, limits.GetDotLimits());
         }
         #endregion
 
@@ -322,6 +327,9 @@ namespace ZE.MechBattle.Ecs
             return LocalToWorld(parentWorldPos, parentWorldRot, localPos, localRot);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AddUpdateTag(Entity entity) => _updateTags.Set(entity);
+
         [BurstCompile]
         private static RigidTransform LocalToWorld(float3 parentWorldPos, quaternion parentWorldRot, float3 childLocalPos, quaternion childLocalRot)
         {
@@ -329,9 +337,6 @@ namespace ZE.MechBattle.Ecs
             var globalRot = math.normalize( math.mul(parentWorldRot, childLocalRot));
 
             return new(globalRot, globalPos);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void AddUpdateTag(Entity entity) => _updateTags.Set(entity);
+        }        
     }
 }

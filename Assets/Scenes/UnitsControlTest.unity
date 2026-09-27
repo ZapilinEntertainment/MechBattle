@@ -3103,7 +3103,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.SquadsMassSpawnUtility
   _setups:
   - IsActive: 1
-    UnitsCount: 250
+    UnitsCount: 500
     UnitId: tank
     PlayerId: 0
     SquadDecree: 1
@@ -3114,7 +3114,7 @@ MonoBehaviour:
       x: -3
       y: 4
   - IsActive: 1
-    UnitsCount: 250
+    UnitsCount: 500
     UnitId: tank
     PlayerId: 0
     SquadDecree: 1
@@ -3125,7 +3125,7 @@ MonoBehaviour:
       x: -2
       y: 4
   - IsActive: 1
-    UnitsCount: 250
+    UnitsCount: 500
     UnitId: tank
     PlayerId: 0
     SquadDecree: 1
@@ -3136,7 +3136,7 @@ MonoBehaviour:
       x: -1
       y: 3
   - IsActive: 1
-    UnitsCount: 250
+    UnitsCount: 500
     UnitId: tank
     PlayerId: 0
     SquadDecree: 1
@@ -3147,7 +3147,7 @@ MonoBehaviour:
       x: 0
       y: 3
   - IsActive: 1
-    UnitsCount: 250
+    UnitsCount: 500
     UnitId: tank
     PlayerId: 0
     SquadDecree: 1
@@ -3158,7 +3158,7 @@ MonoBehaviour:
       x: 1
       y: 2
   - IsActive: 1
-    UnitsCount: 250
+    UnitsCount: 500
     UnitId: tank
     PlayerId: 0
     SquadDecree: 1
@@ -3169,7 +3169,7 @@ MonoBehaviour:
       x: 2
       y: 2
   - IsActive: 1
-    UnitsCount: 250
+    UnitsCount: 500
     UnitId: tank
     PlayerId: 1
     SquadDecree: 1
@@ -3180,7 +3180,7 @@ MonoBehaviour:
       x: -3
       y: 1
   - IsActive: 1
-    UnitsCount: 250
+    UnitsCount: 500
     UnitId: tank
     PlayerId: 1
     SquadDecree: 1
@@ -3191,7 +3191,7 @@ MonoBehaviour:
       x: -2
       y: 1
   - IsActive: 1
-    UnitsCount: 250
+    UnitsCount: 500
     UnitId: tank
     PlayerId: 1
     SquadDecree: 1
@@ -3202,7 +3202,7 @@ MonoBehaviour:
       x: -1
       y: 0
   - IsActive: 1
-    UnitsCount: 250
+    UnitsCount: 500
     UnitId: tank
     PlayerId: 1
     SquadDecree: 1
@@ -3213,7 +3213,7 @@ MonoBehaviour:
       x: 0
       y: 0
   - IsActive: 1
-    UnitsCount: 250
+    UnitsCount: 500
     UnitId: tank
     PlayerId: 1
     SquadDecree: 1
@@ -3224,7 +3224,7 @@ MonoBehaviour:
       x: 1
       y: -1
   - IsActive: 1
-    UnitsCount: 250
+    UnitsCount: 500
     UnitId: tank
     PlayerId: 1
     SquadDecree: 1
