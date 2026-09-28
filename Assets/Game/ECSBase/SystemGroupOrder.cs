@@ -14,6 +14,7 @@ namespace ZE.MechBattle
         UnitsNextPositionCalculation2,
         UnitsNextPositionCalculation3,
         UnitsMovement,
+        UnitsMovement2,
         PostMovement,
         WeaponUpdates, 
         TransformUpdates1,

@@ -40,6 +40,7 @@ namespace ZE.MechBattle.Ecs
         {
             _filter = World.Filter
                 .With<NextPositionComponent>()
+                .With<WaypointMoveTarget>()
                 .With<MovementCollisionAvoidanceComponent>()
                 .Build();
 

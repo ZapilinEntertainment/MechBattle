@@ -43,6 +43,7 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<WaypointsMovementSystem>(SystemGroupOrder.UnitsNextPositionCalculation3);            
 
             installer.AddSystem<NextPositionApplySystem>(SystemGroupOrder.UnitsMovement);
+            installer.AddSystem<NextPositionsClearSystem>(SystemGroupOrder.UnitsMovement2);
             installer.AddSystem<WaypointsCheckSystem>(SystemGroupOrder.PostMovement);
 
             installer.AddSystem<TrianglePathProgressionUpdateSystem>(SystemGroupOrder.PostMovement);

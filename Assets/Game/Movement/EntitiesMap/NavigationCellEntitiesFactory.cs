@@ -11,6 +11,7 @@ namespace ZE.MechBattle
         private readonly Stash<CellEntityComponent> _cells;
         private readonly Stash<CellPassabilityComponent> _cellPassabilities;
         private readonly Stash<CellMovementDensityComponent> _movementDensity;
+        private readonly Stash<CellHeightComponent> _heights;
 
         [Inject]
         public NavigationCellEntitiesFactory(World world)
@@ -20,14 +21,17 @@ namespace ZE.MechBattle
             _cells = _world.GetStash<CellEntityComponent>();
             _cellPassabilities = _world.GetStash<CellPassabilityComponent>();
             _movementDensity = _world.GetStash<CellMovementDensityComponent>();
+            _heights = _world.GetStash<CellHeightComponent>();
         }
 
         public Entity Build(IntTriangularPos tripos)
         {
+            // components existing are required for proper jobs functional (native stashes cannot have structural changes)
             var entity = _world.CreateEntity();
             _cells.Add(entity, new(tripos));
             _cellPassabilities.Add(entity);
             _movementDensity.Add(entity);
+            _heights.Add(entity);
             return entity;
         }
     
