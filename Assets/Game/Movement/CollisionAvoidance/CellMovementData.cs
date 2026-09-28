@@ -25,15 +25,17 @@ namespace ZE.MechBattle
 
         public int CompareTo(CellMovementData other)
         {
-            var priorityCheck = Priority.CompareTo(other.Priority);
-            if (priorityCheck != 0)
-                return priorityCheck;
+            // IMPORTANT: if use simple Compare, results in boxing and allocation (17b per each enum)
+            if (Priority != other.Priority)
+            {
+                return Priority > other.Priority ? 1 : -1;
+            }
 
             return other.ProjectionStepIndex.CompareTo(ProjectionStepIndex);
         }
 
         public static bool operator >(CellMovementData a, CellMovementData b)
-    => a.CompareTo(b) > 0;
+        => a.CompareTo(b) > 0;
 
         public static bool operator <(CellMovementData a, CellMovementData b)
             => a.CompareTo(b) < 0;
