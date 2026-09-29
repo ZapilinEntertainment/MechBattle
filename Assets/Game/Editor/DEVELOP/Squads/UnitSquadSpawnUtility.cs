@@ -1,11 +1,9 @@
 using Unity.Mathematics;
 using UnityEngine;
 using VContainer;
-using ZE.MechBattle.Ecs;
 using ZE.MechBattle.Navigation;
 using TriInspector;
 using Scellecs.Morpeh;
-using ZE.MechBattle.Units.Squads;
 
 namespace ZE.MechBattle.Develop
 {

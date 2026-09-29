@@ -10,6 +10,9 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public sealed class AttackTargetSpecificationSystem : ISystem 
     {
+        // select an exact target entity for complex entity (ex.: mech hand or mech leg instead of mech root entity)
+        // composite target marks itself with CompositeTargetComponent
+
         public World World { get; set;}
         private Filter _filter;
         private Stash<AttackTargetComponent> _targets;

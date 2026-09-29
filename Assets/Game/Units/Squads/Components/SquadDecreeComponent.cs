@@ -4,7 +4,7 @@ using Unity.IL2CPP.CompilerServices;
 
 namespace ZE.MechBattle.Ecs {
 
-    public enum SquadDecreeType : byte { Undefined, Move}
+    public enum SquadDecreeType : byte { Undefined, Move, Attack}
 
     [System.Serializable]
     [Il2CppSetOption(Option.NullChecks, false)]

@@ -2912,16 +2912,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1259888753}
-  - component: {fileID: 1259888776}
-  - component: {fileID: 1259888775}
-  - component: {fileID: 1259888768}
-  - component: {fileID: 1259888769}
-  - component: {fileID: 1259888770}
-  - component: {fileID: 1259888771}
-  - component: {fileID: 1259888773}
-  - component: {fileID: 1259888772}
-  - component: {fileID: 1259888774}
+  - component: {fileID: 1259888778}
   - component: {fileID: 1259888777}
+  - component: {fileID: 1259888769}
+  - component: {fileID: 1259888776}
   m_Layer: 0
   m_Name: DEVELOP
   m_TagString: Untagged
@@ -2944,18 +2938,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1259888768
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1259888751}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bcd5924c13cd8db45b6aef6f8b6788cc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.DevelopMechAffector
 --- !u!114 &1259888769
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2978,117 +2960,6 @@ MonoBehaviour:
   _endHex:
     x: -2
     y: 1
---- !u!114 &1259888770
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1259888751}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0508f5c1d688d354ba74dc029c8da97f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.UnitsMoveCommandScript
-  _center: {x: 0, y: 0, z: 0}
-  _radius: 100
-  _manualDefinedTarget: {x: 0, y: 0, z: 0}
---- !u!114 &1259888771
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1259888751}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9e01a1534dc43de40ab81e8e964dbc90, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.PortalPathsTableview
-  _serializedPortalsData: []
---- !u!114 &1259888772
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1259888751}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 264bf5fe09f5b8e4c853ef0700a6f891, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ZE.Navigation::ZE.MechBattle.Navigation.NavigationLoggerSetup
-  _eventSettings: 0
---- !u!114 &1259888773
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1259888751}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f5029b64d4b707f4f90427e70a74dfbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.PortalExitDebugDrawer
-  _portalId: 0
-  _drawCompareFunction: 4
---- !u!114 &1259888774
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1259888751}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: edc2ba9f7fac8b94eba19b971def9152, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.FlowMapDrawer
-  _flowMapId: 0
---- !u!114 &1259888775
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1259888751}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 85bda838886003e48a31b5f1709943cf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.MovementDensityValuesDrawer
-  _gradient:
-    serializedVersion: 2
-    key0: {r: 0.23713954, g: 0.6886792, b: 0.25223133, a: 0.11764706}
-    key1: {r: 0.7264151, g: 0.69128525, b: 0.023985418, a: 0.23529412}
-    key2: {r: 1, g: 0, b: 0, a: 0}
-    key3: {r: 0, g: 0, b: 0, a: 0}
-    key4: {r: 0, g: 0, b: 0, a: 0}
-    key5: {r: 0, g: 0, b: 0, a: 0}
-    key6: {r: 0, g: 0, b: 0, a: 0}
-    key7: {r: 0, g: 0, b: 0, a: 0}
-    ctime0: 0
-    ctime1: 30262
-    ctime2: 65535
-    ctime3: 0
-    ctime4: 0
-    ctime5: 0
-    ctime6: 0
-    ctime7: 0
-    atime0: 0
-    atime1: 65535
-    atime2: 0
-    atime3: 0
-    atime4: 0
-    atime5: 0
-    atime6: 0
-    atime7: 0
-    m_Mode: 0
-    m_ColorSpace: 0
-    m_NumColorKeys: 3
-    m_NumAlphaKeys: 2
-  _maxDensity: 2
 --- !u!114 &1259888776
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3241,13 +3112,31 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1259888751}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27b3c5f342613c941baa3cd08d72e4b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.EnemySquadSpawnUtility
+  _playerId: 0
+  _unitId: tank
+  _unitsCount: 100
+  _hexCoord:
+    x: -1
+    y: 2
+--- !u!114 &1259888778
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259888751}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d9c5a58d6461f9245b7bdb8bbd107741, type: 3}
+  m_Script: {fileID: 11500000, guid: 9e606fe80f50e6e4e9a12a6d2c20153e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.ExitAndPortalsIdsDrawer
-  _drawPortalIds: 1
-  _drawExitIds: 0
+  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.SquadPositionMarkersUtility
+  _markerSize: 5
+  _color: {r: 0.8039216, g: 0.3607843, b: 0.3607843, a: 1}
 --- !u!1001 &1305719369
 PrefabInstance:
   m_ObjectHideFlags: 0

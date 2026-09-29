@@ -1,5 +1,4 @@
 using Scellecs.Morpeh;
-using UnityEngine;
 using VContainer;
 using ZE.MechBattle.Ecs;
 using ZE.MechBattle.Navigation;
@@ -9,23 +8,25 @@ namespace ZE.MechBattle.Units.Squads
     public class SquadDecreeApplier
     {
         private readonly INavigationMap _map;
-        private readonly SquadMembersIterator _squadMembersIterator;
+        private readonly SquadHandler _squadHandler;
         private readonly MoveTargetApplier _moveTargetApplier;
 
         private readonly Stash<MoveTargetComponent> _moveTargets;
         private readonly Stash<SquadComponent> _squads;
         private readonly Stash<SquadDecreeComponent> _decreeComponents;
         private readonly Stash<UnhandledDecreeTag> _unhandledDecrees;
+        private readonly Stash<AttackTargetComponent> _attackTargets;
 
         [Inject]
-        public SquadDecreeApplier(World world, INavigationMap map, SquadMembersIterator squadMembersIterator, MoveTargetApplier moveTargetApplier)
+        public SquadDecreeApplier(World world, INavigationMap map, SquadHandler squadHandler, MoveTargetApplier moveTargetApplier)
         {
             _map = map;
-            _squadMembersIterator = squadMembersIterator;
+            _squadHandler = squadHandler;
             _moveTargetApplier = moveTargetApplier;
 
             _moveTargets = world.GetStash<MoveTargetComponent>();
             _squads = world.GetStash<SquadComponent>();
+            _attackTargets = world.GetStash<AttackTargetComponent>();
 
             _decreeComponents = world.GetStash<SquadDecreeComponent>();
             _unhandledDecrees = world.GetStash<UnhandledDecreeTag>();
@@ -38,6 +39,7 @@ namespace ZE.MechBattle.Units.Squads
             _unhandledDecrees.Set(squad);
         }
 
+
         public void ApplyMovementDecree(Entity squadEntity)
         {
             var targetComponent = _moveTargets.Get(squadEntity);
@@ -47,10 +49,19 @@ namespace ZE.MechBattle.Units.Squads
             var minHexRadius = TriangularMath.GetTrianglesCountInHex(elementsCount);
             using var coordsConverterData = FlattenedHexCoordsConverter.CreateCoordsConverter(Unity.Collections.Allocator.Temp, virtualHexCenter, _map.Settings, out var coordsConverter);
 
-            foreach (var (memberEntity, memberIndex) in _squadMembersIterator.GetNextSquadMember(squadEntity))
+            foreach (var (memberEntity, memberIndex) in _squadHandler.GetNextSquadMember(squadEntity))
             {
                 var tripos = coordsConverter.IndexToTriangular(memberIndex);
                 _moveTargetApplier.SetMoveTarget(memberEntity, tripos);
+            }
+        }
+
+        public void ApplyAttackDecree(Entity squadEntity)
+        {
+            var attackTarget = _attackTargets.Get(squadEntity).Entity;
+            foreach (var (memberEntity, memberIndex) in _squadHandler.GetNextSquadMember(squadEntity))
+            {
+                _attackTargets.Set(memberEntity, new() { Entity = attackTarget});
             }
         }
     

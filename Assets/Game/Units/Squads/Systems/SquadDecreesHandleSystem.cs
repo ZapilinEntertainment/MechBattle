@@ -44,8 +44,20 @@ namespace ZE.MechBattle.Ecs {
             foreach (var squadEntity in _handleFilter)
             {
                 var decreeeType = _decrees.Get(squadEntity).Type;
-                // only move decreee realised now
-                _decreeApplier.ApplyMovementDecree(squadEntity);
+                switch (decreeeType)
+                {
+                    case SquadDecreeType.Move:
+                        {
+                            _decreeApplier.ApplyMovementDecree(squadEntity);
+                            break;
+                        }
+                    case SquadDecreeType.Attack:
+                        {
+                            _decreeApplier.ApplyAttackDecree(squadEntity);
+                            break;
+                        }
+                }
+                
             }
             _tags.RemoveAll();
         }

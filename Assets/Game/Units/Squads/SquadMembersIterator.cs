@@ -10,22 +10,20 @@ namespace ZE.MechBattle.Units.Squads
         private readonly Stash<SquadMemberComponent> _squadMembers;
         private readonly Stash<SquadComponent> _squadComponents;
 
-        public SquadMembersIterator(World world)
-        {            
-            _squadMembers = world.GetStash<SquadMemberComponent>();
-            _squadComponents = world.GetStash<SquadComponent>();
-            _membersFilter = world.Filter.With<SquadMemberComponent>().Without<EntityDisposeTag>().Build();
+        public SquadMembersIterator(Filter membersFilter, Stash<SquadMemberComponent> membersStash, Stash<SquadComponent> componentsStash)
+        {
+            _squadMembers = membersStash;
+            _squadComponents = componentsStash;
+            _membersFilter = membersFilter;
         }
 
         public IEnumerable<(Entity memberEntity, int memberIndex)> GetNextSquadMember(Entity squadEntity)
         {
-#if UNITY_EDITOR
             if (_membersFilter.IsEmpty())
             {
                 //UnityEngine.Debug.LogWarning("members filter is empty, this is not expected");
                 yield break;
             }
-#endif
 
             var squadId = _squadComponents.Get(squadEntity).Id;
             foreach (var entity in _membersFilter)

@@ -26,8 +26,9 @@ namespace ZE.MechBattle
             if (!affinedA | !affinedB)
                 return false;
 
-            return _playerRelations.AreHostile(playerKeyA, playerKeyB);
-
+            return ArePlayersHostile(playerKeyA, playerKeyB);
         }
+
+        public bool ArePlayersHostile(PlayerKey playerA, PlayerKey playerB) => _playerRelations.AreHostile(playerA, playerB);
     }
 }

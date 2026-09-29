@@ -55,5 +55,8 @@ namespace ZE.MechBattle.Develop
             return squadEntity;
         }
 
+        protected Entity SpawnSquadAtHex(int2 hexCoord, string unitId, PlayerKey playerKey, int spawnCount) =>
+            SpawnSquadAtHex(hexCoord, unitId, playerKey, HexMath.GetMinHexRadius(spawnCount), spawnCount);
+
     }
 }
