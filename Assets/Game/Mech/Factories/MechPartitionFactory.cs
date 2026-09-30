@@ -10,6 +10,7 @@ namespace ZE.MechBattle
         private readonly ParentingRelationsApplier _parentingRelationsApplier;
         private readonly RepairFeatureApplier _repairApplier;
         private readonly Stash<MechPartitionComponent> _partitionComponents;
+        private readonly Stash<CalculateTrianglePositionTag> _calculateTrianglePosTags;
 
         [Inject]
         public MechPartitionFactory(
@@ -21,6 +22,7 @@ namespace ZE.MechBattle
             _parentingRelationsApplier = parentingRelationsApplier;
             _repairApplier = repairFeatureApplier;
             _partitionComponents = _world.GetStash<MechPartitionComponent>();
+            _calculateTrianglePosTags = _world.GetStash<CalculateTrianglePositionTag>();
         }
 
         public Entity CreatePartition(MechPartitionKey key, Entity mechEntity, Entity parentEntity, ViewPartAttachmentProtocol attachmentProtocol)
@@ -35,6 +37,7 @@ namespace ZE.MechBattle
             });
 
             _partitionComponents.Add(entity, new(mechEntity, key));
+            _calculateTrianglePosTags.Add(entity);
             _repairApplier.ApplyOnRepairable(entity, mechEntity, new(RepairableType.MechPart, (int)key.Type));
 
             return entity;

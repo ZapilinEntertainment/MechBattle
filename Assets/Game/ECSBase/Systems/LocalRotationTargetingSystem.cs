@@ -73,8 +73,11 @@ namespace ZE.MechBattle.Ecs {
                     RotationSpeeds = _rotationSpeeds.AsNative()
                 };
                 World.JobHandle = job.Schedule(filter.length, 16);
+#if MORPEH_JOB_TRACKING
+            UnityEngine.Debug.Log("local limited rotation job");
+#endif
             }
-           
+
         }
     }
 }

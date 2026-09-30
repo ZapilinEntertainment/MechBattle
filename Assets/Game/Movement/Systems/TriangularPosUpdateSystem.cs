@@ -29,7 +29,7 @@ namespace ZE.MechBattle.Ecs {
 
         public void OnAwake() 
         {
-            _filter = World.Filter.With<NavigationAgentComponent>().Build();
+            _filter = World.Filter.With<CalculateTrianglePositionTag>().Build();
 
             _tripos = World.GetStash<TriangularPosComponent>();
             _positions = World.GetStash<PositionComponent>();

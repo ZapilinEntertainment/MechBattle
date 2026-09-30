@@ -84,6 +84,9 @@ namespace ZE.MechBattle.Ecs
             _job.WorldPos = pos;
             _job.RadiusInUnits = radius;      
             _job.Run();
+#if MORPEH_JOB_TRACKING
+            UnityEngine.Debug.Log("get triangles in radius job");
+#endif
 
             _selectionList.Clear();
             foreach (var tripos in _jobResultsList)

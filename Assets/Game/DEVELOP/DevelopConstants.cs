@@ -9,5 +9,11 @@ namespace ZE.MechBattle
 
         public const float TEMP_MainGunDamage = 10f;
         public const float TEMP_EyesDamage = 100f;
+
+#if UNITY_EDITOR
+        // scripting define symbols 
+        private const string NAVIGATION_LOGGER_SDS = "ZE_NAVIGATION_DEBUG"; // use for control navigation logic using NavigationLogger
+        private const string JOBS_TRACKING_SDS = "MORPEH_JOB_TRACKING"; // will print message on World.JobHandle scheduling
+#endif
     }
 }

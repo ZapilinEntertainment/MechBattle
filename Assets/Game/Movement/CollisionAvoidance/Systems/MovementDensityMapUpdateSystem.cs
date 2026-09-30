@@ -66,6 +66,10 @@ namespace ZE.MechBattle.Ecs {
             var updateJobHandle = updateJob.Schedule(prepareJobHandle);
             _activeJobHandle = updateJobHandle;
             World.JobHandle = _activeJobHandle;
+
+#if MORPEH_JOB_TRACKING
+            UnityEngine.Debug.Log("movement density update job");
+#endif
         }
 
 

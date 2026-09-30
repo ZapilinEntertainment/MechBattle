@@ -105,6 +105,9 @@ namespace ZE.MechBattle.Ecs {
                 Requests = requests
                 
             }.Schedule(nativeFilter.length, 4);
+#if MORPEH_JOB_TRACKING
+            UnityEngine.Debug.Log("defube foot next position job");
+#endif
 
             _activeHandle = new GetStepAffectedTrianglesJob()
             {                
@@ -115,6 +118,10 @@ namespace ZE.MechBattle.Ecs {
                 FootAffectionData = _footAffectionData,
                 StepAffectedCells = _mechStepsAffectedCells.AsParallelWriter()                
             }.Schedule(nativeFilter.length, 4, dependsOn: nextPosJobHandle);
+
+#if MORPEH_JOB_TRACKING
+            UnityEngine.Debug.Log("get step affected triangles job");
+#endif
 
             World.JobHandle = _activeHandle;
 

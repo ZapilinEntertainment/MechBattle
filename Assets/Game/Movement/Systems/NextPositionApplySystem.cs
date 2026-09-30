@@ -79,6 +79,10 @@ namespace ZE.MechBattle.Ecs {
             var updatePositionsHandle = updatePositionsJob.Schedule(nextPositionsNativeFilter.length, 16, prepareJobHandle);
             _activeJobHandle = updatePositionsHandle;
             World.JobHandle = _activeJobHandle;
+
+#if MORPEH_JOB_TRACKING
+            UnityEngine.Debug.Log("next position apply job");
+#endif
         }
 
         protected override void InternalDispose()

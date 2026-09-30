@@ -23,11 +23,10 @@ namespace ZE.MechBattle.Develop
         private bool _ecsDataSet = false;
         private Filter _mechsFilter;
         private Stash<PlayerAffiliationComponent> _affinityComponents;
-        private Stash<AttackTargetComponent> _attackTargets;
         private Stash<TriangularPosComponent> _triangularPositions;
        
 
-        [Button]
+        [ShowInPlayMode, Button]
         public void SpawnAndAttackNearestMech()
         {
             var squadEntity = SpawnSquadAtHex(_hexCoord, _unitId, new PlayerKey(_playerId), _unitsCount);
@@ -37,9 +36,12 @@ namespace ZE.MechBattle.Develop
                 UnityEngine.Debug.LogWarning("no mechs presented");
                 return;
             }
+            else
+            {
+                UnityEngine.Debug.Log("attacking mech entity " + mechEntity.Id);
+            }
 
-            _attackTargets.Set(squadEntity, new() { Entity = mechEntity });
-            _decreeApplier.ApplyAttackDecree(squadEntity);
+            _decreeApplier.SetSquadAttackDecree(squadEntity, mechEntity);
         }
 
         private struct MechCandidate : IComparable<MechCandidate>
@@ -100,7 +102,6 @@ namespace ZE.MechBattle.Develop
 
             _affinityComponents = World.GetStash<PlayerAffiliationComponent>();
             _triangularPositions = World.GetStash<TriangularPosComponent>();
-            _attackTargets = World.GetStash<AttackTargetComponent>();
 
             _ecsDataSet = true;
         }

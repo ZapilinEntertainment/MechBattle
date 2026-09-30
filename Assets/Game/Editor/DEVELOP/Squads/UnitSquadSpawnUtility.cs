@@ -31,7 +31,7 @@ namespace ZE.MechBattle.Develop
                 SpawnUnitSquadAtSelectedHex();
         }
 
-        [Button]
+        [Button, ShowInPlayMode]
         private void SpawnAndCommand()
         {
             var squadEntity = SpawnSquadAtHex(_startHex);

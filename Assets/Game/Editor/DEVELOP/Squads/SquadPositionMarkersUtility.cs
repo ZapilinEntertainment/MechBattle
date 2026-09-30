@@ -24,7 +24,7 @@ namespace ZE.MechBattle.Develop
             foreach (var squadEntity in _squadHandler.GetNextSquad())
             {
                 Gizmos.DrawSphere(_squadHandler.GetSquadPosition(squadEntity), _markerSize);
-            }
+            }            
         }
     }
 }

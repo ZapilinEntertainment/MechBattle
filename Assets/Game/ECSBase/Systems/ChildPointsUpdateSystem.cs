@@ -103,6 +103,10 @@ namespace ZE.MechBattle.Ecs {
             _activeJobHandle = job.Schedule();
             World.JobHandle = _activeJobHandle;
 
+#if MORPEH_JOB_TRACKING
+            UnityEngine.Debug.Log("Child point entity update job");
+#endif
+
             _iterationNumber++;
         }
 

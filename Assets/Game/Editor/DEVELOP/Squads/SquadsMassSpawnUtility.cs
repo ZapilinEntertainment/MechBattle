@@ -28,7 +28,7 @@ namespace ZE.MechBattle.Develop
         [SerializeField] private List<SquadSpawnData> _setups;
 
 
-        [Button]
+        [Button, ShowInPlayMode]
         private void SpawnAndCommand()
         {
             foreach (var setup in _setups)

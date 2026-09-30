@@ -97,6 +97,10 @@ namespace ZE.MechBattle.Ecs {
                         WorldPos = worldPos
                     };
                     getListJob.RunByRef();
+#if MORPEH_JOB_TRACKING
+            UnityEngine.Debug.Log("get triangles in radius job");
+#endif
+
                     foreach (var tripos in _resultsList)
                     {
                         var cellData = new CellMovementData(

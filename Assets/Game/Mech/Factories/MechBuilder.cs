@@ -20,6 +20,7 @@ namespace ZE.MechBattle.MechBuilding
         private readonly Stash<MovementCollisionAvoidanceComponent> _collisionAvoidanceComponent;
         private readonly Stash<NavigationAgentComponent> _navigationAgents;
         private readonly Stash<CompositeTargetComponent> _compositeTargetComponents;
+        private readonly Stash<CalculateTrianglePositionTag> _calculateTrianglePosTags;
 
         [Inject]
         public MechBuilder(MonoViewFactory viewFactory, TransformAspectHandler transformAspectHandler, World world)
@@ -31,6 +32,7 @@ namespace ZE.MechBattle.MechBuilding
             _collisionAvoidanceComponent = world.GetStash<MovementCollisionAvoidanceComponent>();
             _navigationAgents = world.GetStash<NavigationAgentComponent>();
             _compositeTargetComponents = world.GetStash<CompositeTargetComponent>();
+            _calculateTrianglePosTags = world.GetStash<CalculateTrianglePositionTag>();
         }
 
         public Entity Build(MechConfig mechConfig, float3 position, quaternion rotation)
@@ -42,6 +44,8 @@ namespace ZE.MechBattle.MechBuilding
             _navigationAgents.Add(MechEntity);
 
             _compositeTargetComponents.Add(MechEntity, new(CompositeTargetMode.Partitions));
+
+            _calculateTrianglePosTags.Add(MechEntity);
 
             return MechEntity;
         }

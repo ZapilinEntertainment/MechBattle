@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace ZE.MechBattle.Ecs
 {
     public class BaseEcsSystemsInstallQueue : FeatureSystemsInstallQueue

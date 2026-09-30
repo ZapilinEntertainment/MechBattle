@@ -79,6 +79,9 @@ namespace ZE.MechBattle.Ecs {
 
         private void ProcessExitDistances(int portalId, NavigationPortalExit exit, int2 hexCoord)
         {
+#if MORPEH_JOB_TRACKING
+            UnityEngine.Debug.Log("Portal distances calculation process");
+#endif
             var results = _calculationProcess.Run(new(portalId, hexCoord, exit.Center));
             _portalsCoordinator.ApplyPortalDistancesMap(results);
         }

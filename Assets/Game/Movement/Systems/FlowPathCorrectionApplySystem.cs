@@ -78,6 +78,10 @@ namespace ZE.MechBattle.Ecs {
             };
             var correctJobHandle = correctJob.Schedule(entitiesNativeFilter.length, 16, prepareJobHandle);
             _activeJobHandle = correctJobHandle;
+
+#if MORPEH_JOB_TRACKING
+            UnityEngine.Debug.Log("correct flow map direction job");
+#endif
             World.JobHandle = _activeJobHandle;
         } 
 

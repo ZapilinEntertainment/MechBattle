@@ -39,6 +39,13 @@ namespace ZE.MechBattle.Units.Squads
             _unhandledDecrees.Set(squad);
         }
 
+        public void SetSquadAttackDecree(Entity squad, Entity attackTarget)
+        {
+            _attackTargets.Set(squad, new() { Entity = attackTarget});
+            _decreeComponents.Set(squad, new() { Type = SquadDecreeType.Attack });
+            _unhandledDecrees.Set(squad);
+        }
+
 
         public void ApplyMovementDecree(Entity squadEntity)
         {

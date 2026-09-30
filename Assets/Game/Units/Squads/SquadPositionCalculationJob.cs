@@ -5,7 +5,6 @@ using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 using ZE.MechBattle.Ecs;
-using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle
 {
@@ -17,8 +16,6 @@ namespace ZE.MechBattle
         [ReadOnly] public NativeStash<SquadMemberComponent> SquadMembers;
         [ReadOnly] public NativeStash<SquadComponent> SquadComponents;
         public NativeStash<PositionComponent> Positions;
-        public NativeStash<HexCoordComponent> HexCoords;
-        public float HexEdgeLength;
         
         private readonly struct SquadCoordinate : IComparable<SquadCoordinate>
         {
@@ -105,7 +102,6 @@ namespace ZE.MechBattle
                     medianPos = new float3((xs0 + xs1) / 2f, 0f, (zs0 + zs1) / 2f);
 
                 Positions.Get(squadEntity).Value = medianPos;
-                HexCoords.Get(squadEntity).Value = HexMath.DefineHex(medianPos.xz, HexEdgeLength);
             }
         }
     }

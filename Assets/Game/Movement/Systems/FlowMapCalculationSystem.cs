@@ -65,6 +65,11 @@ namespace ZE.MechBattle.Ecs {
                 ExitData = exitData
             };
             token = _processesManager.TryLaunchProcess(protocol);
+
+#if MORPEH_JOB_TRACKING
+            if (token.IsValid) UnityEngine.Debug.Log("flow map process");
+#endif
+
             return token.IsValid;
         }
 

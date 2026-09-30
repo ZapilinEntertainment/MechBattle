@@ -17,6 +17,7 @@ namespace ZE.MechBattle
         UnitsMovement2,
         PostMovement,
         WeaponUpdates, 
+        WeaponUpdates2,
         TransformUpdates1,
         TransformUpdates2,        
         ViewsLoading,

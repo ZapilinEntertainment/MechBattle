@@ -2,8 +2,6 @@ using Scellecs.Morpeh;
 using Scellecs.Morpeh.Native;
 using Unity.IL2CPP.CompilerServices;
 using Unity.Jobs;
-using VContainer;
-using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -15,24 +13,15 @@ namespace ZE.MechBattle.Ecs {
         private Filter _squadsFilter;
         private Filter _squadMembersFilter;
         private Stash<PositionComponent> _positions;
-        private Stash<HexCoordComponent> _hexCoords;
         private Stash<SquadComponent> _squadComponents;
         private Stash<SquadMemberComponent> _squadMembers;
-        private readonly float HexEdgeLength;
-
-        [Inject]
-        public SquadPositionCalculationSystem(INavigationMap map)
-        {
-            HexEdgeLength = map.HexEdgeLength;
-        }
 
         public void OnAwake() 
         {
             _squadsFilter = World.Filter.With<SquadComponent>().Build();
-            _squadMembersFilter = World.Filter.With<SquadMemberComponent>().Build();
+            _squadMembersFilter = World.Filter.With<SquadMemberComponent>().Build();            
 
             _positions = World.GetStash<PositionComponent>();
-            _hexCoords = World.GetStash<HexCoordComponent>();
             _squadComponents = World.GetStash<SquadComponent>();
             _squadMembers = World.GetStash<SquadMemberComponent>();
         }
@@ -49,15 +38,14 @@ namespace ZE.MechBattle.Ecs {
                 Positions = _positions.AsNative(),
                 SquadComponents = _squadComponents.AsNative(),
                 SquadMembers = _squadMembers.AsNative(),
-                HexCoords = _hexCoords.AsNative(),
-                HexEdgeLength = HexEdgeLength
             };
+            
             World.JobHandle = job.Schedule();
+#if MORPEH_JOB_TRACKING
+            UnityEngine.Debug.Log("squad position calculation job");
+#endif
         }
 
-        public void Dispose()
-        {
-
-        }
+        public void Dispose() { }
     }
 }

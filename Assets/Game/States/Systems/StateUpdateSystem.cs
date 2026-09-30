@@ -13,11 +13,10 @@ namespace ZE.MechBattle.Ecs {
     public sealed class StateUpdateSystem : ISystem 
     {
         public World World { get; set;}
-        private Filter _updateTag;
+        private Filter _updateFilter;
         private Stash<BehaviourKeyComponent> _behaviourKeys;
         private Stash<StateComponent> _currentStates;
         private readonly Dictionary<long, StateHandler> _behaviours;
-        private readonly IObjectResolver _resolver;
 
         [Inject]
         public StateUpdateSystem(IObjectResolver resolver)
@@ -27,7 +26,7 @@ namespace ZE.MechBattle.Ecs {
 
         public void OnAwake() 
         {
-            _updateTag = World.Filter
+            _updateFilter = World.Filter
                 .With<BehaviourKeyComponent>()
                 .With<StateComponent>()
                 .Build();
@@ -38,11 +37,11 @@ namespace ZE.MechBattle.Ecs {
 
         public void OnUpdate(float deltaTime) 
         {
-            if (_updateTag.IsEmpty())
+            if (_updateFilter.IsEmpty())
                 return;
 
             var dt = Time.deltaTime;
-            foreach (var entity in _updateTag)
+            foreach (var entity in _updateFilter)
             {
                 ref var stateComponent = ref _currentStates.Get(entity);
                 

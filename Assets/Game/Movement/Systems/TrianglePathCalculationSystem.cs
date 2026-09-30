@@ -65,6 +65,9 @@ namespace ZE.MechBattle.Ecs
             var endpoints = path.DestinationKeys;
             var id = _tripathComponents.Get(entity).PathId;
             token = _processesManager.TryLaunchProcess(new(id, endpoints.start, endpoints.end));
+#if MORPEH_JOB_TRACKING
+            if (token.IsValid) UnityEngine.Debug.Log("path calculation process");
+#endif
             return token.IsValid;
         }
 

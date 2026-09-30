@@ -39,6 +39,9 @@ namespace ZE.MechBattle.Ecs {
 
         public void OnUpdate(float deltaTime) 
         {
+#if MORPEH_JOB_TRACKING
+            UnityEngine.Debug.Log("Hex raycast processes");
+#endif
             CheckActiveProcesses();            
             HandleAwaitingRequests();
         }

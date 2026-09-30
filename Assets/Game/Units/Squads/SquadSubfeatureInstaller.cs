@@ -21,6 +21,7 @@ namespace ZE.MechBattle
             installer.AddSystem<SquadDecreesHandleSystem>(SystemGroupOrder.SquadUpdates);
             installer.AddSystem<SquadPositionCalculationSystem>(SystemGroupOrder.SquadUpdates);
 
+
             installer.AddSystem<SquadLossesUpdateSystem>(SystemGroupOrder.DisposedObjectsOperations);
             installer.AddSystem<SquadUpdateTagClearSystem>(SystemGroupOrder.Dispose);
         }
