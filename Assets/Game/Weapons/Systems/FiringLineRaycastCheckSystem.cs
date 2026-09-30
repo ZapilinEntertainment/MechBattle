@@ -138,10 +138,10 @@ namespace ZE.MechBattle.Ecs {
                             _collidersTable.TryGetColliderOwner(result.colliderInstanceID, out var colliderOwnerEntity)
                             && (
                                 colliderOwnerEntity == entityCastData.TargetEntity
-                                || _affinityHandler.AreEntitiesHostile(entityCastData.WeaponEntity, entityCastData.TargetEntity)
+                                || _affinityHandler.AreEntitiesHostile(_affinityHandler.GetEntityOwner(entityCastData.WeaponEntity), entityCastData.TargetEntity)
                             );
 
-                       // if (!firingLineIsClear)  UnityEngine.Debug.Log($"entity {entityCastData.WeaponEntity.Id} : {result.colliderInstanceID}");
+                       //if (!firingLineIsClear)  UnityEngine.Debug.Log($"entity {entityCastData.WeaponEntity.Id} : {result.colliderInstanceID}");
                     }
                 }               
 

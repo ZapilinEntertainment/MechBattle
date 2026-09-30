@@ -43,7 +43,7 @@ namespace ZE.MechBattle
             {
                 var unitEntity = SquadMembersFilter[i];
                 var position = Positions.Get(unitEntity).Value;
-                var squadId = SquadMembers.Get(unitEntity).SquadId;
+                var squadId = SquadMembers.Get(unitEntity).SquadEntity.Id;
 
                 xs[i] = new(position.x, squadId);
                 zs[i] = new(position.z, squadId);
@@ -56,7 +56,7 @@ namespace ZE.MechBattle
             {
                 var squadEntity = SquadsFilter[i];
                 var squadComponent = SquadComponents.Get(squadEntity);
-                var squadId = squadComponent.Id;
+                var squadId = squadEntity.Id;
                 var medianIndex = squadComponent.MembersCount / 2;
                 var xs0 = 0f;
                 var xs1 = 0f;

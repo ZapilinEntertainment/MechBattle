@@ -1,5 +1,6 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
+using Unity.Mathematics;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -15,6 +16,9 @@ namespace ZE.MechBattle.Ecs {
 
         private Stash<AttackRangeReachedTag> _attackRangeReachedTag;
         private Stash<FireLineClearTag> _fireLineClearTag;
+
+        private const float RAYCAST_VALUE_RAISE_SPEED = 5f;
+        private const float RAYCAST_VALUE_FALL_SPEED = 1f;
 
         public void OnAwake() 
         {
@@ -41,12 +45,30 @@ namespace ZE.MechBattle.Ecs {
             foreach (var entity in _filter)
             {
                 var weaponEntity = _weaponComponents.Get(entity).Entity;
-                var attackRangeReachedCf = _attackRangeReachedTag.Has(weaponEntity) ? 1f : 0.5f;
-                var fireLineClearedCf = _fireLineClearTag.Has(weaponEntity) ? 1f : 0f;
-                var value = attackRangeReachedCf * fireLineClearedCf;
-                //UnityEngine.Debug.Log($"entity {entity.Id} :  attackRange {attackRangeReachedCf} : fireline {fireLineClearedCf}");
+                ref var attackOpportunitiesComponent = ref _attackOpportunities.Get(entity, out var attackOpportunityExists);
+                if (!attackOpportunityExists)
+                {
+                    _attackOpportunities.Add(entity);
+                    attackOpportunitiesComponent = ref _attackOpportunities.Get(entity);
+                }
 
-                _attackOpportunities.Set(entity, new() { Value = value});
+                attackOpportunitiesComponent.RangeValue = _attackRangeReachedTag.Has(weaponEntity) ? 1f : 0f;
+                //todo: calculate exact distance cf
+
+
+                var newFireLineValue = _fireLineClearTag.Has(weaponEntity) ? 1f : 0f;
+
+                var currentFirelineValue = attackOpportunitiesComponent.FireLineValue;
+                var comparationResult = newFireLineValue.CompareTo(currentFirelineValue);
+                if (comparationResult != 0)
+                {
+                    attackOpportunitiesComponent.FireLineValue = MathExtensions.MoveTowards(
+                        attackOpportunitiesComponent.FireLineValue, 
+                        newFireLineValue, 
+                        comparationResult == 1 ? RAYCAST_VALUE_RAISE_SPEED *deltaTime : RAYCAST_VALUE_FALL_SPEED * deltaTime);
+                }
+
+                attackOpportunitiesComponent.ResultingValue = attackOpportunitiesComponent.RangeValue * attackOpportunitiesComponent.FireLineValue;
             }
 
             foreach (var entity in _clearFilter)

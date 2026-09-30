@@ -25,11 +25,10 @@ namespace ZE.MechBattle.Units.Squads
                 yield break;
             }
 
-            var squadId = _squadComponents.Get(squadEntity).Id;
             foreach (var entity in _membersFilter)
             {
                 var squadMemberComponent = _squadMembers.Get(entity);
-                if (squadMemberComponent.SquadId != squadId)
+                if (squadMemberComponent.SquadEntity != squadEntity)
                     continue;
 
                 yield return (entity, squadMemberComponent.Index);

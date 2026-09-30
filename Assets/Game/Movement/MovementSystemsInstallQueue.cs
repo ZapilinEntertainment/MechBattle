@@ -40,7 +40,7 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<FlowPathDirectionSetSystem>(SystemGroupOrder.Pathfinding);
             installer.AddSystem<FlowPathCorrectionApplySystem>(SystemGroupOrder.Pathfinding);
             // --- requires job completion---
-            installer.AddSystem<WaypointsMovementSystem>(SystemGroupOrder.UnitsNextPositionCalculation3);            
+            installer.AddSystem<WaypointsMovementSystem>(SystemGroupOrder.UnitsNextPositionCalculation2);            
 
             installer.AddSystem<NextPositionApplySystem>(SystemGroupOrder.UnitsMovement);
             installer.AddSystem<NextPositionsClearSystem>(SystemGroupOrder.UnitsMovement2);

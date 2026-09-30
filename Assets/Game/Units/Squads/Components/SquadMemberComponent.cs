@@ -1,7 +1,6 @@
 using Scellecs.Morpeh;
 using UnityEngine;
 using Unity.IL2CPP.CompilerServices;
-using TriInspector;
 
 namespace ZE.MechBattle.Ecs {
     [System.Serializable]
@@ -10,15 +9,12 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public struct SquadMemberComponent : IComponent 
     {
-        public readonly int SquadId;
+        public readonly Entity SquadEntity;
         public int Index;
-#if UNITY_EDITOR
-        [ShowInInspector] private int _squadId => SquadId;
-#endif
 
-        public SquadMemberComponent(int squadId, int index)
+        public SquadMemberComponent(Entity squadEntity, int index)
         {
-            SquadId = squadId;
+            SquadEntity = squadEntity;
             Index = index;
         }
     

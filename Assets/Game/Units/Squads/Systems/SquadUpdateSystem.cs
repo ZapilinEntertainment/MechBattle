@@ -2,7 +2,6 @@ using Scellecs.Morpeh;
 using System;
 using System.Collections.Generic;
 using Unity.IL2CPP.CompilerServices;
-using VContainer;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -19,14 +18,7 @@ namespace ZE.MechBattle.Ecs {
         private Stash<SquadComponent> _squads;
         private Stash<EntityDisposeTag> _disposeTags;
 
-        private readonly SquadsManager _squadsManager;
-        private readonly Dictionary<int, int> _squadsCount = new();
-
-        [Inject]
-        public SquadUpdateSystem(SquadsManager squadsManager)
-        {
-            _squadsManager = squadsManager;
-        }
+        private readonly Dictionary<Entity, int> _squadsCount = new();
 
 
         public void OnAwake() 
@@ -55,19 +47,14 @@ namespace ZE.MechBattle.Ecs {
 
             foreach (var entity in _squadMembersFilter)
             {
-                var squadId = _squadMembers.Get(entity).SquadId;
-                var membersCount = _squadsCount.GetValueOrDefault(squadId);
-                _squadsCount[squadId] = membersCount + 1;
+                var squadEntity = _squadMembers.Get(entity).SquadEntity;
+                var membersCount = _squadsCount.GetValueOrDefault(squadEntity);
+                _squadsCount[squadEntity] = membersCount + 1;
             }
 
             foreach (var squadDataKvp in _squadsCount)
             {
-                var squadId = squadDataKvp.Key;
-                if (!_squadsManager.TryGetSquad(squadId, out var squadEntity))
-                {
-                    OnSquadOutdated(squadId);
-                    continue;
-                }
+                var squadEntity = squadDataKvp.Key;
 
                 if (!_updateRequests.Has(squadEntity))
                     continue;
@@ -82,7 +69,7 @@ namespace ZE.MechBattle.Ecs {
                 ref var squadComponent = ref _squads.Get(squadEntity);
                 squadComponent.MembersCount = membersCount;
 
-                ReassignIndices(squadId, membersCount);
+                ReassignIndices(squadEntity, membersCount);
                 _updatedTags.Set(squadEntity);
             }
 
@@ -92,12 +79,7 @@ namespace ZE.MechBattle.Ecs {
 
         public void Dispose() { }
 
-        private void OnSquadOutdated(int squadId)
-        {
-            _squadsManager.RemoveSquad(squadId);
-        }
-
-        private void ReassignIndices(int squadId, int membersCount)
+        private void ReassignIndices(Entity squadEntity, int membersCount)
         {
             Span<bool> fulfillmentMap = stackalloc bool[membersCount];
             for (var i = 0; i < membersCount; i++)
@@ -109,7 +91,7 @@ namespace ZE.MechBattle.Ecs {
             foreach (var entity in _squadMembersFilter)
             {
                 ref var squadMemberComponent = ref _squadMembers.Get(entity);
-                if (squadMemberComponent.SquadId != squadId)
+                if (squadMemberComponent.SquadEntity != squadEntity)
                     continue;
 
                 var index = squadMemberComponent.Index;

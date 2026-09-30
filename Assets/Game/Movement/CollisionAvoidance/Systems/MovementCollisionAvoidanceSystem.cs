@@ -88,6 +88,7 @@ namespace ZE.MechBattle.Ecs
                         }
                         else
                         {
+                            
                             StandStill(entity);
                             continue;
                         }

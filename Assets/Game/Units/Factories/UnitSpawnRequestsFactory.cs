@@ -10,8 +10,8 @@ namespace ZE.MechBattle.Ecs
         [Inject]
         public UnitSpawnRequestsFactory(World world) : base(world) { }  
 
-        public void CreateSpawnRequest(UnitKey unitKey, IntTriangularPos tripos, PlayerKey playerKey, int squadId = -1) =>
-            CreateRequest(new(unitKey, new CellPoint() { Tripos = tripos }, playerKey, squadId));
+        public void CreateSpawnRequest(UnitKey unitKey, IntTriangularPos tripos, PlayerKey playerKey, Entity squadEntity = default) =>
+            CreateRequest(new(unitKey, new CellPoint() { Tripos = tripos }, playerKey, squadEntity));
     
     }
 }

@@ -38,10 +38,11 @@ namespace ZE.MechBattle.Ecs.States
                 return StateKey.Idle;
 
             var attackOpportunityComponent = _attackOpportuninties.Get(entity, out var haveAttackOpportunity);
-            if (!haveAttackOpportunity || attackOpportunityComponent.Value == 0f)
+            if (!haveAttackOpportunity || attackOpportunityComponent.ResultingValue < 0.5f)
             {
                 var targetPos = _positionComponents.Get(attackTarget.Entity).Value;
                 _moveTargetApplier.SetMoveTarget(entity, targetPos);
+               // UnityEngine.Debug.Log($"{entity.Id}: attack state changed to move : target {attackTarget.Entity.Id}");
                 return StateKey.Move;
             }
                 

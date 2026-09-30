@@ -38,12 +38,14 @@ namespace ZE.MechBattle.Ecs
         {
             _regularHexPathUsers = World.Filter
                 .With<HexPathReadyTag>()
+                .With<MoveTargetComponent>()
                 .With<HexPathProgressionComponent>()
                 .Without<TrianglePathDefinedTag>()
                 .Build();
 
             _noHexPathUsers = World.Filter
                 .With<HexPathReadyTag>()
+                .With<MoveTargetComponent>()
                 .Without<HexPathIdComponent>()
                 .Without<TrianglePathDefinedTag>()
                 .Build();

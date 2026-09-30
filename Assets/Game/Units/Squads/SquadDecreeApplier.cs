@@ -5,6 +5,8 @@ using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle.Units.Squads
 {
+    // todo: possibly rework to squad states
+
     public class SquadDecreeApplier
     {
         private readonly INavigationMap _map;
@@ -16,6 +18,7 @@ namespace ZE.MechBattle.Units.Squads
         private readonly Stash<SquadDecreeComponent> _decreeComponents;
         private readonly Stash<UnhandledDecreeTag> _unhandledDecrees;
         private readonly Stash<AttackTargetComponent> _attackTargets;
+        private readonly Stash<SyncAttackTargetsTag> _syncAttackTargetTags;
 
         [Inject]
         public SquadDecreeApplier(World world, INavigationMap map, SquadHandler squadHandler, MoveTargetApplier moveTargetApplier)
@@ -30,6 +33,7 @@ namespace ZE.MechBattle.Units.Squads
 
             _decreeComponents = world.GetStash<SquadDecreeComponent>();
             _unhandledDecrees = world.GetStash<UnhandledDecreeTag>();
+            _syncAttackTargetTags = world.GetStash<SyncAttackTargetsTag>();
         }
 
         public void SetSquadMoveDecree(Entity squad, IntTriangularPos tripos)
@@ -37,6 +41,7 @@ namespace ZE.MechBattle.Units.Squads
             _moveTargets.Set(squad, new(tripos, _map));
             _decreeComponents.Set(squad, new() { Type = SquadDecreeType.Move });
             _unhandledDecrees.Set(squad);
+            _syncAttackTargetTags.Remove(squad);
         }
 
         public void SetSquadAttackDecree(Entity squad, Entity attackTarget)
@@ -44,6 +49,7 @@ namespace ZE.MechBattle.Units.Squads
             _attackTargets.Set(squad, new() { Entity = attackTarget});
             _decreeComponents.Set(squad, new() { Type = SquadDecreeType.Attack });
             _unhandledDecrees.Set(squad);
+            _syncAttackTargetTags.Set(squad);
         }
 
 
@@ -69,7 +75,8 @@ namespace ZE.MechBattle.Units.Squads
             foreach (var (memberEntity, memberIndex) in _squadHandler.GetNextSquadMember(squadEntity))
             {
                 _attackTargets.Set(memberEntity, new() { Entity = attackTarget});
-            }
+                _syncAttackTargetTags.Set(memberEntity);
+            }            
         }
     
     }

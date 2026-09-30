@@ -47,8 +47,12 @@ namespace ZE.MechBattle.Ecs.States
             if (attackTargetExists)
             {
                 var attackOpportunintyComponent = _attackOpportuninties.Get(entity, out var attackOpportunityExists);
-                if (attackOpportunityExists && attackOpportunintyComponent.Value == 1f)
+                if (attackOpportunityExists && attackOpportunintyComponent.ResultingValue == 1f)
+                {
+                  //  UnityEngine.Debug.Log($"{entity.Id} switch to attack {attackTargetComponent.Entity.Id}");
                     return StateKey.Attack;
+                }
+                   
 
                 var targetEntity = _attackTargets.Get(entity).Entity;
                 var targetTripos = _triangularPosComponents.Get(targetEntity).Value;

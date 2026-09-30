@@ -14,7 +14,7 @@ namespace ZE.MechBattle.Ecs {
         public World World { get; set;}
         private Filter _handleFilter;
         private Stash<SquadDecreeComponent> _decrees;
-        private Stash<UnhandledDecreeTag> _tags;
+        private Stash<UnhandledDecreeTag> _unhandledDecreesTag;       
         private readonly SquadDecreeApplier _decreeApplier;
 
         [Inject]
@@ -33,7 +33,7 @@ namespace ZE.MechBattle.Ecs {
                 .Build();
 
             _decrees = World.GetStash<SquadDecreeComponent>();
-            _tags = World.GetStash<UnhandledDecreeTag>();
+            _unhandledDecreesTag = World.GetStash<UnhandledDecreeTag>();            
         }
 
         public void OnUpdate(float deltaTime) 
@@ -53,13 +53,13 @@ namespace ZE.MechBattle.Ecs {
                         }
                     case SquadDecreeType.Attack:
                         {
-                            _decreeApplier.ApplyAttackDecree(squadEntity);
+                            _decreeApplier.ApplyAttackDecree(squadEntity);                            
                             break;
                         }
                 }
                 
             }
-            _tags.RemoveAll();
+            _unhandledDecreesTag.RemoveAll();
         }
 
         public void Dispose() { }

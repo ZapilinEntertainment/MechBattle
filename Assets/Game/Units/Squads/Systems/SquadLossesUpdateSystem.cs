@@ -1,6 +1,5 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
-using VContainer;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -12,13 +11,6 @@ namespace ZE.MechBattle.Ecs {
         private Filter _filter;
         private Stash<SquadMemberComponent> _squadMembers;
         private Stash<SquadUpdateRequiredTag> _changedTags;
-        private readonly SquadsManager _squadsManager;
-
-        [Inject]
-        public SquadLossesUpdateSystem(SquadsManager squadsManager)
-        {
-            _squadsManager = squadsManager;
-        }
 
         public void OnAwake() 
         {
@@ -35,9 +27,8 @@ namespace ZE.MechBattle.Ecs {
         {
             foreach (var entity in _filter)
             {
-                var squadId = _squadMembers.Get(entity).SquadId;
-                if (_squadsManager.TryGetSquad(squadId, out var squadEntity))
-                    _changedTags.Set(squadEntity);
+                var squadEntity = _squadMembers.Get(entity).SquadEntity;
+                _changedTags.Set(squadEntity);
             }
         }
 

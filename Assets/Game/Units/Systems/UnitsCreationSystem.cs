@@ -56,8 +56,8 @@ namespace ZE.MechBattle.Ecs {
             var entity = Factory.Build(spawnRequest.UnitKey, spawnRequest.CellPoint.ToRigidTransform(_triangleHeight));
             _affiliations.Add(entity, new(spawnRequest.PlayerKey));
 
-            if (spawnRequest.SquadAssignmentRequested)
-                _squadHandler.AssignEntityToSquad(entity, spawnRequest.SquadId);
+            if (!World.IsDisposed(spawnRequest.SquadEntity))
+                _squadHandler.AssignEntityToSquad(entity, spawnRequest.SquadEntity);               
 
             return true;
         }

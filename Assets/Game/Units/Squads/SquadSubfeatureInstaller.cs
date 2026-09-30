@@ -10,7 +10,6 @@ namespace ZE.MechBattle
         {
             builder.Register<SquadFactory>(Lifetime.Singleton);
             builder.Register<SquadHandler>(Lifetime.Singleton);
-            builder.Register<SquadsManager>(Lifetime.Singleton);
             builder.Register<SquadDecreeApplier>(Lifetime.Singleton);
         }
 
@@ -20,6 +19,7 @@ namespace ZE.MechBattle
             installer.AddSystem<SquadDecreeDistributeSystem>(SystemGroupOrder.SquadUpdates);
             installer.AddSystem<SquadDecreesHandleSystem>(SystemGroupOrder.SquadUpdates);
             installer.AddSystem<SquadPositionCalculationSystem>(SystemGroupOrder.SquadUpdates);
+            installer.AddSystem<SquadMembersAttackTargetSyncSystem>(SystemGroupOrder.SquadUpdates+1);
 
 
             installer.AddSystem<SquadLossesUpdateSystem>(SystemGroupOrder.DisposedObjectsOperations);

@@ -13,6 +13,8 @@ namespace ZE.MechBattle.Ecs {
     // is gun loaded, is fireline clear
     public struct AttackOpportunintyComponent : IComponent 
     {
-        public float Value;    
+        public float ResultingValue;
+        public float RangeValue;
+        public float FireLineValue;
     }
 }

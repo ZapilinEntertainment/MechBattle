@@ -23,11 +23,11 @@ namespace ZE.MechBattle
 
         public void AssignMechPlayerAffinity(Entity mechEntity, PlayerKey playerKey)
         {
-            _affinityHandler.SetEntityAffinity(mechEntity, playerKey);
+            _affinityHandler.SetEntityPlayerAffinity(mechEntity, playerKey);
             var partitions = _partitionsManager.GetPartitionsList(mechEntity);
             foreach (var partitionEntity in partitions.Entities)
             {
-                _affinityHandler.SetEntityAffinity(partitionEntity, playerKey);
+                _affinityHandler.SetEntityPlayerAffinity(partitionEntity, playerKey);
             }
         }
 

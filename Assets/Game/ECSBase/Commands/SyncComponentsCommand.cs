@@ -7,6 +7,7 @@ namespace ZE.MechBattle.Ecs
 {
     public static class SyncComponentsCommand
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Execute<T>(Entity receivingEntity, Entity componentOwnerEntity, Stash<T> stash) where T : struct, IComponent
         {
             var originalComponent = stash.Get(componentOwnerEntity, out var exists);

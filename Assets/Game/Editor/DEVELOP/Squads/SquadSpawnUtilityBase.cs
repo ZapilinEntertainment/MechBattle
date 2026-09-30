@@ -40,11 +40,11 @@ namespace ZE.MechBattle.Develop
 
             var unitKey = new UnitKey(_stringDictionary.StringToKey(unitId));
             var count = 0;
-            var (squadEntity, squadId) = _squadFactory.Create();
+            var squadEntity = _squadFactory.Create();
             
             foreach (var tripos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, spawnRadius))
             {
-                _unitSpawnRequestFactory.CreateSpawnRequest(unitKey, tripos, playerKey, squadId);
+                _unitSpawnRequestFactory.CreateSpawnRequest(unitKey, tripos, playerKey, squadEntity);
                 count++;
                 if (count == spawnCount)
                     break;

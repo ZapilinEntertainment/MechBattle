@@ -15,7 +15,7 @@ namespace ZE.MechBattle
         private readonly ViewSynchronizationApplier _viewSyncApplier;
         private readonly IUnitConfigsList _unitConfigs;
         private readonly WeaponFactory _weaponFactory;
-        private readonly SquadHandler _squadHandler;
+        private readonly AffinityHandler _affinityHandler;
 
         private readonly Stash<MoveSpeedComponent> _moveSpeeds;
         private readonly Stash<NavigationAgentComponent> _navigationAgents;
@@ -38,7 +38,7 @@ namespace ZE.MechBattle
             ViewSynchronizationApplier viewSyncApplier,
             IUnitConfigsList unitConfigsList,
             WeaponFactory weaponFactory,
-            SquadHandler squadHandler)
+            AffinityHandler affinityHandler)
         {
             _world = world;
             _transformAspectHandler = transformAspectHandler;
@@ -48,7 +48,7 @@ namespace ZE.MechBattle
             _statesApplier = statesApplier;
             _weaponFactory = weaponFactory;
             _viewSyncApplier = viewSyncApplier;
-            _squadHandler = squadHandler;
+            _affinityHandler = affinityHandler;
 
             _moveSpeeds = world.GetStash<MoveSpeedComponent>();
             _navigationAgents = world.GetStash<NavigationAgentComponent>();
@@ -135,6 +135,7 @@ namespace ZE.MechBattle
             });
             _aimPrecisionComponents.Add(weaponEntity, new(config.MaxPrecisionAberration) );
             _weaponComponents.Set(unitEntity, new(weaponEntity));
+            _affinityHandler.SetEntityOwnerAffinity(weaponEntity, unitEntity);
         }
     }
 }

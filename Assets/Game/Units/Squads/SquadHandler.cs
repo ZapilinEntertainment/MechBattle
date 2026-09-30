@@ -9,7 +9,6 @@ namespace ZE.MechBattle
 {
     public class SquadHandler
     {
-        private readonly SquadsManager _squadsManager;
         private readonly TransformAspectHandler _transformAspectHandler;
         private readonly Stash<SquadUpdateRequiredTag> _changedTags;
         private readonly Stash<SquadMemberComponent> _squadMembers;
@@ -19,9 +18,8 @@ namespace ZE.MechBattle
         private readonly SquadMembersIterator _squadMembersIterator;
 
         [Inject]
-        public SquadHandler(World world, SquadsManager squadsManager, TransformAspectHandler transformAspectHandler)
+        public SquadHandler(World world,  TransformAspectHandler transformAspectHandler)
         {
-            _squadsManager = squadsManager;
             _transformAspectHandler = transformAspectHandler;
 
             _changedTags = world.GetStash<SquadUpdateRequiredTag>();
@@ -47,22 +45,10 @@ namespace ZE.MechBattle
 
         public float3 GetSquadPosition(Entity squadEntity) => _transformAspectHandler.GetPosition(squadEntity);
 
-        public void AssignEntityToSquad(Entity entity, int squadId)
-        {
-            if (!_squadsManager.TryGetSquad(squadId, out var squadEntity))
-            {
-#if UNITY_EDITOR
-                UnityEngine.Debug.LogWarning("cannot find squad " + squadId.ToString());
-#endif
-                return;
-            }
-            AssignEntityToSquad(entity, squadEntity, squadId);
-        }
-
-        private void AssignEntityToSquad(Entity entity, Entity squadEntity, int squadId)
+        public void AssignEntityToSquad(Entity entity, Entity squadEntity)
         {
             ref var squadComponent = ref _squadComponents.Get(squadEntity);
-            _squadMembers.Set(entity, new(squadId, squadComponent.MembersCount));
+            _squadMembers.Set(entity, new(squadEntity, squadComponent.MembersCount));
             squadComponent.MembersCount += 1;
             _changedTags.Set(squadEntity);
         }
