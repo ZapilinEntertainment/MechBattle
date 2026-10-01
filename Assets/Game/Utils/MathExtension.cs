@@ -175,7 +175,7 @@ public static class MathExtensions
     public static float3 InverseTransformPoint(float3 globalPos, float3 objectGlobalPos, quaternion objectGlobalRot)
     {
         float3 offset = globalPos - objectGlobalPos;
-        quaternion inverseRot = math.conjugate(objectGlobalRot);
+        quaternion inverseRot = math.inverse(objectGlobalRot);
         float3 localPoint = math.mul(inverseRot, offset);
 
         return localPoint;

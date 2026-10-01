@@ -9,11 +9,11 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public sealed class UnitsCreationSystem : EntityCreationSystemBase<UnitSpawnRequestComponent, UnitsFactory> 
     {
-        private Stash<PlayerAffiliationComponent> _affiliations { get; set;}
 
         private readonly DelayApplier _delayApplier;
         private readonly NavigationGridHandler _gridHandler;
         private readonly SquadHandler _squadHandler;
+        private readonly AffinityHandler _affinityHandler;
 
         private readonly float _triangleHeight;
         private const float UNSUCCESSFUL_REQUEST_CLEAR_TIME = 5f;
@@ -25,19 +25,15 @@ namespace ZE.MechBattle.Ecs {
             DelayApplier delayApplier, 
             UnitsFactory unitsFactory,
             TransformAspectHandler transformAspectHandler,
-            SquadHandler squadHandler) : base(unitsFactory)
+            SquadHandler squadHandler,
+            AffinityHandler affinityHandler) : base(unitsFactory)
         {
             _gridHandler = gridHandler;
             _delayApplier = delayApplier;
             _squadHandler = squadHandler;
+            _affinityHandler = affinityHandler;
 
             _triangleHeight = map.TriangleHeight;
-        }
-
-        public override void OnAwake() 
-        {
-            base.OnAwake();
-            _affiliations = World.GetStash<PlayerAffiliationComponent>();
         }
 
         protected override bool TryExecuteRequest(Entity requestEntity)
@@ -53,11 +49,12 @@ namespace ZE.MechBattle.Ecs {
                 return false;
             }
 
-            var entity = Factory.Build(spawnRequest.UnitKey, spawnRequest.CellPoint.ToRigidTransform(_triangleHeight));
-            _affiliations.Add(entity, new(spawnRequest.PlayerKey));
+            var unitEntity = Factory.Build(spawnRequest.UnitKey, spawnRequest.CellPoint.ToRigidTransform(_triangleHeight));
+            _affinityHandler.SetEntityPlayerAffinity(unitEntity, spawnRequest.PlayerKey);
+            _affinityHandler.AddFriendlyFireProtection(unitEntity, spawnRequest.PlayerKey);
 
             if (!World.IsDisposed(spawnRequest.SquadEntity))
-                _squadHandler.AssignEntityToSquad(entity, spawnRequest.SquadEntity);               
+                _squadHandler.AssignEntityToSquad(unitEntity, spawnRequest.SquadEntity);               
 
             return true;
         }

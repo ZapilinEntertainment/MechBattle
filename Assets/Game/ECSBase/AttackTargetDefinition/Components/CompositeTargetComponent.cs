@@ -1,5 +1,6 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
+using TriInspector;
 
 namespace ZE.MechBattle.Ecs {
     [System.Serializable]
@@ -8,13 +9,14 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public readonly struct CompositeTargetComponent : IComponent 
     {
-        public readonly CompositeTargetMode Mode;
+        [ShowInInspector, ReadOnly] public readonly CompositeTargetMode Mode;
 
         public CompositeTargetComponent(CompositeTargetMode mode) => Mode = mode;
     }
 
     public enum CompositeTargetMode : byte
     {
-        Partitions
+        Partitions,
+        Squad
     }
 }

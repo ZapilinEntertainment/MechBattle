@@ -11,6 +11,8 @@ namespace ZE.MechBattle
         private readonly Stash<PositionComponent> _positions;
         private readonly Stash<HexCoordComponent> _hexCoords;
         private readonly Stash<CalculateTrianglePositionTag> _calculateTrianglePosTags;
+        private readonly Stash<CompositeTargetComponent> _compositeTargets;
+        private readonly Stash<UseUnspecifiedTargetsTag> _useUnspecifiedTargets;
 
         [Inject]
         public SquadFactory(World world)
@@ -21,6 +23,8 @@ namespace ZE.MechBattle
             _positions = _world.GetStash<PositionComponent>();
             _hexCoords = _world.GetStash<HexCoordComponent>();
             _calculateTrianglePosTags = _world.GetStash<CalculateTrianglePositionTag>();
+            _compositeTargets = _world.GetStash<CompositeTargetComponent>();
+            _useUnspecifiedTargets = _world.GetStash<UseUnspecifiedTargetsTag>();
         }
 
         public Entity Create()
@@ -30,6 +34,8 @@ namespace ZE.MechBattle
             _positions.Add(entity);
             _hexCoords.Add(entity);
             _calculateTrianglePosTags.Add(entity);
+            _compositeTargets.Add(entity, new(CompositeTargetMode.Squad));
+            _useUnspecifiedTargets.Add(entity);
             return entity;
         }
     

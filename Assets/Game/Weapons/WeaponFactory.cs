@@ -9,6 +9,7 @@ namespace ZE.MechBattle.Ecs
         private readonly World _world;
         private readonly ParentingRelationsApplier _parentingRelationsApplier;
         private readonly StringDataDictionary _stringDictionary;
+        private readonly TransformAspectHandler _transformAspectHandler;
         private readonly Stash<WeaponRangeComponent> _ranges;
         private readonly Stash<WeaponLoadingComponent> _weaponUpdateComponents;        
         private readonly Stash<WeaponMuzzleEffectComponent> _muzzleEffects;
@@ -40,11 +41,16 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<WeaponChargeComponent> _weaponChargeComponents;
 
         [Inject]
-        public WeaponFactory(World world, ParentingRelationsApplier parentingRelationsApplier, StringDataDictionary stringDataDictionary)
+        public WeaponFactory(
+            World world, 
+            ParentingRelationsApplier parentingRelationsApplier, 
+            StringDataDictionary stringDataDictionary,
+            TransformAspectHandler transformAspectHandler)
         {
             _world = world;
             _parentingRelationsApplier = parentingRelationsApplier;
             _stringDictionary = stringDataDictionary;
+            _transformAspectHandler = transformAspectHandler;
 
             _ranges = _world.GetStash<WeaponRangeComponent>();
             _weaponUpdateComponents = world.GetStash<WeaponLoadingComponent>();
@@ -96,6 +102,7 @@ namespace ZE.MechBattle.Ecs
         public Entity CreateWeapon(WeaponCreationProtocol protocol)
         {
             var weaponEntity = _world.CreateEntity();
+            _transformAspectHandler.InitializePositionAndRotationComponents(weaponEntity);
             var weaponConfig = protocol.WeaponConfig;
 
             var viewOwnerEntity = protocol.ViewOwnerEntity == default ? weaponEntity : protocol.ViewOwnerEntity;
@@ -120,7 +127,8 @@ namespace ZE.MechBattle.Ecs
                 if (protocol.UseAutoStow) 
                     _towerStowTag.Add(towerEntity);
 
-                _localRotationLimits.Set(towerEntity, new(towerAttachmentProtocol.FwdRotationLimits));
+                if (math.any( towerAttachmentProtocol.FwdRotationLimits.LimitAxleRotation))
+                    _localRotationLimits.Set(towerEntity, new(towerAttachmentProtocol.FwdRotationLimits));
 
                 //UnityEngine.Debug.Log($"built tower with id {towerEntity.Id}");
             }
@@ -139,7 +147,8 @@ namespace ZE.MechBattle.Ecs
                 if (protocol.UseAutoStow)
                     _barrelStowTag.Add(barrelEntity);
 
-                _localRotationLimits.Set(barrelEntity, new(barrelAttachmentProtocol.FwdRotationLimits));
+                if (math.any(barrelAttachmentProtocol.FwdRotationLimits.LimitAxleRotation))
+                    _localRotationLimits.Set(barrelEntity, new(barrelAttachmentProtocol.FwdRotationLimits));
 
                 // UnityEngine.Debug.Log($"built barrel with id {barrelEntity.Id}");
             }
@@ -203,6 +212,7 @@ namespace ZE.MechBattle.Ecs
         private Entity AttachWeaponPart(Entity parentEntity, Entity viewOwnerEntity, WeaponPartAttachmentProtocol protocol)
         {
             var weaponPartEntity = _world.CreateEntity();
+            _transformAspectHandler.InitializePositionAndRotationComponents(weaponPartEntity);
             _parentingRelationsApplier.Apply(new()
             {
                 ChildEntity = weaponPartEntity,

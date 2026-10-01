@@ -18,15 +18,22 @@ namespace ZE.MechBattle.Ecs {
         private Stash<ExplosionTimerComponent> _explosionTimer;
         private Stash<ExplodeTag> _explodeTags;
         private Stash<CollisionComponent> _collisionResults;
+        private Stash<IgnoreUnitsCollisionByPlayermaskComponent> _playermaskIgnorationComponents;
 
         private readonly TransformAspectHandler _transformAspect;
+        private readonly CollidersTable _collidersTable;
+        private readonly AffinityHandler _affinityHandler;
         private readonly List<float3> _movementVectorsCache = new (DEFAULT_CAPACITY);
         private readonly List<Entity> _projectilesList = new(DEFAULT_CAPACITY);
         private readonly QueryParameters _queryParameters;
         private const int DEFAULT_CAPACITY = 32;
 
         [Inject]
-        public ProjectileMoveSystem(TransformAspectHandler transformAspectHandler, SceneFlagsManager sceneFlags) : base(sceneFlags)
+        public ProjectileMoveSystem(
+            TransformAspectHandler transformAspectHandler, 
+            SceneFlagsManager sceneFlags, 
+            CollidersTable collidersTable,
+            AffinityHandler affinityHandler) : base(sceneFlags)
         {
             _queryParameters = new QueryParameters()
             {
@@ -37,6 +44,8 @@ namespace ZE.MechBattle.Ecs {
             };
 
             _transformAspect = transformAspectHandler;
+            _collidersTable = collidersTable;
+            _affinityHandler = affinityHandler;
         }
 
         public override void OnAwake()
@@ -51,6 +60,7 @@ namespace ZE.MechBattle.Ecs {
             _explosionTimer = World.GetStash<ExplosionTimerComponent>();
             _explodeTags = World.GetStash<ExplodeTag>();
             _collisionResults = World.GetStash<CollisionComponent>();
+            _playermaskIgnorationComponents = World.GetStash<IgnoreUnitsCollisionByPlayermaskComponent>();
         }
 
         public override void OnUpdate(float deltaTime)
@@ -98,15 +108,30 @@ namespace ZE.MechBattle.Ecs {
                     {
                         var result = results[i];
                         var projectile = _projectilesList[i];
+                        bool continueMovement;
 
                         if (result.collider != null)
                         {
-                            _collisionResults.Set(projectile, new() { Result = new(result.colliderInstanceID, result.normal) });
-                            _explodeTags.Add(projectile);
+                            var playerMaskIgnoration = _playermaskIgnorationComponents.Get(projectile, out var ignoreSomePlayers);
+                            continueMovement = ignoreSomePlayers
+                                && _collidersTable.TryGetColliderOwner(result.colliderInstanceID, out var colliderOwner)
+                                && _affinityHandler.TryGetPlayerOwner(colliderOwner, out var playerKey)
+                                && playerMaskIgnoration.PlayersMask.Contains(playerKey);                            
                         }
                         else
                         {
+                            continueMovement = true;
+                            
+                        }
+
+                        if (continueMovement)
+                        {
                             _transformAspect.Translate(projectile, _movementVectorsCache[i], Space.World);
+                        }                            
+                        else
+                        {
+                            _collisionResults.Set(projectile, new() { Result = new(result.colliderInstanceID, result.normal) });
+                            _explodeTags.Add(projectile);
                         }
                     }
 

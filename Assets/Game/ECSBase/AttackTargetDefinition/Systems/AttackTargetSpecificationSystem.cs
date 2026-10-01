@@ -14,20 +14,24 @@ namespace ZE.MechBattle.Ecs {
         // composite target marks itself with CompositeTargetComponent
 
         public World World { get; set;}
+
         private Filter _filter;
+        private Filter _correctionFilter;
         private Stash<AttackTargetComponent> _targets;
         private Stash<CompositeTargetComponent> _compositeTargets;
         private Stash<CompositeTargetSpecifiedTag> _specifiedTags;
 
         private readonly TransformAspectHandler _transformAspectHandler;
         private readonly PartitionsListManager _partitionsManager;
+        private readonly SquadHandler _squadHandler;
         private readonly Dictionary<Entity, IReadOnlyCollection<Entity>> _targetParts = new();
 
         [Inject]
-        public AttackTargetSpecificationSystem(PartitionsListManager partitionsListManager, TransformAspectHandler transformAspectHandler)
+        public AttackTargetSpecificationSystem(PartitionsListManager partitionsListManager, TransformAspectHandler transformAspectHandler, SquadHandler squadHandler)
         {
             _transformAspectHandler = transformAspectHandler;
             _partitionsManager = partitionsListManager;
+            _squadHandler = squadHandler;
         }
 
         public void OnAwake() 
@@ -35,6 +39,13 @@ namespace ZE.MechBattle.Ecs {
             _filter = World.Filter
                 .With<AttackTargetComponent>()
                 .Without<CompositeTargetSpecifiedTag>()
+                .Without<UseUnspecifiedTargetsTag>()
+                .Build();
+
+            _correctionFilter = World.Filter
+                .With<AttackTargetComponent>()
+                .With<CompositeTargetSpecifiedTag>()
+                .With<SquadMemberComponent>()
                 .Build();
 
             _targets = World.GetStash<AttackTargetComponent>();
@@ -47,28 +58,76 @@ namespace ZE.MechBattle.Ecs {
             if (_filter.IsEmpty())
                 return;
 
+            // this is a kludge. Originals system should handle this situation themselves, hovewer it doesn't work
+            // todo: investigate
+            foreach (var entity in _correctionFilter)
+            {
+                var target = _targets.Get(entity).Entity;
+                if (_compositeTargets.Has(target))
+                {
+                    _specifiedTags.Remove(entity);
+                }
+                    
+            }
+
             foreach (var attackerEntity in _filter)
             {
                 ref var targetComponent = ref _targets.Get(attackerEntity);
                 var targetEntity = targetComponent.Entity;
 
                 var compositeTargetComponent = _compositeTargets.Get(targetEntity, out var isCompositeTarget);
+                var closestTargetFound = false;
                 if (isCompositeTarget)
                 {
-                    // only one mode realized atm;
-                    //var mode = compositeTargetComponent.Mode;
-
-                    if (!_targetParts.TryGetValue(targetEntity, out var list))
+                    switch (compositeTargetComponent.Mode)
                     {
-                        list = _partitionsManager.GetPartitionsList(targetEntity).Entities;
-                        _targetParts.Add(targetEntity, list);
-                    }
+                        case CompositeTargetMode.Partitions:
+                            {
+                                if (!_targetParts.TryGetValue(targetEntity, out var list))
+                                {
+                                    list = _partitionsManager.GetPartitionsList(targetEntity).Entities;
+                                    _targetParts.Add(targetEntity, list);
+                                }
 
-                    targetComponent.Entity = SelectClosestPart(attackerEntity, list);
+                                targetComponent.Entity = SelectClosestPart(attackerEntity, list);
+                                closestTargetFound = true;
+                                break;
+                            }
+                        case CompositeTargetMode.Squad:
+                            {
+                                var closestDistance = float.MaxValue;
+                                Entity closestTarget = default;
+                                var attackerPos = _transformAspectHandler.GetPosition(attackerEntity);
+
+                                foreach (var (entity, index) in _squadHandler.GetNextSquadMember(targetEntity))
+                                {
+                                    var pos = _transformAspectHandler.GetPosition(entity);
+                                    var distanceSq = math.distancesq(pos, attackerPos);
+                                    if (distanceSq < closestDistance)
+                                    {
+                                        closestDistance = distanceSq;
+                                        closestTarget = entity;
+                                    }
+                                }
+                                if (!World.IsDisposed(closestTarget))
+                                {
+                                    closestTargetFound = true;
+                                    targetComponent.Entity = closestTarget;
+                                }
+                                break;
+                            }
+                    }
                 }
-                _specifiedTags.Add(attackerEntity);
+                else
+                {
+                    closestTargetFound = true;
+                }
+
+                if (closestTargetFound)
+                    _specifiedTags.Add(attackerEntity);                
             }
 
+          
             _targetParts.Clear();
         }
 

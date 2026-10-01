@@ -11,6 +11,7 @@ namespace ZE.MechBattle.Ecs {
     {
         public World World { get; set;}
         private Filter _barrelWeaponsFilter;
+        private Filter _alwaysCalculateFilter;
         private Stash<WeaponShotPoint> _shotPoints;
         private Stash<WeaponBarrelComponent> _barrelComponents;
         private readonly TransformAspectHandler _transformHandler;
@@ -24,9 +25,14 @@ namespace ZE.MechBattle.Ecs {
         public void OnAwake() 
         {
             _barrelWeaponsFilter = World.Filter
-                .With<WeaponFireTag>()
                 .With<WeaponShotPoint>()
                 .With<WeaponBarrelComponent>()
+                .With<AttackRangeReachedTag>()
+                .Build();
+
+            _alwaysCalculateFilter = World.Filter
+                .With<WeaponShotPoint>()
+                .With<AlwaysCalculateShotPointTag>()
                 .Build();
 
             _shotPoints = World.GetStash<WeaponShotPoint>();
@@ -38,15 +44,25 @@ namespace ZE.MechBattle.Ecs {
             if (_barrelWeaponsFilter.IsEmpty())
                 return;
 
-            foreach (var weaponEntity in _barrelWeaponsFilter)
+            void CalculateShotPoint(Entity entity)
             {
-                ref var shotPointComponent = ref _shotPoints.Get(weaponEntity);
-                var localShotPos = _shotPoints.Get(weaponEntity).LocalPos;
-                var barrelEntity = _barrelComponents.Get(weaponEntity).BarrelEntity;
+                ref var shotPointComponent = ref _shotPoints.Get(entity);
+                var localShotPos = _shotPoints.Get(entity).LocalPos;
+                var barrelEntity = _barrelComponents.Get(entity).BarrelEntity;
                 var barrelPoint = _transformHandler.GetPoint(barrelEntity);
 
                 var worldShotPosition = MathExtensions.LocalToWorldPos(barrelPoint, localShotPos);
                 shotPointComponent.WorldPoint = new(barrelPoint.rot, worldShotPosition);
+            }
+
+            foreach (var weaponEntity in _barrelWeaponsFilter)
+            {
+                CalculateShotPoint(weaponEntity);
+            }
+
+            foreach (var weaponEntity in _alwaysCalculateFilter)
+            {
+                CalculateShotPoint(weaponEntity);
             }
         }
 

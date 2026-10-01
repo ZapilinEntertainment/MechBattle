@@ -41,6 +41,7 @@ namespace ZE.MechBattle.Ecs
                     // note: there can be added some delay
                     // also note: fire tag can stay for a some time (ex.: laser weapons)
                     _fireTags.Set(weaponEntity);
+                    
                 }
             }
         }

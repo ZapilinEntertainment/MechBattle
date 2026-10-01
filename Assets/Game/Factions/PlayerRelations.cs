@@ -11,10 +11,13 @@ namespace ZE.MechBattle
 
         public PlayerRelationsMask GetEnemiesMask(int playerId)
         {
-            var mask = new BitField32(int.MaxValue);
+            var mask = new BitField32(uint.MaxValue);
             mask.SetBits(playerId, false);
             return new(mask);
         }
+
+        // note: will dependent on allies (when will be implemented)
+        public PlayerRelationsMask GetFriendlyFireProtectionMask(PlayerKey playerKey) => new(new BitField32((uint)(1 << playerKey.Id)));
 
         public bool AreHostile(PlayerKey playerA, PlayerKey playerB)
         {

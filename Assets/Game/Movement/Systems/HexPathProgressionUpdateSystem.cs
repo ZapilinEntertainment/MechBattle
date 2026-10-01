@@ -103,9 +103,11 @@ namespace ZE.MechBattle.Ecs {
 
         private bool IsEntityReachedTarget(Entity entity)
         {
-            var target = _moveTarget.Get(entity).TriangularPos;
+            var targetComponent = _moveTarget.Get(entity, out var moveTargetExists);
+            if (!moveTargetExists)
+                return true;
             var tripos = _triangularPos.Get(entity).Value;
-            return tripos == target;
+            return tripos == targetComponent.TriangularPos;
         }
 
         private void ClearTrianglePathData(Entity entity)

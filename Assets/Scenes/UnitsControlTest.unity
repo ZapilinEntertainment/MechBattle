@@ -464,6 +464,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: tank_view (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 4821656203000804905, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5543723104446639765, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
       propertyPath: m_LocalPosition.x
       value: 160.9
@@ -811,6 +815,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: tank_view (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 4821656203000804905, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5543723104446639765, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
       propertyPath: m_LocalPosition.x
       value: 164.8
@@ -867,6 +875,10 @@ PrefabInstance:
     - target: {fileID: 4821656203000804905, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
       propertyPath: m_Name
       value: tank_view (7)
+      objectReference: {fileID: 0}
+    - target: {fileID: 4821656203000804905, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5543723104446639765, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1035,6 +1047,10 @@ PrefabInstance:
     - target: {fileID: 4821656203000804905, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
       propertyPath: m_Name
       value: tank_view (9)
+      objectReference: {fileID: 0}
+    - target: {fileID: 4821656203000804905, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5543723104446639765, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2502,6 +2518,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: tank_view (10)
       objectReference: {fileID: 0}
+    - target: {fileID: 4821656203000804905, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5543723104446639765, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
       propertyPath: m_LocalPosition.x
       value: 176.1
@@ -2558,6 +2578,10 @@ PrefabInstance:
     - target: {fileID: 4821656203000804905, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
       propertyPath: m_Name
       value: tank_view (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 4821656203000804905, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5543723104446639765, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2956,11 +2980,11 @@ MonoBehaviour:
   _playerId: 1
   _spawnRadius: 6
   _startHex:
-    x: 1
-    y: 1
+    x: -1
+    y: 2
   _endHex:
-    x: -2
-    y: 1
+    x: 0
+    y: 0
 --- !u!114 &1259888776
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3123,7 +3147,7 @@ MonoBehaviour:
   _unitsCount: 100
   _hexCoord:
     x: -2
-    y: 1
+    y: 2
 --- !u!114 &1259888778
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3162,6 +3186,10 @@ PrefabInstance:
     - target: {fileID: 4821656203000804905, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
       propertyPath: m_Name
       value: tank_view (8)
+      objectReference: {fileID: 0}
+    - target: {fileID: 4821656203000804905, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5543723104446639765, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
       propertyPath: m_LocalPosition.x
@@ -3947,6 +3975,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: tank_view (6)
       objectReference: {fileID: 0}
+    - target: {fileID: 4821656203000804905, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5543723104446639765, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
       propertyPath: m_LocalPosition.x
       value: 190.4
@@ -4610,6 +4642,10 @@ PrefabInstance:
     - target: {fileID: 4821656203000804905, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
       propertyPath: m_Name
       value: tank_view
+      objectReference: {fileID: 0}
+    - target: {fileID: 4821656203000804905, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5543723104446639765, guid: adeca2a169eb98e418dbbada755dae66, type: 3}
       propertyPath: m_LocalPosition.x

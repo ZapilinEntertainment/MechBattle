@@ -19,7 +19,9 @@ namespace ZE.MechBattle
             installer.AddSystem<SquadDecreeDistributeSystem>(SystemGroupOrder.SquadUpdates);
             installer.AddSystem<SquadDecreesHandleSystem>(SystemGroupOrder.SquadUpdates);
             installer.AddSystem<SquadPositionCalculationSystem>(SystemGroupOrder.SquadUpdates);
-            installer.AddSystem<SquadMembersAttackTargetSyncSystem>(SystemGroupOrder.SquadUpdates+1);
+
+            // copied to BaseEcsSystemInstallQueue
+            //installer.AddSystem<SquadMembersAttackTargetSyncSystem>(SystemGroupOrder.Default);
 
 
             installer.AddSystem<SquadLossesUpdateSystem>(SystemGroupOrder.DisposedObjectsOperations);

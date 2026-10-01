@@ -32,9 +32,10 @@ namespace ZE.MechBattle.Ecs {
         private NativeList<RaycastCommand> _commandsList;
         private NativeList<RaycastHit> _resultsList;
 
-        private Stash<PositionComponent> _positions;
         private Stash<AttackTargetComponent> _attackTargets;
         private Stash<FireLineClearTag> _fireLineClearTag;
+        private Stash<WeaponShotPoint> _weaponShotPoints;
+        private Stash<WeaponRangeComponent> _weaponRanges;
 
         private readonly AffinityHandler _affinityHandler;
         private readonly CollidersTable _collidersTable;
@@ -62,9 +63,10 @@ namespace ZE.MechBattle.Ecs {
                 .With<AttackRangeReachedTag>()
                 .Build();
 
-            _positions = World.GetStash<PositionComponent>();
             _attackTargets = World.GetStash<AttackTargetComponent>();
             _fireLineClearTag = World.GetStash<FireLineClearTag>();
+            _weaponShotPoints = World.GetStash<WeaponShotPoint>();
+            _weaponRanges = World.GetStash<WeaponRangeComponent>();
 
             _commandsList = new NativeList<RaycastCommand>(Allocator.Persistent);
             _resultsList = new NativeList<RaycastHit>(Allocator.Persistent);
@@ -89,6 +91,7 @@ namespace ZE.MechBattle.Ecs {
 
            if (_activeJobEntities.Count != 0)
                 PrepareAndLaunchJob();
+
         }
 
         public void Dispose() 
@@ -141,7 +144,10 @@ namespace ZE.MechBattle.Ecs {
                                 || _affinityHandler.AreEntitiesHostile(_affinityHandler.GetEntityOwner(entityCastData.WeaponEntity), entityCastData.TargetEntity)
                             );
 
-                       //if (!firingLineIsClear)  UnityEngine.Debug.Log($"entity {entityCastData.WeaponEntity.Id} : {result.colliderInstanceID}");
+                       //if (firingLineIsClear)  
+                       //     UnityEngine.Debug.Log($"entity {entityCastData.WeaponEntity.Id} : {colliderOwnerEntity}");
+                       //else
+                       //     UnityEngine.Debug.Log("no contact");
                     }
                 }               
 
@@ -160,11 +166,10 @@ namespace ZE.MechBattle.Ecs {
         {
             foreach (var entityCastData in _activeJobEntities)
             {
-                var weaponPos = _positions.Get(entityCastData.WeaponEntity).Value;
-                var targetPos = _positions.Get(entityCastData.TargetEntity).Value;
-                var dir = targetPos - weaponPos;
+                var shotPoint = _weaponShotPoints.Get(entityCastData.WeaponEntity).WorldPoint;
+                var range = _weaponRanges.Get(entityCastData.WeaponEntity).MaxRange;
 
-                _commandsList.Add(new RaycastCommand(from: weaponPos, direction: math.normalize(dir), _queryParameters, math.length(dir)));
+                _commandsList.Add(new RaycastCommand(from: shotPoint.pos, direction: math.forward(shotPoint.rot), _queryParameters, range));
                 _resultsList.Add(default);
             }
 

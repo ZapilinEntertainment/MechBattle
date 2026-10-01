@@ -9,6 +9,7 @@ namespace ZE.MechBattle
         // player == faction
         private readonly Stash<PlayerAffiliationComponent> _playerAffiliations;
         private readonly Stash<OwnerAffinityComponent> _ownerAffiliations;
+        private readonly Stash<IgnoreUnitsCollisionByPlayermaskComponent> _ignoreCollisionComponents;
         private readonly PlayerRelations _playerRelations;
 
         [Inject]
@@ -17,15 +18,33 @@ namespace ZE.MechBattle
             _playerRelations = playerRelations;
             _playerAffiliations = world.GetStash<PlayerAffiliationComponent>();
             _ownerAffiliations = world.GetStash<OwnerAffinityComponent>();
+            _ignoreCollisionComponents = world.GetStash<IgnoreUnitsCollisionByPlayermaskComponent>();
         }
 
         public void SetEntityPlayerAffinity(Entity entity, PlayerKey playerKey) => _playerAffiliations.Set(entity, new(playerKey));
         public void SetEntityOwnerAffinity(Entity entity, Entity owner) => _ownerAffiliations.Set(entity, new() { OwnerEntity = owner });
 
+        public void AddFriendlyFireProtection(Entity entity, PlayerKey playerKey) => _ignoreCollisionComponents.Set(entity, new(_playerRelations.GetFriendlyFireProtectionMask(playerKey)));
+
         public Entity GetEntityOwner(Entity entity) 
         {
             var ownerComponent = _ownerAffiliations.Get(entity, out var ownerExists);
             return ownerExists ? ownerComponent.OwnerEntity : entity;
+        }
+
+        public bool TryGetPlayerOwner(Entity entity, out PlayerKey playerKey)
+        {
+            var affinityComponent = _playerAffiliations.Get(entity, out var exists);
+            if (exists)
+            {
+                playerKey = affinityComponent.PlayerKey;
+                return true;
+            }
+            else
+            {
+                playerKey = default;
+                return false;
+            }
         }
 
         public bool AreEntitiesHostile(Entity entityA, Entity entityB)
@@ -40,11 +59,19 @@ namespace ZE.MechBattle
 #endif
                 return false;
             }
-                
 
             return ArePlayersHostile(playerKeyA, playerKeyB);
         }
 
         public bool ArePlayersHostile(PlayerKey playerA, PlayerKey playerB) => _playerRelations.AreHostile(playerA, playerB);
+
+        public bool IsEntityHostileToPlayer(Entity entity, PlayerKey playerKey)
+        {
+            var entityPlayerKey = _playerAffiliations.Get(entity, out var affined).PlayerKey;
+            if (!affined)
+                return false;
+
+            return ArePlayersHostile(playerKey, entityPlayerKey);
+        }
     }
 }

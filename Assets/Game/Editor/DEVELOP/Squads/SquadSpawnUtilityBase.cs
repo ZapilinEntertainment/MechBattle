@@ -16,6 +16,7 @@ namespace ZE.MechBattle.Develop
 
         protected SquadFactory _squadFactory;
         protected SquadDecreeApplier _decreeApplier;
+        protected AffinityHandler _affinityHandler;
 
         [Inject]
         public void Inject(
@@ -24,7 +25,8 @@ namespace ZE.MechBattle.Develop
          StringDataDictionary stringDict,
 
          SquadFactory squadFactory,
-         SquadDecreeApplier decreeApplier)
+         SquadDecreeApplier decreeApplier,
+         AffinityHandler affinityHandler)
         {
             _navigationMap = navigationMap;
             _unitSpawnRequestFactory = unitSpawnRequestsFactory;
@@ -32,6 +34,7 @@ namespace ZE.MechBattle.Develop
 
             _squadFactory = squadFactory;
             _decreeApplier = decreeApplier;
+            _affinityHandler = affinityHandler;
         }
 
         protected Entity SpawnSquadAtHex(int2 hexCoord, string unitId, PlayerKey playerKey, int spawnRadius, int spawnCount)
@@ -41,6 +44,7 @@ namespace ZE.MechBattle.Develop
             var unitKey = new UnitKey(_stringDictionary.StringToKey(unitId));
             var count = 0;
             var squadEntity = _squadFactory.Create();
+            _affinityHandler.SetEntityPlayerAffinity(squadEntity, playerKey);
             
             foreach (var tripos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, spawnRadius))
             {

@@ -18,7 +18,7 @@ namespace ZE.MechBattle.Ecs {
         private Stash<FireLineClearTag> _fireLineClearTag;
 
         private const float RAYCAST_VALUE_RAISE_SPEED = 5f;
-        private const float RAYCAST_VALUE_FALL_SPEED = 1f;
+        private const float RAYCAST_VALUE_FALL_SPEED = 0.1f;
 
         public void OnAwake() 
         {

@@ -11,6 +11,7 @@ namespace ZE.MechBattle.Ecs {
     {
         public int IdKey;
         public RigidTransform Point;    
-        public Entity Shooter;
+        public Entity WeaponEntity;
+        public Entity ShooterEntity;
     }
 }

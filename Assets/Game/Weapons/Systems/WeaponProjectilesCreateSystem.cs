@@ -1,5 +1,4 @@
 using Scellecs.Morpeh;
-using Unity.Mathematics;
 using VContainer;
 using Unity.IL2CPP.CompilerServices;
 
@@ -16,7 +15,7 @@ namespace ZE.MechBattle.Ecs {
         private readonly ProjectileRequestsFactory _requestsFactory;
 
         [Inject]
-        public WeaponProjectilesCreateSystem(ProjectileRequestsFactory projectileRequestsFactory, TransformAspectHandler transformAspectHandler)
+        public WeaponProjectilesCreateSystem(ProjectileRequestsFactory projectileRequestsFactory)
         {
             _requestsFactory = projectileRequestsFactory;
         }

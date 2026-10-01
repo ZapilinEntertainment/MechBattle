@@ -1,20 +1,14 @@
 using Scellecs.Morpeh;
+using UnityEngine;
 using Unity.IL2CPP.CompilerServices;
-using TriInspector;
 
 namespace ZE.MechBattle.Ecs {
     [System.Serializable]
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public readonly struct UnitWeaponComponent : IComponent 
+    public struct UseUnspecifiedTargetsTag : IComponent 
     {
-        [ShowInInspector, ReadOnly] public readonly Entity Entity;
-
-        public UnitWeaponComponent(Entity entity)
-        {
-            Entity = entity;
-        }
     
     }
 }

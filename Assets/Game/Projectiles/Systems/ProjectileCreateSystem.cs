@@ -16,7 +16,7 @@ namespace ZE.MechBattle.Ecs {
         protected override bool TryExecuteRequest(Entity requestEntity)
         {
             var data = RequestsStash.Get(requestEntity);
-            Factory.Build(data.IdKey, data.Point, data.Shooter);
+            Factory.Build(data.IdKey, data.Point, data.WeaponEntity, data.ShooterEntity);
             return true;
         }
     }

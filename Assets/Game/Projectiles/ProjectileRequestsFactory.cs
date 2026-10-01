@@ -10,22 +10,24 @@ namespace ZE.MechBattle
     public class ProjectileRequestsFactory : RequestFactoryBase<ProjectileBuildRequest>
     {
         private readonly StringDataDictionary _stringDict;
+        private readonly AffinityHandler _affinityHandler;
         
 
         [Inject]
-        public ProjectileRequestsFactory(World world, StringDataDictionary stringDict) : base(world) 
+        public ProjectileRequestsFactory(World world, StringDataDictionary stringDict, AffinityHandler affinityHandler) : base(world) 
         {
             _stringDict = stringDict;
+            _affinityHandler = affinityHandler;
         }
 
-        public void CreateProjectileRequestById(string id, RigidTransform point, Entity shooter)
+        public void CreateProjectileRequestById(string id, RigidTransform point, Entity weaponEntity)
         {
             var idKey = _stringDict.StringToKey(id);
-            CreateProjectileRequestByKey(idKey, point, shooter);
+            CreateProjectileRequestByKey(idKey, point, weaponEntity);
         }
             
 
-        public void CreateProjectileRequestByKey(int idKey, RigidTransform point, Entity shooter) =>
-            CreateRequest(new() { Point = point, IdKey = idKey, Shooter = shooter });
+        public void CreateProjectileRequestByKey(int idKey, RigidTransform point, Entity weaponEntity) =>
+            CreateRequest(new() { Point = point, IdKey = idKey, WeaponEntity = weaponEntity, ShooterEntity = _affinityHandler.GetEntityOwner(weaponEntity)});
     }
 }

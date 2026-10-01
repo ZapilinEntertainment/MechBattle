@@ -65,11 +65,12 @@ namespace ZE.MechBattle.Ecs {
                 var towerEntity = _weaponTowers.Get(weaponEntity).TowerEntity;
                 var targetPos = _targetPositions.Get(weaponEntity).Value;
 
-                var weaponPoint = _transformAspectHandler.GetPoint(weaponEntity);
-                var targetLocalPos = MathExtensions.InverseTransformPoint(targetPos, weaponPoint.pos, weaponPoint.rot);
-                var normalizedTargetDir = math.normalize(new float3(targetLocalPos.x, 0f, targetLocalPos.z));
+                 var weaponPoint = _transformAspectHandler.GetPoint(weaponEntity);
 
-                var targetRotation = quaternion.LookRotation(normalizedTargetDir, math.up());
+                var targetLocalPos = MathExtensions.InverseTransformPoint(targetPos, weaponPoint.pos, weaponPoint.rot);
+                var normalizedTargetDir = math.normalize(new float3(targetLocalPos.x, 0f, targetLocalPos.z));               
+
+                var targetRotation = math.normalize( quaternion.LookRotation(normalizedTargetDir, math.up()));           
                 _aims.Set(towerEntity, new() { Value = targetRotation });
             }
 

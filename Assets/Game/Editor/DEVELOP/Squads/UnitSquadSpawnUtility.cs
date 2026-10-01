@@ -31,8 +31,14 @@ namespace ZE.MechBattle.Develop
                 SpawnUnitSquadAtSelectedHex();
         }
 
-        [Button, ShowInPlayMode]
-        private void SpawnAndCommand()
+        [Button, EnableInPlayMode]
+        private void Spawn()
+        {
+            var squadEntity = SpawnSquadAtHex(_startHex);
+        }
+
+        [Button, EnableInPlayMode]
+        private void SpawnAndCommandToMove()
         {
             var squadEntity = SpawnSquadAtHex(_startHex);
             var hexPos = new NavigationHexPosition(_endHex, _navigationMap);

@@ -62,7 +62,7 @@ namespace ZE.MechBattle.Ecs {
         {
             var localRotation = _localRotations.Get(weaponPartEntity).Value;
             var targetRotation = _localTargetRotations.Get(weaponPartEntity).Value;
-            return math.abs( math.angle(localRotation, targetRotation) - limit) < math.EPSILON;
+            return math.abs( math.angle(localRotation, targetRotation) - limit) < 0.001f;
         }
     }
 }

@@ -13,13 +13,7 @@ namespace ZE.MechBattle.Ecs {
         private Filter _squadMembersFilter;
         private Stash<AttackTargetComponent> _attackTargets;
         private Stash<SquadMemberComponent> _squadMemberComponent;
-        private readonly SquadHandler _squadHandler;
-
-        [Inject]
-        public SquadMembersAttackTargetSyncSystem(SquadHandler squadHandler)
-        {
-            _squadHandler = squadHandler;
-        }
+        private Stash<CompositeTargetSpecifiedTag> _targetSpecified;
 
         public void OnAwake() 
         {
@@ -31,6 +25,7 @@ namespace ZE.MechBattle.Ecs {
 
             _attackTargets = World.GetStash<AttackTargetComponent>();
             _squadMemberComponent = World.GetStash<SquadMemberComponent>();
+            _targetSpecified = World.GetStash<CompositeTargetSpecifiedTag>();
         }
 
         public void OnUpdate(float deltaTime) 
@@ -39,6 +34,8 @@ namespace ZE.MechBattle.Ecs {
             {
                 var squadEntity = _squadMemberComponent.Get(unitEntity).SquadEntity;
                 _attackTargets.Set(unitEntity, _attackTargets.Get(squadEntity));
+                _targetSpecified.Remove(unitEntity);
+                //UnityEngine.Debug.Log("synced");
             }
         }
 
