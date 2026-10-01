@@ -11,10 +11,6 @@ namespace ZE.MechBattle.Ecs
             //installer.AddSystem<AttackTargetDefineSystem>(SystemGroupOrder.EarlyUpdate);
 
             installer.AddSystem<AttackTargetValidationSystem>(SystemGroupOrder.Default);
-
-            // insertion from SquadSubfeatureInstaller
-            installer.AddSystem<SquadMembersAttackTargetSyncSystem>(SystemGroupOrder.Default);
-
             installer.AddSystem<AttackTargetSpecificationSystem>(SystemGroupOrder.Default);
             installer.AddSystem<CompositeTargetClearTagSystem>(SystemGroupOrder.AfterDispose);
 

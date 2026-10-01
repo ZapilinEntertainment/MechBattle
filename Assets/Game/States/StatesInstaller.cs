@@ -27,6 +27,10 @@ namespace ZE.MechBattle.Ecs.States
             AddState<DefaultMoveState>(BehaviourKey.Tank, StateKey.Move);
             AddState<DefaultAttackState>(BehaviourKey.Tank, StateKey.Attack);
 
+            AddState<SquadIdleState>(BehaviourKey.Squad, StateKey.Idle);
+            AddState<SquadMoveState>(BehaviourKey.Squad, StateKey.Move);
+            AddState<SquadAttackState>(BehaviourKey.Squad, StateKey.Attack);
+
             return dict;
         }
 

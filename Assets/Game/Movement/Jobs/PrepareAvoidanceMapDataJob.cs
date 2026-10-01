@@ -19,7 +19,7 @@ namespace ZE.MechBattle
         public void Execute(int index)
         {
             var entity = Filter[index];
-            var passability = Passabilities.Get(entity).Value.IsPassable;
+            var passability = Passabilities.Get(entity).Value;
             var densityComponent = MovementDensities.Get(entity, out var haveDensity);
             var density = haveDensity ? densityComponent.Value : 0f;
             var tripos = CellEntities.Get(entity).Tripos;

@@ -18,7 +18,7 @@ namespace ZE.MechBattle.Develop
             public int UnitsCount;
             public string UnitId;
             public int PlayerId;
-            public SquadDecreeType SquadDecree;
+            public bool MoveDecree;
             public int2 SpawnHex;
             public int2 TargetHex;
 
@@ -37,12 +37,11 @@ namespace ZE.MechBattle.Develop
                     continue;
 
                 var squadEntity = SpawnSquadAtHex(setup.SpawnHex, setup.UnitId, new(setup.PlayerId), setup.SpawnRadius, setup.UnitsCount);
-
-                if (setup.SquadDecree == SquadDecreeType.Move)
+                if (setup.MoveDecree)
                 {
                     var hexPos = new NavigationHexPosition(setup.TargetHex, _navigationMap);
                     _decreeApplier.SetSquadMoveDecree(squadEntity, hexPos.InnerRingTopValleyTriangle);
-                }
+                }                
             }            
         }
     }

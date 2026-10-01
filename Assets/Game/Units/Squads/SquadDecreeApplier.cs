@@ -1,82 +1,44 @@
 using Scellecs.Morpeh;
 using VContainer;
 using ZE.MechBattle.Ecs;
+using ZE.MechBattle.Ecs.States;
 using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle.Units.Squads
 {
-    // todo: possibly rework to squad states
-
     public class SquadDecreeApplier
     {
         private readonly INavigationMap _map;
-        private readonly SquadHandler _squadHandler;
-        private readonly MoveTargetApplier _moveTargetApplier;
 
         private readonly Stash<MoveTargetComponent> _moveTargets;
-        private readonly Stash<SquadComponent> _squads;
-        private readonly Stash<SquadDecreeComponent> _decreeComponents;
-        private readonly Stash<UnhandledDecreeTag> _unhandledDecrees;
         private readonly Stash<AttackTargetComponent> _attackTargets;
-        private readonly Stash<SyncAttackTargetsTag> _syncAttackTargetTags;
+        private readonly Stash<StateComponent> _states;
+        private readonly Stash<SquadUpdatedTag> _squadUpdatedTags;
+
 
         [Inject]
-        public SquadDecreeApplier(World world, INavigationMap map, SquadHandler squadHandler, MoveTargetApplier moveTargetApplier)
+        public SquadDecreeApplier(World world, INavigationMap map)
         {
             _map = map;
-            _squadHandler = squadHandler;
-            _moveTargetApplier = moveTargetApplier;
 
             _moveTargets = world.GetStash<MoveTargetComponent>();
-            _squads = world.GetStash<SquadComponent>();
             _attackTargets = world.GetStash<AttackTargetComponent>();
-
-            _decreeComponents = world.GetStash<SquadDecreeComponent>();
-            _unhandledDecrees = world.GetStash<UnhandledDecreeTag>();
-            _syncAttackTargetTags = world.GetStash<SyncAttackTargetsTag>();
+            _states = world.GetStash<StateComponent>();
+            _squadUpdatedTags = world.GetStash<SquadUpdatedTag>();
         }
 
         public void SetSquadMoveDecree(Entity squad, IntTriangularPos tripos)
         {
             _moveTargets.Set(squad, new(tripos, _map));
-            _decreeComponents.Set(squad, new() { Type = SquadDecreeType.Move });
-            _unhandledDecrees.Set(squad);
-            _syncAttackTargetTags.Remove(squad);
+            _states.Get(squad).NextState = StateKey.Move;
+            _squadUpdatedTags.Set(squad);
         }
 
         public void SetSquadAttackDecree(Entity squad, Entity attackTarget)
         {
             _attackTargets.Set(squad, new() { Entity = attackTarget});
-            _decreeComponents.Set(squad, new() { Type = SquadDecreeType.Attack });
-            _unhandledDecrees.Set(squad);
-            _syncAttackTargetTags.Set(squad);
-        }
-
-
-        public void ApplyMovementDecree(Entity squadEntity)
-        {
-            var targetComponent = _moveTargets.Get(squadEntity);
-            var virtualHexCenter = GetClosestVertexTriposCommand.Execute(targetComponent.WorldPos, _map.TriangleHeight, targetComponent.TriangularPos);
-
-            var elementsCount = _squads.Get(squadEntity).MembersCount;
-            var minHexRadius = TriangularMath.GetTrianglesCountInHex(elementsCount);
-            using var coordsConverterData = FlattenedHexCoordsConverter.CreateCoordsConverter(Unity.Collections.Allocator.Temp, virtualHexCenter, _map.Settings, out var coordsConverter);
-
-            foreach (var (memberEntity, memberIndex) in _squadHandler.GetNextSquadMember(squadEntity))
-            {
-                var tripos = coordsConverter.IndexToTriangular(memberIndex);
-                _moveTargetApplier.SetMoveTarget(memberEntity, tripos);
-            }
-        }
-
-        public void ApplyAttackDecree(Entity squadEntity)
-        {
-            var attackTarget = _attackTargets.Get(squadEntity).Entity;
-            foreach (var (memberEntity, memberIndex) in _squadHandler.GetNextSquadMember(squadEntity))
-            {
-                _attackTargets.Set(memberEntity, new() { Entity = attackTarget});
-                _syncAttackTargetTags.Set(memberEntity);
-            }            
+            _states.Get(squad).NextState = StateKey.Attack;
+            _squadUpdatedTags.Set(squad);
         }
     
     }

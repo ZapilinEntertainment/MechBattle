@@ -102,7 +102,8 @@ namespace ZE.MechBattle
             var i = 0;
             foreach (var neighbourPos in new TriangleNeighboursEnumerator<T>(tripos, offsets))
             {
-                neighboursData[i++] = (neighbourPos, new(navigationMap.IsCellPassable(neighbourPos), densityMap.GetMovementDensity(neighbourPos)));
+                var passabilityData = navigationMap.GetPassabilityData(neighbourPos);
+                neighboursData[i++] = (neighbourPos, new(passabilityData, densityMap.GetMovementDensity(neighbourPos)));
             }
 
             return SelectBestTriangleOption(tripos, originalDirection, offsets, neighboursData);
@@ -129,7 +130,7 @@ namespace ZE.MechBattle
             for (var i = 0; i < list.Length; i++)
             {
                 var (neighbourPos, avoidanceData) = list[i];
-                if (!avoidanceData.IsPassable)
+                if (!avoidanceData.IsPassable || ((avoidanceData.NeighboursAccessMask & (1 << i)) == 0))
                     continue;
 
                 var currentDirVector = math.normalize(offsets[i]);

@@ -29,7 +29,10 @@ namespace ZE.MechBattle.Ecs {
             _updateFilter = World.Filter
                 .With<BehaviourKeyComponent>()
                 .With<StateComponent>()
+                .With<TriangularPosComponent>()
                 .Build();
+
+            // using triangular pos component looks like hack. possibly need some other condition?
 
             _behaviourKeys = World.GetStash<BehaviourKeyComponent>();
             _currentStates = World.GetStash<StateComponent>();

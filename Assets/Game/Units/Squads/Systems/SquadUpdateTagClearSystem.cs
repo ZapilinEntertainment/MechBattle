@@ -8,22 +8,22 @@ namespace ZE.MechBattle.Ecs {
     public sealed class SquadUpdateTagClearSystem : ICleanupSystem 
     {
         public World World { get; set;}
+        private Filter _filter;
         private Stash<SquadUpdatedTag> _squadUpdatedTags;
 
         public void OnAwake() 
         {
+            // note: don't clear newly created not-updated squads (without tripos)
+            _filter = World.Filter.With<SquadUpdatedTag>().With<TriangularPosComponent>().Build();
             _squadUpdatedTags = World.GetStash<SquadUpdatedTag>();
         }
 
         public void OnUpdate(float deltaTime) 
         {
-            if (_squadUpdatedTags.IsNotEmpty())
-                _squadUpdatedTags.RemoveAll();
+            foreach (var squadEntity in _filter)
+                _squadUpdatedTags.Remove(squadEntity);
         }
 
-        public void Dispose()
-        {
-            
-        }
+        public void Dispose() { }
     }
 }

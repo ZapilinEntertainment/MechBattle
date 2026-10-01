@@ -24,9 +24,21 @@ namespace ZE.MechBattle
             _coordsConverter = converter;
             Directions = new ushort[length];
         }
-       
 
-        public int GetDirectionUnsafe(IntTriangularPos pos) => Directions[_coordsConverter.TriangularToIndex(pos)];
+
+        public int GetDirectionUnsafe(IntTriangularPos pos)
+        {
+            var index = _coordsConverter.TriangularToIndex(pos);
+#if UNITY_EDITOR
+            var uindex = (uint)index;
+            if (uindex > Directions.Length)
+            {
+                UnityEngine.Debug.LogError($"failed to get tripos {pos} from flow map at {HexCoord}");
+                index = Directions.Length - 1;
+            }                
+#endif
+            return Directions[index];
+        }
 
         public void UpdateUseTime() => LastUseTime = Time.time;
 

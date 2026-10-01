@@ -1,6 +1,7 @@
 using Scellecs.Morpeh;
 using VContainer;
 using ZE.MechBattle.Ecs;
+using ZE.MechBattle.Ecs.States;
 
 namespace ZE.MechBattle
 {
@@ -14,6 +15,9 @@ namespace ZE.MechBattle
         private readonly Stash<CompositeTargetComponent> _compositeTargets;
         private readonly Stash<UseUnspecifiedTargetsTag> _useUnspecifiedTargets;
 
+        private readonly Stash<StateComponent> _stateComponents;
+        private readonly Stash<BehaviourKeyComponent> _behaviours;
+
         [Inject]
         public SquadFactory(World world)
         {
@@ -25,6 +29,9 @@ namespace ZE.MechBattle
             _calculateTrianglePosTags = _world.GetStash<CalculateTrianglePositionTag>();
             _compositeTargets = _world.GetStash<CompositeTargetComponent>();
             _useUnspecifiedTargets = _world.GetStash<UseUnspecifiedTargetsTag>();
+
+            _stateComponents = _world.GetStash<StateComponent>();
+            _behaviours = _world.GetStash<BehaviourKeyComponent>();
         }
 
         public Entity Create()
@@ -36,6 +43,9 @@ namespace ZE.MechBattle
             _calculateTrianglePosTags.Add(entity);
             _compositeTargets.Add(entity, new(CompositeTargetMode.Squad));
             _useUnspecifiedTargets.Add(entity);
+
+            _stateComponents.Add(entity, new() { CurrentState = StateKey.Idle, NextState = StateKey.Idle });
+            _behaviours.Add(entity, new() { Value = BehaviourKey.Squad });
             return entity;
         }
     

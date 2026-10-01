@@ -1,9 +1,10 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
 using Unity.Mathematics;
-using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle.Ecs {
+
+    // used for outside orders execution (changing move targget in random execution time may lead to unexpected consequences)
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
