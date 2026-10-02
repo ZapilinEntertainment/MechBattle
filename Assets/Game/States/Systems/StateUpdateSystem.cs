@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 using VContainer;
 using System.Collections.Generic;
 using Scellecs.Morpeh;
@@ -10,18 +9,19 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public sealed class StateUpdateSystem : ISystem 
+    public sealed class StateUpdateSystem<T> : ISystem 
+        where T : struct, IComponent, IStateMachinePriorityTag
     {
         public World World { get; set;}
         private Filter _updateFilter;
         private Stash<BehaviourKeyComponent> _behaviourKeys;
         private Stash<StateComponent> _currentStates;
-        private readonly Dictionary<long, StateHandler> _behaviours;
+        private readonly StateBehavioursDictionary _behaviours;
 
         [Inject]
-        public StateUpdateSystem(IObjectResolver resolver)
+        public StateUpdateSystem(StateBehavioursDictionary behaviours)
         {
-            _behaviours = StatesInstaller.PrepareStatesList(resolver);
+            _behaviours = behaviours;
         }
 
         public void OnAwake() 
@@ -29,6 +29,7 @@ namespace ZE.MechBattle.Ecs {
             _updateFilter = World.Filter
                 .With<BehaviourKeyComponent>()
                 .With<StateComponent>()
+                .With<T>()
                 .With<TriangularPosComponent>()
                 .Build();
 
@@ -43,7 +44,6 @@ namespace ZE.MechBattle.Ecs {
             if (_updateFilter.IsEmpty())
                 return;
 
-            var dt = Time.deltaTime;
             foreach (var entity in _updateFilter)
             {
                 ref var stateComponent = ref _currentStates.Get(entity);
@@ -70,7 +70,8 @@ namespace ZE.MechBattle.Ecs {
                     currentBehaviourExists = TryGetStateBehaviour(StateHandlerKey.ToLong(state,behaviour), out currentBehaviour);
                 }
 
-               if (currentBehaviourExists)  stateComponent.NextState = currentBehaviour.Update(entity, dt);
+               if (currentBehaviourExists)  
+                    stateComponent.NextState = currentBehaviour.Update(entity, deltaTime);
             }
         }
 

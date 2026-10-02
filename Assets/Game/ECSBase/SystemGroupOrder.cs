@@ -9,6 +9,7 @@ namespace ZE.MechBattle
         Default,     
         SquadUpdates,
         RegularUpdate, 
+        BeforePathfinding,
         Pathfinding,
         UnitsNextPositionCalculation1,
         UnitsNextPositionCalculation2,

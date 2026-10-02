@@ -38,7 +38,7 @@ namespace ZE.MechBattle.Ecs
 
         private readonly Stash<WeaponTag> _weaponTags;
 
-        private readonly Stash<WeaponChargeComponent> _weaponChargeComponents;
+        private readonly Stash<AlwaysCalculateShotPointTag> _alwaysCalculateShotPointsTag;
 
         [Inject]
         public WeaponFactory(
@@ -81,7 +81,7 @@ namespace ZE.MechBattle.Ecs
             _continuosFiringTag = world.GetStash<ContinuosFiringTag>();
             _weaponTags = world.GetStash<WeaponTag>();
 
-            _weaponChargeComponents = world.GetStash<WeaponChargeComponent>();
+            _alwaysCalculateShotPointsTag = world.GetStash<AlwaysCalculateShotPointTag>();
         }
 
         public struct WeaponCreationProtocol
@@ -94,6 +94,7 @@ namespace ZE.MechBattle.Ecs
             public bool UseAutoStow;
             public bool SyncTargetWithParent;
             public bool SyncFireTagWithParent;
+            public bool AlwaysCalculateShotPoint;
             public Entity ViewOwnerEntity;
 
             public DamageApplyParameters DamageParameters;
@@ -172,6 +173,8 @@ namespace ZE.MechBattle.Ecs
             }
 
             _weaponShotPoints.Add(weaponEntity, new(weaponConfig.ShotPoint));
+            if (protocol.AlwaysCalculateShotPoint)
+                _alwaysCalculateShotPointsTag.Add(weaponEntity);
 
             if (protocol.SyncTargetWithParent)
                 _syncTargetWithParent.Add(weaponEntity);

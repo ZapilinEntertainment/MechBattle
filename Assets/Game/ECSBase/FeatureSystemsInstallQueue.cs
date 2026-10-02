@@ -16,6 +16,12 @@ namespace ZE.MechBattle.Ecs
 
             void AddSystemWithInterface<SystemType, InterfaceType>(SystemGroupOrder order)
                 where SystemType : class, ISystem, InterfaceType;
+
+            /// <summary>
+            /// use for regular ISystems with job scheduling
+            /// </summary>
+            void AddLateSystem<T>(SystemGroupOrder order)
+                where T : class, ISystem;
         }
 
         internal sealed class ContainerSystemsBinder : ISystemsOperator
@@ -58,6 +64,10 @@ namespace ZE.MechBattle.Ecs
                    container => container.Resolve<InterfacedSystemFactory<SystemType, InterfaceType>>().ResolveInterface(),
                    Lifetime.Transient);
             }
+
+
+            // no differences for binding:
+            void ISystemsOperator.AddLateSystem<T>(SystemGroupOrder order) => AddSystem<T>(order);
         }
 
         internal sealed class SystemsInitializer : ISystemsOperator
@@ -78,12 +88,16 @@ namespace ZE.MechBattle.Ecs
             {
                 resolver.AddSystem<T>(order);
             }
+
+            void ISystemsOperator.AddLateSystem<T>(SystemGroupOrder order) =>
+                resolver.AddLateSystem<T>(order);
         }
 
 
 
 
         protected abstract void Configure(ISystemsOperator installer);
+        protected virtual void LateConfigure(ISystemsOperator initializer) { }
 
 
         // 1. Bind systems into container to resolve dependencies
@@ -96,6 +110,12 @@ namespace ZE.MechBattle.Ecs
         public void Initialize(IObjectResolver resolver)
         {
             Configure(new SystemsInitializer(resolver));
+        }
+
+        // 3. Add late systems with jobs to prevent data conflicts
+        public void LateInitialize(IObjectResolver resolver)
+        {
+            LateConfigure(new SystemsInitializer(resolver));
         }
     }
 }

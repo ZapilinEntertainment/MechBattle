@@ -38,6 +38,7 @@ namespace ZE.MechBattle
 
         void ISceneFeaturePostInitializer.OnSceneContainerPostBuilt(IObjectResolver resolver)
         {
+            base.OnSceneContainerPostBuilt(resolver);
             var handler = resolver.Resolve<MorpehSystemInstallHandler>();
             handler.ApplySystems();
         }

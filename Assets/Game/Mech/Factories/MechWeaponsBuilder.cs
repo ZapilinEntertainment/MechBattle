@@ -21,7 +21,6 @@ namespace ZE.MechBattle.MechBuilding
         private readonly Stash<WeaponChargeEnergyConsumption> _chargeEnergyCosts;
         private readonly Stash<WeaponDischargeEnergyConsumption> _dischargeEnergyCosts;
         private readonly Stash<EnergySourceComponent> _energySourceComponents;
-        private readonly Stash<AlwaysCalculateShotPointTag> _alwaysCalculateShotPoints;
 
         private MechBuilder _mainBuilder;
         private MechConfig _mechConfig;
@@ -55,8 +54,6 @@ namespace ZE.MechBattle.MechBuilding
             _chargeEnergyCosts = world.GetStash<WeaponChargeEnergyConsumption>();
             _dischargeEnergyCosts = world.GetStash<WeaponDischargeEnergyConsumption>();
             _energySourceComponents = world.GetStash<EnergySourceComponent>();
-
-            _alwaysCalculateShotPoints = world.GetStash<AlwaysCalculateShotPointTag>();
         }
 
         public void BuildWeapons(
@@ -115,11 +112,11 @@ namespace ZE.MechBattle.MechBuilding
                 ParentEntity = parent,
                 AttachmentProtocol = partAttachmentProtocol,
                 SyncTargetWithParent = true,
+                AlwaysCalculateShotPoint = true,
 
                 DamageParameters = new(weaponConfig.DamageType, DevelopConstants.TEMP_MainGunDamage),
             });
             _viewFactory.MakeViewReceiver(weaponEntity, weaponId + "_view");
-            _alwaysCalculateShotPoints.Add(weaponEntity);
 
             if (weaponConfig is IMechWeaponConfig mechWeaponConfig)
                 AddMechSpecificComponents(weaponEntity, mechWeaponConfig);
@@ -171,13 +168,13 @@ namespace ZE.MechBattle.MechBuilding
                 ParentEntity = headEntity,
                 SyncTargetWithParent = true,
                 SyncFireTagWithParent = true,
+                AlwaysCalculateShotPoint = true,
                 ViewOwnerEntity = _mainBuilder.MechEntity
                 
             });
 
             var barrel = _weaponHandler.GetBarrelEntity(eyeEntity);
             _viewHandler.OverrideViewRequestKey(barrel, constructionSettings.Key);
-            _alwaysCalculateShotPoints.Add(eyeEntity);
 
             if (_laserEyesConfig is IMechWeaponConfig mechWeaponConfig)
                 AddMechSpecificComponents(eyeEntity, mechWeaponConfig);

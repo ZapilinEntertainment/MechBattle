@@ -9,7 +9,7 @@ namespace ZE.MechBattle.Ecs
     }
 
     [System.Serializable]
-    public abstract class EcsFeatureModule<InstallQueueType> : IFeatureModule, ISceneFeatureScopeInstaller, ISceneFeatureInitializer
+    public abstract class EcsFeatureModule<InstallQueueType> : IFeatureModule, ISceneFeatureScopeInstaller, ISceneFeatureInitializer, ISceneFeaturePostInitializer
         where InstallQueueType : FeatureSystemsInstallQueue
     {
         private readonly InstallQueueType _queueInstaller;
@@ -31,5 +31,10 @@ namespace ZE.MechBattle.Ecs
         }
 
         public virtual void OnWorldDispose(World world, IObjectResolver resolver) { }
+
+        public virtual void OnSceneContainerPostBuilt(IObjectResolver resolver)
+        {
+            _queueInstaller.LateInitialize(resolver);
+        }
     }
 }

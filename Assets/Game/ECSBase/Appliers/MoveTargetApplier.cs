@@ -2,6 +2,7 @@ using VContainer;
 using Scellecs.Morpeh;
 using Unity.Mathematics;
 using ZE.MechBattle.Navigation;
+using System.Runtime.CompilerServices;
 
 namespace ZE.MechBattle.Ecs
 {
@@ -41,7 +42,7 @@ namespace ZE.MechBattle.Ecs
             var tripos = _triangularPositions.Get(target).Value;
             var hexCoord = _hexCoordComponents.Get(target).Value;
 
-            _changeMoveTargetsRequestComponent.Set(entity, new(worldPos, tripos, hexCoord));
+            i_SetMoveTarget(entity, worldPos, tripos, hexCoord);
         }
 
         public void SetMoveTarget(Entity entity, float3 worldPos)
@@ -49,7 +50,7 @@ namespace ZE.MechBattle.Ecs
             var tripos = TriangularMath.WorldToTrianglePosInvertedHeight(worldPos, _invertedTriangleHeight);
             var hexCoord = HexMath.DefineHex(worldPos.xz, _hexEdgeLength);
 
-            _changeMoveTargetsRequestComponent.Set(entity, new(worldPos, tripos, hexCoord));
+            i_SetMoveTarget(entity, worldPos, tripos, hexCoord);
         }
 
         public void SetMoveTarget(Entity entity, IntTriangularPos tripos)
@@ -57,8 +58,23 @@ namespace ZE.MechBattle.Ecs
             var worldPos = TriangularMath.TriangularToWorld(tripos, _triangleHeight);
             var hexCoord = HexMath.DefineHex(worldPos.xz, _hexEdgeLength);
 
-            _changeMoveTargetsRequestComponent.Set(entity, new(worldPos, tripos, hexCoord));
+            i_SetMoveTarget(entity, worldPos, tripos, hexCoord);
         }
+
+        public void SetMoveTarget(Entity entity, int2 hexCoord)
+        {
+            var worldPos = HexMath.HexToWorld(hexCoord, _hexEdgeLength);
+            var hexPos = new NavigationHexPosition(hexCoord.x, hexCoord.y, _hexEdgeLength, _triangleHeight);
+
+            i_SetMoveTarget(entity, new(worldPos.x, 0f, worldPos.y), hexPos.InnerRingTopValleyTriangle, hexCoord);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void i_SetMoveTarget(Entity entity, float3 worldPos, IntTriangularPos tripos, int2 hexCoord)
+        {
+            _changeMoveTargetsRequestComponent.Set(entity,new( worldPos, tripos, hexCoord));
+        }
+             
 
         public void StopMovement(Entity entity)
         {

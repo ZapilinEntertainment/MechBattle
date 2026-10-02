@@ -68,7 +68,7 @@ namespace ZE.MechBattle.Ecs {
 #endif
 
                     // deviated from route
-                    _clearHexPathTags.Add(entity);
+                    _clearHexPathTags.Set(entity);
                     continue;
                 }
 
@@ -118,7 +118,7 @@ namespace ZE.MechBattle.Ecs {
         private void ClearHexPathData(Entity entity)
         {
             _moveTarget.Remove(entity);
-            _clearHexPathTags.Add(entity);
+            _clearHexPathTags.Set(entity);
         }
     }
 }

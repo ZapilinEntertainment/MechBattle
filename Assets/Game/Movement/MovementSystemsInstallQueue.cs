@@ -7,17 +7,17 @@ namespace ZE.MechBattle.Ecs
     {
         protected override void Configure(ISystemsOperator installer)
         {
-            installer.AddSystem<HexRaycastUpdateSystem>(SystemGroupOrder.Pathfinding);
-            installer.AddSystem<ActualEdgeExitDataCalculationSystem>(SystemGroupOrder.Pathfinding);
-            installer.AddSystem<PortalEdgeExitsUpdateSystem>(SystemGroupOrder.Pathfinding);
-            installer.AddSystem<PortalsActualizationSystem>(SystemGroupOrder.Pathfinding);
+            installer.AddSystem<HexRaycastUpdateSystem>(SystemGroupOrder.BeforePathfinding);
+            installer.AddSystem<ActualEdgeExitDataCalculationSystem>(SystemGroupOrder.BeforePathfinding);
+            installer.AddSystem<PortalEdgeExitsUpdateSystem>(SystemGroupOrder.BeforePathfinding);
+            installer.AddSystem<PortalsActualizationSystem>(SystemGroupOrder.BeforePathfinding);
 
-            installer.AddSystem<OutdatedExitsClearSystem>(SystemGroupOrder.Pathfinding);
-            installer.AddSystem<OutdatedPortalsClearSystem>(SystemGroupOrder.Pathfinding);
-            installer.AddSystem<PortalDistancesCalculationSystem>(SystemGroupOrder.Pathfinding);
+            installer.AddSystem<OutdatedExitsClearSystem>(SystemGroupOrder.BeforePathfinding);
+            installer.AddSystem<OutdatedPortalsClearSystem>(SystemGroupOrder.BeforePathfinding);
+            installer.AddSystem<PortalDistancesCalculationSystem>(SystemGroupOrder.BeforePathfinding);
 
             installer.AddSystem<TriangularPosUpdateSystem>(TriangularPosUpdateSystem.GroupOrder);
-            installer.AddSystem<NoTargetPathsClearingSystem>(SystemGroupOrder.Pathfinding);
+            installer.AddSystem<NoTargetPathsClearingSystem>(SystemGroupOrder.BeforePathfinding);
 
             installer.AddSystem<HexPathDefineSystem>(SystemGroupOrder.Pathfinding);
             installer.AddSystem<HexPathSearchSystem>(SystemGroupOrder.Pathfinding);

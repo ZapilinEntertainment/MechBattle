@@ -6,9 +6,9 @@ namespace ZE.MechBattle.Ecs.States
     [System.Serializable]
     public class StatesInstaller : IFeatureModule, ISceneFeatureScopeInstaller, ISceneFeatureInitializer
     { 
-        public static Dictionary<long, StateHandler> PrepareStatesList(IObjectResolver resolver)
+        public static StateBehavioursDictionary PrepareStatesList(IObjectResolver resolver)
         {
-            var dict = new Dictionary<long, StateHandler>();
+            var dict = new StateBehavioursDictionary();
 
             void AddStateInstance<T>(BehaviourKey behaviour, StateKey state, T stateHandler) where T : StateHandler
             {
@@ -30,25 +30,30 @@ namespace ZE.MechBattle.Ecs.States
             AddState<SquadIdleState>(BehaviourKey.Squad, StateKey.Idle);
             AddState<SquadMoveState>(BehaviourKey.Squad, StateKey.Move);
             AddState<SquadAttackState>(BehaviourKey.Squad, StateKey.Attack);
+            AddState<SquadGuardState>(BehaviourKey.Squad, StateKey.Guard);
 
             return dict;
         }
 
         void ISceneFeatureScopeInstaller.SceneScopeInstall(IContainerBuilder builder)
         {
-            builder.Register<StatesApplier>(Lifetime.Scoped);
+            builder.Register<StatesApplier>(Lifetime.Singleton);
 
             builder.Register<DefaultIdleState>(Lifetime.Transient);
             builder.Register<DefaultMoveState>(Lifetime.Transient);
             builder.Register<DefaultAttackState>(Lifetime.Transient);
 
-            builder.Register<StateUpdateSystem>(Lifetime.Scoped);
+            builder.Register<StateBehavioursDictionary>(resolver => StatesInstaller.PrepareStatesList(resolver), Lifetime.Singleton);
+
+            builder.Register<StateUpdateSystem<RegularPriorityStateMachineTag>>(Lifetime.Transient);
+            builder.Register<StateUpdateSystem<HighPriorityStateMachineTag>>(Lifetime.Transient);
         }
 
         void ISceneFeatureInitializer.OnSceneContainerBuilt(IObjectResolver resolver)
         {
             var systemsResolver = resolver.Resolve<MorpehSystemInstallHandler>();
-            systemsResolver.AddSystem<StateUpdateSystem>(SystemGroupOrder.RegularUpdate);
+            systemsResolver.AddSystem<StateUpdateSystem<HighPriorityStateMachineTag>>(SystemGroupOrder.RegularUpdate);
+            systemsResolver.AddSystem<StateUpdateSystem<RegularPriorityStateMachineTag>>(SystemGroupOrder.RegularUpdate);
         }
     }
 }

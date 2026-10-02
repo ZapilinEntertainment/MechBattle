@@ -32,7 +32,9 @@ namespace ZE.MechBattle.Ecs {
 
             _alwaysCalculateFilter = World.Filter
                 .With<WeaponShotPoint>()
+                .With<WeaponBarrelComponent>()
                 .With<AlwaysCalculateShotPointTag>()
+                .Without<AttackRangeReachedTag>()
                 .Build();
 
             _shotPoints = World.GetStash<WeaponShotPoint>();
@@ -41,13 +43,10 @@ namespace ZE.MechBattle.Ecs {
 
         public void OnUpdate(float deltaTime) 
         {
-            if (_barrelWeaponsFilter.IsEmpty())
-                return;
-
             void CalculateShotPoint(Entity entity)
             {
                 ref var shotPointComponent = ref _shotPoints.Get(entity);
-                var localShotPos = _shotPoints.Get(entity).LocalPos;
+                var localShotPos = shotPointComponent.LocalPos;
                 var barrelEntity = _barrelComponents.Get(entity).BarrelEntity;
                 var barrelPoint = _transformHandler.GetPoint(barrelEntity);
 

@@ -4,17 +4,19 @@ namespace ZE.MechBattle.Ecs.States
 {
     public class DefaultIdleState : StateHandler
     {
-        private readonly MoveTargetApplier _moveTargetApplier;
+        private readonly MoveTargetApplier _moveTargetApplier;       
         private readonly Stash<AttackTargetComponent> _attackTargets;
         private readonly Stash<MoveTargetComponent> _moveTargets;
+       
 
         [Inject]
-        public DefaultIdleState(World world, MoveTargetApplier moveTargetApplier)
+        public DefaultIdleState(World world, MoveTargetApplier moveTargetApplier, AffinityHandler affinityHandler)
         {
             _moveTargetApplier = moveTargetApplier;
 
             _attackTargets = world.GetStash<AttackTargetComponent>();
             _moveTargets = world.GetStash<MoveTargetComponent>();
+            
         }
 
         public override void Enter(Entity entity) { }

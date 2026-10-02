@@ -8,5 +8,7 @@ namespace ZE.MechBattle
         public const int MAX_VIEWS_COUNT = 10000;
 
         public static readonly PlayerKey LOCAL_PLAYER_KEY = new(1);
+
+        public const int SQUAD_GUARD_RADIUS = 1; // in hexes
     }
 }

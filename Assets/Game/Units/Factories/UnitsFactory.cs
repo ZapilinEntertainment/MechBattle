@@ -101,7 +101,7 @@ namespace ZE.MechBattle
 
             _targetSearchRadiusComponents.Add(entity, new(config.TargetSearchRadius));
 
-            _statesApplier.ApplyState(entity, config.BehaviourKey, Ecs.States.StateKey.Idle);
+            _statesApplier.ApplyState(entity, config.BehaviourKey, StateKey.Idle, highPriority : false);
 
             _moveSpeeds.Set(entity, new() { Value = config.MoveSpeed });
 

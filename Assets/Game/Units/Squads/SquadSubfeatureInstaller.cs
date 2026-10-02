@@ -15,15 +15,13 @@ namespace ZE.MechBattle
             builder.Register<SquadIdleState>(Lifetime.Transient);
             builder.Register<SquadMoveState>(Lifetime.Transient);
             builder.Register<SquadAttackState>(Lifetime.Transient);
+            builder.Register<SquadGuardState>(Lifetime.Transient);
         }
 
         public static void InstallSystems(FeatureSystemsInstallQueue.ISystemsOperator installer)
         {
-            installer.AddSystem<SquadUpdateSystem>(SystemGroupOrder.SquadUpdates);            
-            installer.AddSystem<SquadPositionCalculationSystem>(SystemGroupOrder.SquadUpdates);
-
-            // copied to BaseEcsSystemInstallQueue
-            //installer.AddSystem<SquadMembersAttackTargetSyncSystem>(SystemGroupOrder.Default);
+            installer.AddSystem<SquadUpdateSystem>(SystemGroupOrder.SquadUpdates);
+            installer.AddLateSystem<SquadPositionCalculationSystem>(TriangularPosUpdateSystem.GroupOrder - 1);
 
 
             installer.AddSystem<SquadLossesUpdateSystem>(SystemGroupOrder.DisposedObjectsOperations);

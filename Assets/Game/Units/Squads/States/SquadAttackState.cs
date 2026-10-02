@@ -7,12 +7,12 @@ namespace ZE.MechBattle
 {
     public class SquadAttackState : StateHandler
     {
-        private readonly Stash<SquadUpdatedTag> _squadUpdatedTags;
-        private readonly Stash<AttackTargetComponent> _attackTargetComponents;
-        private readonly Stash<CompositeTargetSpecifiedTag> _compositeTargetSpecified;
-        private readonly Stash<CompositeTargetComponent> _compositeTargets;
-        private readonly SquadHandler _squadHandler;
-        private readonly World _world;
+        protected readonly Stash<SquadUpdatedTag> _squadUpdatedTags;
+        protected readonly Stash<AttackTargetComponent> _attackTargetComponents;
+        protected readonly Stash<CompositeTargetSpecifiedTag> _compositeTargetSpecified;
+        protected readonly Stash<CompositeTargetComponent> _compositeTargets;
+        protected readonly SquadHandler _squadHandler;
+        protected readonly World _world;
 
         [Inject]
         public SquadAttackState(World world, SquadHandler squadHandler)
@@ -49,8 +49,13 @@ namespace ZE.MechBattle
             if (!targetExists || _world.IsDisposed(targetComponent.Entity))
                 return StateKey.Idle;
 
-            var squadTarget = targetComponent.Entity;
-            foreach (var (memberEntity, _) in _squadHandler.GetNextSquadMember(entity))
+            UpdateMembersAttackTarget(entity, targetComponent.Entity);
+            return StateKey.Attack;
+        }
+
+        protected void UpdateMembersAttackTarget(Entity squadEntity, Entity squadTarget)
+        {
+            foreach (var (memberEntity, _) in _squadHandler.GetNextSquadMember(squadEntity))
             {
                 ref var memberTargetComponent = ref _attackTargetComponents.Get(memberEntity, out var haveTarget);
                 // undefined problem where composite targeting receives also specified tag before actual specifying
@@ -61,8 +66,6 @@ namespace ZE.MechBattle
                     _attackTargetComponents.Set(memberEntity, new() { Entity = squadTarget });
                 }
             }
-
-            return StateKey.Attack;
         }
     }
 }
