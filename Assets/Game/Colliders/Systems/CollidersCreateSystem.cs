@@ -7,11 +7,8 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public sealed class CollidersCreateSystem : ISystem 
+    public sealed class CollidersCreateSystem : RequestHandleSystemBase<ColliderAddRequestComponent>
     {
-        public World World { get; set;}
-        private Filter _filter;
-        private Stash<ColliderAddRequestComponent> _requests;
         private readonly CollidersFactory _colliderFactory;
 
         [Inject]
@@ -20,28 +17,15 @@ namespace ZE.MechBattle.Ecs {
             _colliderFactory = collidersFactory;
         }
 
-        public void OnAwake() 
+
+        protected override bool TryHandleRequest(ColliderAddRequestComponent request)
         {
-            _filter = World.Filter.With<ColliderAddRequestComponent>().Build();
-            _requests = World.GetStash<ColliderAddRequestComponent>();
+            var colliderHost = request.TargetHostEntity;
+            if (World.IsDisposed(colliderHost))
+                return true;
+
+            _colliderFactory.BuildCollider(request.ColliderOwnerEntity, colliderHost, request.ColliderSetupInfo);
+            return true;
         }
-
-        public void OnUpdate(float deltaTime) 
-        {
-            foreach (var entity in _filter)
-            {
-                var request = _requests.Get(entity);
-                var colliderHost = request.TargetHostEntity;
-                if (World.IsDisposed(colliderHost))
-                    continue;
-
-                //UnityEngine.Debug.Log($"adding collider to {colliderHost.Id}, owner: {request.ColliderOwnerEntity.Id}");
-
-                _colliderFactory.BuildCollider(request.ColliderOwnerEntity, colliderHost , request.ColliderSetupInfo);
-            }
-            _requests.RemoveAll();
-        }
-
-        public void Dispose() { }
     }
 }

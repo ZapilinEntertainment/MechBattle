@@ -16,6 +16,8 @@ namespace ZE.MechBattle.Ecs
     // why so complicated - host should not freeze when loading own client views
     // also there can be some visibility restrictions on request-calling systems
     // (we can easily unload and load poolable views, but left view containers untouched)
+
+    // todo: review for new request systems
     public sealed class ViewRequestsHandleSystem : ISystem
     {
         private struct ViewRequest

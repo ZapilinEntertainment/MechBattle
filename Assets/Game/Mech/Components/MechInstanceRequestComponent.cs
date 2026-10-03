@@ -1,5 +1,3 @@
-using Scellecs.Morpeh;
-using UnityEngine;
 using Unity.Mathematics;
 using Unity.IL2CPP.CompilerServices;
 
@@ -9,7 +7,7 @@ namespace ZE.MechBattle.Ecs
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public readonly struct MechInstanceRequestComponent : IComponent 
+    public readonly struct MechInstanceRequestComponent : IRequestComponent 
     {
         public readonly PlayerKey PlayerKey;
         public readonly bool AssumingDirectControl;

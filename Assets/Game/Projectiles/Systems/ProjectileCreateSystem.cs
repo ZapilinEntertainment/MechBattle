@@ -6,17 +6,20 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public sealed class ProjectileCreateSystem : EntityCreationSystemBase<ProjectileBuildRequest, ProjectilesFactory> 
+    public sealed class ProjectileCreateSystem : RequestHandleSystemBase<ProjectileBuildRequest> 
     {
+        private readonly ProjectilesFactory _projectilesFactory;
+
+
         [Inject]
-        public ProjectileCreateSystem(ProjectilesFactory factory) : base(factory)
+        public ProjectileCreateSystem(ProjectilesFactory factory)
         {
+            _projectilesFactory = factory;
         }
 
-        protected override bool TryExecuteRequest(Entity requestEntity)
+        protected override bool TryHandleRequest(ProjectileBuildRequest request)
         {
-            var data = RequestsStash.Get(requestEntity);
-            Factory.Build(data.IdKey, data.Point, data.WeaponEntity, data.ShooterEntity);
+            _projectilesFactory.Build(request.IdKey, request.Point, request.WeaponEntity, request.ShooterEntity);
             return true;
         }
     }

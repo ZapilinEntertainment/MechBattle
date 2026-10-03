@@ -6,14 +6,12 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public readonly struct UnitSpawnRequestComponent : IComponent 
+    public readonly struct UnitSpawnRequestComponent : IRequestComponent 
     {
         public readonly UnitKey UnitKey;
         public readonly CellPoint CellPoint;
         public readonly PlayerKey PlayerKey;
         public readonly Entity SquadEntity;
-
-        private const int SQUAD_INVALID_VALUE = -1;
 
         public UnitSpawnRequestComponent(UnitKey key, CellPoint point, PlayerKey playerKey, Entity squadEntity = default)
         {
