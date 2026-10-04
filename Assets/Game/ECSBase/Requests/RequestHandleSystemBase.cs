@@ -26,7 +26,7 @@ namespace ZE.MechBattle.Ecs {
         {
             foreach (var requestEntity in _requestsFilter)
             {
-                if (TryHandleRequest(_requests.Get(requestEntity)))
+                if (TryHandleRequest(requestEntity))
                     OnRequestHandled(requestEntity);
                 else
                     OnRequestDenied(requestEntity);
@@ -35,9 +35,10 @@ namespace ZE.MechBattle.Ecs {
 
         public virtual void Dispose() { }
 
-        protected abstract bool TryHandleRequest(T request);
+        protected abstract bool TryHandleRequest(Entity requestEntity);
 
         protected virtual void OnRequestHandled(Entity entity) => _completedTags.Add(entity);
         protected virtual void OnRequestDenied(Entity entity) => World.RemoveEntity(entity);
+        protected T GetRequestComponent(Entity entity) => _requests.Get(entity);
     }
 }

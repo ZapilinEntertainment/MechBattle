@@ -37,8 +37,9 @@ namespace ZE.MechBattle.Ecs {
             _triangleHeight = map.TriangleHeight;
         }
 
-        protected override bool TryHandleRequest(UnitSpawnRequestComponent spawnRequest)
+        protected override bool TryHandleRequest(Entity requestEntity)
         {
+            var spawnRequest = GetRequestComponent(requestEntity);
             var cellPoint = spawnRequest.CellPoint;
 
             // note: request will not be deleted, it just spawns when cell will be empty or will be cleared in UNSUCCESSFUL_REQUEST_CLEAR_TIME

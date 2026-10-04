@@ -17,8 +17,9 @@ namespace ZE.MechBattle.Ecs {
             _projectilesFactory = factory;
         }
 
-        protected override bool TryHandleRequest(ProjectileBuildRequest request)
+        protected override bool TryHandleRequest(Entity requestEntity)
         {
+            var request = GetRequestComponent(requestEntity);
             _projectilesFactory.Build(request.IdKey, request.Point, request.WeaponEntity, request.ShooterEntity);
             return true;
         }

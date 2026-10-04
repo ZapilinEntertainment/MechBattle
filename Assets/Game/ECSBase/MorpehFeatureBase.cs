@@ -1,7 +1,6 @@
 using Scellecs.Morpeh;
 using System;
 using VContainer;
-using VContainer.Unity;
 using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle
@@ -14,25 +13,27 @@ namespace ZE.MechBattle
             base.SceneScopeInstall(builder);
 
             builder.Register<WorldDisposer>(Lifetime.Transient).As<IDisposable>();
-            builder.Register<World>(_ => CreateWorld(), Lifetime.Scoped);
+            builder.Register<World>(_ => CreateWorld(), Lifetime.Singleton);
 
-            builder.Register<ProjectileRequestsFactory>(Lifetime.Scoped);
-            builder.Register<ProjectilesFactory>(Lifetime.Scoped);
-            builder.Register<MonoViewFactory>(Lifetime.Scoped);
-            builder.Register<ExplosionRequestsBuilder>(Lifetime.Scoped);       
+            builder.Register<ProjectileRequestsFactory>(Lifetime.Singleton);
+            builder.Register<ProjectilesFactory>(Lifetime.Singleton);
+            builder.Register<MonoViewFactory>(Lifetime.Singleton);
+            builder.Register<ExplosionRequestsBuilder>(Lifetime.Singleton);       
 
-            builder.Register<DelayApplier>(Lifetime.Scoped);
-            builder.Register<TriangularPositionApplier>(Lifetime.Scoped);
-            builder.Register<MoveTargetApplier>(Lifetime.Scoped);
-            builder.Register<DisposeTagApplier>(Lifetime.Scoped);
-            builder.Register<ParentingRelationsApplier>(Lifetime.Scoped);
-            builder.Register<ViewSynchronizationApplier>(Lifetime.Scoped);            
+            builder.Register<DelayApplier>(Lifetime.Singleton);
+            builder.Register<TriangularPositionApplier>(Lifetime.Singleton);
+            builder.Register<MoveTargetApplier>(Lifetime.Singleton);
+            builder.Register<DisposeTagApplier>(Lifetime.Singleton);
+            builder.Register<ParentingRelationsApplier>(Lifetime.Singleton);
+            builder.Register<ViewSynchronizationApplier>(Lifetime.Singleton);            
 
-            builder.Register<MorpehSystemInstallHandler>(Lifetime.Scoped);
-            builder.Register<LifetimeTrackingManager>(Lifetime.Scoped);
+            builder.Register<MorpehSystemInstallHandler>(Lifetime.Singleton);
+            builder.Register<LifetimeTrackingManager>(Lifetime.Singleton);
 
-            builder.Register<WorkersFactory>(Lifetime.Scoped);
+            builder.Register<WorkersFactory>(Lifetime.Singleton);
 
+            builder.Register<CreationResultsList>(Lifetime.Singleton);
+            builder.Register<CreationRequestsHandler>(Lifetime.Singleton);
            
         }
 

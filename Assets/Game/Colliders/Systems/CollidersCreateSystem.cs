@@ -18,8 +18,9 @@ namespace ZE.MechBattle.Ecs {
         }
 
 
-        protected override bool TryHandleRequest(ColliderAddRequestComponent request)
+        protected override bool TryHandleRequest(Entity requestEntity)
         {
+            var request = GetRequestComponent(requestEntity);
             var colliderHost = request.TargetHostEntity;
             if (World.IsDisposed(colliderHost))
                 return true;

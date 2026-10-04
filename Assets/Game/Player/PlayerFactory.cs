@@ -17,7 +17,8 @@ namespace ZE.MechBattle.PlayerData
         public PlayerFactory(
             World world, 
             MechCreateRequestsFactory mechRequestsFactory, 
-            IPlayersList playersList)
+            IPlayersList playersList,
+            CreationRequestsHandler creationRequestsHandler)
         {
             _world = world;
             _playerComponents = world.GetStash<PlayerComponent>();
@@ -34,8 +35,9 @@ namespace ZE.MechBattle.PlayerData
             var playerKey = new PlayerKey(id);
             _playersList.AddPlayerEntity(playerKey, playerEntity);
 
-            _mechRequestsFactory.CreateRequest(new(playerKey, spawnPoint.pos, spawnPoint.rot, directControl: true));
+             _mechRequestsFactory.CreateRequest(new(playerKey, spawnPoint.pos, spawnPoint.rot, directControl: true));
             // todo: addEntityComponentAppearTracker for camera following
+
             return playerEntity;
         }
     }
