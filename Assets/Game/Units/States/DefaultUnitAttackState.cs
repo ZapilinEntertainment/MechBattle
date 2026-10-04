@@ -5,7 +5,7 @@ using VContainer;
 
 namespace ZE.MechBattle.Ecs.States
 {
-    public class DefaultAttackState : StateHandler
+    public class DefaultUnitAttackState : StateHandler
     {
         private readonly Stash<AttackOpportunintyComponent> _attackOpportuninties;
         private readonly Stash<AttackTargetComponent> _attackTargets;
@@ -13,7 +13,7 @@ namespace ZE.MechBattle.Ecs.States
         private readonly MoveTargetApplier _moveTargetApplier;
 
         [Inject]
-        public DefaultAttackState(World world, MoveTargetApplier moveTargetApplier) 
+        public DefaultUnitAttackState(World world, MoveTargetApplier moveTargetApplier) 
         { 
             _moveTargetApplier = moveTargetApplier;
             _attackTargets = world.GetStash<AttackTargetComponent>();

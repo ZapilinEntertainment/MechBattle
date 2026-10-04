@@ -21,7 +21,7 @@ MonoBehaviour:
   - rid: 6586387193149522014
   - rid: 6586387193149522015
   - rid: 6586387193149522017
-  - rid: 6586387193149522018
+  - rid: 5659235924420067399
   - rid: 6586387211017519175
   - rid: 6586387193149522013
   - rid: 6586387278984904775
@@ -34,6 +34,9 @@ MonoBehaviour:
     RefIds:
     - rid: 3291161655197827143
       type: {class: EnergySystemFeatureModule, ns: ZE.MechBattle, asm: MechBattle}
+      data: 
+    - rid: 5659235924420067399
+      type: {class: EntityStateFeatureModule, ns: ZE.MechBattle.Ecs.States, asm: MechBattle}
       data: 
     - rid: 6586387193149522008
       type: {class: MorpehFeatureBase, ns: ZE.MechBattle, asm: MechBattle}
@@ -61,9 +64,6 @@ MonoBehaviour:
       data: 
     - rid: 6586387193149522017
       type: {class: MovementSystemsInstaller, ns: ZE.MechBattle.Ecs, asm: MechBattle}
-      data: 
-    - rid: 6586387193149522018
-      type: {class: StatesInstaller, ns: ZE.MechBattle.Ecs.States, asm: MechBattle}
       data: 
     - rid: 6586387211017519175
       type: {class: CameraFeatureModule, ns: ZE.MechBattle, asm: MechBattle}

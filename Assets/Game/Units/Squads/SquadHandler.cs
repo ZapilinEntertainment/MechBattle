@@ -79,13 +79,16 @@ namespace ZE.MechBattle
             foreach (var (memberEntity, memberIndex) in GetNextSquadMember(entity))
             {
                 membersCount++;
-                var currentTripos = _triangularPositions.Get(memberEntity).Value;
-                var triangleDistance = TriangularMath.CalculateDistance(currentTripos, virtualHexCenter);
-                if (triangleDistance <= minHexRadius)
+                var currentTripos = _triangularPositions.Get(memberEntity, out var haveTripos).Value;
+                if (haveTripos)
                 {
-                    positionsMatch++;
-                    continue;
-                }
+                    var triangleDistance = TriangularMath.CalculateDistance(currentTripos, virtualHexCenter);
+                    if (triangleDistance <= minHexRadius)
+                    {
+                        positionsMatch++;
+                        continue;
+                    }
+                }               
 
                 var targetTripos = _coordsConverter.IndexToTriangular(memberIndex);
                 _moveTargetApplier.SetMoveTarget(memberEntity, targetTripos);

@@ -7,8 +7,9 @@ using ZE.MechBattle.Ecs;
 namespace ZE.MechBattle
 {
     [System.Serializable]
-    public class UnitsInstaller : EcsFeatureModule<UnitSystemsInstallQueue>, ISessionFeatureScopeInstaller, ISessionFeatureInitializer
+    public class UnitsInstaller : EcsFeatureModule<UnitSystemsInstallQueue>, ISessionFeatureScopeInstaller, ISessionFeatureInitializer, IEntityStateInstaller
     {
+        private readonly UnitStatesInstaller _unitStatesInstaller = new();
 
         public override void SceneScopeInstall(IContainerBuilder builder)
         {
@@ -49,6 +50,18 @@ namespace ZE.MechBattle
             {
                 unitConfigsList.AddConfig(unitConfig);
             }
+        }
+
+        public void BindStates(IContainerBuilder builder)
+        {
+            _unitStatesInstaller.BindStates(builder);
+            SquadSubfeatureInstaller.BindStates(builder);
+        }
+
+        public void AddStatesToDictionary(StateBehavioursDictionary dictionary)
+        {
+            _unitStatesInstaller.AddStatesToDictionary(dictionary);
+            SquadSubfeatureInstaller.AddStatesToDictionary(dictionary);
         }
     }
 }

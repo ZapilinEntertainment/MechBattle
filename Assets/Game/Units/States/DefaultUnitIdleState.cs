@@ -2,7 +2,7 @@ using VContainer;
 using Scellecs.Morpeh;
 namespace ZE.MechBattle.Ecs.States
 {
-    public class DefaultIdleState : StateHandler
+    public class DefaultUnitIdleState : StateHandler
     {
         private readonly MoveTargetApplier _moveTargetApplier;       
         private readonly Stash<AttackTargetComponent> _attackTargets;
@@ -10,7 +10,7 @@ namespace ZE.MechBattle.Ecs.States
        
 
         [Inject]
-        public DefaultIdleState(World world, MoveTargetApplier moveTargetApplier, AffinityHandler affinityHandler)
+        public DefaultUnitIdleState(World world, MoveTargetApplier moveTargetApplier, AffinityHandler affinityHandler)
         {
             _moveTargetApplier = moveTargetApplier;
 

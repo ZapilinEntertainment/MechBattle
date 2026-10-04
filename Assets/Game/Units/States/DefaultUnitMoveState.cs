@@ -3,7 +3,7 @@ using Scellecs.Morpeh;
 
 namespace ZE.MechBattle.Ecs.States
 {
-    public class DefaultMoveState : StateHandler
+    public class DefaultUnitMoveState : StateHandler
     {
         private readonly MoveTargetApplier _moveTargetApplier;
         private readonly Stash<MoveTargetComponent> _moveTargets;
@@ -13,7 +13,7 @@ namespace ZE.MechBattle.Ecs.States
 
 
         [Inject]
-        public DefaultMoveState(World world, MoveTargetApplier moveTargetApplier)
+        public DefaultUnitMoveState(World world, MoveTargetApplier moveTargetApplier)
         {
             _moveTargetApplier = moveTargetApplier;
 

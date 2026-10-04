@@ -6,6 +6,22 @@ namespace ZE.MechBattle
 {
     public static class SquadSubfeatureInstaller
     {
+        private class SquadStatesInstaller : FeatureStateInstallerBase
+        {
+            public SquadStatesInstaller()
+            {
+                States = new IEntityStateInstaller[4]
+                {
+                    new StateInstaller<SquadIdleState>(BehaviourKey.Squad, StateKey.Idle),
+                    new StateInstaller<SquadMoveState>(BehaviourKey.Squad, StateKey.Move),
+                    new StateInstaller<SquadAttackState>(BehaviourKey.Squad, StateKey.Attack),
+                    new StateInstaller<SquadGuardState>(BehaviourKey.Squad, StateKey.Guard)
+                };
+            }
+        }
+
+        private static readonly SquadStatesInstaller _statesInstaller = new();
+
         public static void InstallSceneScopeDependencies(IContainerBuilder builder)
         {
             builder.Register<SquadFactory>(Lifetime.Singleton);
@@ -27,6 +43,9 @@ namespace ZE.MechBattle
             installer.AddSystem<SquadLossesUpdateSystem>(SystemGroupOrder.DisposedObjectsOperations);
             installer.AddSystem<SquadUpdateTagClearSystem>(SystemGroupOrder.Dispose);
         }
-    
+
+        public static void BindStates(IContainerBuilder builder) => _statesInstaller.BindStates(builder);
+
+        public static void AddStatesToDictionary(StateBehavioursDictionary dictionary) => _statesInstaller.AddStatesToDictionary(dictionary);
     }
 }
