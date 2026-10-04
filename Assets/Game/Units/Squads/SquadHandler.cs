@@ -72,7 +72,7 @@ namespace ZE.MechBattle
             _coordsConverter = _coordsConverter.ChangeHexCenter(virtualHexCenter);
 
             var elementsCount = _squadComponents.Get(entity).MembersCount;
-            var minHexRadius = TriangularMath.GetTrianglesCountInHex(elementsCount);
+            var minHexRadius = HexMath.GetMinHexRadius(elementsCount);
 
             var membersCount = 0;
             var positionsMatch = 0;

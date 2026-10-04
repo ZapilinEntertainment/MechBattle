@@ -29,7 +29,7 @@ namespace ZE.MechBattle
             _enemiesFilter = world.Filter
                 .With<PrimaryTargetingObjectTag>()
                 .With<PlayerAffiliationComponent>()
-                .With<PositionComponent>()
+                .With<TriangularPosComponent>()
                 .Without<EntityDisposeTag>()
                 .Build();
 
