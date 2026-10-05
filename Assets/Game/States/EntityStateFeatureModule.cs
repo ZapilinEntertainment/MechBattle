@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using VContainer;
+using VContainer.Unity;
 
 namespace ZE.MechBattle.Ecs.States
 {
@@ -14,7 +15,7 @@ namespace ZE.MechBattle.Ecs.States
             builder.Register<DefaultUnitMoveState>(Lifetime.Transient);
             builder.Register<DefaultUnitAttackState>(Lifetime.Transient);
 
-            builder.Register<StateBehavioursDictionary>(Lifetime.Singleton);
+            builder.Register<StateBehavioursDictionary>(Lifetime.Singleton).As<IInitializable>().AsSelf();
 
             builder.Register<StateUpdateSystem<RegularPriorityStateMachineTag>>(Lifetime.Transient);
             builder.Register<StateUpdateSystem<HighPriorityStateMachineTag>>(Lifetime.Transient);
