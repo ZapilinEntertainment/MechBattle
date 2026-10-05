@@ -1,6 +1,5 @@
 using System;
 using VContainer;
-using System.Collections.Generic;
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
 using ZE.MechBattle.Ecs.States;
@@ -89,11 +88,12 @@ namespace ZE.MechBattle.Ecs {
         {
             if (_behaviours.TryGetValue(key, out behaviour))
                 return true;
+
+#if UNITY_EDITOR
+            var decodedKey = new StateHandlerKey(key);
+            UnityEngine.Debug.LogWarning($"state behaviour not found: {decodedKey.Behaviour} : {decodedKey.State}");
+#endif
             return false;
-            //#if UNITY_EDITOR
-            //Debug.LogWarning($"state behaviour not found: {key.Behaviour} : {key.State}");
-            //return false;
-            //#endif
         }
     }
 }

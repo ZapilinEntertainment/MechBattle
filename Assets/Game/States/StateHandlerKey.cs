@@ -14,6 +14,12 @@ namespace ZE.MechBattle
             Behaviour = behaviour;
         }
 
+        public StateHandlerKey(long key)
+        {
+            Behaviour = (BehaviourKey)(int)(key >> 32);
+            State = (StateKey)(int)(key & 0xFFFFFFFF);
+        }
+
         // IMPORTANT: using direct equality check results in GC.Allocations, long fixes it
         public static long ToLong(StateKey stateKey, BehaviourKey behaviourKey)
 => ((long)(int)behaviourKey << 32) | (uint)(int)stateKey;
