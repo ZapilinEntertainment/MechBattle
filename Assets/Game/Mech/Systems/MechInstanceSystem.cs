@@ -1,5 +1,6 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
+using ZE.MechBattle.MechBuilding;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]

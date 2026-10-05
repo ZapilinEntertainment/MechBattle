@@ -21,12 +21,14 @@ namespace ZE.MechBattle.MechMovement
         private readonly Stash<ChassisSettingsComponent> _settings;
 
         private readonly TransformAspectHandler _transformAspectHandler;
+        private readonly MechHandler _mechHandler;
 
 
         [Inject]
-        public MechMovementHandler(World world, TransformAspectHandler transformAspectHandler)
+        public MechMovementHandler(World world, TransformAspectHandler transformAspectHandler, MechHandler mechHandler)
         {
             _transformAspectHandler = transformAspectHandler;
+            _mechHandler = mechHandler;
 
             _parentComponents = world.GetStash<ParentEntityComponent>();
             _chassisComponents = world.GetStash<MechChassisComponent>();
@@ -41,6 +43,8 @@ namespace ZE.MechBattle.MechMovement
 
             _settings = world.GetStash<ChassisSettingsComponent>();
         }
+
+        public bool IsMechMoving(Entity mechEntity) => _stepProgression.Has(_mechHandler.GetChassisEntity(mechEntity));
 
         public Entity GetChassisMechEntity(Entity chassisEntity) => _parentComponents.Get(chassisEntity).Value;
         public Entity GetFootChassisEntity(Entity footEntity)

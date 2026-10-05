@@ -5,7 +5,7 @@ using VContainer;
 using ZE.MechBattle.Ecs;
 using ZE.MechBattle.MechBuilding;
 
-namespace ZE.MechBattle
+namespace ZE.MechBattle.MechBuilding
 {
     public class MechFactory : IEntityCreationFactory
     {
