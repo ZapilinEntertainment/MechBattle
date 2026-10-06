@@ -9,16 +9,24 @@ namespace ZE.MechBattle
     {
         public readonly BehaviourKey BehaviourKey;
         public readonly StateKey StateKey;
+        private readonly bool _isAlias; // used for duplicate states, ex.: use attack state for both Attack and Guard states
 
-        public StateInstaller(BehaviourKey behaviourKey, StateKey stateKey)
+        public StateInstaller(BehaviourKey behaviourKey, StateKey stateKey, bool isAlias = false)
         {
             BehaviourKey = behaviourKey;
             StateKey = stateKey;
+            _isAlias = isAlias;
         }
 
 
         public void AddStatesToDictionary(StateBehavioursDictionary dictionary) => dictionary.AddState<T>(BehaviourKey, StateKey);
 
-        public void BindStates(IContainerBuilder builder) => builder.Register<T>(Lifetime.Transient);
+        public void BindStates(IContainerBuilder builder)
+        {
+            if (_isAlias)
+                return;
+
+            builder.Register<T>(Lifetime.Transient);
+        }
     }
 }
