@@ -29,6 +29,8 @@ namespace ZE.MechBattle.Ecs
                 _highPriorities.Add(entity);
             else
                 _regularPriorities.Add(entity);
-        }    
+        }
+
+        public void SetNextState(Entity entity, StateKey stateKey) => _stateComponents.Get(entity).NextState = stateKey;
     }
 }

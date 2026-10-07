@@ -10,14 +10,15 @@ namespace ZE.MechBattle.Ecs {
     {
         private Stash<CreationRequestResultComponent> _results;
         private readonly PlayerHandler _playerHandler;
-        private readonly MechHandler _mechHandler;
         private readonly MechFactory _mechFactory;
+        private readonly MechBotHandler _mechBotHandler;
+        
 
-        public MechInstanceSystem(MechFactory factory, PlayerHandler playerHandler, MechHandler mechHandler)
+        public MechInstanceSystem(MechFactory factory, PlayerHandler playerHandler, MechBotHandler mechBotHandler)
         {
             _mechFactory = factory;
             _playerHandler = playerHandler;
-            _mechHandler = mechHandler;
+            _mechBotHandler = mechBotHandler;
         }
 
         public override void OnAwake()
@@ -31,8 +32,15 @@ namespace ZE.MechBattle.Ecs {
             var request = GetRequestComponent(requestEntity);
             var mechEntity = _mechFactory.Build(request.Position, request.Rotation);
             if (request.AssumingDirectControl)
+            {
                 _playerHandler.AssumingVehicleControl(mechEntity, request.PlayerKey);
-            _mechHandler.AssignMechPlayerAffinity(mechEntity, request.PlayerKey);
+            }                
+            else
+            {
+                _mechBotHandler.ApplyBotControls(mechEntity, request.PlayerKey);
+            }
+
+            
             _results.Set(requestEntity, new(mechEntity));
             return true;
         }

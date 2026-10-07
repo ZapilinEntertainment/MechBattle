@@ -7,14 +7,18 @@ namespace ZE.MechBattle
 {
     public class PlayerHandler
     {
-        private PlayersList _playersList;
-        private Stash<ControlledVehicleComponent> _controlledVehicles;
-        private Stash<PlayerControlledTag> _playerControlledTags;
+        private readonly MechHandler _mechHandler;
+        private readonly PlayersList _playersList;
+        private readonly MechWeaponsHandler _weaponsHandler;
+        private readonly Stash<ControlledVehicleComponent> _controlledVehicles;
+        private readonly Stash<PlayerControlledTag> _playerControlledTags;
 
         [Inject]
-        public PlayerHandler(IPlayersList playersList, World world)
+        public PlayerHandler(IPlayersList playersList, World world, MechHandler mechHandler, MechWeaponsHandler weaponsHandler)
         {
+            _mechHandler = mechHandler;
             _playersList = playersList as PlayersList;
+            _weaponsHandler = weaponsHandler;
 
             _controlledVehicles = world.GetStash<ControlledVehicleComponent>();
             _playerControlledTags = world.GetStash<PlayerControlledTag>();
@@ -27,6 +31,9 @@ namespace ZE.MechBattle
             var playerEntity = _playersList.GetPlayerEntity(playerKey);
             _controlledVehicles.Set(playerEntity, new(vehicleEntity));
             _playerControlledTags.Set(vehicleEntity);
+
+            _mechHandler.AssignMechPlayerAffinity(vehicleEntity, playerKey);
+            _weaponsHandler.RemoveWeaponsBotControlComponents(vehicleEntity);
         }
     
     }

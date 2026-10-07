@@ -16,7 +16,7 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<OutdatedPortalsClearSystem>(SystemGroupOrder.BeforePathfinding);
             installer.AddSystem<PortalDistancesCalculationSystem>(SystemGroupOrder.BeforePathfinding);
 
-            installer.AddSystem<TriangularPosUpdateSystem>(TriangularPosUpdateSystem.GroupOrder);
+            installer.AddSystemWithInterface<TriangularPosUpdateSystem, ITrianglePositionCalculator>(TriangularPosUpdateSystem.GroupOrder);
             installer.AddSystem<NoTargetPathsClearingSystem>(SystemGroupOrder.BeforePathfinding);
 
             installer.AddSystem<HexPathDefineSystem>(SystemGroupOrder.Pathfinding);

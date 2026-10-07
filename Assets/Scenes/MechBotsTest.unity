@@ -1980,7 +1980,7 @@ Transform:
   m_GameObject: {fileID: 1005800847}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -193.3, y: 0, z: -140.3}
+  m_LocalPosition: {x: -313.9, y: 0, z: 125}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2408,6 +2408,7 @@ GameObject:
   - component: {fileID: 1259888777}
   - component: {fileID: 1259888776}
   - component: {fileID: 1259888778}
+  - component: {fileID: 1259888779}
   m_Layer: 0
   m_Name: DEVELOP
   m_TagString: Untagged
@@ -2424,7 +2425,7 @@ Transform:
   m_GameObject: {fileID: 1259888751}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -155, y: 0, z: 274}
+  m_LocalPosition: {x: -155, y: 0, z: 97}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2601,7 +2602,7 @@ MonoBehaviour:
         x: -399
         y: 0
         z: 476
-    StateKey: 1
+    StateKey: 0
     MoveTarget:
       x: -155
       y: 0
@@ -2710,14 +2711,32 @@ MonoBehaviour:
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.UnitSquadSpawnUtility
   _spawnByClick: 0
   _unitId: tank
-  _playerId: 1
+  _playerId: 0
   _spawnRadius: 4
   _startHex:
-    x: 0
-    y: 0
+    x: -1
+    y: 2
   _endHex:
     x: 1
     y: 0
+--- !u!114 &1259888779
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259888751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27b3c5f342613c941baa3cd08d72e4b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.EnemySquadSpawnUtility
+  _playerId: 0
+  _unitId: tank
+  _unitsCount: 1
+  _hexCoord:
+    x: -1
+    y: 2
 --- !u!1 &1324568865
 GameObject:
   m_ObjectHideFlags: 0

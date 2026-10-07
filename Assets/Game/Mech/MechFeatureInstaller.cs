@@ -21,11 +21,15 @@ namespace ZE.MechBattle
         {
             public MechBotStatesInstaller()
             {
-                States = new IEntityStateInstaller[3]
+                States = new IEntityStateInstaller[]
                 {
-                    new StateInstaller<MechBotIdleState>(BehaviourKey.MechBot, StateKey.Idle),
-                    new StateInstaller<MechBotAttackState>(BehaviourKey.MechBot, StateKey.Attack),
-                    new StateInstaller<MechBotMoveState>(BehaviourKey.MechBot, StateKey.Move)
+                    new StateInstaller<MechBotChassisIdleState>(BehaviourKey.MechBotChassis, StateKey.Idle),
+                    new StateInstaller<MechBotChassisAttackState>(BehaviourKey.MechBotChassis, StateKey.Attack),
+                    new StateInstaller<MechBotChassisMoveState>(BehaviourKey.MechBotChassis, StateKey.Move),
+
+                    new StateInstaller<MechBotIdleState>(BehaviourKey.MechBotCabin, StateKey.Idle),
+                    new StateInstaller<MechBotMoveState>(BehaviourKey.MechBotCabin, StateKey.Move),
+                    new StateInstaller<MechBotAttackState>(BehaviourKey.MechBotCabin, StateKey.Attack),
                 };
             }
         }
@@ -41,6 +45,8 @@ namespace ZE.MechBattle
             builder.Register<MechHandler>(Lifetime.Singleton);
             builder.Register<MechWeaponsHandler>(Lifetime.Singleton);
             builder.Register<MechMovementHandler>(Lifetime.Singleton);
+            builder.Register<MechBotHandler>(Lifetime.Singleton);
+            builder.Register<MechControlsHandler>(Lifetime.Singleton);
 
             builder.Register<IMechStepsMap, MechStepsMap>(Lifetime.Singleton);
 
@@ -60,6 +66,8 @@ namespace ZE.MechBattle
 
             builder.Register<MechPartitionFactory>(Lifetime.Singleton);
             builder.Register<PartitionsListManager>(Lifetime.Singleton);
+
+           
 
 #if UNITY_EDITOR
             builder.Register<StepDrawer>(Lifetime.Singleton);

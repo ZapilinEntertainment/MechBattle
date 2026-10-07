@@ -7,7 +7,7 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public sealed class LocalRotationTargetingSystem : PausableSystem
+    public sealed class LocalRotationSystem : PausableSystem
     {
         private Filter _unlimitedRotationsFilter;
         private Filter _limitedRotationsFilter;
@@ -17,7 +17,7 @@ namespace ZE.MechBattle.Ecs {
         private Stash<LocalRotationComponent> _localRotations;
         private readonly TransformAspectHandler _transformAspectHandler;
 
-        public LocalRotationTargetingSystem(SceneFlagsManager flags, TransformAspectHandler transformAspectHandler) : base(flags)
+        public LocalRotationSystem(SceneFlagsManager flags, TransformAspectHandler transformAspectHandler) : base(flags)
         {
             _transformAspectHandler = transformAspectHandler;
         }

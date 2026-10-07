@@ -21,7 +21,7 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<ProjectilesExplodeSystem>(SystemGroupOrder.RegularUpdate);
 
             // requires job completion
-            installer.AddSystem<LocalRotationTargetingSystem>(SystemGroupOrder.TransformUpdates1);
+            installer.AddSystem<LocalRotationSystem>(SystemGroupOrder.TransformUpdates1);
 
             installer.AddSystem<HierarchyTransformUpdateTagSync>(SystemGroupOrder.TransformUpdates2);
             installer.AddSystem<ChildPointsUpdateSystem>(SystemGroupOrder.TransformUpdates2);

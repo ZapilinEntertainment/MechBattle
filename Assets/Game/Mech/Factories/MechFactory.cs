@@ -10,6 +10,7 @@ namespace ZE.MechBattle.MechBuilding
     public class MechFactory : IEntityCreationFactory
     {
         private readonly IObjectResolver _resolver;
+        private readonly ITrianglePositionCalculator _triposCalculator;
         private readonly ColliderAddRequestsFactory _collidersRequestsFactory;        
         private readonly RepairFeatureApplier _repairFeatureApplier;
 
@@ -21,6 +22,7 @@ namespace ZE.MechBattle.MechBuilding
         [Inject]
         public MechFactory(
             IObjectResolver resolver,
+            ITrianglePositionCalculator triposCalculator,
             ColliderAddRequestsFactory collidersRequestsFactory,
             RepairFeatureApplier repairFeatureApplier,
 
@@ -29,6 +31,7 @@ namespace ZE.MechBattle.MechBuilding
             [Key(DevelopConstants.LASER_EYES_WEAPON_ID)] RayWeaponConfig eyesWeaponConfig)
         {
             _resolver = resolver;
+            _triposCalculator = triposCalculator;
             _collidersRequestsFactory = collidersRequestsFactory;
             _repairFeatureApplier = repairFeatureApplier;
 
@@ -43,6 +46,7 @@ namespace ZE.MechBattle.MechBuilding
 
             var mainBuilder = _resolver.Resolve<MechBuilder>();
             var mechEntity = mainBuilder.Build(mechConfig, position, rotation);
+            _triposCalculator.RecalculateEntityTrianglePositions(mechEntity);
             var separatedPartKeys = PrepareSeparatingKeysList(mechConfig);
 
             var bitsBuilder = _resolver.Resolve<MechBitsBuilder>();

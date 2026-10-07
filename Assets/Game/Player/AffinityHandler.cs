@@ -24,6 +24,8 @@ namespace ZE.MechBattle
         public void SetEntityPlayerAffinity(Entity entity, PlayerKey playerKey) => _playerAffiliations.Set(entity, new(playerKey));
         public void SetEntityOwnerAffinity(Entity entity, Entity owner) => _ownerAffiliations.Set(entity, new() { OwnerEntity = owner });
 
+        public void ClearOwnerAffinity(Entity entity) => _playerAffiliations.Remove(entity);
+
         public void AddFriendlyFireProtection(Entity entity, PlayerKey playerKey) => _ignoreCollisionComponents.Set(entity, new(_playerRelations.GetFriendlyFireProtectionMask(playerKey)));
 
         public Entity GetEntityOwner(Entity entity) 

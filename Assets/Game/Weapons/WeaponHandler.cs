@@ -1,6 +1,4 @@
 using Scellecs.Morpeh;
-using System.Collections.Generic;
-using UnityEngine;
 using VContainer;
 using ZE.MechBattle.Ecs;
 
@@ -9,6 +7,8 @@ namespace ZE.MechBattle
     public class WeaponHandler
     {
         private readonly World _world;
+        private readonly AffinityHandler _affinityHandler;
+
         private readonly Stash<WeaponTowerComponent> _towers;
         private readonly Stash<WeaponBarrelComponent> _barrels;
         private readonly Stash<DamageComponent> _damage;
@@ -16,11 +16,18 @@ namespace ZE.MechBattle
 
         private readonly Stash<ChargingWeaponTag> _chargingTags;
         private readonly Stash<WeaponFireTag> _fireTags;
+        private readonly Stash<AimPrecisionComponent> _aimPrecisionComponents;
+        private readonly Stash<UnitWeaponComponent> _weaponComponents;
+
+        private readonly Stash<WeaponAutoShotTag> _weaponAutoShotTags;
+        private readonly Stash<CalculateFireLineByRaycastTag> _raycastFirelinesTag;
 
         [Inject]
-        public WeaponHandler(World world)
+        public WeaponHandler(World world, AffinityHandler affinityHandler)
         {
             _world = world;
+            _affinityHandler = affinityHandler;
+
             _towers = _world.GetStash<WeaponTowerComponent>();
             _barrels = _world.GetStash<WeaponBarrelComponent>();
             _damage = _world.GetStash<DamageComponent>();
@@ -28,6 +35,38 @@ namespace ZE.MechBattle
 
             _chargingTags = _world.GetStash<ChargingWeaponTag>();
             _fireTags = _world.GetStash<WeaponFireTag>();
+
+            _aimPrecisionComponents = _world.GetStash<AimPrecisionComponent>();
+            _weaponComponents = _world.GetStash<UnitWeaponComponent>();
+
+            _weaponAutoShotTags = _world.GetStash<WeaponAutoShotTag>();
+            _raycastFirelinesTag = _world.GetStash<CalculateFireLineByRaycastTag>();
+        }
+
+        public void OnAutoshotEnabled(Entity weaponEntity)
+        {
+            _weaponAutoShotTags.Add(weaponEntity);
+            _raycastFirelinesTag.Add(weaponEntity);
+        }
+
+        public void OnAutoshotDisabled(Entity weaponEntity)
+        {
+            _weaponAutoShotTags.Remove(weaponEntity);
+            _raycastFirelinesTag.Remove(weaponEntity);
+        }
+
+        public void OnAttachedToUnit(Entity weaponEntity, Entity unitEntity, float maxPrecisionAberration)
+        {
+            _aimPrecisionComponents.Add(weaponEntity, new(maxPrecisionAberration));
+            _weaponComponents.Set(unitEntity, new(weaponEntity));
+            _affinityHandler.SetEntityOwnerAffinity(weaponEntity, unitEntity);
+        }
+
+        public void OnDetachedFromUnit(Entity weaponEntity, Entity unitEntity)
+        {
+            _aimPrecisionComponents.Remove(weaponEntity);
+            _weaponComponents.Remove(unitEntity);
+            _affinityHandler.ClearOwnerAffinity(weaponEntity);
         }
 
         public void ReleaseChargingWeapon(Entity weaponEntity)

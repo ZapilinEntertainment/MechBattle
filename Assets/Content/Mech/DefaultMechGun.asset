@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: DefaultMechGun
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.MechProjectileWeaponConfig
   <DamageType>k__BackingField: 1
-  <MinRange>k__BackingField: 0
+  <MinRange>k__BackingField: 100
+  <MaxRange>k__BackingField: 500
   <RecommendedRangePc>k__BackingField: 0.8
-  <MaxRange>k__BackingField: 0
   <Cooldown>k__BackingField: 0.5
   <ShotPoint>k__BackingField:
     x: 0

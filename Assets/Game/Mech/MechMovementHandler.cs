@@ -44,7 +44,8 @@ namespace ZE.MechBattle.MechMovement
             _settings = world.GetStash<ChassisSettingsComponent>();
         }
 
-        public bool IsMechMoving(Entity mechEntity) => _stepProgression.Has(_mechHandler.GetChassisEntity(mechEntity));
+        public bool IsMechMoving(Entity mechEntity) => IsChassisMoving(_mechHandler.GetChassisEntity(mechEntity));
+        public bool IsChassisMoving(Entity chassisEntity) => _stepProgression.Has(chassisEntity);
 
         public Entity GetChassisMechEntity(Entity chassisEntity) => _parentComponents.Get(chassisEntity).Value;
         public Entity GetFootChassisEntity(Entity footEntity)

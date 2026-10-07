@@ -55,7 +55,6 @@ namespace ZE.MechBattle.Develop
                false);
                 var mechCreationRequest = _mechRequestsFactory.CreateRequest(request);
                 var mechEntity = await _requestsHandler.WaitUntilRequestCompleted(mechCreationRequest, CancellationToken.None);
-                _statesApplier.ApplyState(mechEntity, BehaviourKey.MechBot, StateKey.Idle, false);
                 if (spawnData.StateKey == StateKey.Move)
                 {
                     _moveTargetApplier.SetMoveTarget(mechEntity, spawnData.MoveTarget);

@@ -15,14 +15,12 @@ namespace ZE.MechBattle
         private readonly ViewSynchronizationApplier _viewSyncApplier;
         private readonly IUnitConfigsList _unitConfigs;
         private readonly WeaponFactory _weaponFactory;
-        private readonly AffinityHandler _affinityHandler;
+        private readonly WeaponHandler _weaponHandler;
 
         private readonly Stash<MoveSpeedComponent> _moveSpeeds;
         private readonly Stash<NavigationAgentComponent> _navigationAgents;
         private readonly Stash<MovementCollisionAvoidanceComponent> _movementCollisionAvoidanceComponents;
-        private readonly Stash<TargetSearchRadiusComponent> _targetSearchRadiusComponents;
-        private readonly Stash<AimPrecisionComponent> _aimPrecisionComponents;
-        private readonly Stash<UnitWeaponComponent> _weaponComponents;
+        private readonly Stash<TargetSearchRadiusComponent> _targetSearchRadiusComponents; 
         private readonly Stash<HealthComponent> _healthComponents;
         private readonly Stash<UnitTag> _unitTags;
         private readonly Stash<CalculateTrianglePositionTag> _calculateTrianglePosTags;
@@ -38,7 +36,7 @@ namespace ZE.MechBattle
             ViewSynchronizationApplier viewSyncApplier,
             IUnitConfigsList unitConfigsList,
             WeaponFactory weaponFactory,
-            AffinityHandler affinityHandler)
+            WeaponHandler weaponHandler)
         {
             _world = world;
             _transformAspectHandler = transformAspectHandler;
@@ -48,14 +46,12 @@ namespace ZE.MechBattle
             _statesApplier = statesApplier;
             _weaponFactory = weaponFactory;
             _viewSyncApplier = viewSyncApplier;
-            _affinityHandler = affinityHandler;
+            _weaponHandler = weaponHandler;
 
             _moveSpeeds = world.GetStash<MoveSpeedComponent>();
             _navigationAgents = world.GetStash<NavigationAgentComponent>();
             _movementCollisionAvoidanceComponents = world.GetStash<MovementCollisionAvoidanceComponent>();
             _targetSearchRadiusComponents = world.GetStash<TargetSearchRadiusComponent>();
-            _aimPrecisionComponents = world.GetStash<AimPrecisionComponent>();
-            _weaponComponents = world.GetStash<UnitWeaponComponent>();
             _healthComponents = world.GetStash<HealthComponent>();
             _unitTags = world.GetStash<UnitTag>();
             _calculateTrianglePosTags = world.GetStash<CalculateTrianglePositionTag>();
@@ -133,9 +129,8 @@ namespace ZE.MechBattle
 
                 DamageParameters = new(weaponData.Config.DamageType, config.Damage),                
             });
-            _aimPrecisionComponents.Add(weaponEntity, new(config.MaxPrecisionAberration) );
-            _weaponComponents.Set(unitEntity, new(weaponEntity));
-            _affinityHandler.SetEntityOwnerAffinity(weaponEntity, unitEntity);
+
+            _weaponHandler.OnAttachedToUnit(weaponEntity, unitEntity, config.MaxPrecisionAberration);
         }
     }
 }
