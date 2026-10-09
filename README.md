@@ -43,3 +43,15 @@ Tech demo about controlling titan-class battle mech on battlefield contains thou
 - minimap displaying captured hexes with color
 - tactical mode, activated by ALT button - shows squad symbols and other mechs health, highlights strategic points and fronline
 - understandable mech chassis controls elements, better controlled steer and speed
+
+## AI Using
+- All ai snippets marked properly. Mark sometimes removed if method was completely reworked.
+
+## Launching test scenes
+- You need to have Start and any test (UnitsTest or BotsTest) scene both enabled. Start scene contains App scope, test scene contains Scene scope.
+- All utilies are on DEVELOP object (Vcontainer require direct inject objects linking)
+
+## Gifs
+![mech_posing.gif](RepositoryPage/mech_posing.gif)
+![movement_density.gif](RepositoryPage/movement_density.gif)
+![confrontation.gif](RepositoryPage/confrontation.gif)
