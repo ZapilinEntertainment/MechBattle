@@ -7,6 +7,7 @@ namespace ZE.MechBattle
     public class MechHandler
     {
         private readonly Stash<MechComponent> _mechComponents;
+        private readonly Stash<ChassisSettingsComponent> _chassisSettings;
         private readonly AffinityHandler _affinityHandler;
         private readonly PartitionsListManager _partitionsManager;
 
@@ -14,6 +15,8 @@ namespace ZE.MechBattle
         public MechHandler(World world, AffinityHandler affinityHandler, PartitionsListManager partitionsListManager)
         {
             _mechComponents = world.GetStash<MechComponent>();
+            _chassisSettings = world.GetStash<ChassisSettingsComponent>();
+
             _affinityHandler = affinityHandler;
             _partitionsManager = partitionsListManager;
         }
@@ -31,5 +34,7 @@ namespace ZE.MechBattle
             }
         }
 
+        public StepSettings GetStepSettings(Entity mechEntity) => _chassisSettings.Get(GetChassisEntity(mechEntity)).StepSettings;
+        public ChassisSettings GetChassisSettings(Entity mechEntity) => _chassisSettings.Get(GetChassisEntity(mechEntity)).ChassisSettings;
     }
 }

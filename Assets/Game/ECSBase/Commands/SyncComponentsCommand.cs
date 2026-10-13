@@ -25,7 +25,7 @@ namespace ZE.MechBattle.Ecs
         public static void Execute<T>(Entity receivingEntity, Entity componentOwnerEntity, NativeStash<T> stash) where T : unmanaged, IComponent
         {
             var originalComponent = stash.Get(componentOwnerEntity, out var exists);
-            stash.Get(receivingEntity) = originalComponent;
+            stash.Get(receivingEntity) = originalComponent;            
         }
     }
 }

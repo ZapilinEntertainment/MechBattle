@@ -19,7 +19,7 @@ MonoBehaviour:
   <TargetSearchRadius>k__BackingField: 600
   <BehaviourKey>k__BackingField: 1
   <MoveSpeed>k__BackingField: 10
-  <MaxPrecisionAberration>k__BackingField: 0
+  <MaxPrecisionAberration>k__BackingField: 0.01
   _weaponData:
     Config: {fileID: 11400000, guid: e264f1e7d88a2a24baf9c073915d807b, type: 2}
     AttachmentProtocol:

@@ -8,6 +8,9 @@ namespace ZE.MechBattle
 
         public const float DAMAGE_REPAIR_DELAY = 3f;
 
+        public const float ATTACK_RANGE_CF = 0.5f;
+        public const float BOT_MAX_ABERRATION = 0.02f;
+
         public const string EYE_KEYWORD = "eye";
     }
 }

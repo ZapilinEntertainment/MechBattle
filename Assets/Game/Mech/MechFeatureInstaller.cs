@@ -12,24 +12,45 @@ namespace ZE.MechBattle
     public class MechFeatureInstaller : 
         EcsFeatureModule<MechSystemsQueue>, 
         ISessionAsyncResourceLoader,
-        IAsyncWindowLoader
+        IAsyncWindowLoader,
+        IEntityStateInstaller
     {
         protected override MechSystemsQueue CreateQueue() => new();
+
+        private class MechBotStatesInstaller : FeatureStateInstallerBase
+        {
+            public MechBotStatesInstaller()
+            {
+                States = new IEntityStateInstaller[]
+                {
+                    new StateInstaller<MechBotChassisIdleState>(BehaviourKey.MechBotChassis, StateKey.Idle),
+                    new StateInstaller<MechBotChassisAttackState>(BehaviourKey.MechBotChassis, StateKey.Attack),
+                    new StateInstaller<MechBotChassisMoveState>(BehaviourKey.MechBotChassis, StateKey.Move),
+
+                    new StateInstaller<MechBotIdleState>(BehaviourKey.MechBotCabin, StateKey.Idle),
+                    new StateInstaller<MechBotMoveState>(BehaviourKey.MechBotCabin, StateKey.Move),
+                    new StateInstaller<MechBotAttackState>(BehaviourKey.MechBotCabin, StateKey.Attack),
+                };
+            }
+        }
+        private MechBotStatesInstaller _statesInstaller = new();
 
         public override void SceneScopeInstall(IContainerBuilder builder)
         {
             base.SceneScopeInstall(builder);
-            builder.Register<MechCreateRequestsFactory>(Lifetime.Scoped);
-            builder.Register<MechChassisFactory>(Lifetime.Scoped);                      
-            builder.Register<MechInterpolator>(Lifetime.Scoped);
+            builder.Register<MechCreateRequestsFactory>(Lifetime.Singleton);
+            builder.Register<MechChassisFactory>(Lifetime.Singleton);                      
+            builder.Register<MechInterpolator>(Lifetime.Singleton);
 
-            builder.Register<MechHandler>(Lifetime.Scoped);
-            builder.Register<MechWeaponsHandler>(Lifetime.Scoped);
-            builder.Register<MechMovementHandler>(Lifetime.Scoped);
+            builder.Register<MechHandler>(Lifetime.Singleton);
+            builder.Register<MechWeaponsHandler>(Lifetime.Singleton);
+            builder.Register<MechMovementHandler>(Lifetime.Singleton);
+            builder.Register<MechBotHandler>(Lifetime.Singleton);
+            builder.Register<MechControlsHandler>(Lifetime.Singleton);
 
-            builder.Register<IMechStepsMap, MechStepsMap>(Lifetime.Scoped);
+            builder.Register<IMechStepsMap, MechStepsMap>(Lifetime.Singleton);
 
-            builder.Register<MechFactory>(Lifetime.Scoped);
+            builder.Register<MechFactory>(Lifetime.Singleton);
             builder.Register<MechBuilder>(Lifetime.Transient);
             builder.Register<MechBitsBuilder>(Lifetime.Transient);
             builder.Register<MechWeaponsBuilder>(Lifetime.Transient);
@@ -41,14 +62,15 @@ namespace ZE.MechBattle
             builder.Register<IMechUIElementsVisibilityController, UIMechInterfaceWorker>(Lifetime.Transient).AsSelf();
             builder.RegisterEntryPoint<MechUiInitializer>(Lifetime.Transient);
 
-            builder.Register<RepairFeatureApplier>(Lifetime.Scoped);
+            builder.Register<RepairFeatureApplier>(Lifetime.Singleton);
 
-            builder.Register<MechPartitionFactory>(Lifetime.Scoped);
-            builder.Register<PartitionsListManager>(Lifetime.Scoped);
-            
+            builder.Register<MechPartitionFactory>(Lifetime.Singleton);
+            builder.Register<PartitionsListManager>(Lifetime.Singleton);
+
+           
 
 #if UNITY_EDITOR
-            builder.Register<StepDrawer>(Lifetime.Scoped);
+            builder.Register<StepDrawer>(Lifetime.Singleton);
 #endif
         }
 
@@ -72,5 +94,8 @@ namespace ZE.MechBattle
         {
             return new WindowBinder<UIMechInterfaceWindow>();
         }
+
+        public void BindStates(IContainerBuilder builder) => _statesInstaller.BindStates(builder);
+        public void AddStatesToDictionary(StateBehavioursDictionary dictionary) => _statesInstaller.AddStatesToDictionary(dictionary);
     }
 }

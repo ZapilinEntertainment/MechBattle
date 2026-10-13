@@ -1,5 +1,4 @@
 using Scellecs.Morpeh;
-using UnityEngine;
 using Unity.IL2CPP.CompilerServices;
 
 namespace ZE.MechBattle.Ecs {
@@ -10,6 +9,8 @@ namespace ZE.MechBattle.Ecs {
     public struct AttackTargetComponent : IComponent 
     {
         public Entity Entity;
+
+        public AttackTargetComponent(Entity entity) => Entity = entity;
     
     }
 }

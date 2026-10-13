@@ -1,6 +1,7 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
 using Unity.Mathematics;
+using VContainer;
 
 namespace ZE.MechBattle.Ecs {
 
@@ -17,6 +18,14 @@ namespace ZE.MechBattle.Ecs {
         private Stash<ClearHexPathTag> _clearHexPathTags;
         private Stash<ClearTrianglePathTag> _clearTrianglePathTag;
         private Stash<HexCoordComponent> _hexCoordComponents;
+
+        private readonly StatesApplier _statesApplier;
+
+        [Inject]
+        public ChangeMovementTargetSystem(StatesApplier statesApplier)
+        {
+            _statesApplier = statesApplier;
+        }
 
         public void OnAwake() 
         {
@@ -64,6 +73,7 @@ namespace ZE.MechBattle.Ecs {
         {
             _moveTargets.Set(entity, new(request.WorldPos, request.Tripos, request.HexCoord));
             _requests.Remove(entity);
+            _statesApplier.SetNextState(entity, StateKey.Move);
         }
     }
 }

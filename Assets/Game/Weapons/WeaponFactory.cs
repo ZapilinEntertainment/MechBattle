@@ -10,20 +10,20 @@ namespace ZE.MechBattle.Ecs
         private readonly ParentingRelationsApplier _parentingRelationsApplier;
         private readonly StringDataDictionary _stringDictionary;
         private readonly TransformAspectHandler _transformAspectHandler;
+        private readonly WeaponHandler _weaponHandler;
+
         private readonly Stash<WeaponRangeComponent> _ranges;
         private readonly Stash<WeaponLoadingComponent> _weaponUpdateComponents;        
         private readonly Stash<WeaponMuzzleEffectComponent> _muzzleEffects;
         private readonly Stash<WeaponTowerComponent> _weaponTowerComponents;
         private readonly Stash<WeaponBarrelComponent> _weaponBarrelComponents;
-        private readonly Stash<WeaponShotPoint> _weaponShotPoints;
-        private readonly Stash<WeaponAutoShotTag> _weaponAutoShotTags;        
+        private readonly Stash<WeaponShotPoint> _weaponShotPoints;        
         private readonly Stash<RotationSpeedComponent> _rotationSpeedComponents;
 
         private readonly Stash<ViewPartRequestComponent> _viewPartRequests;
         private readonly Stash<WeaponTowerStowTag> _towerStowTag;
         private readonly Stash<WeaponBarrelStowTag> _barrelStowTag;
-
-        private readonly Stash<CalculateFireLineByRaycastTag> _raycastFirelinesTag;
+     
         private readonly Stash<LocalRotationLimitComponent> _localRotationLimits;
 
         private readonly Stash<DamageComponent> _damageComponents;
@@ -45,12 +45,14 @@ namespace ZE.MechBattle.Ecs
             World world, 
             ParentingRelationsApplier parentingRelationsApplier, 
             StringDataDictionary stringDataDictionary,
-            TransformAspectHandler transformAspectHandler)
+            TransformAspectHandler transformAspectHandler,
+            WeaponHandler weaponHandler)
         {
             _world = world;
             _parentingRelationsApplier = parentingRelationsApplier;
             _stringDictionary = stringDataDictionary;
             _transformAspectHandler = transformAspectHandler;
+            _weaponHandler = weaponHandler;
 
             _ranges = _world.GetStash<WeaponRangeComponent>();
             _weaponUpdateComponents = world.GetStash<WeaponLoadingComponent>();
@@ -60,7 +62,6 @@ namespace ZE.MechBattle.Ecs
             _weaponBarrelComponents = world.GetStash<WeaponBarrelComponent>();
 
             _weaponShotPoints = world.GetStash<WeaponShotPoint>();
-            _weaponAutoShotTags = world.GetStash<WeaponAutoShotTag>();
 
             _syncTargetWithParent = world.GetStash<SyncWithParentTargetTag>();
             _syncFireTagWithParent = world.GetStash<SyncFireTagWithParentTag>();
@@ -68,8 +69,6 @@ namespace ZE.MechBattle.Ecs
             _viewPartRequests = world.GetStash<ViewPartRequestComponent>();
             _towerStowTag = world.GetStash<WeaponTowerStowTag>();
             _barrelStowTag = world.GetStash<WeaponBarrelStowTag>();
-
-            _raycastFirelinesTag = world.GetStash<CalculateFireLineByRaycastTag>();
 
             _rotationSpeedComponents = world.GetStash<RotationSpeedComponent>();
             _localRotationLimits = world.GetStash<LocalRotationLimitComponent>();
@@ -203,10 +202,7 @@ namespace ZE.MechBattle.Ecs
             _weaponUpdateComponents.Add(weaponEntity, new(weaponConfig.Cooldown));
 
             if (protocol.UseAutoShot)
-            {
-                _weaponAutoShotTags.Add(weaponEntity);
-                _raycastFirelinesTag.Add(weaponEntity);
-            }
+                _weaponHandler.OnAutoshotEnabled(weaponEntity);
 
             if (weaponConfig.ContinuousFiring)
                 _continuosFiringTag.Add(weaponEntity);

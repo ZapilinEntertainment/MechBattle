@@ -22,7 +22,8 @@ namespace ZE.MechBattle
         
         private readonly World _world;
         private readonly TransformAspectHandler _transformAspectHandler;
-        private readonly MechWeaponsHandler _mechWeaponsHandler;
+        private readonly MechWeaponsHandler _weaponsHandler;
+        private readonly MechControlsHandler _controlsHandler;
         private readonly IWeaponsManager _weaponsManager;
 
         private readonly MechWeaponKey PRIMARY_WEAPON_KEY_LEFT = new(MechWeaponGroup.Primary, 0);
@@ -33,12 +34,14 @@ namespace ZE.MechBattle
             World world, 
             TransformAspectHandler transformAspectHandler, 
             MechWeaponsHandler mechWeaponsHandler,
+            MechControlsHandler controlsHandler,
             IWeaponsManager weaponsManager)
         {
             _world = world;
             _transformAspectHandler = transformAspectHandler;
-            _mechWeaponsHandler = mechWeaponsHandler;
+            _weaponsHandler = mechWeaponsHandler;
             _weaponsManager = weaponsManager;
+            _controlsHandler = controlsHandler;
 
             _input = _world.GetStash<MechInputComponent>();
             _weaponTargetPositions = _world.GetStash<WeaponTargetPositionComponent>();
@@ -60,15 +63,10 @@ namespace ZE.MechBattle
 
         public void SetControls(float speed, float steer) => _input.Set(_mechEntity, new() { SpeedValue = speed, SteerValue = steer });
 
-        public void SetUpperPartRotation(float rotationValue, float deltaTime)
-        {
-            var rotationSpeed = _rotationSpeed.Get(_upperPartEntity).RadianValue;
-            var rotationStep = quaternion.AxisAngle(math.up(), deltaTime * rotationValue * rotationSpeed);
-            _transformAspectHandler.RotateLocal(_upperPartEntity, rotationStep);
-        }
+        public void SetUpperPartRotation(float rotationValue, float deltaTime) => 
+            _controlsHandler.RotateUpperPart(_mechEntity, _upperPartEntity, rotationValue * deltaTime);
 
-        public void SetMainWeaponsTarget(float3 pos) =>
-            _weaponTargetPositions.Set(_upperPartEntity, new() { Value = pos });
+        public void SetMainWeaponsTarget(float3 pos) => _controlsHandler.SetMainWeaponsTarget(_mechEntity, _upperPartEntity, pos);
 
         public void SetEyesTarget(float3 pos) => _laserEyesWorker.SetTargetPos(pos);
 
@@ -100,10 +98,10 @@ namespace ZE.MechBattle
 
         private void TryFireWeapon(Entity weaponEntity)
         {
-            if (_world.IsDisposed(weaponEntity) || !_mechWeaponsHandler.CanWeaponFire(_mechEntity, weaponEntity))
+            if (_world.IsDisposed(weaponEntity) || !_weaponsHandler.CanWeaponFire(_mechEntity, weaponEntity))
                 return;
 
-            _mechWeaponsHandler.TrySpendEnergyForWeaponShot(_mechEntity, weaponEntity, out var shortage);
+            _weaponsHandler.TrySpendEnergyForWeaponShot(_mechEntity, weaponEntity, out var shortage);
             // no sactions needed: shot possibility checks before shooting
 
             _fireTags.Set(weaponEntity);
