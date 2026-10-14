@@ -129,5 +129,24 @@ namespace ZE.MechBattle.Navigation
                 default: return innerRingPos;
             }
         }
+
+        [BurstCompile]
+        public static IntTriangularPos GetHexCenterOffset(this HexSector sector)
+        {
+            switch (sector)
+            {
+                case HexSector.TopRight:
+                    return new IntTriangularPos(-1, 0, 0);
+                case HexSector.BottomRight:
+                    return new IntTriangularPos(0, 0, 1);
+                case HexSector.Bottom:
+                    return new IntTriangularPos(0, -1, 0);
+                case HexSector.BottomLeft:
+                    return new IntTriangularPos(1, 0, 0);
+                case HexSector.TopLeft:
+                    return new IntTriangularPos(0, 0, -1);
+                default: return new(0, 1, 0);
+            }
+        }
     }
 }

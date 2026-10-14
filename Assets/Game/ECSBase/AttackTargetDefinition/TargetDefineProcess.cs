@@ -22,7 +22,7 @@ namespace ZE.MechBattle.Ecs
         private readonly PlayerRelations _relations;       
 
         private readonly Stash<PlayerAffiliationComponent> _affiliationComponents;
-        private readonly Stash<AttackTargetComponent> _attackTargets;
+        private readonly Stash<ClosestAttackTargetComponent> _attackTargets;
         private readonly Stash<PositionComponent> _positionComponents;
         private readonly Stash<HexCoordComponent> _hexCoordComponents;
         private readonly Stash<TargetSearchRadiusComponent> _targetSearchRadiusComponents;
@@ -45,7 +45,7 @@ namespace ZE.MechBattle.Ecs
             _hexEdgeLength = map.HexEdgeLength;
 
             _affiliationComponents = _world.GetStash<PlayerAffiliationComponent>();
-            _attackTargets = _world.GetStash<AttackTargetComponent>();
+            _attackTargets = _world.GetStash<ClosestAttackTargetComponent>();
             _positionComponents = _world.GetStash<PositionComponent>();
             _hexCoordComponents = _world.GetStash<HexCoordComponent>();
             _targetSearchRadiusComponents = _world.GetStash<TargetSearchRadiusComponent>();
@@ -101,32 +101,8 @@ namespace ZE.MechBattle.Ecs
 
         public async void Dispose()
         {
-            if (!_activeJobHandle.IsCompleted)
-            {
-#if UNITY_EDITOR
-                UnityEngine.Debug.LogWarning($"{nameof(_job)} is not yet completed");
-#endif
-                do
-                {
-                    await Awaitable.NextFrameAsync();
-                }
-                while (!_activeJobHandle.IsCompleted);
-#if UNITY_EDITOR
-                UnityEngine.Debug.LogWarning($"{nameof(_job)} finally stopped");
-#endif
-            }
-#if UNITY_EDITOR
-            try
-            {
-                FinalDispose();
-            }
-            catch
-            {
-                // ignore possible misses
-            }
-#else
+            _activeJobHandle.Complete();
             FinalDispose();
-#endif
         }
 
         private void FinalDispose()

@@ -8,8 +8,6 @@ namespace ZE.MechBattle
 {
     public static class FormTargetsMapCommand
     {
-        // TODO: will not work for non-moving objects (without navigation agents), require new logics
-
         public static NativeParallelHashMap<IntTriangularPos, Entity> Execute(
             NativeParallelHashMap<IntTriangularPos, Entity> map, 
             Allocator allocator,
@@ -41,6 +39,5 @@ namespace ZE.MechBattle
 
             return map;
         }
-
     }
 }

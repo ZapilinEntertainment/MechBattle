@@ -9,9 +9,6 @@ namespace ZE.MechBattle.Navigation
         private readonly IntTriangularPos _pinnaclePos;
         private readonly int _trianglesPerEdge;
         private readonly int _totalTrianglesCount;
-        private readonly int3 _verticalOffsetVector;
-        private readonly int _horizontalNeighbourIndexPeak;
-        private readonly int _horizontalNeighbourIndexValley;
         private readonly TriangleEnumerationSettings _settings;
 
         private int _index;
@@ -28,10 +25,6 @@ namespace ZE.MechBattle.Navigation
             _pinnaclePos = pinnaclePos;
             _trianglesPerEdge = trianglesPerEdge;
             _totalTrianglesCount = _trianglesPerEdge * _trianglesPerEdge;
-
-            _verticalOffsetVector = _pinnaclePos.IsPeak ? new(0, -1, 1) : new(0,1,-1);
-            _horizontalNeighbourIndexPeak = (int)(_pinnaclePos.IsPeak ? PeakNeighbour.EdgeUpLeft : PeakNeighbour.EdgeUpRight);
-            _horizontalNeighbourIndexValley = (int)(_pinnaclePos.IsPeak ? ValleyNeighbour.EdgeDownLeft : ValleyNeighbour.EdgeDownRight);
 
             // #setup defaults
             _index = -1;

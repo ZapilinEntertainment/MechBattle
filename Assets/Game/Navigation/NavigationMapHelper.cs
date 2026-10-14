@@ -1,16 +1,20 @@
-using UnityEngine;
+using System;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Mathematics;
-using System;
 
 namespace ZE.MechBattle.Navigation
 {
     public static class NavigationMapHelper
     {
-        private const float SQT_HALVED = NavigationConstants.SQRT_OF_THREE * 0.5f;
-        private const float HEIGHT_PART_CF = SQT_HALVED * 2f / 3f; // 2/3 of height is orthocenter       
-       
+        private static readonly IntTriangularPos TOP_TRIANGLE_OFFSET = HexSector.Top.GetHexCenterOffset();
+        private static readonly IntTriangularPos TOP_RIGHT_TRIANGLE_OFFSET = HexSector.TopRight.GetHexCenterOffset();
+        private static readonly IntTriangularPos BOTTOM_RIGHT_TRIANGLE_OFFSET = HexSector.BottomRight.GetHexCenterOffset();
+        private static readonly IntTriangularPos BOTTOM_TRIANGLE_OFFSET = HexSector.Bottom.GetHexCenterOffset();
+        private static readonly IntTriangularPos BOTTOM_LEFT_TRIANGLE_OFFSET = HexSector.BottomLeft.GetHexCenterOffset();
+        private static readonly IntTriangularPos TOP_LEFT_TRIANGLE_OFFSET = HexSector.TopLeft.GetHexCenterOffset();
+
+
         /// <summary>
         /// add next triangles row started with peak triangle into list and returns next write index (AV...VA)
         /// </summary>
@@ -62,12 +66,23 @@ namespace ZE.MechBattle.Navigation
 
         public static IntTriangularPos[] GetSixInnerRingTriangles() => new IntTriangularPos[6]
         {
-            new IntTriangularPos(0,1,0),
-            new IntTriangularPos(-1,0,0),
-            new IntTriangularPos(0,0,1),
-            new IntTriangularPos(0,-1,0),
-            new IntTriangularPos(1,0,0),
-            new IntTriangularPos(0,0,-1)
+            TOP_TRIANGLE_OFFSET,
+            TOP_RIGHT_TRIANGLE_OFFSET,
+            BOTTOM_RIGHT_TRIANGLE_OFFSET,
+            BOTTOM_TRIANGLE_OFFSET,
+            BOTTOM_LEFT_TRIANGLE_OFFSET,
+            TOP_LEFT_TRIANGLE_OFFSET
         };
+
+        [BurstCompile]
+        public static void GetSixInnerRingTriangles(IntTriangularPos virtualHexCenter, Span<IntTriangularPos> array)
+        {
+            array[0] = TOP_TRIANGLE_OFFSET + virtualHexCenter;
+            array[1] = TOP_RIGHT_TRIANGLE_OFFSET + virtualHexCenter;
+            array[2] = BOTTOM_RIGHT_TRIANGLE_OFFSET + virtualHexCenter;
+            array[3] = BOTTOM_TRIANGLE_OFFSET + virtualHexCenter;
+            array[4] = BOTTOM_LEFT_TRIANGLE_OFFSET + virtualHexCenter;
+            array[5] = TOP_LEFT_TRIANGLE_OFFSET + virtualHexCenter;
+        }
     }
 }

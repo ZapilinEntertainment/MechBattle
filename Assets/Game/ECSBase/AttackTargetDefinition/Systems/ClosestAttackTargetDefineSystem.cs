@@ -9,14 +9,14 @@ namespace ZE.MechBattle.Ecs
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public sealed class AttackTargetDefineSystem : ISystem 
+    public sealed class ClosestAttackTargetDefineSystem : ISystem 
     {
         public World World { get; set;}
         private Filter _filter;
         private readonly TargetDefineProcess _targetDefineProcess;
 
         [Inject]
-        public AttackTargetDefineSystem(
+        public ClosestAttackTargetDefineSystem(
             IMovementCellsMap movementCellsMap, 
             INavigationMap map, 
             IPlayersList playersList, 
@@ -33,7 +33,6 @@ namespace ZE.MechBattle.Ecs
                 .With<PlayerAffiliationComponent>()
                 .With<HexCoordComponent>()
                 .Without<EntityDisposeTag>()
-                .Without<AttackTargetComponent>()
                 .Build();
         }
 

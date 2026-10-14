@@ -1,5 +1,6 @@
 using Scellecs.Morpeh;
 using Scellecs.Morpeh.Native;
+using System;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
@@ -22,7 +23,7 @@ namespace ZE.MechBattle.Ecs
         [ReadOnly] public NativeStash<PositionComponent> PositionComponents;
         [ReadOnly] public NativeStash<TargetSearchRadiusComponent> TargetSearchRadius;
 
-        public NativeStash<AttackTargetComponent> AttackTargets;
+        public NativeStash<ClosestAttackTargetComponent> AttackTargets;
 
         public void Execute(int index)
         {
@@ -37,29 +38,68 @@ namespace ZE.MechBattle.Ecs
             var entityEnemiesMask = EnemiesMask[entityOwnerId];
             var closestDistanceSq = searchRadius * searchRadius;
 
-            var closestVirtualHexCenter = HexLogic.GetClosestVirtualHexPos(entityPosition, TriangleHeight);
+            // caching for local functions
+            var positionsStash = PositionComponents;
+            var affiliationsStash = AffiliationsStash;
+            var entitiesMap = EntitiesMap;
 
-            // hex tris enumerator can enumerate any amount of tris from any VIRTUAL tripos (describes axis intersection, not contained triangle)
-            // note: it will be much cheaper, if we enumerate radially
-            foreach (var tripos in new HexTrianglesEnumerator(closestVirtualHexCenter, searchRadiusInTriangles))
+            bool CheckIfTargetIsClosest(Entity targetEntity)
             {
-                if (!EntitiesMap.TryGetValue(tripos, out var targetEntity))
-                    continue;
-
-                var targetAffiliationComponent = AffiliationsStash.Get(targetEntity, out var affiliated);
-                if (!affiliated)
-                    continue;
-
-                if (!entityEnemiesMask.Contains(targetAffiliationComponent.PlayerKey))
-                    continue;
-
-                var distanceSq = math.distancesq(entityPosition, PositionComponents.Get(targetEntity).Value);
+                var distanceSq = math.distancesq(entityPosition, positionsStash.Get(targetEntity).Value);
                 if (distanceSq < closestDistanceSq)
                 {
                     closestDistanceSq = distanceSq;
                     closestEntity = targetEntity;
+                    return true;
                 }
+                return false;
             }
+
+            bool TryGetEnemyEntity(IntTriangularPos tripos, out Entity targetEntity, PlayerRelationsMask enemiesMask)
+            {
+                if (!entitiesMap.TryGetValue(tripos, out targetEntity))
+                    return false;
+
+                var targetAffiliationComponent = affiliationsStash.Get(targetEntity, out var affiliated);
+                if (!affiliated)
+                    return false;
+
+                return enemiesMask.Contains(targetAffiliationComponent.PlayerKey);
+            }
+
+
+            var closestVirtualHexCenter = HexLogic.GetClosestVirtualHexPos(entityPosition, TriangleHeight);
+            Span<IntTriangularPos> innerRingTriangles = stackalloc IntTriangularPos[6];
+            NavigationMapHelper.GetSixInnerRingTriangles(closestVirtualHexCenter, innerRingTriangles);
+            Span<HexSectorRowsEnumerationSetup> setupData = stackalloc HexSectorRowsEnumerationSetup[6];
+            for (var i = 0; i < 6; i++)
+            {
+                setupData[i] = new HexSectorRowsEnumerationSetup((HexSector)i, innerRingTriangles[i]);
+
+            }
+
+            // enumerate one row per sector (ring enumeration), until closest enemy found
+            for (var rowIndex = 0; rowIndex < searchRadiusInTriangles; rowIndex++)
+            {
+                var rowCandidateFound = false;
+                for (var sectorIndex = 0; sectorIndex < 6; sectorIndex++)
+                {
+                    foreach (var tripos in new HexSectorRowEnumerator(setupData[sectorIndex], rowIndex))
+                    {
+                        if (TryGetEnemyEntity(tripos, out var enemyEntity, entityEnemiesMask))
+                        {
+                            if (CheckIfTargetIsClosest(enemyEntity))
+                            {
+                                rowCandidateFound = true;
+                                // going to other sector
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (rowCandidateFound)
+                    break;
+            }           
 
             ref var attackTargetComponent = ref AttackTargets.Get(entity);
             attackTargetComponent.Entity = closestEntity;

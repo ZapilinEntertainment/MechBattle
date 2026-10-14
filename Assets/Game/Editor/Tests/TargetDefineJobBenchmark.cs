@@ -21,7 +21,7 @@ namespace ZE.MechBattle.Editor.Tests
         private NativeParallelHashMap<IntTriangularPos, Entity> _entitiesMap;
 
         private Stash<PlayerAffiliationComponent> _affiliationsStash;
-        private Stash<AttackTargetComponent> _targetsStash;
+        private Stash<ClosestAttackTargetComponent> _targetsStash;
         private Stash<HexCoordComponent> _hexCoordsStash;
         private Stash<PositionComponent> _positionsStash;
         private Stash<TargetSearchRadiusComponent> _targetSearchRadiusStash;
@@ -43,7 +43,7 @@ namespace ZE.MechBattle.Editor.Tests
             _entities = new NativeList<Entity>(ALLOCATOR);
 
             _affiliationsStash = _world.GetStash<PlayerAffiliationComponent>();
-            _targetsStash = _world.GetStash<AttackTargetComponent>();
+            _targetsStash = _world.GetStash<ClosestAttackTargetComponent>();
             _hexCoordsStash = _world.GetStash<HexCoordComponent>();
             _positionsStash = _world.GetStash<PositionComponent>();
             _targetSearchRadiusStash = _world.GetStash<TargetSearchRadiusComponent>();
@@ -100,20 +100,19 @@ namespace ZE.MechBattle.Editor.Tests
             }
 
             _entitiesMap = FormTargetsMapCommand.Execute(_entitiesMap, ALLOCATOR, _movementCellsFilter, _movementCellComponents, _cellComponents);
-            var job = new TargetDefineJob()
+            var job = new TargetDefineJob
             {
                 HexEdgeLength = _map.HexEdgeLength,
                 EnemiesMask = _relations,
                 EntitiesMap = _entitiesMap,
                 TriangleHeight = _map.TriangleHeight,
+                Entities = _entities,
+                AffiliationsStash = _affiliationsStash.AsNative(),
+                AttackTargets = _targetsStash.AsNative(),
+                HexCoordComponents = _hexCoordsStash.AsNative(),
+                PositionComponents = _positionsStash.AsNative(),
+                TargetSearchRadius = _targetSearchRadiusStash.AsNative()
             };
-
-            job.Entities = _entities;
-            job.AffiliationsStash = _affiliationsStash.AsNative();
-            job.AttackTargets = _targetsStash.AsNative();
-            job.HexCoordComponents = _hexCoordsStash.AsNative();
-            job.PositionComponents = _positionsStash.AsNative();
-            job.TargetSearchRadius = _targetSearchRadiusStash.AsNative();
 
             Measure.Method(
                 () => 
