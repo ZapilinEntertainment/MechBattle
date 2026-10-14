@@ -27,6 +27,8 @@ namespace ZE.MechBattle.Ecs
 
         public void Execute(int index)
         {
+            // note: using local functions and inner caching can increase execution time up to 2 ms!
+
             var entity = Entities[index];
             var searchRadius = TargetSearchRadius.Get(entity).Value;
             var searchRadiusInTriangles = (int)math.ceil(searchRadius / TriangleHeight) + 1;
@@ -37,36 +39,6 @@ namespace ZE.MechBattle.Ecs
             var entityOwnerId = AffiliationsStash.Get(entity).PlayerKey.Id;
             var entityEnemiesMask = EnemiesMask[entityOwnerId];
             var closestDistanceSq = searchRadius * searchRadius;
-
-            // caching for local functions
-            var positionsStash = PositionComponents;
-            var affiliationsStash = AffiliationsStash;
-            var entitiesMap = EntitiesMap;
-
-            bool CheckIfTargetIsClosest(Entity targetEntity)
-            {
-                var distanceSq = math.distancesq(entityPosition, positionsStash.Get(targetEntity).Value);
-                if (distanceSq < closestDistanceSq)
-                {
-                    closestDistanceSq = distanceSq;
-                    closestEntity = targetEntity;
-                    return true;
-                }
-                return false;
-            }
-
-            bool TryGetEnemyEntity(IntTriangularPos tripos, out Entity targetEntity, PlayerRelationsMask enemiesMask)
-            {
-                if (!entitiesMap.TryGetValue(tripos, out targetEntity))
-                    return false;
-
-                var targetAffiliationComponent = affiliationsStash.Get(targetEntity, out var affiliated);
-                if (!affiliated)
-                    return false;
-
-                return enemiesMask.Contains(targetAffiliationComponent.PlayerKey);
-            }
-
 
             var closestVirtualHexCenter = HexLogic.GetClosestVirtualHexPos(entityPosition, TriangleHeight);
             Span<IntTriangularPos> innerRingTriangles = stackalloc IntTriangularPos[6];
@@ -86,14 +58,20 @@ namespace ZE.MechBattle.Ecs
                 {
                     foreach (var tripos in new HexSectorRowEnumerator(setupData[sectorIndex], rowIndex))
                     {
-                        if (TryGetEnemyEntity(tripos, out var enemyEntity, entityEnemiesMask))
+                        if (!EntitiesMap.TryGetValue(tripos, out var targetEntity))
+                            continue;
+
+                        var targetAffiliationComponent = AffiliationsStash.Get(targetEntity, out var affiliated);
+                        if (!affiliated || !entityEnemiesMask.Contains(targetAffiliationComponent.PlayerKey))
+                            continue;
+
+                        var distanceSq = math.distancesq(entityPosition, PositionComponents.Get(targetEntity).Value);
+                        if (distanceSq < closestDistanceSq)
                         {
-                            if (CheckIfTargetIsClosest(enemyEntity))
-                            {
-                                rowCandidateFound = true;
-                                // going to other sector
-                                break;
-                            }
+                            closestDistanceSq = distanceSq;
+                            closestEntity = targetEntity;
+                            rowCandidateFound = true;
+                            break;
                         }
                     }
                 }

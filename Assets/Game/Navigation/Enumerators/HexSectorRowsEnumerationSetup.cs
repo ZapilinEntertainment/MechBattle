@@ -2,6 +2,9 @@ namespace ZE.MechBattle.Navigation
 {
     public readonly struct HexSectorRowsEnumerationSetup
     {
+        // note: replace enum with int3 will result in execution time raising - because of size and prediction
+        // however, depends on processor architecture
+
         public readonly PeakNeighbour PeakColumnOffset;
         public readonly PeakNeighbour PeakRowOffset;
         public readonly ValleyNeighbour ValleyColumnOffset;

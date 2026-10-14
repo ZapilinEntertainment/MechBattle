@@ -5,8 +5,8 @@ using UnityEngine.UIElements;
 
 namespace ZE.MechBattle.Navigation.DebugOverlay
 {
-    [Overlay(typeof(SceneView), nameof(NavLineOverlay), true)]
-    public class NavLineOverlay : Overlay
+    [Overlay(typeof(SceneView), nameof(TriangleSelectOverlay), true)]
+    public class TriangleSelectOverlay : Overlay
     {
         private readonly LineDrawer _xDrawer, _zDrawer, _yDrawer;
         private bool _isSubscribedToUpdate = false;
@@ -34,7 +34,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
             }
         }
 
-        public NavLineOverlay()
+        public TriangleSelectOverlay()
         {
             var rotation = Quaternion.AngleAxis(-90f, Vector3.up);
 

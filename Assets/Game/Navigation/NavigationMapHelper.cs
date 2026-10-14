@@ -7,12 +7,12 @@ namespace ZE.MechBattle.Navigation
 {
     public static class NavigationMapHelper
     {
-        private static readonly IntTriangularPos TOP_TRIANGLE_OFFSET = HexSector.Top.GetHexCenterOffset();
-        private static readonly IntTriangularPos TOP_RIGHT_TRIANGLE_OFFSET = HexSector.TopRight.GetHexCenterOffset();
-        private static readonly IntTriangularPos BOTTOM_RIGHT_TRIANGLE_OFFSET = HexSector.BottomRight.GetHexCenterOffset();
-        private static readonly IntTriangularPos BOTTOM_TRIANGLE_OFFSET = HexSector.Bottom.GetHexCenterOffset();
-        private static readonly IntTriangularPos BOTTOM_LEFT_TRIANGLE_OFFSET = HexSector.BottomLeft.GetHexCenterOffset();
-        private static readonly IntTriangularPos TOP_LEFT_TRIANGLE_OFFSET = HexSector.TopLeft.GetHexCenterOffset();
+        public static readonly IntTriangularPos TOP_TRIANGLE_OFFSET = HexSector.Top.GetHexCenterOffset();
+        public static readonly IntTriangularPos TOP_RIGHT_TRIANGLE_OFFSET = HexSector.TopRight.GetHexCenterOffset();
+        public static readonly IntTriangularPos BOTTOM_RIGHT_TRIANGLE_OFFSET = HexSector.BottomRight.GetHexCenterOffset();
+        public static readonly IntTriangularPos BOTTOM_TRIANGLE_OFFSET = HexSector.Bottom.GetHexCenterOffset();
+        public static readonly IntTriangularPos BOTTOM_LEFT_TRIANGLE_OFFSET = HexSector.BottomLeft.GetHexCenterOffset();
+        public static readonly IntTriangularPos TOP_LEFT_TRIANGLE_OFFSET = HexSector.TopLeft.GetHexCenterOffset();
 
 
         /// <summary>
