@@ -9,15 +9,17 @@ using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle.Ecs
 {
+    // ~0.009 ms per entity
+
     [BurstCompile]
-    public struct TargetDefineJob : IJobParallelFor
+    public struct ClosestTargetDefineJob : IJobParallelFor
     {
         public float HexEdgeLength;
         public float TriangleHeight;
         [ReadOnly]public NativeArray<PlayerRelationsMask> EnemiesMask;
 
         [ReadOnly] public NativeList<Entity> Entities;
-        [ReadOnly] public NativeParallelHashMap<IntTriangularPos, Entity> EntitiesMap;        
+        [ReadOnly] public NativeHashMap<IntTriangularPos, Entity> EntitiesMap;        
         [ReadOnly] public NativeStash<PlayerAffiliationComponent> AffiliationsStash;
         [ReadOnly] public NativeStash<HexCoordComponent> HexCoordComponents;
         [ReadOnly] public NativeStash<PositionComponent> PositionComponents;
@@ -58,8 +60,10 @@ namespace ZE.MechBattle.Ecs
                 {
                     foreach (var tripos in new HexSectorRowEnumerator(setupData[sectorIndex], rowIndex))
                     {
+                        // 90% of execution time
                         if (!EntitiesMap.TryGetValue(tripos, out var targetEntity))
                             continue;
+                        //
 
                         var targetAffiliationComponent = AffiliationsStash.Get(targetEntity, out var affiliated);
                         if (!affiliated || !entityEnemiesMask.Contains(targetAffiliationComponent.PlayerKey))

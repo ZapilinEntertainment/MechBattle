@@ -8,8 +8,8 @@ namespace ZE.MechBattle
 {
     public static class FormTargetsMapCommand
     {
-        public static NativeParallelHashMap<IntTriangularPos, Entity> Execute(
-            NativeParallelHashMap<IntTriangularPos, Entity> map, 
+        public static NativeHashMap<IntTriangularPos, Entity> Execute(
+            NativeHashMap<IntTriangularPos, Entity> map, 
             Allocator allocator,
             Filter movementCellsFilter,
             Stash<CellMovementDataComponent> moveCellComponents,
@@ -19,7 +19,7 @@ namespace ZE.MechBattle
             if (map.Capacity < count)
             {
                 map.Dispose();
-                map = new NativeParallelHashMap<IntTriangularPos, Entity>(math.ceilpow2(count), allocator);
+                map = new NativeHashMap<IntTriangularPos, Entity>(math.ceilpow2(count), allocator);
             }
             else
             {

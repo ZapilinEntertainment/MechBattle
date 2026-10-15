@@ -11,11 +11,11 @@ namespace ZE.MechBattle.Ecs
 {
     public class TargetDefineProcess : IDisposable
     {
-        private TargetDefineJob _job;
+        private ClosestTargetDefineJob _job;
         private NativeArray<PlayerRelationsMask> _relationMasks;
         private NativeList<Entity> _entitiesList;
         private JobHandle _activeJobHandle;
-        private NativeParallelHashMap<IntTriangularPos, Entity> _entitiesMap;
+        private NativeHashMap<IntTriangularPos, Entity> _entitiesMap;
 
         private readonly float _hexEdgeLength;
         private readonly World _world;
@@ -52,7 +52,7 @@ namespace ZE.MechBattle.Ecs
 
             _relationMasks = new NativeArray<PlayerRelationsMask>(playersList.Count, ALLOCATOR);     
             _entitiesList = new NativeList<Entity>(ALLOCATOR);
-            _entitiesMap = new NativeParallelHashMap<IntTriangularPos, Entity>(128, ALLOCATOR);
+            _entitiesMap = new NativeHashMap<IntTriangularPos, Entity>(128, ALLOCATOR);
 
             _movementCellsFilter = _world.Filter.With<CellMovementDataComponent>().Build();
             _movementCells = _world.GetStash<CellMovementDataComponent>();
