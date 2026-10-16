@@ -42,7 +42,7 @@ namespace ZE.MechBattle.Ecs {
                 return;
 
             var cellsNativeFilter = _cellsFilter.AsNative();
-            _map = ExtendOrClearNativeMapCommand.Execute(_map, cellsNativeFilter.length, ALLOCATOR);
+            _map = ExtendNativeCollectionCommand.Execute(_map, cellsNativeFilter.length, ALLOCATOR);
 
 
             var prepareJob = new PrepareCellsMapJob()

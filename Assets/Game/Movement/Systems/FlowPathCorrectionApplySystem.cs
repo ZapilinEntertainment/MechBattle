@@ -54,7 +54,7 @@ namespace ZE.MechBattle.Ecs {
 
             // 1. prepare avoidance map
             var cellsNativeFilter = _cellsFilter.AsNative();
-            _avoidanceMap = ExtendOrClearNativeMapCommand.Execute(_avoidanceMap, cellsNativeFilter.length, ALLOCATOR);
+            _avoidanceMap = ExtendNativeCollectionCommand.Execute(_avoidanceMap, cellsNativeFilter.length, ALLOCATOR);
             var prepareJob = new PrepareAvoidanceMapDataJob()
             {
                 CellEntities = _cellEntities.AsNative(),

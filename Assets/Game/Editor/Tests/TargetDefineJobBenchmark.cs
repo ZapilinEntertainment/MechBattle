@@ -8,6 +8,9 @@ using ZE.MechBattle.Navigation;
 using Scellecs.Morpeh;
 using Scellecs.Morpeh.Native;
 using Unity.Burst;
+using ZE.MechBattle.PlayerData;
+using ZE.MechBattle.Navigation.Ecs;
+using ZE.MechBattle.Movement.CollisionAvoidance;
 
 namespace ZE.MechBattle.Editor.Tests
 {
@@ -15,10 +18,10 @@ namespace ZE.MechBattle.Editor.Tests
     {
         private float _targetSearchRadius;
         private World _world;
-        private NavigationMap _map;
-        private NativeArray<PlayerRelationsMask> _relations;
-        private NativeList<Entity> _entities;
-        private NativeHashMap<IntTriangularPos, Entity> _entitiesMap;
+        private EntitiesNavigationMap _map;
+        private MovementCellsMap _movementCellsMap;
+        private TargetDefineProcess _process;
+        private PlayerRelations _relations;
 
         private Stash<PlayerAffiliationComponent> _affiliationsStash;
         private Stash<ClosestAttackTargetComponent> _targetsStash;
@@ -26,21 +29,12 @@ namespace ZE.MechBattle.Editor.Tests
         private Stash<PositionComponent> _positionsStash;
         private Stash<TargetSearchRadiusComponent> _targetSearchRadiusStash;
 
-        private Filter _movementCellsFilter;
-        private Stash<CellMovementDataComponent> _movementCellComponents;
-        private Stash<CellEntityComponent> _cellComponents;
-
-        private const Allocator ALLOCATOR = Allocator.TempJob;
-
         [SetUp]
         public void Setup()
         {
             // BurstCompiler.Options.EnableBurstCompilation = true;
             _world = World.Create();
-            _map = PrepareTestingMap(ALLOCATOR, 10);
-            _relations = PrepareRelationsMask();
-            _entitiesMap = new NativeHashMap<IntTriangularPos, Entity>(100, ALLOCATOR);
-            _entities = new NativeList<Entity>(ALLOCATOR);
+            _map = PrepareTestingMap(_world, 10);     
 
             _affiliationsStash = _world.GetStash<PlayerAffiliationComponent>();
             _targetsStash = _world.GetStash<ClosestAttackTargetComponent>();
@@ -48,25 +42,24 @@ namespace ZE.MechBattle.Editor.Tests
             _positionsStash = _world.GetStash<PositionComponent>();
             _targetSearchRadiusStash = _world.GetStash<TargetSearchRadiusComponent>();
 
-            _movementCellsFilter = _world.Filter.With<CellMovementDataComponent>().Build();
-            _movementCellComponents = _world.GetStash<CellMovementDataComponent>();
-            _cellComponents = _world.GetStash<CellEntityComponent>();
+            var playersList = new PlayersList();
+            playersList.AddPlayerEntity(new PlayerKey(0), _world.CreateEntity());
+            playersList.AddPlayerEntity(new PlayerKey(1), _world.CreateEntity());
+            _relations = new();
+            _process = new(_map, playersList, _movementCellsMap, _relations, _world);
         }
 
         [TearDown]
         public void Teardown()
         {
-            _world.Dispose();
-            _map.Dispose();
-            _relations.Dispose();
-            _entitiesMap.Dispose();
-            _entities.Dispose();
+            _process.Dispose();
+            _world.Dispose();           
         }
 
-        public NavigationMap PrepareTestingMap(Allocator allocator, int trianglesPerEdge)
+        public EntitiesNavigationMap PrepareTestingMap(World world, int trianglesPerEdge)
         {
             var mapSettings = MapSettings.CreateWithDefaultBorders(100f, trianglesPerEdge);
-            var map = new NavigationMap(mapSettings, allocator);
+            var map = new EntitiesNavigationMap(mapSettings, new(world, new(world)), new HexEntitiesHandler(world));
 
             // hex with edge rows per each edge
             foreach (var tripos in new HexTrianglesEnumerator(IntTriangularPos.zero, trianglesPerEdge + 1))
@@ -74,17 +67,23 @@ namespace ZE.MechBattle.Editor.Tests
                 map.UpdateCellPassability(tripos, default);
             }
 
+            _movementCellsMap = new(world, map);
+
             return map;
         }
 
 
 
-        [TestCase(600, 0.018f, 5), Performance]
+        [Performance]
+        [TestCase(600, 0.001f, 5)] // ~1000 entities 
+        [TestCase(600, 0.00001f, 10)] // ~1 entity 
+        [TestCase(600, 0.00005f, 100)] // ~ 1000 entities, big map
+        [TestCase(600, 0.000004f, 100)] // ~ 100 entities, big map
         public void SearchTargetJobBenchmark(float targetSearchRadius, float spawnChance, int hexRadius)
         {
             _targetSearchRadius = targetSearchRadius;
 
-            PrepareEntities(_world, _map, hexRadius, spawnChance);
+            PrepareData(_world, _map, hexRadius, spawnChance);
             _world.Commit();
 
             var filter = _world.Filter
@@ -93,52 +92,31 @@ namespace ZE.MechBattle.Editor.Tests
                 .With<HexCoordComponent>()
                 .Build();
 
-
-            foreach (var entity in filter)
-            {
-                _entities.Add(entity);
-            }
-
-            _entitiesMap = FormTargetsMapCommand.Execute(
-                _entitiesMap, Allocator.TempJob, _movementCellsFilter, _movementCellComponents, _cellComponents
-                );
-            var job = new ClosestTargetDefineJob
-            {
-                HexEdgeLength = _map.HexEdgeLength,
-                EnemiesMask = _relations,
-                EntitiesMap = _entitiesMap,
-                TriangleHeight = _map.TriangleHeight,
-                Entities = _entities,
-                AffiliationsStash = _affiliationsStash.AsNative(),
-                AttackTargets = _targetsStash.AsNative(),
-                HexCoordComponents = _hexCoordsStash.AsNative(),
-                PositionComponents = _positionsStash.AsNative(),
-                TargetSearchRadius = _targetSearchRadiusStash.AsNative()
-            };
-
+            TestContext.WriteLine($"Entities count: {filter.GetLengthSlow()}");
             Measure.Method(
                 () =>
                 {
-                    var handle = job.ScheduleByRef(_entities.Length, innerloopBatchCount: 32);
+                    var handle = _process.SchedulePrepareDataJob(filter);
                     handle.Complete();
                 })
                 .WarmupCount(3)
                 .MeasurementCount(100)
+                .SampleGroup("preparing")
                 .Run();
 
-            TestContext.WriteLine($"Entities count: {_entities.Length}");
+            Measure.Method(
+                () =>
+                {
+                    var handle = _process.ScheduleCalculationJob(default);
+                    handle.Complete();
+                })
+                .WarmupCount(3)
+                .MeasurementCount(100)
+                .SampleGroup("calculating")
+                .Run();
         }
 
-        private NativeArray<PlayerRelationsMask> PrepareRelationsMask()
-        {
-            var playerRelations = new PlayerRelations();
-            var array = new NativeArray<PlayerRelationsMask>(2, Allocator.TempJob);
-            array[0] = playerRelations.GetEnemiesMask(0);
-            array[1] = playerRelations.GetEnemiesMask(1);
-            return array;
-        }
-
-        private void PrepareEntities(World world, INavigationMap map, int hexRadius, float spawnChance)
+        private void PrepareData(World world, EntitiesNavigationMap map, int hexRadius, float spawnChance)
         {
             var random = new System.Random();
 
@@ -149,14 +127,18 @@ namespace ZE.MechBattle.Editor.Tests
                 {
                     if (random.NextDouble() < spawnChance)
                     {
-                        CreateEntity((float)random.NextDouble(), tripos, hexCoord);
+                        var entity = CreateEntity((float)random.NextDouble(), tripos, hexCoord);
+
+                        // note: will write single cell only, rewrite on larger units
+                        _movementCellsMap.TryWriteCell(tripos, new(entity, MovementCollisionAvoidancePriority.SmallUnit, float2.zero, 0));
+
                     }
                 }
 
             }
         }
 
-        private void CreateEntity(float randomValue, IntTriangularPos pos, int2 hexCoord)
+        private Entity CreateEntity(float randomValue, IntTriangularPos pos, int2 hexCoord)
         {
             var entity = _world.CreateEntity();
             _affiliationsStash.Set(entity, new() { PlayerKey = new PlayerKey(randomValue > 0.5f ? 1 : 0) });
@@ -164,6 +146,7 @@ namespace ZE.MechBattle.Editor.Tests
             _hexCoordsStash.Set(entity, new() { Value = hexCoord });
             _positionsStash.Set(entity, new() { Value = TriangularMath.TriangularToWorld(pos, _map.TriangleHeight) });
             _targetSearchRadiusStash.Set(entity, new(_targetSearchRadius));
+            return entity;
         }
     }
 }

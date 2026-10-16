@@ -55,7 +55,7 @@ namespace ZE.MechBattle.Ecs {
 
             var nextPositionsNativeFilter = _nextPositionsFilter.AsNative();
             var cellsNativeFilter = _cellsFilter.AsNative();
-            _cellsMap =  ExtendOrClearNativeMapCommand.Execute(_cellsMap, cellsNativeFilter.length, ALLOCATOR);
+            _cellsMap =  ExtendNativeCollectionCommand.Execute(_cellsMap, cellsNativeFilter.length, ALLOCATOR);
 
             var prepareMapJob = new PrepareCellsMapJob()
             {

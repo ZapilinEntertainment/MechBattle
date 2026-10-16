@@ -33,5 +33,6 @@ namespace ZE.MechBattle
         public PlayerRelationsMask(BitField32 mask) => _mask = mask;
 
         public bool Contains(PlayerKey playerKey) => _mask.IsSet(playerKey.Id);
+        public bool Contains(int playerId) => ((uint)playerId < 32) && _mask.IsSet(playerId);
     }
 }

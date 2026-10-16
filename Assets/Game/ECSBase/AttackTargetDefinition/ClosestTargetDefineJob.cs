@@ -9,38 +9,62 @@ using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle.Ecs
 {
-    // ~0.009 ms per entity
-
     [BurstCompile]
     public struct ClosestTargetDefineJob : IJobParallelFor
     {
+        public readonly struct HandlingEntityData
+        {
+            public readonly int EntityDataIndex;
+            public readonly float SearchRadiusInUnits;
+
+            public HandlingEntityData(int entityDataIndex, float searchRadiusInUnits)
+            {
+                EntityDataIndex = entityDataIndex;
+                SearchRadiusInUnits = searchRadiusInUnits;
+            }
+        }
+
+        public readonly struct TargetEntityData
+        {
+            public readonly int PlayerId;
+            public readonly Entity Entity;            
+            public readonly float3 WorldPos;
+
+            public TargetEntityData(Entity entity, int playerId, float3 worldPos)
+            {
+                Entity = entity;
+                PlayerId = playerId;
+                WorldPos = worldPos;
+            }
+        }
+
         public float HexEdgeLength;
         public float TriangleHeight;
-        [ReadOnly]public NativeArray<PlayerRelationsMask> EnemiesMask;
 
-        [ReadOnly] public NativeList<Entity> Entities;
-        [ReadOnly] public NativeHashMap<IntTriangularPos, Entity> EntitiesMap;        
-        [ReadOnly] public NativeStash<PlayerAffiliationComponent> AffiliationsStash;
-        [ReadOnly] public NativeStash<HexCoordComponent> HexCoordComponents;
-        [ReadOnly] public NativeStash<PositionComponent> PositionComponents;
-        [ReadOnly] public NativeStash<TargetSearchRadiusComponent> TargetSearchRadius;
+        [ReadOnly] public NativeArray<PlayerRelationsMask> EnemiesMask;
+        [ReadOnly] public NativeHashMap<IntTriangularPos, int>.ReadOnly EntitiesMap;
+        [ReadOnly] public NativeArray<TargetEntityData>.ReadOnly TargetEntitiesData;
+        [ReadOnly] public NativeArray<HandlingEntityData>.ReadOnly HandlingEntitiesData;
 
-        public NativeStash<ClosestAttackTargetComponent> AttackTargets;
+        [WriteOnly] public NativeArray<Entity> ResultingTargets;
 
         public void Execute(int index)
         {
-            // note: using local functions and inner caching can increase execution time up to 2 ms!
+            // note: using local functions and inner caching can increase execution time
+            var handlingEntityData= HandlingEntitiesData[index];
+            var handlingEntityDataIndex = handlingEntityData.EntityDataIndex;
+            if (handlingEntityDataIndex == -1)
+                return;
 
-            var entity = Entities[index];
-            var searchRadius = TargetSearchRadius.Get(entity).Value;
-            var searchRadiusInTriangles = (int)math.ceil(searchRadius / TriangleHeight) + 1;
 
-            var entityHexCoord = HexCoordComponents.Get(entity).Value;
+            var searchRadiusInTriangles = (int)math.ceil(handlingEntityData.SearchRadiusInUnits / TriangleHeight) + 1;
+            var entityData = TargetEntitiesData[handlingEntityDataIndex];
+
             Entity closestEntity = default;
-            var entityPosition = PositionComponents.Get(entity).Value;     
-            var entityOwnerId = AffiliationsStash.Get(entity).PlayerKey.Id;
+            var entityPosition = entityData.WorldPos;     
+            var entityOwnerId = entityData.PlayerId;
             var entityEnemiesMask = EnemiesMask[entityOwnerId];
-            var closestDistanceSq = searchRadius * searchRadius;
+            var closestDistanceSq = handlingEntityData.SearchRadiusInUnits * handlingEntityData.SearchRadiusInUnits;
 
             var closestVirtualHexCenter = HexLogic.GetClosestVirtualHexPos(entityPosition, TriangleHeight);
             Span<IntTriangularPos> innerRingTriangles = stackalloc IntTriangularPos[6];
@@ -60,20 +84,21 @@ namespace ZE.MechBattle.Ecs
                 {
                     foreach (var tripos in new HexSectorRowEnumerator(setupData[sectorIndex], rowIndex))
                     {
+                        
                         // 90% of execution time
-                        if (!EntitiesMap.TryGetValue(tripos, out var targetEntity))
+                        if (!EntitiesMap.TryGetValue(tripos, out var targetEntityIndex) || targetEntityIndex == -1)
                             continue;
                         //
 
-                        var targetAffiliationComponent = AffiliationsStash.Get(targetEntity, out var affiliated);
-                        if (!affiliated || !entityEnemiesMask.Contains(targetAffiliationComponent.PlayerKey))
+                        var targetEntityData = TargetEntitiesData[targetEntityIndex];
+                        if (!entityEnemiesMask.Contains(targetEntityData.PlayerId))
                             continue;
 
-                        var distanceSq = math.distancesq(entityPosition, PositionComponents.Get(targetEntity).Value);
+                        var distanceSq = math.distancesq(entityPosition, targetEntityData.WorldPos);
                         if (distanceSq < closestDistanceSq)
                         {
                             closestDistanceSq = distanceSq;
-                            closestEntity = targetEntity;
+                            closestEntity = targetEntityData.Entity;
                             rowCandidateFound = true;
                             break;
                         }
@@ -81,10 +106,9 @@ namespace ZE.MechBattle.Ecs
                 }
                 if (rowCandidateFound)
                     break;
-            }           
+            }
 
-            ref var attackTargetComponent = ref AttackTargets.Get(entity);
-            attackTargetComponent.Entity = closestEntity;
+            ResultingTargets[index] = closestEntity;
             //if (closestEntity != default) UnityEngine.Debug.Log($"closest enemy for entity {entity.Id} is entity {closestEntity.Id}");
           }
     }
