@@ -49,8 +49,11 @@ namespace ZE.MechBattle.Editor.Tests
             _cellMovementDataComponents = _world.GetStash<CellMovementDataComponent>();
 
             var playersList = new PlayersList();
-            playersList.AddPlayerEntity(new PlayerKey(0), _world.CreateEntity());
-            playersList.AddPlayerEntity(new PlayerKey(1), _world.CreateEntity());
+
+            for (var i = 0; i < 8; i++)
+            {
+                playersList.AddPlayerEntity(new PlayerKey(8), _world.CreateEntity());
+            }
             _relations = new();
             _process = new(_map, playersList, _movementCellsMap, _relations, _world);
         }

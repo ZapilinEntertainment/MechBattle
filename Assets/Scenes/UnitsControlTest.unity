@@ -2939,6 +2939,7 @@ GameObject:
   - component: {fileID: 1259888778}
   - component: {fileID: 1259888777}
   - component: {fileID: 1259888769}
+  - component: {fileID: 1259888780}
   - component: {fileID: 1259888776}
   - component: {fileID: 1259888779}
   m_Layer: 0
@@ -2981,7 +2982,7 @@ MonoBehaviour:
   _spawnRadius: 6
   _startHex:
     x: -2
-    y: 1
+    y: 2
   _endHex:
     x: 1
     y: 1
@@ -3175,6 +3176,28 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZE.Navigation::ZE.MechBattle.Navigation.NavigationLoggerSetup
   _eventSettings: 0
+--- !u!114 &1259888780
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259888751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30c6eb5277e586d418748a035b89bc6f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.UnitSquadSpawnUtility
+  _spawnByClick: 0
+  _unitId: tank
+  _playerId: 2
+  _spawnRadius: 6
+  _startHex:
+    x: -2
+    y: 4
+  _endHex:
+    x: -2
+    y: 1
 --- !u!1001 &1305719369
 PrefabInstance:
   m_ObjectHideFlags: 0

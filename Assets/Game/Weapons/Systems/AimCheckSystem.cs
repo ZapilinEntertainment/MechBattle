@@ -22,7 +22,7 @@ namespace ZE.MechBattle.Ecs {
         public override void OnAwake()
         {
             _filter = World.Filter
-                .With<WeaponTag>()
+                .With<WeaponComponent>()
                 .With<AttackRangeReachedTag>()
                 .With<AttackTargetComponent>()
                 .With<AimPrecisionComponent>()

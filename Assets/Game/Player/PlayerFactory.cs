@@ -36,7 +36,17 @@ namespace ZE.MechBattle.PlayerData
             _playersList.AddPlayerEntity(playerKey, playerEntity);
 
              _mechRequestsFactory.CreateRequest(new(playerKey, spawnPoint.pos, spawnPoint.rot, directControl: true));
-            // todo: addEntityComponentAppearTracker for camera following
+
+            return playerEntity;
+        }
+
+        public Entity CreatePlayer()
+        {
+            var playerEntity = _world.CreateEntity();
+            var id = _nextPlayerId++;
+            _playerComponents.Add(playerEntity, new(id));
+            var playerKey = new PlayerKey(id);
+            _playersList.AddPlayerEntity(playerKey, playerEntity);
 
             return playerEntity;
         }

@@ -13,6 +13,7 @@ namespace ZE.MechBattle.Ecs
 
             installer.AddSystem<AttackTargetValidationSystem>(SystemGroupOrder.Default);
             installer.AddSystem<AttackTargetSpecificationSystem>(SystemGroupOrder.Default);
+            installer.AddSystem<WeaponTargetSelectSystem>(SystemGroupOrder.Default);
             installer.AddSystem<CompositeTargetClearTagSystem>(SystemGroupOrder.AfterDispose);
 
             installer.AddSystem<RestorationSystem>(SystemGroupOrder.Default);

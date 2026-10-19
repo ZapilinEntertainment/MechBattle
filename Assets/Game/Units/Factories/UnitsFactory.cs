@@ -123,9 +123,10 @@ namespace ZE.MechBattle
                 WeaponConfig = weaponData.Config,
                 AttachmentProtocol = weaponData.AttachmentProtocol,
 
+                WeaponControllerEntity = unitEntity,
+
                 UseAutoStow = true,
                 UseAutoShot = true,
-                SyncTargetWithParent = true,
 
                 DamageParameters = new(weaponData.Config.DamageType, config.Damage),                
             });

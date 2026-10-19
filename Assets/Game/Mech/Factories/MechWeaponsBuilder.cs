@@ -110,6 +110,8 @@ namespace ZE.MechBattle.MechBuilding
             {
                 WeaponConfig = weaponConfig,
                 ParentEntity = parent,
+                WeaponControllerEntity = _mainBuilder.MechEntity,
+
                 AttachmentProtocol = partAttachmentProtocol,
                 SyncTargetWithParent = true,
                 AlwaysCalculateShotPoint = true,
@@ -169,7 +171,8 @@ namespace ZE.MechBattle.MechBuilding
                 SyncTargetWithParent = true,
                 SyncFireTagWithParent = true,
                 AlwaysCalculateShotPoint = true,
-                ViewOwnerEntity = _mainBuilder.MechEntity
+                ViewOwnerEntity = _mainBuilder.MechEntity,
+                WeaponControllerEntity = _mainBuilder.MechEntity,               
                 
             });
 

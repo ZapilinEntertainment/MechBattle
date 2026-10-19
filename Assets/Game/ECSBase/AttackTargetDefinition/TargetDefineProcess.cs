@@ -167,7 +167,7 @@ namespace ZE.MechBattle.Ecs
             }
             Stage = CalculationProcessStage.Idle;
 
-            UnityEngine.Debug.Log($"applied  {success} / {_handlingEntitiesCount.Value} results");
+           // UnityEngine.Debug.Log($"applied  {success} / {_handlingEntitiesCount.Value} results");
         }
 
         public void Dispose()

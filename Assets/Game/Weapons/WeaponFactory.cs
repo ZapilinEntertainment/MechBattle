@@ -36,7 +36,7 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<SyncWithParentTargetTag> _syncTargetWithParent;
         private readonly Stash<SyncFireTagWithParentTag> _syncFireTagWithParent;
 
-        private readonly Stash<WeaponTag> _weaponTags;
+        private readonly Stash<WeaponComponent> _weaponComponents;
 
         private readonly Stash<AlwaysCalculateShotPointTag> _alwaysCalculateShotPointsTag;
 
@@ -78,7 +78,7 @@ namespace ZE.MechBattle.Ecs
             _weaponRayComponents = world.GetStash<WeaponRayComponent>();
 
             _continuosFiringTag = world.GetStash<ContinuosFiringTag>();
-            _weaponTags = world.GetStash<WeaponTag>();
+            _weaponComponents = world.GetStash<WeaponComponent>();
 
             _alwaysCalculateShotPointsTag = world.GetStash<AlwaysCalculateShotPointTag>();
         }
@@ -86,6 +86,7 @@ namespace ZE.MechBattle.Ecs
         public struct WeaponCreationProtocol
         {
             public Entity ParentEntity;
+            public Entity WeaponControllerEntity;
             public WeaponConfigBase WeaponConfig;
             public ViewPartAttachmentProtocol AttachmentProtocol;
 
@@ -160,7 +161,7 @@ namespace ZE.MechBattle.Ecs
 
         public void ApplyWeaponComponents(Entity weaponEntity, WeaponCreationProtocol protocol)
         {
-            _weaponTags.Add(weaponEntity);
+            _weaponComponents.Add(weaponEntity, new(protocol.WeaponControllerEntity));
 
             var weaponConfig = protocol.WeaponConfig;
 

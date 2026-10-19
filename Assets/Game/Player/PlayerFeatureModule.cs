@@ -36,6 +36,11 @@ namespace ZE.MechBattle
             var localPlayerSpawn = levelSettings.GetSpawnPoint(GameConstants.LOCAL_PLAYER_KEY);
             var localPlayerEntity = playerFactory.CreateLocalPlayer(localPlayerSpawn.ToRigidTransform());
 
+            for (var i = 1; i < 4; i++)
+            {
+                playerFactory.CreatePlayer();
+            }
+
             var playerInitializer = resolver.Resolve<LocalPlayerInitializer>();
             playerInitializer.StartTracking(localPlayerEntity);
         }
