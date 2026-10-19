@@ -2980,8 +2980,8 @@ MonoBehaviour:
   _playerId: 1
   _spawnRadius: 6
   _startHex:
-    x: -1
-    y: 0
+    x: -2
+    y: 1
   _endHex:
     x: 1
     y: 1
@@ -3144,7 +3144,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.EnemySquadSpawnUtility
   _playerId: 0
   _unitId: tank
-  _unitsCount: 100
+  _unitsCount: 500
   _hexCoord:
     x: -2
     y: 2

@@ -3,6 +3,7 @@ using Scellecs.Morpeh.Native;
 using System;
 using Unity.Collections;
 using Unity.Jobs;
+using Unity.Mathematics;
 using ZE.MechBattle.Navigation;
 using ZE.Utils;
 
@@ -10,18 +11,14 @@ namespace ZE.MechBattle.Ecs
 {
     public class TargetDefineProcess : IDisposable
     {
-        public CalculationProcessStage Stage
-        {
-            get => _isCalculating ? CalculationProcessStage.Calculating : (_activeJobHandle.IsCompleted ? CalculationProcessStage.Complete : CalculationProcessStage.Idle);
-        }
+        public CalculationProcessStage Stage { get; private set; }
 
-        private bool _isCalculating = false;
         private NativeArray<PlayerRelationsMask> _relationMasks;
         private JobHandle _activeJobHandle;
         private NativeHashMap<IntTriangularPos, int> _entitiesMap;
         private NativeArray<ClosestTargetDefineJob.HandlingEntityData> _handlingEntitiesData;
         private NativeArray<Entity> _resultingArray;
-
+        private NativeReference<int> _handlingEntitiesCount;
 
         private readonly NativeList<ClosestTargetDefineJob.TargetEntityData> _targetEntitiesData;
 
@@ -60,20 +57,42 @@ namespace ZE.MechBattle.Ecs
 
             _relationMasks = new NativeArray<PlayerRelationsMask>(playersList.Count, ALLOCATOR);
             _targetEntitiesData = new NativeList<ClosestTargetDefineJob.TargetEntityData>(ALLOCATOR);
+            _handlingEntitiesCount = new(ALLOCATOR);
 
             _movementCellsFilter = _world.Filter.With<CellMovementDataComponent>().Build();
             _movementCells = _world.GetStash<CellMovementDataComponent>();
             _cellComponents = _world.GetStash<CellEntityComponent>();
         }
 
-        public JobHandle SchedulePrepareDataJob(Filter attackersFilter)
+        public CalculationProcessStage UpdateStage()
+        {
+            if (Stage == CalculationProcessStage.Calculating)
+            {
+                if (_activeJobHandle.IsCompleted)
+                    Stage = CalculationProcessStage.Complete;
+            }
+
+
+            return Stage;
+        }
+
+        public JobHandle SchedulePrepareDataJob(Filter attackersFilter, int handlingEntitiesLimit)
         {
             var nativeCellsFilter = _movementCellsFilter.AsNative();
             var nativeAttackersFilter = attackersFilter.AsNative();
 
+            if (nativeCellsFilter.length == 0)
+            {
+                UnityEngine.Debug.LogError("no navigation cells presented");
+                return default;
+            }
+
+            // not all filter entities may be handled
+            _handlingEntitiesCount.Value = handlingEntitiesLimit < nativeAttackersFilter.length ? handlingEntitiesLimit : nativeAttackersFilter.length;
+
             // create or extend if size is not enough
             _entitiesMap = ExtendNativeCollectionCommand.Execute(_entitiesMap, nativeCellsFilter.length, ALLOCATOR);
-            _handlingEntitiesData = ExtendNativeCollectionCommand.Execute(_handlingEntitiesData, nativeAttackersFilter.length, ALLOCATOR);
+            _handlingEntitiesData = ExtendNativeCollectionCommand.Execute(_handlingEntitiesData, _handlingEntitiesCount.Value, ALLOCATOR);
             _targetEntitiesData.Clear();
 
             var prepareJob = new PrepareTargetSearchJob()
@@ -87,24 +106,27 @@ namespace ZE.MechBattle.Ecs
                 EntitiesMap = _entitiesMap,
                 MovementCellsFilter = nativeCellsFilter,
                 HandlingEntitiesFilter = nativeAttackersFilter,
+                HandlingEntitiesCount = _handlingEntitiesCount,
 
                 HandlingEntitiesData = _handlingEntitiesData,
                 TargetEntitiesData = _targetEntitiesData
             };
 
             var handle = prepareJob.Schedule();
+            _activeJobHandle = handle;
             return handle;
         }
 
         public JobHandle ScheduleCalculationJob(JobHandle dependentHandle)
         {
-            var elementsCount = _handlingEntitiesData.Length;
             UpdateRelationsMask();
+
+            var elementsCount = _handlingEntitiesCount.Value == 0 ? _handlingEntitiesData.Length : _handlingEntitiesCount.Value;
             _resultingArray = ExtendNativeCollectionCommand.Execute(_resultingArray, elementsCount, ALLOCATOR);
 
             var calculationJob = new ClosestTargetDefineJob()
             {
-                TargetEntitiesData = _targetEntitiesData.AsReadOnly(),
+                TargetEntitiesData = _targetEntitiesData.AsDeferredJobArray(),
                 HandlingEntitiesData = _handlingEntitiesData.AsReadOnly(),
                 EntitiesMap = _entitiesMap.AsReadOnly(),
                 EnemiesMask = _relationMasks,
@@ -116,28 +138,36 @@ namespace ZE.MechBattle.Ecs
             };
 
            var handle = calculationJob.Schedule(elementsCount, BATCH_COUNT, dependentHandle);
+            _activeJobHandle = handle;
             return handle;
         }
 
         // return both, becuase system will hook prepare job handle to World.Handle (uses native stashes)
-        public (JobHandle prepareJobHandle, JobHandle calculationJobHandle) Launch(Filter attackersFilter)
+        public (JobHandle prepareJobHandle, JobHandle calculationJobHandle) Launch(Filter attackersFilter, int handlingEntitiesLimit)
         {
-            _isCalculating = true;
-            var prepareJobHandle = SchedulePrepareDataJob(attackersFilter);
+            Stage = CalculationProcessStage.Calculating;
+            var prepareJobHandle = SchedulePrepareDataJob(attackersFilter, handlingEntitiesLimit);
             var calculationJobHandle = ScheduleCalculationJob(prepareJobHandle);
+            _activeJobHandle = calculationJobHandle;
             return (prepareJobHandle, calculationJobHandle);
         }
 
-        public void ApplyResults(Action<Entity, Entity> applyAction)
+        public void ApplyResults(Predicate<(Entity attacker, Entity target)> applyAction)
         {
             _activeJobHandle.Complete();
-            for (var i = 0; i < _resultingArray.Length; i++)
+
+            var success = 0;
+            for (var i = 0; i < _handlingEntitiesCount.Value; i++)
             {
-                var attackerEntity = _targetEntitiesData[_handlingEntitiesData[i].EntityDataIndex].Entity;
+                var entityDataId = _handlingEntitiesData[i].EntityDataIndex;
+                var attackerEntity = _targetEntitiesData[entityDataId].Entity;
                 var targetEntity = _resultingArray[i];
-                applyAction(attackerEntity, targetEntity);
+                if (applyAction((attackerEntity, targetEntity)))
+                    success++;
             }
-            _isCalculating = false;
+            Stage = CalculationProcessStage.Idle;
+
+            UnityEngine.Debug.Log($"applied  {success} / {_handlingEntitiesCount.Value} results");
         }
 
         public void Dispose()
@@ -147,6 +177,7 @@ namespace ZE.MechBattle.Ecs
             _entitiesMap.Dispose();
             _targetEntitiesData.Dispose();
             _handlingEntitiesData.Dispose();
+            _handlingEntitiesCount.Dispose();
         }
 
         private void UpdateRelationsMask()

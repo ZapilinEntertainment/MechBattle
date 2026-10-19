@@ -43,7 +43,7 @@ namespace ZE.MechBattle.Ecs
 
         [ReadOnly] public NativeArray<PlayerRelationsMask> EnemiesMask;
         [ReadOnly] public NativeHashMap<IntTriangularPos, int>.ReadOnly EntitiesMap;
-        [ReadOnly] public NativeArray<TargetEntityData>.ReadOnly TargetEntitiesData;
+        [ReadOnly] public NativeArray<TargetEntityData> TargetEntitiesData;
         [ReadOnly] public NativeArray<HandlingEntityData>.ReadOnly HandlingEntitiesData;
 
         [WriteOnly] public NativeArray<Entity> ResultingTargets;
@@ -109,7 +109,6 @@ namespace ZE.MechBattle.Ecs
             }
 
             ResultingTargets[index] = closestEntity;
-            //if (closestEntity != default) UnityEngine.Debug.Log($"closest enemy for entity {entity.Id} is entity {closestEntity.Id}");
           }
     }
 }

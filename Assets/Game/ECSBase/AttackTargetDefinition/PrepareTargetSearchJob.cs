@@ -18,16 +18,17 @@ namespace ZE.MechBattle.Ecs
         [ReadOnly] public NativeStash<PlayerAffiliationComponent> AffiliationsStash;
         [ReadOnly] public NativeStash<PositionComponent> PositionComponents;
         [ReadOnly] public NativeStash<TargetSearchRadiusComponent> SearchRadiusStash;
+        [ReadOnly] public NativeReference<int> HandlingEntitiesCount;
 
-        [WriteOnly] public NativeHashMap<IntTriangularPos, int> EntitiesMap;
-        [WriteOnly] public NativeList<ClosestTargetDefineJob.TargetEntityData> TargetEntitiesData;
+        public NativeHashMap<IntTriangularPos, int> EntitiesMap;
+        public NativeList<ClosestTargetDefineJob.TargetEntityData> TargetEntitiesData;
         [WriteOnly] public NativeArray<ClosestTargetDefineJob.HandlingEntityData> HandlingEntitiesData;       
         
 
         public void Execute()
         {
             // 1. prepare ids map
-            var minId = 0;
+            var minId = int.MaxValue;
             var maxId = 0;
 
             var cellOccupantEntities = new NativeArray<Entity>(MovementCellsFilter.length, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
@@ -40,69 +41,81 @@ namespace ZE.MechBattle.Ecs
                 maxId = math.max(maxId, occupationEntity.Id);
             }
 
-            var idDelta = maxId - minId;            
+            var idDelta = maxId - minId + 1;            
             var entityIdToDataIndex = new NativeArray<int>(idDelta, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             for (var i = 0; i < idDelta; i++)
             {
                 entityIdToDataIndex[i] = -1;
             }
+           // UnityEngine.Debug.Log($"indexes array length: {idDelta} : {minId} -> {maxId}");
+
+
 
             // 2. fill entities map
-            var nextDataIndex = 0;
+            var uniqueEntitiesCount = 0;
             for (var i = 0; i < MovementCellsFilter.length; i++)
             {
                 var tripos = CellComponentsStash.Get(MovementCellsFilter[i]).Tripos;
 
                 var occupantEntityId = cellOccupantEntities[i].Id - minId;
-                EntitiesMap.Add(tripos, occupantEntityId);
-
-                if (entityIdToDataIndex[occupantEntityId] == -1)
-                    entityIdToDataIndex[occupantEntityId] = nextDataIndex++;
+                var occupantEntityDataIndex = entityIdToDataIndex[occupantEntityId];
+                if (occupantEntityDataIndex == -1)
+                {
+                    occupantEntityDataIndex = uniqueEntitiesCount++;
+                    entityIdToDataIndex[occupantEntityId] = occupantEntityDataIndex;
+                }
+                    
+                EntitiesMap.Add(tripos, occupantEntityDataIndex);               
             }
+           // UnityEngine.Debug.Log($"unique entities count: {uniqueEntitiesCount}");
+
 
 
             // 3. save all potential targets data
-            TargetEntitiesData.Resize(nextDataIndex, NativeArrayOptions.ClearMemory);
-            var isDataPrepared = new NativeBitArray(nextDataIndex, Allocator.Temp, NativeArrayOptions.ClearMemory);
+            TargetEntitiesData.Resize(uniqueEntitiesCount, NativeArrayOptions.ClearMemory);
+            var isDataPrepared = new NativeBitArray(uniqueEntitiesCount, Allocator.Temp, NativeArrayOptions.ClearMemory);
 
             for (var i = 0; i < MovementCellsFilter.length; i++)
             {
-                var dataIndex = entityIdToDataIndex[i];
+                var entity = cellOccupantEntities[i] ;
+                var dataIndex = entityIdToDataIndex[entity.Id - minId];
                 if (dataIndex == -1)
                     continue;
 
                 if (isDataPrepared.IsSet(dataIndex))
                     continue;
 
-                var entity = cellOccupantEntities[i];
+                
                 TargetEntitiesData[dataIndex] = new(entity, AffiliationsStash.Get(entity).PlayerKey.Id, PositionComponents.Get(entity).Value);
                 isDataPrepared.Set(dataIndex, true);
             }
 
             // 4. save handling entities data
             // note that this entities are not same as target entities: attackers are weapons, targets are units
-            for (var i = 0; i < HandlingEntitiesFilter.length; i++)
+           // UnityEngine.Debug.Log($"attackers count: {HandlingEntitiesFilter.length}");
+
+            // note also: operates not all filter, but a limited count:
+            for (var i = 0; i < HandlingEntitiesCount.Value; i++)
             {
                 var entity = HandlingEntitiesFilter[i];
                 var handlingEntityDataIndex = -1;
                 if (entity.Id >= minId && entity.Id <= maxId)
                 {
                     // data could possibly be already written
-                    handlingEntityDataIndex = entityIdToDataIndex[entity.Id];
+                    handlingEntityDataIndex = entityIdToDataIndex[entity.Id - minId];
                 }
 
                 if (handlingEntityDataIndex == -1)
                 {
                     // if not - add to the end of target entities data
-                    handlingEntityDataIndex = nextDataIndex++;
+                    handlingEntityDataIndex = uniqueEntitiesCount++;
                     TargetEntitiesData.Add(new(entity, AffiliationsStash.Get(entity).PlayerKey.Id, PositionComponents.Get(entity).Value));
                 }
 
-                HandlingEntitiesData[i] = new(handlingEntityDataIndex, SearchRadiusStash.Get(entity).Value
-               );
-
-                
+                HandlingEntitiesData[i] = new(handlingEntityDataIndex, SearchRadiusStash.Get(entity).Value);
             }
+
+             //UnityEngine.Debug.Log($"final unique entities count: {uniqueEntitiesCount} / {TargetEntitiesData.Length}");
         }
     }
 }

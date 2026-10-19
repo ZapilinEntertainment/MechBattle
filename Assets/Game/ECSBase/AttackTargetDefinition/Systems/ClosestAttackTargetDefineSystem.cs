@@ -1,6 +1,7 @@
 using Scellecs.Morpeh;
 using System;
 using Unity.IL2CPP.CompilerServices;
+using UnityEngine;
 using VContainer;
 using ZE.MechBattle.Navigation;
 using ZE.Utils;
@@ -15,9 +16,12 @@ namespace ZE.MechBattle.Ecs
         public World World { get; set;}
         private Filter _filter;
         private Stash<ClosestAttackTargetComponent> _closestTargets;
+        private Stash<NextCloseTargetSearchTimeComponent> _cooldownComponents;
 
         private readonly TargetDefineProcess _targetDefineProcess;
-        private readonly Action<Entity, Entity> _applyAction;
+        private readonly Predicate<(Entity attacker, Entity target)> _applyFunc;
+        private const float CLOSEST_TARGET_SEARCH_COOLDOWN = 3f;
+        private const int MAX_HANDLING_ENTITIES_COUNT = 1024;
 
         [Inject]
         public ClosestAttackTargetDefineSystem(
@@ -28,7 +32,7 @@ namespace ZE.MechBattle.Ecs
             World world)
         {
             _targetDefineProcess = new(map, playersList, movementCellsMap, playerRelations, world);
-            _applyAction = ApplyTarget;
+            _applyFunc = TryApplyTarget;
         }
 
         public void OnAwake() 
@@ -38,22 +42,23 @@ namespace ZE.MechBattle.Ecs
                 .With<PlayerAffiliationComponent>()
                 .With<HexCoordComponent>()
                 .Without<EntityDisposeTag>()
+                .Without<NextCloseTargetSearchTimeComponent>()
                 .Build();
             // todo: add cd component check
 
             _closestTargets = World.GetStash<ClosestAttackTargetComponent>();
+            _cooldownComponents = World.GetStash<NextCloseTargetSearchTimeComponent>();
         }
 
         public void OnUpdate(float deltaTime) 
         {
-            // TODO: add search cd (for situations with no enemies in radius)
             var commitRequired = false;
-            switch (_targetDefineProcess.Stage)
+            switch (_targetDefineProcess.UpdateStage())
             {
                 case CalculationProcessStage.Calculating: return;
                 case CalculationProcessStage.Complete:
                     {
-                        _targetDefineProcess.ApplyResults(_applyAction);
+                        _targetDefineProcess.ApplyResults(_applyFunc);
                         commitRequired = true;
                         break;
                     }
@@ -66,7 +71,7 @@ namespace ZE.MechBattle.Ecs
             if (_filter.IsNotEmpty())
             {
                 // preparing job handle (1/2)
-                World.JobHandle = _targetDefineProcess.Launch(_filter).prepareJobHandle;                
+                World.JobHandle = _targetDefineProcess.Launch(_filter, MAX_HANDLING_ENTITIES_COUNT).prepareJobHandle;                
             }                
         }
 
@@ -75,10 +80,17 @@ namespace ZE.MechBattle.Ecs
             _targetDefineProcess.Dispose();
         }
 
-        private void ApplyTarget(Entity attacker, Entity target)
+        private bool TryApplyTarget((Entity attacker, Entity target) result)
         {
-            _closestTargets.Set(attacker, new() { Entity = target });
-            // todo: add cd component
+            if (World.IsDisposed(result.attacker))
+                return false;
+
+            var correctTarget = !World.IsDisposed(result.target);
+            if (correctTarget)
+                _closestTargets.Set(result.attacker, new() { Entity = result.target });
+            _cooldownComponents.Set(result.attacker, new(Time.time + CLOSEST_TARGET_SEARCH_COOLDOWN));
+
+            return correctTarget;
         }
     }
 }

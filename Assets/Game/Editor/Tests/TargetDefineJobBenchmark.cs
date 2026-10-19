@@ -29,6 +29,9 @@ namespace ZE.MechBattle.Editor.Tests
         private Stash<PositionComponent> _positionsStash;
         private Stash<TargetSearchRadiusComponent> _targetSearchRadiusStash;
 
+        private Stash<CellEntityComponent> _cellEntityComponents;
+        private Stash<CellMovementDataComponent> _cellMovementDataComponents;
+
         [SetUp]
         public void Setup()
         {
@@ -41,6 +44,9 @@ namespace ZE.MechBattle.Editor.Tests
             _hexCoordsStash = _world.GetStash<HexCoordComponent>();
             _positionsStash = _world.GetStash<PositionComponent>();
             _targetSearchRadiusStash = _world.GetStash<TargetSearchRadiusComponent>();
+
+            _cellEntityComponents = _world.GetStash<CellEntityComponent>();
+            _cellMovementDataComponents = _world.GetStash<CellMovementDataComponent>();
 
             var playersList = new PlayersList();
             playersList.AddPlayerEntity(new PlayerKey(0), _world.CreateEntity());
@@ -84,7 +90,6 @@ namespace ZE.MechBattle.Editor.Tests
             _targetSearchRadius = targetSearchRadius;
 
             PrepareData(_world, _map, hexRadius, spawnChance);
-            _world.Commit();
 
             var filter = _world.Filter
                 .With<TargetSearchRadiusComponent>()
@@ -96,7 +101,7 @@ namespace ZE.MechBattle.Editor.Tests
             Measure.Method(
                 () =>
                 {
-                    var handle = _process.SchedulePrepareDataJob(filter);
+                    var handle = _process.SchedulePrepareDataJob(filter, int.MaxValue);
                     handle.Complete();
                 })
                 .WarmupCount(3)
@@ -118,24 +123,43 @@ namespace ZE.MechBattle.Editor.Tests
 
         private void PrepareData(World world, EntitiesNavigationMap map, int hexRadius, float spawnChance)
         {
-            var random = new System.Random();
+           
 
             foreach (var hexCoord in new HexRadiusEnumerator(int2.zero, hexRadius))
             {
                 var hexPos = new NavigationHexPosition(hexCoord, map.HexEdgeLength, map.TrianglesPerHexEdge);
                 foreach (var tripos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, map.TrianglesPerHexEdge))
                 {
-                    if (random.NextDouble() < spawnChance)
-                    {
-                        var entity = CreateEntity((float)random.NextDouble(), tripos, hexCoord);
-
-                        // note: will write single cell only, rewrite on larger units
-                        _movementCellsMap.TryWriteCell(tripos, new(entity, MovementCollisionAvoidancePriority.SmallUnit, float2.zero, 0));
-
-                    }
+                    var cellEntity = _world.CreateEntity();
+                    _cellEntityComponents.Set(cellEntity, new(tripos));
                 }
-
             }
+            _world.Commit();
+
+            var filter = _world.Filter.With<CellEntityComponent>().Build();
+            var cellsCount = 0;
+            var unitsCount = 0;
+            var random = new System.Random();
+
+            foreach (var cellEntity in filter)
+            {
+                cellsCount++;            
+                // note: will write single cell only, rewrite on larger units
+                var randomValue = (float)random.NextDouble();
+                if (randomValue < spawnChance)
+                {
+                    var tripos = _cellEntityComponents.Get(cellEntity).Tripos;
+                    unitsCount++;
+                    var unitEntity = CreateEntity((float)random.NextDouble(), tripos, HexMath.DefineHex(tripos, _map.TriangleHeight, _map.HexEdgeLength));
+                    var movementData = new CellMovementData(unitEntity, MovementCollisionAvoidancePriority.SmallUnit, float2.zero, 0);
+                    _cellMovementDataComponents.Set(cellEntity, new(movementData));
+                }                
+
+                
+            }
+            TestContext.WriteLine($"navigation cells added: {cellsCount}, units count: {unitsCount}");
+
+            _world.Commit();
         }
 
         private Entity CreateEntity(float randomValue, IntTriangularPos pos, int2 hexCoord)
