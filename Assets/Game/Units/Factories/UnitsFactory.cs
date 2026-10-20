@@ -5,6 +5,8 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle
 {
+
+    // todo: develop same appliers system as with navigation cells
     public class UnitsFactory : IEntityCreationFactory
     {
         private readonly World _world;
@@ -24,6 +26,7 @@ namespace ZE.MechBattle
         private readonly Stash<HealthComponent> _healthComponents;
         private readonly Stash<UnitTag> _unitTags;
         private readonly Stash<CalculateTrianglePositionTag> _calculateTrianglePosTags;
+        private readonly Stash<CapturePowerComponent> _capturePowers;
 
 
         [Inject]
@@ -55,6 +58,8 @@ namespace ZE.MechBattle
             _healthComponents = world.GetStash<HealthComponent>();
             _unitTags = world.GetStash<UnitTag>();
             _calculateTrianglePosTags = world.GetStash<CalculateTrianglePositionTag>();
+
+            _capturePowers = world.GetStash<CapturePowerComponent>();
         }
 
         // todo: rework to generic version
@@ -106,6 +111,8 @@ namespace ZE.MechBattle
             _unitTags.Add(entity);
 
             _calculateTrianglePosTags.Add(entity);
+
+            _capturePowers.Add(entity, new(CaptureConstants.UNIT_CAPTURE_POWER));
 
             TryAttachWeapon(entity, config);
 

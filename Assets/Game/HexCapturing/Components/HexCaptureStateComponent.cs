@@ -1,4 +1,5 @@
 using Scellecs.Morpeh;
+using System;
 using Unity.IL2CPP.CompilerServices;
 
 namespace ZE.MechBattle.Ecs {
@@ -10,6 +11,13 @@ namespace ZE.MechBattle.Ecs {
     {
         public bool IsCaptured;
         public int ControllingPlayerId;
-        public float CaptureProgress;    
+        public float CaptureProgress;
+
+        public static HexCaptureStateComponent Empty => new()
+        {
+            IsCaptured = false,
+            ControllingPlayerId = -1,
+            CaptureProgress = 0f
+        };
     }
 }
