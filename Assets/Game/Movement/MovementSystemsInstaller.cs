@@ -44,7 +44,6 @@ namespace ZE.MechBattle.Ecs
 
             builder.RegisterEntryPoint<NavigationMapInitializer>();
 
-            EntitiesMapSubfeatureInstaller.SceneScopeInstall(builder);
             CollisionAvoidanceSubfeatureInstaller.SceneScopeInstall(builder);
         }
 

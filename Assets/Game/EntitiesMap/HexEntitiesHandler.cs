@@ -9,23 +9,18 @@ namespace ZE.MechBattle.Navigation.Ecs
     public class HexEntitiesHandler
     {
         private readonly World _world;
-        private readonly Stash<HexComponent> _hexes;
+        private readonly NavigationHexEntitiesFactory _hexFactory;
         private readonly Stash<PassabilityVersionComponent> _passabilityVersion;
 
         [Inject]
-        public HexEntitiesHandler(World world)
+        public HexEntitiesHandler(World world, NavigationHexEntitiesFactory hexEntitiesFactory)
         {
             _world = world;
-            _hexes = _world.GetStash<HexComponent>();
+            _hexFactory = hexEntitiesFactory;
             _passabilityVersion = _world.GetStash<PassabilityVersionComponent>();
         }
 
-        public Entity CreateHexEntity(int2 hexCoord)
-        {
-            var entity = _world.CreateEntity();
-            _hexes.Set(entity, new(hexCoord));
-            return entity;
-        }
+        public Entity CreateHexEntity(int2 hexCoord) => _hexFactory.Build(hexCoord);
 
         public int GetPassabilityVersion(Entity entity) => 
             GetComponentOrDefaultValueCommand
