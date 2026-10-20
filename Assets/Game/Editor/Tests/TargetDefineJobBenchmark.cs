@@ -11,6 +11,8 @@ using Unity.Burst;
 using ZE.MechBattle.PlayerData;
 using ZE.MechBattle.Navigation.Ecs;
 using ZE.MechBattle.Movement.CollisionAvoidance;
+using System;
+using System.Collections.Generic;
 
 namespace ZE.MechBattle.Editor.Tests
 {
@@ -18,10 +20,10 @@ namespace ZE.MechBattle.Editor.Tests
     {
         private float _targetSearchRadius;
         private World _world;
-        private EntitiesNavigationMap _map;
         private MovementCellsMap _movementCellsMap;
         private TargetDefineProcess _process;
         private PlayerRelations _relations;
+        private INavigationMap _map;
 
         private Stash<PlayerAffiliationComponent> _affiliationsStash;
         private Stash<ClosestAttackTargetComponent> _targetsStash;
@@ -36,8 +38,9 @@ namespace ZE.MechBattle.Editor.Tests
         public void Setup()
         {
             // BurstCompiler.Options.EnableBurstCompilation = true;
+            const int TRIANGLES_PER_HEX_EDGE = 10;
             _world = World.Create();
-            _map = PrepareTestingMap(_world, 10);     
+            _map = PrepareMap(_world, TRIANGLES_PER_HEX_EDGE);
 
             _affiliationsStash = _world.GetStash<PlayerAffiliationComponent>();
             _targetsStash = _world.GetStash<ClosestAttackTargetComponent>();
@@ -49,10 +52,9 @@ namespace ZE.MechBattle.Editor.Tests
             _cellMovementDataComponents = _world.GetStash<CellMovementDataComponent>();
 
             var playersList = new PlayersList();
-
-            for (var i = 0; i < 8; i++)
+            for (var i = 0; i < playersList.Count; i++)
             {
-                playersList.AddPlayerEntity(new PlayerKey(8), _world.CreateEntity());
+                playersList.AddPlayerEntity(new PlayerKey(i), _world.CreateEntity());
             }
             _relations = new();
             _process = new(_map, playersList, _movementCellsMap, _relations, _world);
@@ -62,21 +64,27 @@ namespace ZE.MechBattle.Editor.Tests
         public void Teardown()
         {
             _process.Dispose();
-            _world.Dispose();           
+            _world.Dispose();
         }
 
-        public EntitiesNavigationMap PrepareTestingMap(World world, int trianglesPerEdge)
+
+        private static INavigationMap PrepareMap(World world, int trianglesPerEdge)
         {
             var mapSettings = MapSettings.CreateWithDefaultBorders(100f, trianglesPerEdge);
-            var map = new EntitiesNavigationMap(mapSettings, new(world, new(world)), new HexEntitiesHandler(world));
+
+            var appliersList = new List<INavigationCellCreationApplier>() { new CollisionAvoidanceSubfeatureInstaller.CellDensityApplier(world) };
+            var navCellsFactory = new NavigationCellEntitiesFactory(world, appliersList);
+            var cellEntitiesHandler = new CellEntitiesHandler(world, navCellsFactory);
+
+            var hexEntitiesFactory = new NavigationHexEntitiesFactory(world, null);
+            var hexEntitiesHandler = new HexEntitiesHandler(world, hexEntitiesFactory);
+            var map = new EntitiesNavigationMap(mapSettings, cellEntitiesHandler, hexEntitiesHandler);
 
             // hex with edge rows per each edge
             foreach (var tripos in new HexTrianglesEnumerator(IntTriangularPos.zero, trianglesPerEdge + 1))
             {
                 map.UpdateCellPassability(tripos, default);
             }
-
-            _movementCellsMap = new(world, map);
 
             return map;
         }
@@ -124,7 +132,7 @@ namespace ZE.MechBattle.Editor.Tests
                 .Run();
         }
 
-        private void PrepareData(World world, EntitiesNavigationMap map, int hexRadius, float spawnChance)
+        private void PrepareData(World world, INavigationMap map, int hexRadius, float spawnChance)
         {
            
 

@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: MechBattle::FeaturesModulesList
   _modules:
   - rid: 6586387193149522008
+  - rid: 2151671048505917511
   - rid: 6586387193149522009
   - rid: 6586387193149522010
   - rid: 6586387193149522011
@@ -32,6 +33,9 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
+    - rid: 2151671048505917511
+      type: {class: EntitiesMapModule, ns: ZE.MechBattle.Navigation.Ecs, asm: MechBattle}
+      data: 
     - rid: 3291161655197827143
       type: {class: EnergySystemFeatureModule, ns: ZE.MechBattle, asm: MechBattle}
       data: 
