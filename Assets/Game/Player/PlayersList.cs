@@ -35,6 +35,8 @@ namespace ZE.MechBattle.PlayerData
             Color.pink,
             Color.orange
         };
+
+        // #MAX_PLAYERS - dependency
         private const int MAX_PLAYERS = 8;    
         public int Count => MAX_PLAYERS;
 
