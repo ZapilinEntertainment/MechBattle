@@ -8,9 +8,12 @@ using ZE.MechBattle.Navigation.Ecs;
 
 namespace ZE.MechBattle
 {
-    public interface IEntitiesNavigationMap : IEntitiesMap { }
+    public interface IEntitiesNavigationMap : IEntitiesMap, IUpdatableMap 
+    {
+        bool TryGetNavigationCellEntity(IntTriangularPos tripos, out Entity entity) => TryGetEntity(tripos, out entity);
+    }
 
-    public class EntitiesNavigationMap : NavigationMapBase, IUpdatableMap, IEntitiesNavigationMap
+    public class EntitiesNavigationMap : NavigationMapBase, IEntitiesNavigationMap
     {
         public IEnumerable<IUpdatableNavigationHex> Hexes => _hexes.Values;
         public IEnumerable<int2> HexCoords => _hexes.Keys;
