@@ -15,9 +15,24 @@ namespace ZE.MechBattle
         [BurstCompile]
         public static int CalculateRectOutlinedRadius(float2 rectSize, float triangleHeight)
         {
-            var rectOutlinedRadius = math.sqrt(rectSize.x * rectSize.x + rectSize.y + rectSize.y) * 0.5f;
-            return MathExtensions.UnitsRadiusToTriangular(rectOutlinedRadius, triangleHeight);
+            var rectOutlinedRadius = math.sqrt(rectSize.x * rectSize.x + rectSize.y * rectSize.y) * 0.5f;
+            return MathExtensions.UnitsRadiusToTriangular(rectOutlinedRadius, triangleHeight)+1;
         }
+
+        [BurstDiscard]
+        public static void CalculateRectAffectedTrianglesManaged<T>(
+         T cellOperator,
+         RigidTransform rectPoint,
+         float2 rectSize,
+         float triangleHeight)
+            where T : IAffectedCellsOperator 
+            =>
+            CalculateRectAffectedTrianglesManaged(
+                cellOperator,
+                rectPoint,
+                rectSize,
+                triangleHeight,
+                CalculateRectOutlinedRadius(rectSize, triangleHeight));
 
         [BurstDiscard]
         public static void CalculateRectAffectedTrianglesManaged<T>(
@@ -34,14 +49,16 @@ namespace ZE.MechBattle
             var virtualHexCenter = GetClosestVertexTriposCommand.Execute(rectPoint.pos, triangleHeight, stepTripos);
 
             var invertedRotation = math.inverse(rectPoint.rot);
+            var halfWidth = rectSize.x * 0.5f;
+            var halfLength = rectSize.y * 0.5f;
 
             foreach (var tripos in new HexTrianglesEnumerator(virtualHexCenter, checkHexRadius))
             {
                 var worldPos = TriangularMath.TriangularToWorld(tripos, triangleHeight);
                 var inversedTranslation = worldPos - rectPoint.pos;
-                var localPos = math.mul(invertedRotation, inversedTranslation);
+                var localPos = math.mul(invertedRotation, inversedTranslation);                
 
-                if (math.abs(localPos.x) < rectSize.x && math.abs(localPos.z) < rectSize.y)
+                if (math.abs(localPos.x) < halfWidth && math.abs(localPos.z) < halfLength)
                 {
                     cellOperator.AddCell(tripos);
                 }

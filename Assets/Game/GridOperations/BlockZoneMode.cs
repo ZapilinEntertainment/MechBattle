@@ -4,7 +4,6 @@ namespace ZE.MechBattle
     {
         Round,
         Rect,
-        Hex    
     }
 
     public static class BlockZoneModeExtension
