@@ -8,6 +8,18 @@ namespace ZE.MechBattle
 {
     public static class ByteCoder
     {
+        [BurstCompile]
+        public static void SplitInt(int value, out int high, out int low)
+        {
+            high = (short)(value >> 16);
+            low = (short)(value & 0xFFFF);
+        }
+
+        [BurstCompile]
+        public static int CombineAsShorts(int high, int low)
+        {
+            return (high << 16) | (ushort)low;
+        }
 
         [BurstCompile]
         public static void WriteIntToBufferLittleEndian(NativeSlice<byte> buffer, int value, int offset)

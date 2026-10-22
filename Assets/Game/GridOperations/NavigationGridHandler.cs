@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Scellecs.Morpeh;
 using Unity.Mathematics;
 using VContainer;
@@ -12,17 +13,24 @@ namespace ZE.MechBattle
         private readonly IHexPortalsCoordinator _portalsCoordinator;
         private readonly INavigationMap _navigationMap;
         private readonly Stash<HexCoordComponent> _hexCoords;
+        private readonly CellBlockTokensList _cellBlockTokensList;
+
+        private int _nextBlockingId = 1;
+        private List<IntTriangularPos> _blockList = new(16);
 
         [Inject]
         public NavigationGridHandler(
             IMovementCellsMap movementCellsList, 
             IHexPortalsCoordinator portalsCoordinator, 
             INavigationMap navigationMap,
-            World world)
+            World world,
+            CellBlockTokensList blockTokensList)
         {
             _movementCellsList = movementCellsList;
             _portalsCoordinator = portalsCoordinator;
             _navigationMap = navigationMap;
+            _cellBlockTokensList = blockTokensList;
+
             _hexCoords = world.GetStash<HexCoordComponent>();
         }
 
@@ -39,5 +47,20 @@ namespace ZE.MechBattle
         public bool IsCellOccupied(IntTriangularPos pos) => _movementCellsList.TryGetValue(pos, out var cellValue) && cellValue.ProjectionStepIndex == 0;
 
         public bool IsCellObstructed(IntTriangularPos pos) => !_navigationMap.GetPassabilityData(pos).IsPassable;
+
+        public int BlockCellsPassability(BlockZoneConfigComponent blockZoneData, RigidTransform point)
+        {
+            // note: GetStepAffectedTrianglesJob
+            //switch (blockZoneData.Mode)
+            //{
+            //    case BlockZoneMode.Hex:
+            //        {
+            //            GetTrianglesInRadiusJob
+            //            break;
+            //        }
+            //}
+
+            return -1;
+        }
     }
 }

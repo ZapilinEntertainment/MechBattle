@@ -8,14 +8,17 @@ namespace ZE.MechBattle.Ecs {
     public sealed class SceneUnitsInitializer : IInitializable 
     {
         private readonly UnitsFactory _unitsFactory;
+        private readonly SpawnerFactory _spawnerFactory;
         private readonly StringDataDictionary _stringDataDictionary;
-        private readonly ISpawnersManager _spawnersManager;
 
         [Inject]
-        public SceneUnitsInitializer(UnitsFactory unitsFactory, ISpawnersManager spawnersManager, StringDataDictionary stringDataDictionary)
+        public SceneUnitsInitializer(
+            UnitsFactory unitsFactory,
+            SpawnerFactory spawnerFactory,
+            StringDataDictionary stringDataDictionary)
         {
             _unitsFactory = unitsFactory;
-            _spawnersManager = spawnersManager;
+            _spawnerFactory = spawnerFactory;
             _stringDataDictionary = stringDataDictionary;
         }
 
@@ -27,11 +30,13 @@ namespace ZE.MechBattle.Ecs {
                 _unitsFactory.Build(tankView);
             }
 
-            var sceneSpawners = GameObject.FindObjectsByType<UnitsSpawner>(FindObjectsSortMode.None);
+            var sceneSpawners = GameObject.FindObjectsByType<UnitsSpawnerMono>(FindObjectsSortMode.None);
             foreach (var spawner in sceneSpawners)
             {
-                spawner.Inject(_stringDataDictionary);
-                _spawnersManager.Register(spawner);
+                if (!spawner.RegisterAsVirtualPoint)
+                    continue;
+
+                _spawnerFactory.CreateSpawnerEntity(spawner);
             }
         }        
     }

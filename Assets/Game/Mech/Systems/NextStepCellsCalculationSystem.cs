@@ -177,8 +177,7 @@ namespace ZE.MechBattle.Ecs {
                     continue;
                 }
 
-                var rectOutlinedRadius = math.sqrt(footSize.x * footSize.x + footSize.y + footSize.y) * 0.5f;
-                var hexOutlinedRadius = MathExtensions.UnitsRadiusToTriangular(rectOutlinedRadius, _map.TriangleHeight);
+                var hexOutlinedRadius = AffectedTrianglesCalculator.CalculateRectOutlinedRadius(footSize, _map.TriangleHeight);
                 var affectionData = new FootAffectionData(footSize, hexOutlinedRadius);
                 var maxTrisCount = TriangularMath.GetTrianglesCountInHex(hexOutlinedRadius);
 

@@ -11,6 +11,6 @@ namespace ZE.MechBattle.Ecs {
     {
         public UnitKey UnitKey;
         public int Count;
-        public int SpawnRadius;
+        public float SpawnRadiusInUnits;
     }
 }

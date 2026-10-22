@@ -1,10 +1,9 @@
 using Scellecs.Morpeh;
-using VContainer;
-using ZE.MechBattle.Views;
-using ZE.MechBattle.Ecs;
-using UnityEngine;
-using Unity.Mathematics;
 using TriInspector;
+using Unity.Mathematics;
+using UnityEngine;
+using VContainer;
+using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle.Develop
 {
@@ -15,6 +14,7 @@ namespace ZE.MechBattle.Develop
             private readonly GameObject _gameObject;
             private readonly Transform _transform;
             public Transform Transform => _transform;
+            public GameObject GameObject => _gameObject;
 
             public string name { get => _gameObject.name; set => _gameObject.name = value;  }
 

@@ -19,7 +19,8 @@ namespace ZE.MechBattle.Ecs {
 
         public void Dispose()
         {
-            GameObject.Destroy(_view);
+            if (Application.isPlaying)
+                GameObject.Destroy(_view);
         }
 
     }

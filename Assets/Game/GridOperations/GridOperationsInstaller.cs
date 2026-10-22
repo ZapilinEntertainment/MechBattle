@@ -15,6 +15,7 @@ namespace ZE.MechBattle
 
             builder.Register<NavigationGridHandler>(Lifetime.Scoped);
             builder.Register<IUnitsGrid, UnitsGrid>(Lifetime.Scoped);
+            builder.Register<CellBlockTokensList>(Lifetime.Scoped);
         }
     }
 }

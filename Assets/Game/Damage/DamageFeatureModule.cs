@@ -15,8 +15,6 @@ namespace ZE.MechBattle
             builder.Register<DamageApplier>(Lifetime.Scoped);
             builder.Register<DamageRequestsList>(Lifetime.Scoped);
             builder.Register<IReceivedDamageList, ReceivedDamageList>(Lifetime.Scoped).AsSelf();            
-
-            builder.RegisterEntryPoint<DamageablesInitializer>();
         }
     }
 }

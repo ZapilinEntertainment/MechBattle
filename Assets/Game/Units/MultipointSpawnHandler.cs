@@ -17,7 +17,7 @@ namespace ZE.MechBattle.Ecs
             public Entity SpawnerEntity;
             public UnitKey UnitKey;
             public int Count;
-            public float SpawnRadius;
+            public float SpawnRadiusInUnits;
             public PlayerKey PlayerKey;
 
             public ExecutionProtocol(Entity entity, SpawnerComponent component, PlayerKey playerKey)
@@ -25,7 +25,7 @@ namespace ZE.MechBattle.Ecs
                 SpawnerEntity = entity;
                 UnitKey = component.UnitKey;
                 Count = component.Count;
-                SpawnRadius = component.SpawnRadius;
+                SpawnRadiusInUnits = component.SpawnRadiusInUnits;
                 PlayerKey = playerKey;
             }
         }
@@ -61,7 +61,7 @@ namespace ZE.MechBattle.Ecs
         {
             var worldPos = _positionComponent.Get(protocol.SpawnerEntity).Value;
 
-            PrepareSuitablePositions(worldPos, protocol.SpawnRadius);
+            PrepareSuitablePositions(worldPos, protocol.SpawnRadiusInUnits);
             var count = protocol.Count;           
 
             while (count > 0 && _selectionList.ActiveItemsCount > 0)
@@ -79,10 +79,10 @@ namespace ZE.MechBattle.Ecs
             }
         }
 
-        private void PrepareSuitablePositions(float3 pos, float radius)
+        private void PrepareSuitablePositions(float3 pos, float radiusInUnits)
         {
             _job.WorldPos = pos;
-            _job.RadiusInUnits = radius;      
+            _job.RadiusInUnits = radiusInUnits;      
             _job.Run();
 #if MORPEH_JOB_TRACKING
             UnityEngine.Debug.Log("get triangles in radius job");

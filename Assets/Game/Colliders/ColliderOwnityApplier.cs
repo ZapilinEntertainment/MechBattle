@@ -45,6 +45,7 @@ namespace ZE.MechBattle
             {
                 _collidersTable.RegisterCollider(entity, collider);
             }
+            _collidersList.Clear();
             AddOwnerTag(entity);
         }
 
