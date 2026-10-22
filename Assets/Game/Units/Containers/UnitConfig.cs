@@ -14,6 +14,7 @@ namespace ZE.MechBattle
         [field: SerializeField] public BehaviourKey BehaviourKey { get; private set; }
         [field: SerializeField] public float MoveSpeed { get; private set; }
         [field: SerializeField] public float MaxPrecisionAberration { get; private set; }
+        [field: SerializeField] public int CapturePower { get; private set; } = 1;
         [SerializeField] private WeaponData _weaponData;
 
         public bool TryGetWeaponData(out WeaponData weaponData)
@@ -39,6 +40,7 @@ namespace ZE.MechBattle
         float TargetSearchRadius { get;}
         float MoveSpeed { get;}
         float MaxPrecisionAberration { get;}
+        int CapturePower { get; }
 
         bool TryGetWeaponData(out WeaponData weaponData);
 
