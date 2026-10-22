@@ -42,6 +42,7 @@ namespace ZE.MechBattle
         public float TargetSearchRadius => _unitConfig.TargetSearchRadius;
         public float MoveSpeed => _unitConfig.MoveSpeed;
         public float MaxPrecisionAberration => 0.02f;
+        public float CapturePower => _unitConfig.CapturePower;
 
         public int ColliderInstanceId => _collider.GetInstanceID();
     }

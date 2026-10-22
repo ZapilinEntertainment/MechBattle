@@ -9,7 +9,5 @@ namespace ZE.MechBattle
         public const float MAX_DECAP_SPEED = 0.25f; // min decap time  - 15 seconds
 
         public const float EMPTY_HEX_DECAP_SPEED = 0.033f; // full decap if no units presented in ~30 sec
-
-        public const float UNIT_CAPTURE_POWER = 1f; // develop constant
     }
 }

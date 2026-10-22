@@ -100,11 +100,14 @@ namespace ZE.MechBattle
             _navigationAgents.Add(entity);
             _movementCollisionAvoidanceComponents.Add(entity, new(config.CollisionAvoidancePriority));
 
-            _targetSearchRadiusComponents.Add(entity, new(config.TargetSearchRadius));
+            if (config.TargetSearchRadius != 0f)
+                _targetSearchRadiusComponents.Add(entity, new(config.TargetSearchRadius));
 
-            _statesApplier.ApplyState(entity, config.BehaviourKey, StateKey.Idle, highPriority : false);
+            if (config.BehaviourKey != BehaviourKey.Undefined)
+                _statesApplier.ApplyState(entity, config.BehaviourKey, StateKey.Idle, highPriority : false);
 
-            _moveSpeeds.Set(entity, new() { Value = config.MoveSpeed });
+            if (config.MoveSpeed != 0f)
+                _moveSpeeds.Set(entity, new() { Value = config.MoveSpeed });
 
             _healthComponents.Set(entity, new(config.Health));
 
@@ -112,7 +115,8 @@ namespace ZE.MechBattle
 
             _calculateTrianglePosTags.Add(entity);
 
-            _capturePowers.Add(entity, new(CaptureConstants.UNIT_CAPTURE_POWER));
+            if (config.CapturePower != 0f)
+                _capturePowers.Add(entity, new(config.CapturePower));
 
             TryAttachWeapon(entity, config);
 
