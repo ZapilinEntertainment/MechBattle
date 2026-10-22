@@ -41,7 +41,7 @@ namespace ZE.MechBattle
                 _footEntity = footEntity;
             }
 
-            public void OnCellAffected(IntTriangularPos tripos)
+            public void AddCell(IntTriangularPos tripos)
             {
                 _writer.AddNoResize(new(tripos, _footEntity)); 
             }
@@ -54,7 +54,7 @@ namespace ZE.MechBattle
             var footAffectionData = FootAffectionData[index];
 
             var addOperator = new TrisAddOperator(StepAffectedCells, footEntity);
-            AffectedTrianglesCalculator.CalculateRectAffectedTriangles(
+            AffectedTrianglesCalculator.CalculateRectAffectedTrianglesUnmanaged(
                 addOperator,
                 stepTargetPoint,
                 footAffectionData.Size,

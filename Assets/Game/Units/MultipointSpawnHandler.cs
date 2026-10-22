@@ -1,16 +1,12 @@
-using System;
-using UnityEngine;
-using Unity.Collections;
-using Unity.Mathematics;
-using Unity.Jobs;
 using Scellecs.Morpeh;
+using Unity.Mathematics;
 using VContainer;
-using ZE.Utils;
 using ZE.MechBattle.Navigation;
+using ZE.Utils;
 
 namespace ZE.MechBattle.Ecs
 {
-    public class MultipointSpawnHandler : IDisposable
+    public class MultipointSpawnHandler
     {
         public struct ExecutionProtocol
         {
@@ -31,13 +27,11 @@ namespace ZE.MechBattle.Ecs
         }
 
         private readonly INavigationMap _map;
-        private readonly NativeList<IntTriangularPos> _jobResultsList = new();
-        private readonly ShrinkingList<IntTriangularPos> _selectionList = new();
+        private readonly ShrinkingList<IntTriangularPos> _selectionList;
         private readonly System.Random _random;
         private readonly UnitSpawnRequestsFactory _spawnRequestFactory;
         private readonly Stash<PositionComponent> _positionComponent;
-
-        private GetTrianglesInRadiusJob _job;
+        private readonly CellResultsListOperator _resultsOperator;
 
         [Inject]
         public MultipointSpawnHandler(INavigationMap map, UnitSpawnRequestsFactory spawnRequestsFactory, World world)
@@ -48,13 +42,8 @@ namespace ZE.MechBattle.Ecs
 
             _positionComponent = world.GetStash<PositionComponent>();
 
-            _jobResultsList = new(Allocator.Persistent);
-            _job = new() { TriangleHeight = _map.TriangleHeight, ResultList = _jobResultsList};
-        }
-
-        public void Dispose()
-        {
-            _jobResultsList.Dispose();
+            _selectionList = new(32);
+            _resultsOperator = new(32);
         }
 
         public void Handle(ExecutionProtocol protocol)
@@ -79,25 +68,20 @@ namespace ZE.MechBattle.Ecs
             }
         }
 
+       
+
         private void PrepareSuitablePositions(float3 pos, float radiusInUnits)
         {
-            _job.WorldPos = pos;
-            _job.RadiusInUnits = radiusInUnits;      
-            _job.Run();
-#if MORPEH_JOB_TRACKING
-            UnityEngine.Debug.Log("get triangles in radius job");
-#endif
-
             _selectionList.Clear();
-            foreach (var tripos in _jobResultsList)
+            AffectedTrianglesCalculator.CalculateRoundAffectedTrianglesManaged(_resultsOperator, pos, radiusInUnits, _map.TriangleHeight);
+            foreach (var tripos in _resultsOperator.List)
             {
                 if (!_map.GetPassabilityData(tripos).IsPassable)
                     continue;
 
                 _selectionList.Add(tripos);
             }
-
-            _job.ResultList.Clear();
+            _resultsOperator.Clear();
         }
     }
 }

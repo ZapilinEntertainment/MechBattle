@@ -1,10 +1,8 @@
 using Scellecs.Morpeh;
-using VContainer;
-using Unity.Mathematics;
 using Unity.IL2CPP.CompilerServices;
+using Unity.Mathematics;
+using VContainer;
 using ZE.MechBattle.Navigation;
-using Unity.Collections;
-using Unity.Jobs;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -21,7 +19,7 @@ namespace ZE.MechBattle.Ecs {
 
         private readonly IMovementCellsMap _movementCells;
         private readonly INavigationMap _map;
-        private readonly NativeList<IntTriangularPos> _resultsList;
+        private readonly CellResultsListOperator _resultsOperator;
       
 
         [Inject]
@@ -33,7 +31,7 @@ namespace ZE.MechBattle.Ecs {
             _movementCells = movementCells;
             _map = map;
 
-            _resultsList = new NativeList<IntTriangularPos>(Allocator.Persistent);
+            _resultsOperator = new(32);
         }
 
         public override void OnAwake()
@@ -88,20 +86,9 @@ namespace ZE.MechBattle.Ecs {
                 }
                 else
                 {
-                   
-                    var getListJob = new GetTrianglesInRadiusJob()
-                    {
-                        RadiusInUnits = avoidanceComponent.RadiusInUnits,
-                        ResultList = _resultsList,
-                        TriangleHeight = _map.TriangleHeight,
-                        WorldPos = worldPos
-                    };
-                    getListJob.RunByRef();
-#if MORPEH_JOB_TRACKING
-            UnityEngine.Debug.Log("get triangles in radius job");
-#endif
+                    AffectedTrianglesCalculator.CalculateRoundAffectedTrianglesManaged(_resultsOperator, worldPos, avoidanceComponent.RadiusInUnits, _map.TriangleHeight);
 
-                    foreach (var tripos in _resultsList)
+                    foreach (var tripos in _resultsOperator.List)
                     {
                         var cellData = new CellMovementData(
                            entity,
@@ -110,7 +97,7 @@ namespace ZE.MechBattle.Ecs {
                            projectionIndex: TriangularMath.CalculateDistance(tripos, currentTripos));
                         _movementCells.TryWriteCell(tripos, cellData);
                     }
-                    _resultsList.Clear();
+                    _resultsOperator.Clear();
                 }
                
             }
@@ -142,22 +129,5 @@ namespace ZE.MechBattle.Ecs {
             }
             //UnityEngine.Debug.Log($"-------");
         }
-
-        protected override void InternalDispose()
-        {
-            base.InternalDispose();
-#if UNITY_EDITOR
-            try
-            {
-#endif
-                _resultsList.Dispose();
-#if UNITY_EDITOR
-            }
-            catch
-            {
-                // editor dispose problems
-            }
-#endif
-            }
     }
 }

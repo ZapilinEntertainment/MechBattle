@@ -3281,11 +3281,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2631baf64fafbcc4f998ab5fcc5d0eec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitsSpawnerMono
-  RegisterAsVirtualPoint: 1
+  RegisterAsVirtualPoint: 0
   _playerId: 1
   _unitId: tank
   _count: 1
-  _spawnRadiusInUnits: 25
+  _spawnRadiusInUnits: 0
   _interval: 1
   _initialDelay: 0
   _limit: -1

@@ -17,6 +17,7 @@ namespace ZE.MechBattle.DrawWizards
         [SerializeField] private int _radiusInUnits = 25;
         [SerializeField] private float _triangleEdgeSize = 10f;
         private List<TriangleVertices> _drawData = new();
+        private CellResultsListOperator _resultsOperator = new(32);
 
         [MenuItem("ZE.Navigation/Draw Triangle Radius")]
         static void OpenWizard()
@@ -36,20 +37,13 @@ namespace ZE.MechBattle.DrawWizards
             _drawData.Clear();
 
             var triangleHeight = TriangularMath.GetTriangleHeight(_triangleEdgeSize);
-            using var resultsList = new NativeList<IntTriangularPos>(Allocator.TempJob);
-            var job = new GetTrianglesInRadiusJob()
-            {
-                RadiusInUnits = _radiusInUnits,
-                ResultList = resultsList,
-                TriangleHeight = triangleHeight,
-                WorldPos = _centerPosInUnits
-            };
-            job.Run();
+            AffectedTrianglesCalculator.CalculateRoundAffectedTrianglesManaged(_resultsOperator, _centerPosInUnits, _radiusInUnits, triangleHeight);
 
-            foreach (var tripos in job.ResultList)
+            foreach (var tripos in _resultsOperator.List)
             {
                 _drawData.Add(GetTriangleVerticesCommand.Execute(tripos, triangleHeight, offset: 0f));
             }
+            _resultsOperator.Clear();
 
             SceneView.RepaintAll();
         }

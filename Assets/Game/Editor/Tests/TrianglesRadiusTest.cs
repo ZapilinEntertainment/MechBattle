@@ -1,8 +1,5 @@
 using NUnit.Framework;
-using Unity.Collections;
 using Unity.Mathematics;
-using Unity.Jobs;
-using Unity.Burst;
 using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle.Editor.Tests
@@ -17,18 +14,11 @@ namespace ZE.MechBattle.Editor.Tests
             var triangleHeight = TriangularMath.GetTriangleHeight(TRIANGLE_EDGE);
             var centerPos = new float3(-25f, 0f, 540f);
 
-            using var resultsList = new NativeList<IntTriangularPos>(Allocator.TempJob);
-            var job = new GetTrianglesInRadiusJob()
-            {
-                RadiusInUnits = radius,
-                TriangleHeight = triangleHeight,
-                WorldPos = centerPos,
-                ResultList = resultsList
-            };
-            job.RunByRef();
+            var resultsList = new CellResultsListOperator(64);
+            AffectedTrianglesCalculator.CalculateRoundAffectedTrianglesManaged(resultsList, centerPos, radius, triangleHeight);
 
             var radiusSq = radius* radius;
-            foreach (var tripos in resultsList)
+            foreach (var tripos in resultsList.List)
             {
                 var pointPos = TriangularMath.TriangularToWorld(tripos, triangleHeight);
                 Assert.IsTrue(math.distancesq(pointPos, centerPos) < radiusSq, $"triangle {tripos} is out of range: {math.distance(pointPos, centerPos)}/{radius}");
