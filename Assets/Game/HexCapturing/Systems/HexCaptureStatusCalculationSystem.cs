@@ -10,21 +10,40 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public sealed class HexCaptureStatusCalculationSystem : PausableSystem 
     {
+        private readonly struct HexDataKey
+        {
+            public readonly int PlayerId;
+            public readonly int2 HexCoord;
+
+            public HexDataKey(int2 hexCoord, int playerId)
+            {
+                PlayerId = playerId;
+                HexCoord = hexCoord;
+            }
+        }
+
+        private struct PlayerCapturePowers
+        {
+            public float ActiveCapturePower;
+            public float ResistPower;
+
+            public float TotalPower => ActiveCapturePower + ResistPower;
+        }
+
         private Filter _captureUnitsFilter;
         private Filter _hexEntitiesFilter;
 
         private Stash<HexCoordComponent> _hexCoords;
         private Stash<PlayerAffiliationComponent> _affiliations;
-        private Stash<CapturePowerComponent> _capturePowerComponents;
+        private Stash<CaptureBehaviourComponent> _capturePowerComponents;
 
         private Stash<HexCaptureStateComponent> _hexCaptureState;
         private Stash<HexComponent> _hexComponents;
+        private Stash<HexOwnerChangedTag> _ownerChangedTag;
 
-        private int _nextCoordIndex = 0;
         private int _playersCount = 1;
         private readonly IPlayersList _playersList;
-        private readonly Dictionary<int2, int> _hexIndices = new(128);
-        private readonly List<float> _controlValues = new(1024);
+        private readonly Dictionary<HexDataKey, PlayerCapturePowers> _powersData = new(16);
 
 
 
@@ -37,7 +56,7 @@ namespace ZE.MechBattle.Ecs {
         public override void OnAwake()
         {
             _captureUnitsFilter = World.Filter
-                .With<CapturePowerComponent>()
+                .With<CaptureBehaviourComponent>()
                 .With<PlayerAffiliationComponent>()
                 .With<HexCoordComponent>()
                 .Without<EntityDisposeTag>()
@@ -45,7 +64,8 @@ namespace ZE.MechBattle.Ecs {
 
             _hexCoords = World.GetStash<HexCoordComponent>();
             _affiliations = World.GetStash<PlayerAffiliationComponent>();
-            _capturePowerComponents = World.GetStash<CapturePowerComponent>();
+            _capturePowerComponents = World.GetStash<CaptureBehaviourComponent>();
+            _ownerChangedTag = World.GetStash<HexOwnerChangedTag>();
 
 
 
@@ -65,51 +85,72 @@ namespace ZE.MechBattle.Ecs {
             CalculatePlayerCaptureValues();
             UpdateHexCaptureStatuses(deltaTime);
 
-            _hexIndices.Clear();
-            _controlValues.Clear();
+            _powersData.Clear();
         }
 
         private void CalculatePlayerCaptureValues()
         {
             _playersCount = _playersList.Count;
-            _nextCoordIndex = 0;
 
             foreach (var unit in _captureUnitsFilter)
             {
-                var hexCoord = _hexCoords.Get(unit).Value;
-                var playerKey = _affiliations.Get(unit).PlayerKey;
-                var capturePower = _capturePowerComponents.Get(unit).Value;
-
-                if (!_hexIndices.TryGetValue(hexCoord, out var hexIndex))
+                var captureBehaviour = _capturePowerComponents.Get(unit).Value;
+                switch(captureBehaviour.Type)
                 {
-                    hexIndex = _nextCoordIndex++;
-                    _hexIndices.Add(hexCoord, hexIndex);
-
-                    for (var i = 0; i < _playersCount; i++)
-                    {
-                        _controlValues.Add(0f);
-                    }
+                    case CaptureBehaviourType.CanCapture:
+                        {
+                            AddActiveCapturePower(unit, captureBehaviour.Value);
+                            break;
+                        }
+                    case CaptureBehaviourType.ResistCapturing:
+                        {
+                            AddResistCapturePower(unit, captureBehaviour.Value);
+                            break;
+                        }
+                    default: continue;
                 }
-
-                var dataIndex = GetPlayerControlValueIndexByIndex(playerKey.Id, hexIndex);
-                _controlValues[dataIndex] += capturePower;
             }
         }
 
-        private int GetPlayerControlValueIndexByHexCoord(int playerId, int2 hexCoord) => GetPlayerControlValueIndexByIndex(playerId, _hexIndices[hexCoord]);
-        private int GetPlayerControlValueIndexByIndex(int playerId, int hexDataIndex) => hexDataIndex * _playersCount + playerId ;
+        private (HexDataKey Key, PlayerCapturePowers Data) GetCaptureContext(Entity unit)
+        {
+            var hexCoord = _hexCoords.Get(unit).Value;
+            var playerKey = _affiliations.Get(unit).PlayerKey;
+            var dataKey = new HexDataKey(hexCoord, playerKey.Id);
+
+            _powersData.TryGetValue(dataKey, out var capData);
+            return (dataKey, capData);
+        }
+
+        private void AddActiveCapturePower(Entity unit, float value)
+        {
+            var (key, data) = GetCaptureContext(unit);
+            data.ActiveCapturePower += value;
+            _powersData[key] = data;
+        }
+
+        private void AddResistCapturePower(Entity unit, float value)
+        {
+            var (key, data) = GetCaptureContext(unit);
+            data.ResistPower += value;
+            _powersData[key] = data;
+        }
+
+
 
         private void UpdateHexCaptureStatuses(float deltaTime)
         {
             foreach (var hexEntity in _hexEntitiesFilter)
             {
                 var hexCoord = _hexComponents.Get(hexEntity).Coord;
-                var (maxPlayerId, maxPlayerControlValue) = GetMaxPlayerControlValue(hexCoord);
+                var (maxPowerfulPlayerId, maxPowerfulPlayerPowers) = GetPlayerWithMaxActiveCapturePowers(hexCoord);
 
                 ref var hexCaptureStateComponent = ref _hexCaptureState.Get(hexEntity);
-
-                var currentOwnerExists = hexCaptureStateComponent.ControllingPlayerId != -1;
-                var capturerExists = maxPlayerId != -1;
+                var currentOwnerPlayerId = hexCaptureStateComponent.ControllingPlayerId;
+                PlayerCapturePowers existingPlayerPowers = default;
+                var currentOwnerExists = currentOwnerPlayerId != -1 && _powersData.TryGetValue(new(hexCoord, currentOwnerPlayerId), out existingPlayerPowers);
+                var capturerExists = maxPowerfulPlayerId != -1;
+                var ownerChanged = false;
 
                 if (!capturerExists)
                 {
@@ -121,51 +162,55 @@ namespace ZE.MechBattle.Ecs {
                     else
                     {
                         // all capturing units leave hex
-                        DoDecap(ref hexCaptureStateComponent, CaptureConstants.EMPTY_HEX_DECAP_SPEED * deltaTime);
+                        ownerChanged = DoDecap(ref hexCaptureStateComponent, CaptureConstants.EMPTY_HEX_DECAP_SPEED * deltaTime, 0f);
                     }
                 }
                 else
                 {
-                    if (!currentOwnerExists || hexCaptureStateComponent.ControllingPlayerId == maxPlayerId)
+                    var powersSum = existingPlayerPowers.TotalPower + maxPowerfulPlayerPowers.TotalPower;
+                    var alreadyOwns = hexCaptureStateComponent.ControllingPlayerId == maxPowerfulPlayerId;
+                    if (!currentOwnerExists || alreadyOwns)
                     {
+                        if (alreadyOwns && hexCaptureStateComponent.IsCaptured)
+                            return;
+
                         // if empty hex or player is already owns it
-                        var captureStep = math.clamp(maxPlayerControlValue * CaptureConstants.CAPTURE_SPEED_CF, 0f, CaptureConstants.MAX_CAPTURE_SPEED);
-                        DoCaptureProgress(ref hexCaptureStateComponent, maxPlayerId, captureStep * deltaTime);
+                        var captureStep = math.clamp(maxPowerfulPlayerPowers.ActiveCapturePower * CaptureConstants.CAPTURE_SPEED_CF, 0f, CaptureConstants.MAX_CAPTURE_SPEED);
+                        ownerChanged = DoCaptureProgress(ref hexCaptureStateComponent, maxPowerfulPlayerId, captureStep * deltaTime, 1f - existingPlayerPowers.ResistPower / powersSum);
                     }
                     else
                     {
                         // taking controls from another player
-                        var decapStep = maxPlayerControlValue - _controlValues[GetPlayerControlValueIndexByHexCoord(hexCaptureStateComponent.ControllingPlayerId, hexCoord)];
-                        decapStep = math.clamp(decapStep * CaptureConstants.DECAP_SPEED_CF, 0f, CaptureConstants.MAX_DECAP_SPEED);
-                        DoDecap(ref hexCaptureStateComponent, decapStep * deltaTime);
-                    }
 
+                        var decapStep = (maxPowerfulPlayerPowers.ActiveCapturePower - existingPlayerPowers.ActiveCapturePower) * CaptureConstants.FIGHT_CAPTURE_SPEED_CF;
+                        decapStep = math.clamp(decapStep, 0f, CaptureConstants.MAX_DECAP_SPEED);
+                        
+                        ownerChanged = DoDecap(ref hexCaptureStateComponent, decapStep * deltaTime, existingPlayerPowers.ResistPower / powersSum);
+                    }
                 }
+
+                if (ownerChanged)
+                    _ownerChangedTag.Set(hexEntity);
             }
         }
 
-        private (int playerId, float maxValue) GetMaxPlayerControlValue(int2 hexCoord)
+        private (int playerId, PlayerCapturePowers capturePowers) GetPlayerWithMaxActiveCapturePowers(int2 hexCoord)
         {
-            if (!_hexIndices.TryGetValue(hexCoord, out var hexDataReadIndex))
-            {
-                return (-1, 0f);
-            }
-
             var playerId = -1;
-            var maxValue = 0f;
-
+            PlayerCapturePowers capturePowers = default;
             for (var i = 0; i < _playersCount; i++)
             {
-                var controlValue = _controlValues[GetPlayerControlValueIndexByIndex(i, hexDataReadIndex)];
+                if (!_powersData.TryGetValue(new(hexCoord, i), out var playerPowers))
+                    continue;
 
-                if (controlValue > maxValue)
+                if (playerPowers.ActiveCapturePower > capturePowers.ActiveCapturePower)
                 {
-                    maxValue = controlValue;
                     playerId = i;
+                    capturePowers = playerPowers;
                 }
             }
 
-            return (playerId, maxValue);
+            return (playerId, capturePowers);
         }
 
         private void MarkHexAsClear(ref HexCaptureStateComponent component)
@@ -175,19 +220,26 @@ namespace ZE.MechBattle.Ecs {
             component.ControllingPlayerId = -1;
         }
 
-        private void DoCaptureProgress(ref HexCaptureStateComponent component, int playerId, float step)
+        private bool DoCaptureProgress(ref HexCaptureStateComponent component, int playerId, float step, float limit)
         {
             component.ControllingPlayerId = playerId;
-            component.CaptureProgress = MathExtensions.MoveTowards(component.CaptureProgress, 1f, step);            
+            component.CaptureProgress = MathExtensions.MoveTowards(component.CaptureProgress, limit, step);            
             component.IsCaptured = component.CaptureProgress == 1f;
+            return component.IsCaptured;
         }
 
-        private void DoDecap(ref HexCaptureStateComponent component, float step)
+        private bool DoDecap(ref HexCaptureStateComponent component, float step, float limit)
         {
-            component.CaptureProgress = MathExtensions.MoveTowards(component.CaptureProgress, 0f, step);
+            component.CaptureProgress = MathExtensions.MoveTowards(component.CaptureProgress, limit, step);
             component.IsCaptured = false;            
             if (component.CaptureProgress == 0f)
+            {
                 MarkHexAsClear(ref component);
+                return true;
+            }
+
+            return false;
+                
         }
     }
 }

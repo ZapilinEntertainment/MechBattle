@@ -35,17 +35,19 @@ namespace ZE.MechBattle
             _renderer.sharedMaterial = material;
         }
 
+        public bool TryGetStateBehaviour(out BehaviourKey behaviourKey) =>
+            _unitConfig.TryGetStateBehaviour(out behaviourKey);
+
+        public bool TryGetCaptureBehaviour(out CaptureBehaviour captureBehaviour) =>
+            _unitConfig.TryGetCaptureBehaviour(out captureBehaviour);
+
         public float Damage => _unitConfig.Damage;
         public float Health => _unitConfig.Health;
-        public BehaviourKey BehaviourKey => _unitConfig.BehaviourKey;
         public MovementCollisionAvoidancePriority CollisionAvoidancePriority => _unitConfig.CollisionAvoidancePriority;
         public float TargetSearchRadius => _unitConfig.TargetSearchRadius;
         public float MoveSpeed => _unitConfig.MoveSpeed;
         public float MaxPrecisionAberration => 0.02f;
-        public float CapturePower => _unitConfig.CapturePower;
 
         public int ColliderInstanceId => _collider.GetInstanceID();
-
-        int IUnitConfig.CapturePower => ((IUnitConfig)_unitConfig).CapturePower;
     }
 }

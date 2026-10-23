@@ -26,7 +26,7 @@ namespace ZE.MechBattle
         private readonly Stash<HealthComponent> _healthComponents;
         private readonly Stash<UnitTag> _unitTags;
         private readonly Stash<CalculateTrianglePositionTag> _calculateTrianglePosTags;
-        private readonly Stash<CapturePowerComponent> _capturePowers;
+        private readonly Stash<CaptureBehaviourComponent> _capturePowers;
 
 
         [Inject]
@@ -59,7 +59,7 @@ namespace ZE.MechBattle
             _unitTags = world.GetStash<UnitTag>();
             _calculateTrianglePosTags = world.GetStash<CalculateTrianglePositionTag>();
 
-            _capturePowers = world.GetStash<CapturePowerComponent>();
+            _capturePowers = world.GetStash<CaptureBehaviourComponent>();
         }
 
         // todo: rework to generic version
@@ -103,8 +103,8 @@ namespace ZE.MechBattle
             if (config.TargetSearchRadius != 0f)
                 _targetSearchRadiusComponents.Add(entity, new(config.TargetSearchRadius));
 
-            if (config.BehaviourKey != BehaviourKey.Undefined)
-                _statesApplier.ApplyState(entity, config.BehaviourKey, StateKey.Idle, highPriority : false);
+            if (config.TryGetStateBehaviour(out var behaviourKey))
+                _statesApplier.ApplyState(entity, behaviourKey, StateKey.Idle, highPriority : false);
 
             if (config.MoveSpeed != 0f)
                 _moveSpeeds.Set(entity, new() { Value = config.MoveSpeed });
@@ -115,8 +115,8 @@ namespace ZE.MechBattle
 
             _calculateTrianglePosTags.Add(entity);
 
-            if (config.CapturePower != 0f)
-                _capturePowers.Add(entity, new(config.CapturePower));
+            if (config.TryGetCaptureBehaviour(out var captureBehaviour))
+                _capturePowers.Add(entity, new(captureBehaviour));
 
             TryAttachWeapon(entity, config);
 
