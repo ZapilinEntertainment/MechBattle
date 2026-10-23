@@ -56,17 +56,10 @@ namespace ZE.MechBattle.Ecs {
             ref var spawnLimitComponent = ref _spawnOperationsLeftComponents.Get(entity, out var limitExists);
             var spawnCount = limitExists ? (math.min(spawnLimitComponent.Value, spawnComponent.Count)) : spawnComponent.Count;
 
-            if (spawnCount != 1)
-            {
-                var protocol = new MultipointSpawnHandler.ExecutionProtocol(entity, spawnComponent, playerKey);
-                // note about limits possibility
-                protocol.Count = spawnCount;
-                _multipointSpawnHandler.Handle(protocol);                
-            }
-            else
-            {
-                _requestsFactory.CreateSpawnRequest(spawnComponent.UnitKey, spawnerTripos, playerKey);
-            }
+            var protocol = new MultipointSpawnHandler.ExecutionProtocol(entity, spawnComponent, playerKey);
+            // note about limits possibility
+            protocol.Count = spawnCount;
+            _multipointSpawnHandler.Handle(protocol);
 
             if (limitExists)
             {

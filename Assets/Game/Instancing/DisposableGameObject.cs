@@ -6,8 +6,11 @@ namespace ZE.MechBattle
     public abstract class DisposableGameObject : MonoBehaviour, IMonoView
     {
         public Transform Transform => transform;
+        public GameObject GameObject => gameObject;
 
         public bool IsDisposed { get; private set; } = false;
+
+        
 
         public virtual void Dispose()
         {

@@ -31,6 +31,7 @@ MonoBehaviour:
   - rid: 6586387536204529736
   - rid: 3291161655197827143
   - rid: 2151671056233398343
+  - rid: 2151671071835684935
   references:
     version: 2
     RefIds:
@@ -39,6 +40,9 @@ MonoBehaviour:
       data: 
     - rid: 2151671056233398343
       type: {class: CaptureFeatureModule, ns: ZE.MechBattle, asm: MechBattle}
+      data: 
+    - rid: 2151671071835684935
+      type: {class: BuildingsFeatureModule, ns: ZE.MechBattle, asm: MechBattle}
       data: 
     - rid: 3291161655197827143
       type: {class: EnergySystemFeatureModule, ns: ZE.MechBattle, asm: MechBattle}

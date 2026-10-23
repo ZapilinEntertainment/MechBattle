@@ -39,7 +39,7 @@ namespace ZE.MechBattle.Ecs
 
 #if UNITY_EDITOR
             //UnityEngine.Debug.Log($"bind transform {key} to entity {entity.Id}");
-            view.name = $"entity {entity.Id}";
+            view.GameObject.name = $"entity {entity.Id}";
 #endif
 
            if (doViewChecks)

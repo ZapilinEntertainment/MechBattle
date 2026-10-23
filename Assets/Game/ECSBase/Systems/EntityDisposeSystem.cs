@@ -23,6 +23,7 @@ namespace ZE.MechBattle.Ecs {
                 foreach (var entity in _filter)
                 {
                     World.RemoveEntity(entity);
+                    //UnityEngine.Debug.Log($"entity {entity.Id} destroyed");
                 }
                     
             }

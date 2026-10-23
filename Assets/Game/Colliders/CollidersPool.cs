@@ -54,8 +54,7 @@ namespace ZE.MechBattle
             public int ColliderInstanceId => _colliderInstanceId;
 
             public Transform Transform => _transform;
-
-            public string name { get => _transform.name; set => _transform.name = value; }
+            public GameObject GameObject => _transform.gameObject;
 
             public PoolingCollider(T collider)
             {

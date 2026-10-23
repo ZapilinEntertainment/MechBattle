@@ -4,24 +4,26 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle
 {
-    public readonly struct CellMovementData : IComparable<CellMovementData>
+    public struct CellMovementData : IComparable<CellMovementData>
     {
         public readonly Entity Entity;
         public readonly float2 MoveVector; // zero if inner cell of occupation zone or entity is not moving
         public readonly int ProjectionStepIndex; // 0 is current object position, 1+ is next pos projections
         public readonly MovementCollisionAvoidancePriority Priority;
+        public CellOccupationLevelFlags OccupationFlags;
 
         public bool IsRealOccupationCell => ProjectionStepIndex == 0; // other can be virtual = projection of move speed
 
-        public CellMovementData(Entity entity, MovementCollisionAvoidancePriority priority, float2 moveVector, int projectionIndex)
+        public CellMovementData(Entity entity, MovementCollisionAvoidancePriority priority, float2 moveVector, int projectionIndex, CellOccupationLevelFlags occupationLevelFlags)
         {
             Entity = entity;
             Priority = priority;
             MoveVector = moveVector;
             ProjectionStepIndex = projectionIndex;
+            OccupationFlags = occupationLevelFlags;
         }
 
-        public static readonly CellMovementData Default = new(default, MovementCollisionAvoidancePriority.None, float2.zero, 0);
+        public static readonly CellMovementData Default = new(default, MovementCollisionAvoidancePriority.None, float2.zero, 0, CellOccupationLevelFlags.None);
 
         public int CompareTo(CellMovementData other)
         {

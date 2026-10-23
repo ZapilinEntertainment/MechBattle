@@ -46,12 +46,13 @@ namespace ZE.MechBattle.Ecs {
             if (_gridHandler.IsCellOccupied(cellPoint.Tripos) || _gridHandler.IsCellObstructed(cellPoint.Tripos))
                 return false;
 
+
             var unitEntity = _unitsFactory.Build(spawnRequest.UnitKey, spawnRequest.CellPoint.ToRigidTransform(_triangleHeight));
             _affinityHandler.SetEntityPlayerAffinity(unitEntity, spawnRequest.PlayerKey);
             _affinityHandler.AddFriendlyFireProtection(unitEntity, spawnRequest.PlayerKey);
 
             if (!World.IsDisposed(spawnRequest.SquadEntity))
-                _squadHandler.AssignEntityToSquad(unitEntity, spawnRequest.SquadEntity);               
+                _squadHandler.AssignEntityToSquad(unitEntity, spawnRequest.SquadEntity);
 
             return true;
         }

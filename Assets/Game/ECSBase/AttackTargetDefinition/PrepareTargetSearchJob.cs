@@ -85,8 +85,8 @@ namespace ZE.MechBattle.Ecs
                 if (isDataPrepared.IsSet(dataIndex))
                     continue;
 
-                
-                TargetEntitiesData[dataIndex] = new(entity, AffiliationsStash.Get(entity).PlayerKey.Id, PositionComponents.Get(entity).Value);
+                var playerAffiliationComponent = AffiliationsStash.Get(entity, out var haveAffiliation);    
+                TargetEntitiesData[dataIndex] = new(entity, haveAffiliation ? playerAffiliationComponent.PlayerKey.Id : -1, PositionComponents.Get(entity).Value);
                 isDataPrepared.Set(dataIndex, true);
             }
 

@@ -14,6 +14,7 @@ namespace ZE.MechBattle
         private readonly World _world;
         private readonly DelayApplier _initialDelayApplier;
         private readonly TriangularPositionApplier _triangularPositionApplier;
+        private readonly StringDataDictionary _stringDataDictionary;
 
         private readonly Stash<SpawnIntervalComponent> _updateIntervals;
         private readonly Stash<SpawnerComponent> _spawnerComponents;
@@ -23,11 +24,16 @@ namespace ZE.MechBattle
         private readonly Stash<SpawnOperationsLeftComponent> _spawnOperationsLeftComponents;
 
         [Inject]
-        public SpawnerFactory(World world, DelayApplier initialDelayApplier, TriangularPositionApplier triposApplier)
+        public SpawnerFactory(
+            World world, 
+            DelayApplier initialDelayApplier, 
+            TriangularPositionApplier triposApplier,
+            StringDataDictionary stringDataDictionary)
         {
             _world = world;
             _initialDelayApplier = initialDelayApplier;
             _triangularPositionApplier = triposApplier;
+            _stringDataDictionary = stringDataDictionary;
 
             _updateIntervals = _world.GetStash<SpawnIntervalComponent>();
             _spawnerComponents = _world.GetStash<SpawnerComponent>();
@@ -40,11 +46,11 @@ namespace ZE.MechBattle
         public Entity CreateSpawnerEntity(ISpawner spawner)
         {
             var entity = _world.CreateEntity();
-            UpdateSpawnerData(entity, spawner);
+            SetupSpawnerData(entity, spawner);
             return entity;
         }
 
-        public void UpdateSpawnerData(Entity entity, ISpawner spawner) 
+        public void SetupSpawnerData(Entity entity, ISpawner spawner) 
         {
             if (spawner.InitialDelay != 0f) 
                 _initialDelayApplier.ApplyInitialDelay(entity, spawner.InitialDelay);
@@ -52,7 +58,7 @@ namespace ZE.MechBattle
             if (spawner.UpdateIntervalDuration != 0f)
                 _updateIntervals.Set(entity, new(spawner.UpdateIntervalDuration));
 
-            _spawnerComponents.Set(entity, spawner.GetSpawnerData());
+            _spawnerComponents.Set(entity, spawner.GetSpawnerData(_stringDataDictionary));
 
             _triangularPositionApplier.Apply(entity, spawner.WorldPos);
             _positionComponents.Set(entity, new() { Value = spawner.WorldPos });

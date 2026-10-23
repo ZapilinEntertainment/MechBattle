@@ -16,7 +16,6 @@ namespace ZE.MechBattle
             base.SceneScopeInstall(builder);
 
             builder.Register<UnitsFactory>(Lifetime.Scoped);
-            builder.Register<ISpawnersManager, SpawnersManager>(Lifetime.Scoped);
             builder.Register<SpawnerFactory>(Lifetime.Scoped).AsSelf().As<ISpawnerClearHandler>();
             builder.Register<UnitSpawnRequestsFactory>(Lifetime.Scoped);
             builder.Register<MultipointSpawnHandler>(Lifetime.Scoped);
