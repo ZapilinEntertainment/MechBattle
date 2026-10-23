@@ -6,11 +6,8 @@ namespace ZE.MechBattle
     public class ViewPartContainer : IViewPart, IViewConnectionsPoint
     {
         public Transform Transform => _transform;
+        public GameObject GameObject => _transform.gameObject;
         private readonly Transform _transform;
-
-        #if UNITY_EDITOR
-        public string name { get => _transform.gameObject.name; set => _transform.gameObject.name = value; }
-        #endif
 
         public ViewPartContainer(Transform transform) => _transform = transform;
 

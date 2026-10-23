@@ -13,9 +13,8 @@ namespace ZE.MechBattle.Views
     // - when visible view loads, it will be correctly synchronised to all entity components
     public class ViewContainer : MonoBehaviour, IViewContainer, IMonoView, IViewConnectionsPoint
     {
-        public Transform Transform => _transform;
-        private Transform _transform;
-        private GameObject _gameObject;
+        public Transform Transform { get; private set; }
+        public GameObject GameObject { get; private set; }
 
         public IView View { get; private set; }
         [ShowInInspector] private MonoBehaviour ViewAsMono => View as MonoBehaviour;
@@ -33,18 +32,18 @@ namespace ZE.MechBattle.Views
         public void OnViewInstanced(IView instance) 
         {
             View = instance;
-            View.SetParent(_transform);
+            View.SetParent(Transform);
         }
 
-        public void SetParent(Transform parent) => _transform.SetParent(parent, false);
+        public void SetParent(Transform parent) => Transform.SetParent(parent, false);
         
 
         public void Init()
         {
-            _transform = transform;
-            _gameObject = gameObject;
+            Transform = transform;
+            GameObject = gameObject;
         }
 
-        public void SetVisibility(bool x) => _gameObject.SetActive(x);
+        public void SetVisibility(bool x) => GameObject.SetActive(x);
     }
 }

@@ -3148,8 +3148,8 @@ MonoBehaviour:
   _unitId: tank
   _unitsCount: 500
   _hexCoord:
-    x: -2
-    y: 2
+    x: -3
+    y: 3
 --- !u!114 &1259888778
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3211,6 +3211,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9dbedc102f2b554eb9f8f682b22ecf8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.HexCaptureStatusDebugDrawer
+  _captureData: []
+  _maxCaptureValueAlpha: 0.5
 --- !u!1001 &1305719369
 PrefabInstance:
   m_ObjectHideFlags: 0

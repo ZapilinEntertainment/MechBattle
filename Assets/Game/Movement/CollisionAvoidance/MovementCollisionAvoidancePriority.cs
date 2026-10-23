@@ -5,6 +5,7 @@ namespace ZE.MechBattle
         None = 0,
         SmallUnit = 1,
         Mech = 2,
+        Immovable = 3
     
     }
 }

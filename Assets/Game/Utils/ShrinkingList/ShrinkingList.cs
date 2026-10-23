@@ -6,7 +6,18 @@ namespace ZE.Utils
     public class ShrinkingList<T>
     {
         public int ActiveItemsCount { get; private set; }
-        private readonly List<T> _list = new();
+        private readonly List<T> _list;
+
+        public ShrinkingList(int defaultCapacity)
+        {
+            _list = new(defaultCapacity);
+        }
+
+        public ShrinkingList()
+        {
+            _list = new(32);
+        }
+
     
         public void Clear() 
         {

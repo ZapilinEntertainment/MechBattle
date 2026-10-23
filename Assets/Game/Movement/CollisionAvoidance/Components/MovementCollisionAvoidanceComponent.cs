@@ -1,5 +1,4 @@
 using Scellecs.Morpeh;
-using UnityEngine;
 using Unity.IL2CPP.CompilerServices;
 
 namespace ZE.MechBattle.Ecs {
@@ -11,11 +10,13 @@ namespace ZE.MechBattle.Ecs {
     {
         public readonly float RadiusInUnits;
         public readonly MovementCollisionAvoidancePriority Priority;
+        public readonly CellOccupationLevelFlags OccupationFlags;
 
-        public MovementCollisionAvoidanceComponent(MovementCollisionAvoidancePriority priority, float radiusInUnits = 0f)
+        public MovementCollisionAvoidanceComponent(MovementCollisionAvoidancePriority priority, float radiusInUnits = 0f, CellOccupationLevelFlags flags = CellOccupationLevelFlags.SmallUnits)
         {
             Priority = priority;
             RadiusInUnits = radiusInUnits;
+            OccupationFlags = flags;
         }
     
     }

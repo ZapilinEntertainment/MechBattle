@@ -162,7 +162,7 @@ namespace ZE.MechBattle.Editor.Tests
                     var tripos = _cellEntityComponents.Get(cellEntity).Tripos;
                     unitsCount++;
                     var unitEntity = CreateEntity((float)random.NextDouble(), tripos, HexMath.DefineHex(tripos, _map.TriangleHeight, _map.HexEdgeLength));
-                    var movementData = new CellMovementData(unitEntity, MovementCollisionAvoidancePriority.SmallUnit, float2.zero, 0);
+                    var movementData = new CellMovementData(unitEntity, MovementCollisionAvoidancePriority.SmallUnit, float2.zero, 0, CellOccupationLevelFlags.SmallUnits);
                     _cellMovementDataComponents.Set(cellEntity, new(movementData));
                 }                
 

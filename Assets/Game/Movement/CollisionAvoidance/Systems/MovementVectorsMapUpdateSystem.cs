@@ -1,10 +1,8 @@
 using Scellecs.Morpeh;
-using VContainer;
-using Unity.Mathematics;
 using Unity.IL2CPP.CompilerServices;
+using Unity.Mathematics;
+using VContainer;
 using ZE.MechBattle.Navigation;
-using Unity.Collections;
-using Unity.Jobs;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -14,14 +12,16 @@ namespace ZE.MechBattle.Ecs {
     {
         private Filter _movementProjectionsFilter;
         private Filter _occupationCellsFilter;
+        private Filter _blockedCellsFilter;
         private Stash<MovementCollisionAvoidanceComponent> _avoidanceComponents;
         private Stash<PositionComponent> _positionComponents;
         private Stash<NextPositionComponent> _nextPositionComponents;
         private Stash<TriangularPosComponent> _triangularPosComponents;
+        private Stash<CellPassabilityBlockComponent> _cellBlocks;
 
         private readonly IMovementCellsMap _movementCells;
         private readonly INavigationMap _map;
-        private readonly NativeList<IntTriangularPos> _resultsList;
+        private readonly CellResultsListOperator _resultsOperator;
       
 
         [Inject]
@@ -33,21 +33,28 @@ namespace ZE.MechBattle.Ecs {
             _movementCells = movementCells;
             _map = map;
 
-            _resultsList = new NativeList<IntTriangularPos>(Allocator.Persistent);
+            _resultsOperator = new(32);
         }
 
         public override void OnAwake()
         {
+            _blockedCellsFilter = World.Filter
+                .With<CellEntityComponent>()
+                .With<CellPassabilityBlockComponent>()
+                .Build();
+
             _movementProjectionsFilter = World.Filter
                 .With<MovementCollisionAvoidanceComponent>()
                 .With<NextPositionComponent>()
                 .Build();
+
             _occupationCellsFilter = World.Filter.With<MovementCollisionAvoidanceComponent>().Build();
 
             _avoidanceComponents = World.GetStash<MovementCollisionAvoidanceComponent>();
             _triangularPosComponents = World.GetStash<TriangularPosComponent>();
             _nextPositionComponents = World.GetStash<NextPositionComponent>();
             _positionComponents = World.GetStash<PositionComponent>();
+            _cellBlocks = World.GetStash<CellPassabilityBlockComponent>();
         }
 
         public override void OnUpdate(float deltaTime)
@@ -56,6 +63,13 @@ namespace ZE.MechBattle.Ecs {
                 return;
 
             _movementCells.Clear();
+
+            // blocked cells:
+            foreach (var cellEntity in _blockedCellsFilter)
+            {
+                var blockComponent = _cellBlocks.Get(cellEntity);
+                _movementCells.ApplyCellBlock(cellEntity, blockComponent.PrimaryOccupationEntity);
+            }
 
             // current occupation cells
             foreach (var entity in _occupationCellsFilter)
@@ -82,35 +96,26 @@ namespace ZE.MechBattle.Ecs {
                    entity,
                    avoidanceComponent.Priority,
                    moveDir,
-                   projectionIndex: 0);
+                   projectionIndex: 0,
+                   occupationLevelFlags: avoidanceComponent.OccupationFlags);
 
                     _movementCells.TryWriteCell(currentTripos, currentCellData);
                 }
                 else
                 {
-                   
-                    var getListJob = new GetTrianglesInRadiusJob()
-                    {
-                        RadiusInUnits = avoidanceComponent.RadiusInUnits,
-                        ResultList = _resultsList,
-                        TriangleHeight = _map.TriangleHeight,
-                        WorldPos = worldPos
-                    };
-                    getListJob.RunByRef();
-#if MORPEH_JOB_TRACKING
-            UnityEngine.Debug.Log("get triangles in radius job");
-#endif
+                    AffectedTrianglesCalculator.CalculateRoundAffectedTrianglesManaged(_resultsOperator, worldPos, avoidanceComponent.RadiusInUnits, _map.TriangleHeight);
 
-                    foreach (var tripos in _resultsList)
+                    foreach (var tripos in _resultsOperator.List)
                     {
                         var cellData = new CellMovementData(
                            entity,
                            avoidanceComponent.Priority,
                            moveDir,
-                           projectionIndex: TriangularMath.CalculateDistance(tripos, currentTripos));
+                           projectionIndex: TriangularMath.CalculateDistance(tripos, currentTripos),
+                           occupationLevelFlags: avoidanceComponent.OccupationFlags);
                         _movementCells.TryWriteCell(tripos, cellData);
                     }
-                    _resultsList.Clear();
+                    _resultsOperator.Clear();
                 }
                
             }
@@ -135,29 +140,13 @@ namespace ZE.MechBattle.Ecs {
                         entity,
                         avoidanceComponent.Priority,
                         moveDir,
-                        projectionIndex: 1);
+                        projectionIndex: 1,
+                        occupationLevelFlags: avoidanceComponent.OccupationFlags);
 
                     _movementCells.TryWriteCell(nextTripos, nextCellData);
                 }
             }
             //UnityEngine.Debug.Log($"-------");
         }
-
-        protected override void InternalDispose()
-        {
-            base.InternalDispose();
-#if UNITY_EDITOR
-            try
-            {
-#endif
-                _resultsList.Dispose();
-#if UNITY_EDITOR
-            }
-            catch
-            {
-                // editor dispose problems
-            }
-#endif
-            }
     }
 }

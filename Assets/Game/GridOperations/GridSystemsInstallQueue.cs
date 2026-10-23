@@ -7,6 +7,9 @@ namespace ZE.MechBattle
         protected override void Configure(ISystemsOperator installer)
         {
             installer.AddSystem<UnitsGridFillSystem>(TriangularPosUpdateSystem.GroupOrder + 1);
+
+            installer.AddSystem<CellBlocksAddSystem>(SystemGroupOrder.BeforePathfinding);
+            installer.AddSystem<CellBlocksClearSystem>(SystemGroupOrder.DisposedObjectsOperations);
         }
     }
 }

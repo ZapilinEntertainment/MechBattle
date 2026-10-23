@@ -9,17 +9,20 @@ using ZE.MechBattle.Navigation;
 namespace ZE.MechBattle
 {
     [BurstCompile]
-    public struct PrepareCellsMapJob : IJobParallelFor
+    public struct PrepareCellsMapJob : IJob
     {
         [ReadOnly] public NativeFilter CellsFilter;
         [ReadOnly] public NativeStash<CellEntityComponent> CellComponents;
-        [WriteOnly] public NativeParallelHashMap<IntTriangularPos, Entity>.ParallelWriter MapWriter;
+        [WriteOnly] public NativeParallelHashMap<IntTriangularPos, Entity> MapWriter;
 
-        public void Execute(int index)
+        public void Execute()
         {
-            var cellEntity = CellsFilter[index];
-            var tripos = CellComponents.Get(cellEntity).Tripos;
-            MapWriter.TryAdd(tripos, cellEntity);
+            for (var i = 0; i < CellsFilter.length; i++)
+            {
+                var cellEntity = CellsFilter[i];
+                var tripos = CellComponents.Get(cellEntity).Tripos;
+                MapWriter[tripos] = cellEntity;
+            }            
         }
     }
 }

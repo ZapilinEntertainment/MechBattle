@@ -61,9 +61,9 @@ namespace ZE.MechBattle.Ecs {
             {
                 CellComponents = _cellComponents.AsNative(),
                 CellsFilter = cellsNativeFilter,
-                MapWriter = _cellsMap.AsParallelWriter()
+                MapWriter = _cellsMap
             };
-            var prepareJobHandle = prepareMapJob.Schedule(cellsNativeFilter.length, 16);
+            var prepareJobHandle = prepareMapJob.Schedule();
 
 
             var updatePositionsJob = new NextPositionApplyJob()
