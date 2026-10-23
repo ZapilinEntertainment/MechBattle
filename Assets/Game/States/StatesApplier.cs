@@ -4,7 +4,7 @@ using ZE.MechBattle.Ecs.States;
 
 namespace ZE.MechBattle.Ecs
 {
-    public class StatesApplier
+    public class StatesApplier : IUnitFeatureApplier
     {
         private readonly Stash<BehaviourKeyComponent> _behaviourKeys;
         private readonly Stash<StateComponent> _stateComponents;
@@ -32,5 +32,11 @@ namespace ZE.MechBattle.Ecs
         }
 
         public void SetNextState(Entity entity, StateKey stateKey) => _stateComponents.Get(entity).NextState = stateKey;
+
+        void IUnitFeatureApplier.ApplyUnitFeature(Entity entity, IUnitConfig config)
+        {
+            if (config.BehaviourKey != BehaviourKey.Undefined)
+                ApplyState(entity, config.BehaviourKey, StateKey.Idle, highPriority: false);
+        }
     }
 }

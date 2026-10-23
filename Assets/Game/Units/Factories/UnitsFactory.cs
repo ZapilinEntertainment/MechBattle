@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using VContainer;
 using Scellecs.Morpeh;
 using ZE.MechBattle.Ecs;
@@ -5,23 +6,20 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle
 {
-
-    // todo: develop same appliers system as with navigation cells
     public class UnitsFactory : IEntityCreationFactory
     {
         private readonly World _world;
         private readonly TransformAspectHandler _transformAspectHandler;
         private readonly MonoViewFactory _viewFactory;
         private readonly StringDataDictionary _stringDataDictionary;
-        private readonly StatesApplier _statesApplier;
         private readonly ViewSynchronizationApplier _viewSyncApplier;
         private readonly IUnitConfigsList _unitConfigs;
-        private readonly WeaponFactory _weaponFactory;
-        private readonly WeaponHandler _weaponHandler;
+
+        private readonly List<IUnitFeatureApplier> _unitFeatureAppliers;
 
         private readonly Stash<MoveSpeedComponent> _moveSpeeds;
         private readonly Stash<NavigationAgentComponent> _navigationAgents;
-        private readonly Stash<MovementCollisionAvoidanceComponent> _movementCollisionAvoidanceComponents;
+        
         private readonly Stash<TargetSearchRadiusComponent> _targetSearchRadiusComponents; 
         private readonly Stash<HealthComponent> _healthComponents;
         private readonly Stash<UnitTag> _unitTags;
@@ -35,25 +33,25 @@ namespace ZE.MechBattle
             TransformAspectHandler transformAspectHandler,
             MonoViewFactory viewFactory,
             StringDataDictionary stringDataDictionary,
-            StatesApplier statesApplier,
             ViewSynchronizationApplier viewSyncApplier,
             IUnitConfigsList unitConfigsList,
-            WeaponFactory weaponFactory,
-            WeaponHandler weaponHandler)
+            IEnumerable<IUnitFeatureApplier> unitFeatureAppliers)
         {
             _world = world;
             _transformAspectHandler = transformAspectHandler;
             _unitConfigs = unitConfigsList;
             _viewFactory = viewFactory;
             _stringDataDictionary = stringDataDictionary;
-            _statesApplier = statesApplier;
-            _weaponFactory = weaponFactory;
             _viewSyncApplier = viewSyncApplier;
-            _weaponHandler = weaponHandler;
+
+            _unitFeatureAppliers = new(8);
+            foreach (var unitFeatureApplier in unitFeatureAppliers)
+            {
+                _unitFeatureAppliers.Add(unitFeatureApplier);
+            }
 
             _moveSpeeds = world.GetStash<MoveSpeedComponent>();
             _navigationAgents = world.GetStash<NavigationAgentComponent>();
-            _movementCollisionAvoidanceComponents = world.GetStash<MovementCollisionAvoidanceComponent>();
             _targetSearchRadiusComponents = world.GetStash<TargetSearchRadiusComponent>();
             _healthComponents = world.GetStash<HealthComponent>();
             _unitTags = world.GetStash<UnitTag>();
@@ -97,14 +95,10 @@ namespace ZE.MechBattle
 
         private void Setup(Entity entity, IUnitConfig config) 
         {
-            _navigationAgents.Add(entity);
-            _movementCollisionAvoidanceComponents.Add(entity, new(config.CollisionAvoidancePriority));
+            _navigationAgents.Add(entity);            
 
             if (config.TargetSearchRadius != 0f)
                 _targetSearchRadiusComponents.Add(entity, new(config.TargetSearchRadius));
-
-            if (config.BehaviourKey != BehaviourKey.Undefined)
-                _statesApplier.ApplyState(entity, config.BehaviourKey, StateKey.Idle, highPriority : false);
 
             if (config.MoveSpeed != 0f)
                 _moveSpeeds.Set(entity, new() { Value = config.MoveSpeed });
@@ -118,31 +112,10 @@ namespace ZE.MechBattle
             if (config.CapturePower != 0f)
                 _capturePowers.Add(entity, new(config.CapturePower));
 
-            TryAttachWeapon(entity, config);
-
+            foreach (var applier in _unitFeatureAppliers)
+                applier.ApplyUnitFeature(entity, config);
         }
 
-        private void TryAttachWeapon(Entity unitEntity, IUnitConfig config)
-        {
-            if (!config.TryGetWeaponData(out var weaponData))
-                return;
-
-            var weaponEntity = _weaponFactory.CreateWeapon(new()
-            {
-                ParentEntity = unitEntity,
-                ViewOwnerEntity = unitEntity,
-                WeaponConfig = weaponData.Config,
-                AttachmentProtocol = weaponData.AttachmentProtocol,
-
-                WeaponControllerEntity = unitEntity,
-
-                UseAutoStow = true,
-                UseAutoShot = true,
-
-                DamageParameters = new(weaponData.Config.DamageType, config.Damage),                
-            });
-
-            _weaponHandler.OnAttachedToUnit(weaponEntity, unitEntity, config.MaxPrecisionAberration);
-        }
+       
     }
 }
