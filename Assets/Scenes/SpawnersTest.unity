@@ -4059,10 +4059,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: spawner_tower_view
       objectReference: {fileID: 0}
-    - target: {fileID: 2926744493269152651, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
-      propertyPath: _parameters.Health
-      value: 500
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

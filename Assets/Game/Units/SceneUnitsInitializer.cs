@@ -36,7 +36,7 @@ namespace ZE.MechBattle.Ecs {
                 if (!spawner.RegisterAsVirtualPoint)
                     continue;
 
-                _spawnerFactory.CreateSpawnerEntity(spawner);
+                _spawnerFactory.CreateSpawnerEntity(spawner);                
             }
         }        
     }
