@@ -7,11 +7,9 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
 
-    // add to entity, that is obstacle
-    public readonly struct CellsBlockTokenComponent : IComponent 
+    // add to entity that is obstacle
+    public readonly struct CellsBlockerTag : IComponent 
     {
-        public readonly int TokenId;
-        public CellsBlockTokenComponent(int tokenId) => TokenId = tokenId;
 
     }
 }

@@ -8,20 +8,20 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public struct CellPassabilityBlockComponent : IComponent 
     {
-        public int PrimaryOccupationTokenId;
-        public int SecondaryOccupationTokenId; // if some occupations are overlayed
+        public Entity PrimaryOccupationEntity;
+        public Entity SecondaryOccupationEntity; // if some occupations are overlayed
         public CellOccupationLevelFlags OccupationFlags;
 
-        public CellPassabilityBlockComponent(int tokenId, CellOccupationLevelFlags flags)
+        public CellPassabilityBlockComponent(Entity entity, CellOccupationLevelFlags flags)
         {
-            PrimaryOccupationTokenId = tokenId;
-            SecondaryOccupationTokenId = -1;
+            PrimaryOccupationEntity = entity;
+            SecondaryOccupationEntity = default;
             OccupationFlags = flags;
         }
 
-        public void AddSecondaryToken(int tokenId, CellOccupationLevelFlags secondaryTokenFlags)
+        public void AddSecondaryToken(Entity entity, CellOccupationLevelFlags secondaryTokenFlags)
         {
-            SecondaryOccupationTokenId = tokenId;
+            SecondaryOccupationEntity = entity;
             OccupationFlags |= secondaryTokenFlags;
         }
     }

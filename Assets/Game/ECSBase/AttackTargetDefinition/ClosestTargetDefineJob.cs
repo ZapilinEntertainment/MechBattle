@@ -91,7 +91,7 @@ namespace ZE.MechBattle.Ecs
                         //
 
                         var targetEntityData = TargetEntitiesData[targetEntityIndex];
-                        if (!entityEnemiesMask.Contains(targetEntityData.PlayerId))
+                        if (targetEntityData.PlayerId == -1 || !entityEnemiesMask.Contains(targetEntityData.PlayerId))
                             continue;
 
                         var distanceSq = math.distancesq(entityPosition, targetEntityData.WorldPos);

@@ -9,6 +9,7 @@ namespace ZE.MechBattle
         bool TryGetValue(IntTriangularPos tripos, out CellMovementData cellData);
         void Clear();
         bool TryWriteCell(IntTriangularPos tripos, CellMovementData cellData);
-        bool TryWriteCell(IntTriangularPos tripos, Entity entity, float2 moveDir, int projectionIndex);
+        bool TryWriteCell(IntTriangularPos tripos, Entity entity, float2 moveDir, int projectionIndex, CellOccupationLevelFlags occupationFlags);
+        void ApplyCellBlock(Entity cellEntity, Entity blockerEntity);
     }
 }

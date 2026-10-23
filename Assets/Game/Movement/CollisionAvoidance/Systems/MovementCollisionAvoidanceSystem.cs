@@ -16,6 +16,7 @@ namespace ZE.MechBattle.Ecs
         private Stash<PositionComponent> _positionComponents;
         private Stash<TriangularPosComponent> _triangularPosComponents;
         private Stash<WaypointMoveTarget> _waypoints;
+        private Stash<MovementCollisionAvoidanceComponent> _avoidances;
 
         private readonly IMovementCellsMap _movementCells;
         private readonly float _invertedTriangleHeight;
@@ -48,6 +49,7 @@ namespace ZE.MechBattle.Ecs
             _positionComponents = World.GetStash<PositionComponent>();
             _triangularPosComponents = World.GetStash<TriangularPosComponent>();
             _waypoints = World.GetStash<WaypointMoveTarget>();
+            _avoidances = World.GetStash<MovementCollisionAvoidanceComponent>();
         }
 
         public override void OnUpdate(float deltaTime)
@@ -70,7 +72,7 @@ namespace ZE.MechBattle.Ecs
 
                 if (!_movementCells.TryGetValue(nextTripos, out var moveCell))
                 {
-                    _movementCells.TryWriteCell(nextTripos, entity, moveDir, 1);
+                    _movementCells.TryWriteCell(nextTripos, entity, moveDir, 1, _avoidances.Get(entity).OccupationFlags);
                     continue;
                 }
                 else

@@ -29,8 +29,15 @@ namespace ZE.MechBattle.Ecs {
 
         public int2 DecodeSize2D()
         {
-            ByteCoder.SplitInt(Value, out var width, out var height);
-            return new(width, height);
+            if (Mode.DoesRequireTwoExtents())
+            {
+                ByteCoder.SplitInt(Value, out var width, out var height);
+                return new(width, height);
+            }
+            else
+            {
+                return new(Value, 0);
+            }                
         }
 
     }

@@ -9,17 +9,15 @@ namespace ZE.MechBattle
 {
     public class NavigationGridHandler
     {
-        private int _nextBlockingId = 1;
         private CellResultsListOperator _cellResultsList;
 
         private readonly IMovementCellsMap _movementCellsList;
         private readonly IHexPortalsCoordinator _portalsCoordinator;
         private readonly IEntitiesNavigationMap _navigationMap;
-        private readonly CellBlockTokensList _cellBlockTokensList;
 
         private readonly Stash<HexCoordComponent> _hexCoords;
-        private readonly Stash<CellPassabilityBlockComponent> _blockComponents;       
-
+        private readonly Stash<CellPassabilityBlockComponent> _blockComponents;
+        private readonly Stash<CellMovementDataComponent> _cellMovementData;
        
 
         [Inject]
@@ -27,18 +25,17 @@ namespace ZE.MechBattle
             IMovementCellsMap movementCellsList, 
             IHexPortalsCoordinator portalsCoordinator, 
             IEntitiesNavigationMap navigationMap,
-            World world,
-            CellBlockTokensList blockTokensList)
+            World world)
         {
             _movementCellsList = movementCellsList;
             _portalsCoordinator = portalsCoordinator;
             _navigationMap = navigationMap;
-            _cellBlockTokensList = blockTokensList;
 
             _cellResultsList = new(32);
 
             _hexCoords = world.GetStash<HexCoordComponent>();
             _blockComponents = world.GetStash<CellPassabilityBlockComponent>();
+            _cellMovementData = world.GetStash<CellMovementDataComponent>();
         }
 
         public int2 GetTargetHexCoord(Entity navigationAgentEntity, int portalId)
@@ -55,7 +52,8 @@ namespace ZE.MechBattle
 
         public bool IsCellObstructed(IntTriangularPos pos) => !_navigationMap.GetPassabilityData(pos).IsPassable;
 
-        public int BlockCellsPassability(BlockZoneConfigComponent blockZoneData, RigidTransform point)
+
+        public void BlockCellsPassability(Entity blockingEntity, BlockZoneConfigComponent blockZoneData, RigidTransform point)
         {
             switch(blockZoneData.Mode)
             {
@@ -75,30 +73,27 @@ namespace ZE.MechBattle
                     }
             }
 
-            var blockTokenId = _nextBlockingId++;
             foreach (var tripos in _cellResultsList.List)
             {
                 if (!_navigationMap.TryGetNavigationCellEntity(tripos, out var cellEntity))
                     continue;
 
-                SetNavigationCellBlock(cellEntity, blockTokenId, blockZoneData.BlockFlags);
+                SetNavigationCellBlock(cellEntity, blockingEntity, blockZoneData.BlockFlags);
             }
             _cellResultsList.Clear();
-
-            return blockTokenId;
         }
 
-        private void SetNavigationCellBlock(Entity cellEntity, int tokenId, CellOccupationLevelFlags occupationFlags)
+        private void SetNavigationCellBlock(Entity cellEntity, Entity blockingEntity, CellOccupationLevelFlags occupationFlags)
         {
             ref var existingBlockComponent = ref _blockComponents.Get(cellEntity, out var blockAlreadyExists);
             if (blockAlreadyExists)
             {
                 existingBlockComponent.OccupationFlags |= occupationFlags;
-                existingBlockComponent.SecondaryOccupationTokenId = tokenId;
+                existingBlockComponent.SecondaryOccupationEntity = blockingEntity;
             }
             else
             {
-                _blockComponents.Add(cellEntity, new(tokenId, occupationFlags));
+                _blockComponents.Add(cellEntity, new(blockingEntity, occupationFlags));
             }
         }
     }

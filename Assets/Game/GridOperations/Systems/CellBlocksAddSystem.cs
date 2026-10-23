@@ -1,6 +1,7 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
 using VContainer;
+using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -9,41 +10,48 @@ namespace ZE.MechBattle.Ecs {
     public sealed class CellBlocksAddSystem : ISystem 
     {
         public World World { get; set;}
+
+        private bool _mapCalculated = false;
         private Filter _addFilter;
         private Stash<BlockZoneConfigComponent> _blockConfigs;
-        private Stash<CellsBlockTokenComponent> _blockTokens;
+        private Stash<CellsBlockerTag> _blockTokens;
 
         private readonly TransformAspectHandler _transformAspectHandler;
         private readonly NavigationGridHandler _gridHandler;
+        private readonly INavigationMap _navigationMap;
 
         [Inject]
-        public CellBlocksAddSystem(TransformAspectHandler transformAspectHandler, NavigationGridHandler gridHandler)
+        public CellBlocksAddSystem(TransformAspectHandler transformAspectHandler, NavigationGridHandler gridHandler, INavigationMap navigationMap)
         {
             _transformAspectHandler = transformAspectHandler;
             _gridHandler = gridHandler;
+            _navigationMap = navigationMap;
         }
 
         public void OnAwake() 
         {
             _addFilter = World.Filter
                 .With<BlockZoneConfigComponent>()
-                .Without<CellsBlockTokenComponent>()
+                .Without<CellsBlockerTag>()
                 .Without<EntityDisposeTag>()
                 .Build();
 
             _blockConfigs = World.GetStash<BlockZoneConfigComponent>();
-            _blockTokens = World.GetStash<CellsBlockTokenComponent>();
+            _blockTokens = World.GetStash<CellsBlockerTag>();
         }
 
         public void OnUpdate(float deltaTime) 
         {
+            if (!_navigationMap.IsInitialized)
+                return;
+
             foreach (var buildingEntity in _addFilter)
             {
                 var blockData = _blockConfigs.Get(buildingEntity);
                 var point = _transformAspectHandler.GetPoint(buildingEntity);
 
-                var tokenId = _gridHandler.BlockCellsPassability(blockData, point);
-                _blockTokens.Add(buildingEntity, new(tokenId));
+                _gridHandler.BlockCellsPassability(buildingEntity, blockData, point);
+                _blockTokens.Add(buildingEntity);
             }
         }
 

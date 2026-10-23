@@ -12,10 +12,12 @@ namespace ZE.MechBattle.Ecs {
     {
         private Filter _movementProjectionsFilter;
         private Filter _occupationCellsFilter;
+        private Filter _blockedCellsFilter;
         private Stash<MovementCollisionAvoidanceComponent> _avoidanceComponents;
         private Stash<PositionComponent> _positionComponents;
         private Stash<NextPositionComponent> _nextPositionComponents;
         private Stash<TriangularPosComponent> _triangularPosComponents;
+        private Stash<CellPassabilityBlockComponent> _cellBlocks;
 
         private readonly IMovementCellsMap _movementCells;
         private readonly INavigationMap _map;
@@ -36,16 +38,23 @@ namespace ZE.MechBattle.Ecs {
 
         public override void OnAwake()
         {
+            _blockedCellsFilter = World.Filter
+                .With<CellEntityComponent>()
+                .With<CellPassabilityBlockComponent>()
+                .Build();
+
             _movementProjectionsFilter = World.Filter
                 .With<MovementCollisionAvoidanceComponent>()
                 .With<NextPositionComponent>()
                 .Build();
+
             _occupationCellsFilter = World.Filter.With<MovementCollisionAvoidanceComponent>().Build();
 
             _avoidanceComponents = World.GetStash<MovementCollisionAvoidanceComponent>();
             _triangularPosComponents = World.GetStash<TriangularPosComponent>();
             _nextPositionComponents = World.GetStash<NextPositionComponent>();
             _positionComponents = World.GetStash<PositionComponent>();
+            _cellBlocks = World.GetStash<CellPassabilityBlockComponent>();
         }
 
         public override void OnUpdate(float deltaTime)
@@ -54,6 +63,13 @@ namespace ZE.MechBattle.Ecs {
                 return;
 
             _movementCells.Clear();
+
+            // blocked cells:
+            foreach (var cellEntity in _blockedCellsFilter)
+            {
+                var blockComponent = _cellBlocks.Get(cellEntity);
+                _movementCells.ApplyCellBlock(cellEntity, blockComponent.PrimaryOccupationEntity);
+            }
 
             // current occupation cells
             foreach (var entity in _occupationCellsFilter)
@@ -80,7 +96,8 @@ namespace ZE.MechBattle.Ecs {
                    entity,
                    avoidanceComponent.Priority,
                    moveDir,
-                   projectionIndex: 0);
+                   projectionIndex: 0,
+                   occupationLevelFlags: avoidanceComponent.OccupationFlags);
 
                     _movementCells.TryWriteCell(currentTripos, currentCellData);
                 }
@@ -94,7 +111,8 @@ namespace ZE.MechBattle.Ecs {
                            entity,
                            avoidanceComponent.Priority,
                            moveDir,
-                           projectionIndex: TriangularMath.CalculateDistance(tripos, currentTripos));
+                           projectionIndex: TriangularMath.CalculateDistance(tripos, currentTripos),
+                           occupationLevelFlags: avoidanceComponent.OccupationFlags);
                         _movementCells.TryWriteCell(tripos, cellData);
                     }
                     _resultsOperator.Clear();
@@ -122,7 +140,8 @@ namespace ZE.MechBattle.Ecs {
                         entity,
                         avoidanceComponent.Priority,
                         moveDir,
-                        projectionIndex: 1);
+                        projectionIndex: 1,
+                        occupationLevelFlags: avoidanceComponent.OccupationFlags);
 
                     _movementCells.TryWriteCell(nextTripos, nextCellData);
                 }

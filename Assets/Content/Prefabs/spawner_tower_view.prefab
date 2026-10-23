@@ -256,6 +256,12 @@ MonoBehaviour:
   - {fileID: 3067490651314443019}
   _destroyEffectKey: test_building_destruction
   _functionFlags: 1
+  _blockConfig:
+    IsValid: 1
+    Mode: 1
+    ExtentA: 12
+    ExtentB: 12
+    Flags: 0
   _colouredRenderers:
   - {fileID: 2854461308487863258}
   - {fileID: 5031739783083086635}
@@ -273,14 +279,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2631baf64fafbcc4f998ab5fcc5d0eec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitsSpawnerMono
+  RegisterAsVirtualPoint: 0
   _playerId: 0
   _unitId: tank
-  _count: 5
+  _count: 1
   _spawnRadiusInUnits: 25
-  _interval: 10
+  _interval: 1
   _initialDelay: 0
   _limit: -1
-  _status: 0
 --- !u!1 &2913121675166457278
 GameObject:
   m_ObjectHideFlags: 0
@@ -305,7 +311,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2913121675166457278}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -534,6 +540,12 @@ MonoBehaviour:
   - {fileID: 7337545326065313578}
   _destroyEffectKey: test_building_destruction
   _functionFlags: 0
+  _blockConfig:
+    IsValid: 0
+    Mode: 0
+    ExtentA: 0
+    ExtentB: 0
+    Flags: 0
   _colouredRenderers: []
 --- !u!1 &4714050648587934078
 GameObject:
@@ -843,3 +855,9 @@ MonoBehaviour:
   - {fileID: 134714856130934184}
   _destroyEffectKey: test_building_destruction
   _functionFlags: 0
+  _blockConfig:
+    IsValid: 0
+    Mode: 0
+    ExtentA: 0
+    ExtentB: 0
+    Flags: 1

@@ -12,25 +12,18 @@ namespace ZE.MechBattle.Ecs {
         public World World { get; set;}
         private Filter _clearFilter;
         private Filter _blockedCellsFilter;
-        private Stash<CellsBlockTokenComponent> _blockTokens;
+        private Stash<CellsBlockerTag> _blockerTags;
         private Stash<CellPassabilityBlockComponent> _passabilityBlocks;
-        private readonly HashSet<int> _clearList = new(8);
-        private readonly CellBlockTokensList _cellBlockTokensList;
-
-        [Inject]
-        public CellBlocksClearSystem(CellBlockTokensList tokensList)
-        {
-            _cellBlockTokensList = tokensList;
-        }
+        private readonly HashSet<Entity> _clearList = new(8);
 
         public void OnAwake() 
         {
             _clearFilter = World.Filter
-                .With<CellsBlockTokenComponent>()
+                .With<CellsBlockerTag>()
                 .With<EntityDisposeTag>()
                 .Build();
 
-            _blockTokens = World.GetStash<CellsBlockTokenComponent>();
+            _blockerTags = World.GetStash<CellsBlockerTag>();
 
             _blockedCellsFilter = World.Filter
                 .With<CellEntityComponent>()
@@ -47,7 +40,7 @@ namespace ZE.MechBattle.Ecs {
 
             foreach (var blockingEntity in _clearFilter)
             {
-                _clearList.Add(_blockTokens.Get(blockingEntity).TokenId);
+                _clearList.Add(blockingEntity);
             }
 
 
@@ -58,13 +51,13 @@ namespace ZE.MechBattle.Ecs {
                 CellOccupationLevelFlags primaryTokenOccupationFlags = CellOccupationLevelFlags.None;
                 CellOccupationLevelFlags secondaryTokenOccupationFlags = CellOccupationLevelFlags.None;
 
-                var isPrimaryTokenOutdated = 
-                    _clearList.Contains(blockData.PrimaryOccupationTokenId)
-                    || !_cellBlockTokensList.TryGetValue(blockData.PrimaryOccupationTokenId, out primaryTokenOccupationFlags);
+                var isPrimaryTokenOutdated =
+                    World.IsDisposed(blockData.SecondaryOccupationEntity)
+                    || _clearList.Contains(blockData.PrimaryOccupationEntity);
 
-                var isSecondaryTokenOutdated = blockData.SecondaryOccupationTokenId == -1
-                        || _clearList.Contains(blockData.SecondaryOccupationTokenId)
-                        || !_cellBlockTokensList.TryGetValue(blockData.SecondaryOccupationTokenId, out secondaryTokenOccupationFlags);
+                var isSecondaryTokenOutdated = 
+                    World.IsDisposed(blockData.SecondaryOccupationEntity)
+                    || _clearList.Contains(blockData.SecondaryOccupationEntity);
 
                 if (isPrimaryTokenOutdated & isSecondaryTokenOutdated)
                 {
@@ -76,26 +69,23 @@ namespace ZE.MechBattle.Ecs {
                     if (isSecondaryTokenOutdated)
                     {
                         // clear secondaryToken
-                        _passabilityBlocks.Set(cellEntity, new(blockData.PrimaryOccupationTokenId, primaryTokenOccupationFlags));
+                        _passabilityBlocks.Set(cellEntity, new(blockData.PrimaryOccupationEntity, primaryTokenOccupationFlags));
                     }
                     else
                     {
                         // secondary token becomes primary
-                        _passabilityBlocks.Set(cellEntity, new(blockData.SecondaryOccupationTokenId, secondaryTokenOccupationFlags));
+                        _passabilityBlocks.Set(cellEntity, new(blockData.SecondaryOccupationEntity, secondaryTokenOccupationFlags));
                     }
                 }
             }
 
-            foreach (var clearTokenId in _clearList)
+            foreach (var clearEntity in _clearList)
             {
-                _cellBlockTokensList.Remove(clearTokenId);
+                _blockerTags.Remove(clearEntity);
             }
             _clearList.Clear();
         }
 
-        public void Dispose()
-        {
-
-        }
+        public void Dispose() { }
     }
 }

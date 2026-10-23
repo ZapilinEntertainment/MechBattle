@@ -1,5 +1,4 @@
 using Unity.Mathematics;
-using UnityEditor;
 using UnityEngine;
 using ZE.MechBattle.Ecs;
 
@@ -53,8 +52,8 @@ namespace ZE.MechBattle
 
         private void OnDrawGizmosSelected()
         {
-            if (_spawnRadiusInUnits != 0f)
-                Handles.DrawWireArc(transform.position, Vector3.up, Vector3.right, 360f, _spawnRadiusInUnits);
+            if (isActiveAndEnabled && _spawnRadiusInUnits != 0f)
+                UnityEditor.Handles.DrawWireArc(transform.position, Vector3.up, Vector3.right, 360f, _spawnRadiusInUnits);
         }
 #endif
 
