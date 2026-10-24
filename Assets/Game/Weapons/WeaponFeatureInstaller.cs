@@ -27,6 +27,7 @@ namespace ZE.MechBattle
             builder.Register<WeaponHandler>(Lifetime.Scoped);
 
             builder.Register<IWeaponsManager, MechWeaponsManager>(Lifetime.Scoped).AsSelf();
+            builder.Register<IUnitFeatureApplier, UnitWeaponApplier>(Lifetime.Scoped);
         }
 
         protected override WeaponSystemsInstallQueue CreateQueue() => new();

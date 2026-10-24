@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using VContainer;
 using Scellecs.Morpeh;
 using ZE.MechBattle.Ecs;
@@ -5,23 +6,20 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle
 {
-
-    // todo: develop same appliers system as with navigation cells
     public class UnitsFactory : IEntityCreationFactory
     {
         private readonly World _world;
         private readonly TransformAspectHandler _transformAspectHandler;
         private readonly MonoViewFactory _viewFactory;
         private readonly StringDataDictionary _stringDataDictionary;
-        private readonly StatesApplier _statesApplier;
         private readonly ViewSynchronizationApplier _viewSyncApplier;
         private readonly IUnitConfigsList _unitConfigs;
-        private readonly WeaponFactory _weaponFactory;
-        private readonly WeaponHandler _weaponHandler;
+
+        private readonly List<IUnitFeatureApplier> _unitFeatureAppliers;
 
         private readonly Stash<MoveSpeedComponent> _moveSpeeds;
         private readonly Stash<NavigationAgentComponent> _navigationAgents;
-        private readonly Stash<MovementCollisionAvoidanceComponent> _movementCollisionAvoidanceComponents;
+        
         private readonly Stash<TargetSearchRadiusComponent> _targetSearchRadiusComponents; 
         private readonly Stash<HealthComponent> _healthComponents;
         private readonly Stash<UnitTag> _unitTags;
@@ -35,25 +33,25 @@ namespace ZE.MechBattle
             TransformAspectHandler transformAspectHandler,
             MonoViewFactory viewFactory,
             StringDataDictionary stringDataDictionary,
-            StatesApplier statesApplier,
             ViewSynchronizationApplier viewSyncApplier,
             IUnitConfigsList unitConfigsList,
-            WeaponFactory weaponFactory,
-            WeaponHandler weaponHandler)
+            IEnumerable<IUnitFeatureApplier> unitFeatureAppliers)
         {
             _world = world;
             _transformAspectHandler = transformAspectHandler;
             _unitConfigs = unitConfigsList;
             _viewFactory = viewFactory;
             _stringDataDictionary = stringDataDictionary;
-            _statesApplier = statesApplier;
-            _weaponFactory = weaponFactory;
             _viewSyncApplier = viewSyncApplier;
-            _weaponHandler = weaponHandler;
+
+            _unitFeatureAppliers = new(8);
+            foreach (var unitFeatureApplier in unitFeatureAppliers)
+            {
+                _unitFeatureAppliers.Add(unitFeatureApplier);
+            }
 
             _moveSpeeds = world.GetStash<MoveSpeedComponent>();
             _navigationAgents = world.GetStash<NavigationAgentComponent>();
-            _movementCollisionAvoidanceComponents = world.GetStash<MovementCollisionAvoidanceComponent>();
             _targetSearchRadiusComponents = world.GetStash<TargetSearchRadiusComponent>();
             _healthComponents = world.GetStash<HealthComponent>();
             _unitTags = world.GetStash<UnitTag>();
@@ -80,7 +78,7 @@ namespace ZE.MechBattle
 
         public Entity Build(UnitKey unitKey, RigidTransform point)
         {
-            if (!_unitConfigs.TryGetConfig(unitKey, out var unitConfig))
+            if (!_unitConfigs.TryGetUnitConfig(unitKey, out var unitConfig))
             {
                 UnityEngine.Debug.LogError($"no config for {_stringDataDictionary.GetStringByKey(unitKey.Id)}");
                 return default;
@@ -95,54 +93,32 @@ namespace ZE.MechBattle
         }
     
 
-        private void Setup(Entity entity, IUnitConfig config) 
+        private void Setup(Entity entity, IUnitConfig unitConfig) 
         {
             _navigationAgents.Add(entity);
-            _movementCollisionAvoidanceComponents.Add(entity, new(config.CollisionAvoidancePriority));
 
-            if (config.TargetSearchRadius != 0f)
-                _targetSearchRadiusComponents.Add(entity, new(config.TargetSearchRadius));
+            if (unitConfig.TargetSearchRadius != 0f)
+                _targetSearchRadiusComponents.Add(entity, new(unitConfig.TargetSearchRadius));
 
-            if (config.BehaviourKey != BehaviourKey.Undefined)
-                _statesApplier.ApplyState(entity, config.BehaviourKey, StateKey.Idle, highPriority : false);
+            if (unitConfig.MoveSpeed != 0f)
+                _moveSpeeds.Set(entity, new() { Value = unitConfig.MoveSpeed });
 
-            if (config.MoveSpeed != 0f)
-                _moveSpeeds.Set(entity, new() { Value = config.MoveSpeed });
-
-            _healthComponents.Set(entity, new(config.Health));
+            _healthComponents.Set(entity, new(unitConfig.Health));
 
             _unitTags.Add(entity);
 
             _calculateTrianglePosTags.Add(entity);
 
-            if (config.CapturePower != 0f)
-                _capturePowers.Add(entity, new(config.CapturePower));
+            if (unitConfig.CapturePower != 0f)
+                _capturePowers.Add(entity, new(unitConfig.CapturePower));
 
-            TryAttachWeapon(entity, config);
-
-        }
-
-        private void TryAttachWeapon(Entity unitEntity, IUnitConfig config)
-        {
-            if (!config.TryGetWeaponData(out var weaponData))
-                return;
-
-            var weaponEntity = _weaponFactory.CreateWeapon(new()
+            foreach (var applier in _unitFeatureAppliers)
             {
-                ParentEntity = unitEntity,
-                ViewOwnerEntity = unitEntity,
-                WeaponConfig = weaponData.Config,
-                AttachmentProtocol = weaponData.AttachmentProtocol,
-
-                WeaponControllerEntity = unitEntity,
-
-                UseAutoStow = true,
-                UseAutoShot = true,
-
-                DamageParameters = new(weaponData.Config.DamageType, config.Damage),                
-            });
-
-            _weaponHandler.OnAttachedToUnit(weaponEntity, unitEntity, config.MaxPrecisionAberration);
+                applier.ApplyUnitFeature(entity, unitConfig);
+            }
+                
         }
+
+       
     }
 }

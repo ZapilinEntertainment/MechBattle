@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using VContainer;
 using VContainer.Unity;
 
@@ -11,7 +10,7 @@ namespace ZE.MechBattle.Ecs.States
 
         void ISceneFeatureScopeInstaller.SceneScopeInstall(IContainerBuilder builder)
         {
-            builder.Register<StatesApplier>(Lifetime.Singleton);
+            builder.Register<StatesApplier>(Lifetime.Singleton).AsSelf().As<IUnitFeatureApplier>();
 
             builder.Register<DefaultUnitIdleState>(Lifetime.Transient);
             builder.Register<DefaultUnitMoveState>(Lifetime.Transient);
