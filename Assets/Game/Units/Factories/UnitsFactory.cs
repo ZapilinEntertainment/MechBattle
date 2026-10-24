@@ -78,7 +78,7 @@ namespace ZE.MechBattle
 
         public Entity Build(UnitKey unitKey, RigidTransform point)
         {
-            if (!_unitConfigs.TryGetConfig(unitKey, out var unitConfig))
+            if (!_unitConfigs.TryGetUnitConfig(unitKey, out var unitConfig))
             {
                 UnityEngine.Debug.LogError($"no config for {_stringDataDictionary.GetStringByKey(unitKey.Id)}");
                 return default;
@@ -93,27 +93,30 @@ namespace ZE.MechBattle
         }
     
 
-        private void Setup(Entity entity, IUnitConfig config) 
+        private void Setup(Entity entity, IUnitConfig unitConfig) 
         {
-            _navigationAgents.Add(entity);            
+            _navigationAgents.Add(entity);
 
-            if (config.TargetSearchRadius != 0f)
-                _targetSearchRadiusComponents.Add(entity, new(config.TargetSearchRadius));
+            if (unitConfig.TargetSearchRadius != 0f)
+                _targetSearchRadiusComponents.Add(entity, new(unitConfig.TargetSearchRadius));
 
-            if (config.MoveSpeed != 0f)
-                _moveSpeeds.Set(entity, new() { Value = config.MoveSpeed });
+            if (unitConfig.MoveSpeed != 0f)
+                _moveSpeeds.Set(entity, new() { Value = unitConfig.MoveSpeed });
 
-            _healthComponents.Set(entity, new(config.Health));
+            _healthComponents.Set(entity, new(unitConfig.Health));
 
             _unitTags.Add(entity);
 
             _calculateTrianglePosTags.Add(entity);
 
-            if (config.CapturePower != 0f)
-                _capturePowers.Add(entity, new(config.CapturePower));
+            if (unitConfig.CapturePower != 0f)
+                _capturePowers.Add(entity, new(unitConfig.CapturePower));
 
             foreach (var applier in _unitFeatureAppliers)
-                applier.ApplyUnitFeature(entity, config);
+            {
+                applier.ApplyUnitFeature(entity, unitConfig);
+            }
+                
         }
 
        

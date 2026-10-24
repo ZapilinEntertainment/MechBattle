@@ -5,7 +5,7 @@ using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle
 {
-    public class UnitWeaponApplier : IUnitFeatureApplier
+    public class UnitWeaponApplier : UnitFeatureApplierBase<UnitWeaponConfig>
     {
         private readonly WeaponFactory _weaponFactory;
         private readonly WeaponHandler _weaponHandler;
@@ -17,16 +17,13 @@ namespace ZE.MechBattle
             _weaponHandler = weaponHandler;
         }
 
-        public void ApplyUnitFeature(Entity unitEntity, IUnitConfig config)
+        protected override void ApplyUnitFeature(Entity unitEntity, UnitWeaponConfig weaponData)
         {
-            if (!config.TryGetWeaponData(out var weaponData))
-                return;
-
             var weaponEntity = _weaponFactory.CreateWeapon(new()
             {
                 ParentEntity = unitEntity,
                 ViewOwnerEntity = unitEntity,
-                WeaponConfig = weaponData.Config,
+                WeaponConfig = weaponData.ProjectileConfig,
                 AttachmentProtocol = weaponData.AttachmentProtocol,
 
                 WeaponControllerEntity = unitEntity,
@@ -34,10 +31,10 @@ namespace ZE.MechBattle
                 UseAutoStow = true,
                 UseAutoShot = true,
 
-                DamageParameters = new(weaponData.Config.DamageType, config.Damage),
+                DamageParameters = new(weaponData.ProjectileConfig.DamageType, weaponData.Damage),
             });
 
-            _weaponHandler.OnAttachedToUnit(weaponEntity, unitEntity, config.MaxPrecisionAberration);
+            _weaponHandler.OnAttachedToUnit(weaponEntity, unitEntity, weaponData.MaxPrecisionAberration);
         }
     }
 }
