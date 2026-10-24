@@ -1,5 +1,5 @@
+using System.Collections.Generic;
 using Scellecs.Morpeh;
-using UnityEngine;
 using VContainer;
 using ZE.MechBattle.Ecs;
 
@@ -11,6 +11,7 @@ namespace ZE.MechBattle
         private readonly ViewSynchronizationApplier _viewSyncApplier;
         private readonly StringDataDictionary _stringDataDictionary;
         private readonly SpawnerFactory _spawnerFactory;
+        private readonly List<IBuildingFeatureApplier> _featureAppliers;
 
         private readonly Stash<HealthComponent> _health;
         private readonly Stash<ViewDestroyEffectComponent> _viewDestroyEffect;
@@ -22,12 +23,19 @@ namespace ZE.MechBattle
             World world, 
             ViewSynchronizationApplier viewSyncApplier, 
             StringDataDictionary stringDataDictionary,
-            SpawnerFactory spawnerFactory)
+            SpawnerFactory spawnerFactory,
+            IEnumerable<IBuildingFeatureApplier> featureAppliers)
         {
             _world = world;
             _viewSyncApplier = viewSyncApplier;
             _stringDataDictionary = stringDataDictionary;
             _spawnerFactory = spawnerFactory;
+
+            _featureAppliers = new(4);
+            foreach (var featureApplier in featureAppliers)
+            {
+                _featureAppliers.Add(featureApplier);
+            }
 
             _health = _world.GetStash<HealthComponent>();
             _viewDestroyEffect = _world.GetStash<ViewDestroyEffectComponent>();
@@ -55,10 +63,11 @@ namespace ZE.MechBattle
                 _blockConfigs.Add(entity, blockComponent);
 
             var functionalFlags = view.FunctionFlags;
-            if (functionalFlags.HasFlag(BuildingFunctionFlags.Spawner) && view.GameObject.TryGetComponent<UnitsSpawnerMono>(out var spawner))
+            foreach (var applier in _featureAppliers)
             {
-                _spawnerFactory.SetupSpawnerData(entity, spawner);
-            }
+                if ((applier.RequiredFlagsMask & view.FunctionFlags) != 0)
+                    applier.ApplyBuildingFeature(entity, view);
+            }          
 
             // should be last for correct entity components check
             _viewSyncApplier.Apply(entity, view, applyViewPosition: true);
