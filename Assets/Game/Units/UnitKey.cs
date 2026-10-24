@@ -1,5 +1,3 @@
-using System;
-
 namespace ZE.MechBattle
 {
     public readonly struct UnitKey

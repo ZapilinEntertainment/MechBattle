@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4b1a49b5e0a60d4aa5a2b6079da0eec, type: 3}
   m_Name: tank
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitConfig
+  <FeatureConfigs>k__BackingField:
+  - rid: 2151671145719660615
   <Health>k__BackingField: 4
   <Damage>k__BackingField: 5
   <CollisionAvoidancePriority>k__BackingField: 1
@@ -21,14 +23,21 @@ MonoBehaviour:
   <MoveSpeed>k__BackingField: 10
   <MaxPrecisionAberration>k__BackingField: 0.01
   <CapturePower>k__BackingField: 1
-  _weaponData:
-    Config: {fileID: 11400000, guid: e264f1e7d88a2a24baf9c073915d807b, type: 2}
-    AttachmentProtocol:
-      LocalPosition:
-        x: 0
-        y: 0
-        z: 0
-      LocalRotationDegrees:
-        x: 0
-        y: 0
-        z: 0
+  references:
+    version: 2
+    RefIds:
+    - rid: 2151671145719660615
+      type: {class: UnitWeaponConfig, ns: ZE.MechBattle, asm: MechBattle}
+      data:
+        Damage: 5
+        MaxPrecisionAberration: 0.01
+        ProjectileConfig: {fileID: 11400000, guid: e264f1e7d88a2a24baf9c073915d807b, type: 2}
+        AttachmentProtocol:
+          LocalPosition:
+            x: 0
+            y: 0
+            z: 0
+          LocalRotationDegrees:
+            x: 0
+            y: 0
+            z: 0

@@ -1,5 +1,4 @@
 using Scellecs.Morpeh;
-using UnityEngine;
 using VContainer;
 using ZE.MechBattle.Ecs;
 
@@ -23,6 +22,21 @@ namespace ZE.MechBattle.Movement.CollisionAvoidance
             }
         }
 
+        private class UnitCollisionAvoidanceApplier : IUnitFeatureApplier
+        {
+            private readonly Stash<MovementCollisionAvoidanceComponent> _movementCollisionAvoidanceComponents;
+
+            public UnitCollisionAvoidanceApplier(World world)
+            {
+                _movementCollisionAvoidanceComponents = world.GetStash<MovementCollisionAvoidanceComponent>();
+            }
+
+            public void ApplyUnitFeature(Entity entity, IUnitConfig config)
+            {
+                _movementCollisionAvoidanceComponents.Add(entity, new(config.CollisionAvoidancePriority));
+            }
+        }
+
         public static void SceneScopeInstall(IContainerBuilder builder)
         {
             builder.Register<IMovementCellsMap, MovementCellsMap>(Lifetime.Singleton);
@@ -30,6 +44,7 @@ namespace ZE.MechBattle.Movement.CollisionAvoidance
             builder.Register<CollisionAvoidanceHandler>(Lifetime.Singleton);
 
             builder.Register<INavigationCellCreationApplier, CellDensityApplier>(Lifetime.Scoped);
+            builder.Register<IUnitFeatureApplier, UnitCollisionAvoidanceApplier>(Lifetime.Scoped);
         }
     
         public static void InstallSystems(FeatureSystemsInstallQueue.ISystemsOperator installer)
