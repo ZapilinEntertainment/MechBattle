@@ -22,6 +22,8 @@ namespace ZE.MechBattle
 
             builder.Register<FactionVisibleMarksApplier>(Lifetime.Scoped);
 
+            builder.Register<IBuildingFeatureApplier, UnitSpawnerFeatureApplier>(Lifetime.Scoped);
+
             builder.RegisterEntryPoint<SceneUnitsInitializer>();
 
             SquadSubfeatureInstaller.InstallSceneScopeDependencies(builder);
