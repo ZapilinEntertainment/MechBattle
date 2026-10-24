@@ -261,7 +261,7 @@ MonoBehaviour:
     Mode: 1
     ExtentA: 12
     ExtentB: 12
-    Flags: 1
+    Flags: -1
   _colouredRenderers:
   - {fileID: 2854461308487863258}
   - {fileID: 5031739783083086635}
@@ -859,4 +859,4 @@ MonoBehaviour:
     Mode: 0
     ExtentA: 0
     ExtentB: 0
-    Flags: 1
+    Flags: 0

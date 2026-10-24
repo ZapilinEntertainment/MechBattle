@@ -20,6 +20,9 @@
  2) BuildingsFactory создает Morpeh-сущность в World и связывает ее с BuildingView. Также фабрика проходится по флагам:
   - Spawner: если на объекте есть UnitsSpawnerMono, то ему добавится функционал спаунера юнитов.
   
+## Building features
+ Зарегистрируйте feature applier как IBuildingFeatureApplier чтобы внедрять функционал в сборку (точнее конверсию из view в entity) здания. Нужно задать триггер-флаг, чтобы фабрика задействовала апплаер.
+  
 ## Блокировка пути
  - Если у BuildingView есть валидная блокер-дата, то фабрика добавит её сущности BlockZoneConfigComponent. Это будет иметь 2 последствия:
  1) Юниты будут обходить здание используя AvoidanceSystem и учитывая OccupationFlags
