@@ -24,6 +24,7 @@ namespace ZE.MechBattle
         private readonly Stash<HealthComponent> _healthComponents;
         private readonly Stash<UnitTag> _unitTags;
         private readonly Stash<CalculateTrianglePositionTag> _calculateTrianglePosTags;
+        private readonly Stash<TargetDataComponent> _targetData;
 
 
         [Inject]
@@ -55,6 +56,7 @@ namespace ZE.MechBattle
             _healthComponents = world.GetStash<HealthComponent>();
             _unitTags = world.GetStash<UnitTag>();
             _calculateTrianglePosTags = world.GetStash<CalculateTrianglePositionTag>();
+            _targetData = world.GetStash<TargetDataComponent>();
         }
 
         // todo: rework to generic version
@@ -105,6 +107,7 @@ namespace ZE.MechBattle
             _unitTags.Add(entity);
 
             _calculateTrianglePosTags.Add(entity);
+            _targetData.Add(entity);
 
             foreach (var applier in _unitFeatureAppliers)
             {

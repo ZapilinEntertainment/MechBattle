@@ -9,12 +9,10 @@ namespace ZE.MechBattle
     {
         private readonly World _world;
         private readonly ViewSynchronizationApplier _viewSyncApplier;
-        private readonly StringDataDictionary _stringDataDictionary;
         private readonly TransformAspectHandler _transformAspectHandler;
         private readonly List<IBuildingFeatureApplier> _featureAppliers;
 
-        private readonly Stash<HealthComponent> _health;
-        private readonly Stash<ViewDestroyEffectComponent> _viewDestroyEffect;
+       
         private readonly Stash<DisposableViewComponent> _disposableView;
         private readonly Stash<BlockZoneConfigComponent> _blockConfigs;
 
@@ -22,13 +20,11 @@ namespace ZE.MechBattle
         public BuildingsFactory(
             World world, 
             ViewSynchronizationApplier viewSyncApplier, 
-            StringDataDictionary stringDataDictionary,
             TransformAspectHandler transformAspectHandler,
             IEnumerable<IBuildingFeatureApplier> featureAppliers)
         {
             _world = world;
             _viewSyncApplier = viewSyncApplier;
-            _stringDataDictionary = stringDataDictionary;
             _transformAspectHandler = transformAspectHandler;
 
             _featureAppliers = new(4);
@@ -37,8 +33,6 @@ namespace ZE.MechBattle
                 _featureAppliers.Add(featureApplier);
             }
 
-            _health = _world.GetStash<HealthComponent>();
-            _viewDestroyEffect = _world.GetStash<ViewDestroyEffectComponent>();
             _disposableView = _world.GetStash<DisposableViewComponent>();
             _blockConfigs = _world.GetStash<BlockZoneConfigComponent>();
         }
@@ -47,17 +41,6 @@ namespace ZE.MechBattle
         {
             var entity = _world.CreateEntity();
             _transformAspectHandler.InitializeTriangularAndHexPositions(entity, view.Transform.position);
-
-            var parameters = view.GetParameters();
-            _health.Set(entity, new(parameters.Health));
-
-            var destroyEffectKey = view.ViewDestroyEffectKey;
-            if (!string.IsNullOrEmpty(destroyEffectKey))
-            {
-                var encodedKey = _stringDataDictionary.StringToKey(destroyEffectKey);
-                _viewDestroyEffect.Set(entity, new() { EffectKey = encodedKey });
-            }
-
             _disposableView.Add(entity, new(view.GameObject));
 
             if (view.TryGetBlockZoneConfig(out var blockComponent))

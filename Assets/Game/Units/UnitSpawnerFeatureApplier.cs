@@ -3,9 +3,9 @@ using VContainer;
 
 namespace ZE.MechBattle
 {
-    public class UnitSpawnerFeatureApplier : IBuildingFeatureApplier
+    public class UnitSpawnerFeatureApplier : BuildingFeatureApplierBase<UnitsSpawnerMono>
     {
-        public BuildingFunctionFlags RequiredFlagsMask => BuildingFunctionFlags.Spawner;
+        public override BuildingFunctionFlags RequiredFlagsMask => BuildingFunctionFlags.Spawner;
         private readonly SpawnerFactory _spawnerFactory;
 
         [Inject] 
@@ -14,12 +14,10 @@ namespace ZE.MechBattle
             _spawnerFactory = spawnerFactory;
         }
 
-        public void ApplyBuildingFeature(Entity buildingEntity, IBuildingView view)
+
+        protected override void ApplyBuildingFeature(Entity entity, UnitsSpawnerMono monoComponent)
         {
-            if (!view.GameObject.TryGetComponent<UnitsSpawnerMono>(out var spawner))
-                return;
-            
-            _spawnerFactory.SetupSpawnerData(buildingEntity, spawner);
+            _spawnerFactory.SetupSpawnerData(entity, monoComponent);
         }
     }
 }

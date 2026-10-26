@@ -34,6 +34,7 @@ namespace ZE.MechBattle.Ecs
         private readonly Filter _movementCellsFilter;
         private readonly Stash<CellMovementDataComponent> _movementCells;
         private readonly Stash<CellEntityComponent> _cellComponents;
+        private readonly Stash<TargetDataComponent> _targetData;
 
         private const int BATCH_COUNT = 16;
         private const Allocator ALLOCATOR = Allocator.Persistent;
@@ -62,6 +63,8 @@ namespace ZE.MechBattle.Ecs
             _movementCellsFilter = _world.Filter.With<CellMovementDataComponent>().Build();
             _movementCells = _world.GetStash<CellMovementDataComponent>();
             _cellComponents = _world.GetStash<CellEntityComponent>();
+
+            _targetData = _world.GetStash<TargetDataComponent>();
         }
 
         public CalculationProcessStage UpdateStage()
@@ -102,6 +105,7 @@ namespace ZE.MechBattle.Ecs
                 CellComponentsStash = _cellComponents.AsNative(),
                 SearchRadiusStash = _targetSearchRadiusComponents.AsNative(),
                 PositionComponents = _positionComponents.AsNative(),
+                TargetDataStash = _targetData.AsNative(),
 
                 EntitiesMap = _entitiesMap,
                 MovementCellsFilter = nativeCellsFilter,
@@ -110,6 +114,8 @@ namespace ZE.MechBattle.Ecs
 
                 HandlingEntitiesData = _handlingEntitiesData,
                 TargetEntitiesData = _targetEntitiesData
+
+                
             };
 
             var handle = prepareJob.Schedule();

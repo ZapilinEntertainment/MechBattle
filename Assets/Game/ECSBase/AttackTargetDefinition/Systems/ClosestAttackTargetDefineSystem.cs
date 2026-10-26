@@ -39,7 +39,7 @@ namespace ZE.MechBattle.Ecs
         {
             _filter = World.Filter
                 .With<TargetSearchRadiusComponent>()
-                .With<PlayerAffiliationComponent>()
+                .With<PlayerAffiliationComponent>()                
                 .With<HexCoordComponent>()
                 .Without<EntityDisposeTag>()
                 .Without<NextCloseTargetSearchTimeComponent>()

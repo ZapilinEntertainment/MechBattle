@@ -7,6 +7,8 @@ namespace ZE.MechBattle
     {
         None = 0,
         Spawner = 1 << 0,
-        CaptureResist = 1 <<1
+        CaptureResist = 1 <<1,
+        Destructible = 1 << 2,
+        RESERVED = 1 <<3,
     }
 }

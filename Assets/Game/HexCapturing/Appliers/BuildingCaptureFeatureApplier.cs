@@ -4,9 +4,9 @@ using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle
 {
-    public class BuildingCaptureFeatureApplier : IBuildingFeatureApplier
+    public class BuildingCaptureFeatureApplier : BuildingFeatureApplierBase<BuildingCaptureFeatureComponent>
     {
-        public BuildingFunctionFlags RequiredFlagsMask => BuildingFunctionFlags.CaptureResist;
+        public override BuildingFunctionFlags RequiredFlagsMask => BuildingFunctionFlags.CaptureResist;
         private readonly Stash<CaptureBehaviourComponent> _captureComponents;
 
         [Inject]
@@ -15,12 +15,9 @@ namespace ZE.MechBattle
             _captureComponents = world.GetStash<CaptureBehaviourComponent>();
         }
 
-        public void ApplyBuildingFeature(Entity buildingEntity, IBuildingView view)
+        protected override void ApplyBuildingFeature(Entity buildingEntity, BuildingCaptureFeatureComponent captureComponent)
         {
-            if (view.GameObject.TryGetComponent<BuildingCaptureFeatureComponent>(out var captureComponent))
-            {
-                _captureComponents.Add(buildingEntity, new(captureComponent.CaptureBehaviour));
-            }
+            _captureComponents.Add(buildingEntity, new(captureComponent.CaptureBehaviour));
         }
     }
 }
