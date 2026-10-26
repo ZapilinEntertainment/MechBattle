@@ -2451,11 +2451,11 @@ MonoBehaviour:
   _playerId: 1
   _spawnRadius: 6
   _startHex:
-    x: -1
-    y: 1
-  _endHex:
     x: 1
     y: -1
+  _endHex:
+    x: 0
+    y: 0
 --- !u!114 &1259888776
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2661,13 +2661,13 @@ MonoBehaviour:
   _spawnByClick: 0
   _unitId: tank
   _playerId: 2
-  _spawnRadius: 6
+  _spawnRadius: 3
   _startHex:
-    x: -2
-    y: 4
+    x: 0
+    y: 0
   _endHex:
-    x: -2
-    y: 1
+    x: -1
+    y: 0
 --- !u!114 &1259888781
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4058,6 +4058,18 @@ PrefabInstance:
     - target: {fileID: 2913121675166457278, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
       propertyPath: m_Name
       value: spawner_tower_view
+      objectReference: {fileID: 0}
+    - target: {fileID: 2926744493269152651, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: _parameters.Health
+      value: 3000
+      objectReference: {fileID: 0}
+    - target: {fileID: 3892133552154018058, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: <CaptureBehaviour>k__BackingField.Value
+      value: 48
+      objectReference: {fileID: 0}
+    - target: {fileID: 4169649335500493925, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: _count
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

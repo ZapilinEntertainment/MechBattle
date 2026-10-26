@@ -10,7 +10,7 @@ namespace ZE.MechBattle
         private readonly World _world;
         private readonly ViewSynchronizationApplier _viewSyncApplier;
         private readonly StringDataDictionary _stringDataDictionary;
-        private readonly SpawnerFactory _spawnerFactory;
+        private readonly TransformAspectHandler _transformAspectHandler;
         private readonly List<IBuildingFeatureApplier> _featureAppliers;
 
         private readonly Stash<HealthComponent> _health;
@@ -23,13 +23,13 @@ namespace ZE.MechBattle
             World world, 
             ViewSynchronizationApplier viewSyncApplier, 
             StringDataDictionary stringDataDictionary,
-            SpawnerFactory spawnerFactory,
+            TransformAspectHandler transformAspectHandler,
             IEnumerable<IBuildingFeatureApplier> featureAppliers)
         {
             _world = world;
             _viewSyncApplier = viewSyncApplier;
             _stringDataDictionary = stringDataDictionary;
-            _spawnerFactory = spawnerFactory;
+            _transformAspectHandler = transformAspectHandler;
 
             _featureAppliers = new(4);
             foreach (var featureApplier in featureAppliers)
@@ -45,7 +45,8 @@ namespace ZE.MechBattle
 
         public Entity CreateEntityBySceneView(IBuildingView view)
         {
-            var entity = _world.CreateEntity();         
+            var entity = _world.CreateEntity();
+            _transformAspectHandler.InitializeTriangularAndHexPositions(entity, view.Transform.position);
 
             var parameters = view.GetParameters();
             _health.Set(entity, new(parameters.Health));

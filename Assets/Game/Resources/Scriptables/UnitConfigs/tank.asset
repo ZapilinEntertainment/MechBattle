@@ -14,14 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitConfig
   <FeatureConfigs>k__BackingField:
   - rid: 2151671145719660615
+  - rid: 2151671185847091272
   <Health>k__BackingField: 4
-  <Damage>k__BackingField: 5
   <CollisionAvoidancePriority>k__BackingField: 1
   <ViewId>k__BackingField: tank_view
   <TargetSearchRadius>k__BackingField: 600
   <BehaviourKey>k__BackingField: 1
   <MoveSpeed>k__BackingField: 10
-  <MaxPrecisionAberration>k__BackingField: 0.01
   <CapturePower>k__BackingField: 1
   references:
     version: 2
@@ -41,3 +40,9 @@ MonoBehaviour:
             x: 0
             y: 0
             z: 0
+    - rid: 2151671185847091272
+      type: {class: UnitCaptureConfig, ns: ZE.MechBattle, asm: MechBattle}
+      data:
+        <CaptureBehaviour>k__BackingField:
+          Type: 1
+          Value: 1

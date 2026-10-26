@@ -211,6 +211,7 @@ GameObject:
   - component: {fileID: 7678573058754905462}
   - component: {fileID: 2926744493269152651}
   - component: {fileID: 4169649335500493925}
+  - component: {fileID: 3892133552154018058}
   m_Layer: 0
   m_Name: bottom
   m_TagString: Untagged
@@ -251,11 +252,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.FactionBuildingView
   _parameters:
-    Health: 50
+    Health: 100
   _colliders:
   - {fileID: 3067490651314443019}
   _destroyEffectKey: test_building_destruction
-  _functionFlags: 1
+  _functionFlags: -1
   _blockConfig:
     IsValid: 1
     Mode: 1
@@ -287,6 +288,21 @@ MonoBehaviour:
   _interval: 1
   _initialDelay: 0
   _limit: -1
+--- !u!114 &3892133552154018058
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2425667935766510020}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58d1a24c02e8505439cfbe782a2b4c9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MechBattle::ZE.MechBattle.BuildingCaptureFeatureComponent
+  <CaptureBehaviour>k__BackingField:
+    Type: 2
+    Value: 6
 --- !u!1 &2913121675166457278
 GameObject:
   m_ObjectHideFlags: 0

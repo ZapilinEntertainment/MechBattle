@@ -28,6 +28,17 @@ namespace ZE.MechBattle.Ecs {
             public float ResistPower;
 
             public float TotalPower => ActiveCapturePower + ResistPower;
+            public float EmptyHexCapturePower => ActiveCapturePower * CaptureConstants.ACTIVE_CAPTURE_SPEED_CF
+                                + ResistPower * CaptureConstants.RESIST_CAPTURE_RESTORE_SPEED_CF;
+        }
+
+        private struct CaptureSituation
+        {
+            public int MaxPowerfulPlayerId;
+            public PlayerCapturePowers MaxPowerfulPlayerPowers;
+
+            public int SecondPowerfulPlayerId;
+            public PlayerCapturePowers SecondPlayerPowers;
         }
 
         private Filter _captureUnitsFilter;
@@ -143,50 +154,60 @@ namespace ZE.MechBattle.Ecs {
             foreach (var hexEntity in _hexEntitiesFilter)
             {
                 var hexCoord = _hexComponents.Get(hexEntity).Coord;
-                var (maxPowerfulPlayerId, maxPowerfulPlayerPowers) = GetPlayerWithMaxActiveCapturePowers(hexCoord);
+                var situation = DefineCaptureSituation(hexCoord);
+                var maxPowerfulPlayerExists = situation.MaxPowerfulPlayerId != -1;
 
-                ref var hexCaptureStateComponent = ref _hexCaptureState.Get(hexEntity);
-                var currentOwnerPlayerId = hexCaptureStateComponent.ControllingPlayerId;
-                PlayerCapturePowers existingPlayerPowers = default;
-                var currentOwnerExists = currentOwnerPlayerId != -1 && _powersData.TryGetValue(new(hexCoord, currentOwnerPlayerId), out existingPlayerPowers);
-                var capturerExists = maxPowerfulPlayerId != -1;
+                ref var captureStateComponent = ref _hexCaptureState.Get(hexEntity);
+                var currentHexOwnerId = captureStateComponent.ControllingPlayerId;
+                var currentOwnerExists = currentHexOwnerId != -1;
+
                 var ownerChanged = false;
-
-                if (!capturerExists)
+                if (maxPowerfulPlayerExists)
                 {
-                    if (!currentOwnerExists)
+                    if (currentOwnerExists && currentHexOwnerId != situation.MaxPowerfulPlayerId)
                     {
-                        // no capturer and hex was clear
-                        MarkHexAsClear(ref hexCaptureStateComponent);
+                        float captureSpeed;
+                        float limit;
+
+                        if (_powersData.TryGetValue(new(hexCoord, currentHexOwnerId), out var ownerPowerData))
+                        {
+                            // capture from existing and presented player
+
+                            captureSpeed = GetCaptureSpeed(situation.MaxPowerfulPlayerPowers, ownerPowerData, out var captureLimit) * CaptureConstants.FIGHT_CAPTURE_SPEED_CF;
+                            limit = 1f - captureLimit;
+                        }
+                        else
+                        {
+                            // decap without fight
+                            captureSpeed = situation.MaxPowerfulPlayerPowers.EmptyHexCapturePower;
+                            limit = 0f;
+                            
+                        }
+
+                        ownerChanged = DoDecap(ref captureStateComponent, captureSpeed * deltaTime, limit);
                     }
                     else
                     {
-                        // all capturing units leave hex
-                        ownerChanged = DoDecap(ref hexCaptureStateComponent, CaptureConstants.EMPTY_HEX_DECAP_SPEED * deltaTime, 0f);
+                        // capture neutral or abandoned hex
+                        float captureSpeed;
+                        float limit;
+                        if (situation.SecondPowerfulPlayerId != -1)
+                        {
+                            captureSpeed = GetCaptureSpeed(situation.MaxPowerfulPlayerPowers, situation.SecondPlayerPowers, out limit) * CaptureConstants.FIGHT_CAPTURE_SPEED_CF;
+                        }
+                        else
+                        {
+                            captureSpeed = situation.MaxPowerfulPlayerPowers.EmptyHexCapturePower;
+                            limit = 1f;
+                        }
+
+                        ownerChanged = DoCaptureProgress(ref captureStateComponent, situation.MaxPowerfulPlayerId, captureSpeed * deltaTime, limit);
                     }
                 }
                 else
                 {
-                    var powersSum = existingPlayerPowers.TotalPower + maxPowerfulPlayerPowers.TotalPower;
-                    var alreadyOwns = hexCaptureStateComponent.ControllingPlayerId == maxPowerfulPlayerId;
-                    if (!currentOwnerExists || alreadyOwns)
-                    {
-                        if (alreadyOwns && hexCaptureStateComponent.IsCaptured)
-                            return;
-
-                        // if empty hex or player is already owns it
-                        var captureStep = math.clamp(maxPowerfulPlayerPowers.ActiveCapturePower * CaptureConstants.CAPTURE_SPEED_CF, 0f, CaptureConstants.MAX_CAPTURE_SPEED);
-                        ownerChanged = DoCaptureProgress(ref hexCaptureStateComponent, maxPowerfulPlayerId, captureStep * deltaTime, 1f - existingPlayerPowers.ResistPower / powersSum);
-                    }
-                    else
-                    {
-                        // taking controls from another player
-
-                        var decapStep = (maxPowerfulPlayerPowers.ActiveCapturePower - existingPlayerPowers.ActiveCapturePower) * CaptureConstants.FIGHT_CAPTURE_SPEED_CF;
-                        decapStep = math.clamp(decapStep, 0f, CaptureConstants.MAX_DECAP_SPEED);
-                        
-                        ownerChanged = DoDecap(ref hexCaptureStateComponent, decapStep * deltaTime, existingPlayerPowers.ResistPower / powersSum);
-                    }
+                    if (captureStateComponent.CaptureProgress != 0f)
+                        ownerChanged = DoDecap(ref captureStateComponent, CaptureConstants.EMPTY_HEX_DECAP_SPEED * deltaTime, 0f);
                 }
 
                 if (ownerChanged)
@@ -194,23 +215,45 @@ namespace ZE.MechBattle.Ecs {
             }
         }
 
-        private (int playerId, PlayerCapturePowers capturePowers) GetPlayerWithMaxActiveCapturePowers(int2 hexCoord)
+        private float GetCaptureSpeed(PlayerCapturePowers attackerPowers, PlayerCapturePowers defenderPowers, out float captureLimit)
         {
-            var playerId = -1;
-            PlayerCapturePowers capturePowers = default;
+            var totalPowers = attackerPowers.TotalPower + defenderPowers.TotalPower;
+            captureLimit = (1f - defenderPowers.ResistPower / totalPowers);
+            return (attackerPowers.ActiveCapturePower - defenderPowers.ActiveCapturePower);
+        }
+
+        private CaptureSituation DefineCaptureSituation(int2 hexCoord)
+        {
+            var situation = new CaptureSituation()
+            {
+                MaxPowerfulPlayerId = -1,
+                SecondPowerfulPlayerId = -1,
+                MaxPowerfulPlayerPowers = default,
+                SecondPlayerPowers = default,
+            };
+
             for (var i = 0; i < _playersCount; i++)
             {
                 if (!_powersData.TryGetValue(new(hexCoord, i), out var playerPowers))
                     continue;
 
-                if (playerPowers.ActiveCapturePower > capturePowers.ActiveCapturePower)
+
+                var isNewMostPowerfulPlayer = (playerPowers.ActiveCapturePower > situation.MaxPowerfulPlayerPowers.ActiveCapturePower)
+
+                    // if all participants are passive, select with most resistive power
+                    || (situation.MaxPowerfulPlayerPowers.ActiveCapturePower == 0f && playerPowers.ResistPower != 0);
+
+                if (isNewMostPowerfulPlayer)
                 {
-                    playerId = i;
-                    capturePowers = playerPowers;
+                    situation.SecondPlayerPowers = situation.MaxPowerfulPlayerPowers;
+                    situation.SecondPowerfulPlayerId = situation.MaxPowerfulPlayerId;
+
+                    situation.MaxPowerfulPlayerId = i;
+                    situation.MaxPowerfulPlayerPowers = playerPowers;
                 }
             }
 
-            return (playerId, capturePowers);
+            return situation;
         }
 
         private void MarkHexAsClear(ref HexCaptureStateComponent component)
@@ -222,6 +265,7 @@ namespace ZE.MechBattle.Ecs {
 
         private bool DoCaptureProgress(ref HexCaptureStateComponent component, int playerId, float step, float limit)
         {
+            step = math.clamp(step, 0f, CaptureConstants.MAX_CAPTURE_SPEED);
             component.ControllingPlayerId = playerId;
             component.CaptureProgress = MathExtensions.MoveTowards(component.CaptureProgress, limit, step);            
             component.IsCaptured = component.CaptureProgress == 1f;
@@ -230,6 +274,7 @@ namespace ZE.MechBattle.Ecs {
 
         private bool DoDecap(ref HexCaptureStateComponent component, float step, float limit)
         {
+            step = math.clamp(step, 0f, CaptureConstants.MAX_DECAP_SPEED);
             component.CaptureProgress = MathExtensions.MoveTowards(component.CaptureProgress, limit, step);
             component.IsCaptured = false;            
             if (component.CaptureProgress == 0f)
