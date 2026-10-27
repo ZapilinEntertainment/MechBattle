@@ -44,11 +44,20 @@ namespace ZE.MechBattle
             _stringDataDictionary = stringDataDictionary;
             _viewSyncApplier = viewSyncApplier;
 
-            _unitFeatureAppliers = new(8);
-            foreach (var unitFeatureApplier in unitFeatureAppliers)
+            
+            if (unitFeatureAppliers != null)
             {
-                _unitFeatureAppliers.Add(unitFeatureApplier);
+                _unitFeatureAppliers = new(8);
+                foreach (var unitFeatureApplier in unitFeatureAppliers)
+                {
+                    _unitFeatureAppliers.Add(unitFeatureApplier);
+                }
             }
+            else
+            {
+                _unitFeatureAppliers = new(0);
+            }
+            
 
             _moveSpeeds = world.GetStash<MoveSpeedComponent>();
             _navigationAgents = world.GetStash<NavigationAgentComponent>();

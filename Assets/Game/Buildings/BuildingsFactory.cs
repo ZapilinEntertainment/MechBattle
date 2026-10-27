@@ -31,11 +31,20 @@ namespace ZE.MechBattle
             _stringDataDictionary = stringDataDictionary;
             _spawnerFactory = spawnerFactory;
 
-            _featureAppliers = new(4);
-            foreach (var featureApplier in featureAppliers)
+            
+            if (featureAppliers != null)
             {
-                _featureAppliers.Add(featureApplier);
+                _featureAppliers = new(4);
+                foreach (var featureApplier in featureAppliers)
+                {
+                    _featureAppliers.Add(featureApplier);
+                }
             }
+            else
+            {
+                _featureAppliers = new(0);
+            }
+            
 
             _health = _world.GetStash<HealthComponent>();
             _viewDestroyEffect = _world.GetStash<ViewDestroyEffectComponent>();
