@@ -50,15 +50,15 @@ namespace ZE.MechBattle
         {
             var entity = _world.CreateEntity();
             _transformAspectHandler.InitializeTriangularAndHexPositions(entity, view.Transform.position);
-            _disposableView.Add(entity, new(view.GameObject));
+            _disposableView.Add(entity, new(view));
 
             if (view.TryGetBlockZoneConfig(out var blockComponent))
                 _blockConfigs.Add(entity, blockComponent);
 
             var functionalFlags = view.FunctionFlags;
             foreach (var applier in _featureAppliers)
-            {
-                if ((applier.RequiredFlagsMask & view.FunctionFlags) != 0)
+            {                
+                if ((applier.RequiredFlagsMask & view.FunctionFlags) == applier.RequiredFlagsMask)
                     applier.ApplyBuildingFeature(entity, view);
             }          
 

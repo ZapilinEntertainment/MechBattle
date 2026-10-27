@@ -11,9 +11,10 @@ namespace ZE.MechBattle
         public override void SceneScopeInstall(IContainerBuilder builder)
         {
             base.SceneScopeInstall(builder);
-            builder.Register<INavigationHexCreationApplier, HexCaptureDataApplier>(Lifetime.Scoped);
-            builder.Register<IUnitFeatureApplier, UnitCaptureFeatureApplier>(Lifetime.Scoped);
-            builder.Register<IBuildingFeatureApplier, BuildingCaptureFeatureApplier>(Lifetime.Scoped);
+            builder.Register<INavigationHexCreationApplier, HexCaptureDataApplier>(Lifetime.Singleton);
+            builder.Register<IUnitFeatureApplier, UnitCaptureFeatureApplier>(Lifetime.Singleton);
+            builder.Register<IBuildingFeatureApplier, BuildingCaptureFeatureApplier>(Lifetime.Singleton);
+            builder.Register<CaptureFeatureApplyHandler>(Lifetime.Singleton);
         }
     }
 }

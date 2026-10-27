@@ -161,7 +161,7 @@ namespace ZE.MechBattle.Ecs {
                 var currentHexOwnerId = captureStateComponent.ControllingPlayerId;
                 var currentOwnerExists = currentHexOwnerId != -1;
 
-                var ownerChanged = false;
+                var captured = false;
                 if (maxPowerfulPlayerExists)
                 {
                     if (currentOwnerExists && currentHexOwnerId != situation.MaxPowerfulPlayerId)
@@ -184,7 +184,7 @@ namespace ZE.MechBattle.Ecs {
                             
                         }
 
-                        ownerChanged = DoDecap(ref captureStateComponent, captureSpeed * deltaTime, limit);
+                        captured = DoDecap(ref captureStateComponent, captureSpeed * deltaTime, limit);
                     }
                     else
                     {
@@ -201,16 +201,16 @@ namespace ZE.MechBattle.Ecs {
                             limit = 1f;
                         }
 
-                        ownerChanged = DoCaptureProgress(ref captureStateComponent, situation.MaxPowerfulPlayerId, captureSpeed * deltaTime, limit);
+                        captured = DoCaptureProgress(ref captureStateComponent, situation.MaxPowerfulPlayerId, captureSpeed * deltaTime, limit);
                     }
                 }
                 else
                 {
                     if (captureStateComponent.CaptureProgress != 0f)
-                        ownerChanged = DoDecap(ref captureStateComponent, CaptureConstants.EMPTY_HEX_DECAP_SPEED * deltaTime, 0f);
+                        captured = DoDecap(ref captureStateComponent, CaptureConstants.EMPTY_HEX_DECAP_SPEED * deltaTime, 0f);
                 }
 
-                if (ownerChanged)
+                if (captured != captureStateComponent.IsCaptured)
                     _ownerChangedTag.Set(hexEntity);
             }
         }

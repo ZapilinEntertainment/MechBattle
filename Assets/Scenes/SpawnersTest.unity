@@ -1441,26 +1441,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2926744493269152651, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
       propertyPath: _functionFlags
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 2926744493269152651, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
-      propertyPath: _parameters.Health
-      value: 3000
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 3892133552154018058, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
       propertyPath: <CaptureBehaviour>k__BackingField.Type
       value: 3
       objectReference: {fileID: 0}
-    - target: {fileID: 3892133552154018058, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
-      propertyPath: <CaptureBehaviour>k__BackingField.Value
-      value: 48
+    - target: {fileID: 6900122044807294964, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: PlayerKey.Id
+      value: 2
       objectReference: {fileID: 0}
-    - target: {fileID: 4169649335500493925, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
-      propertyPath: _count
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 4169649335500493925, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -2492,6 +2483,7 @@ GameObject:
   - component: {fileID: 1259888776}
   - component: {fileID: 1259888779}
   - component: {fileID: 1259888781}
+  - component: {fileID: 1259888782}
   m_Layer: 0
   m_Name: DEVELOP
   m_TagString: Untagged
@@ -2762,6 +2754,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.HexCaptureStatusDebugDrawer
   _captureData: []
   _maxCaptureValueAlpha: 0.5
+--- !u!114 &1259888782
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259888751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d7eb1e63915f6a4187d02939b2602a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.MovementOccupationCellsDrawer
 --- !u!1 &1324568865
 GameObject:
   m_ObjectHideFlags: 0
@@ -3317,28 +3321,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1383287214}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &1462667685 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2425667935766510020, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
-  m_PrefabInstance: {fileID: 1938236582283688673}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1462667690
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1462667685}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b7995b2a652716a44a6039e6f849a412, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: MechBattle::ZE.MechBattle.BuildingDamageableMonoComponent
-  <IsAttackTarget>k__BackingField: 1
-  <HealthPoints>k__BackingField: 150
-  <DestructionProtocol>k__BackingField:
-    IsValid: 1
-    EffectId: test_building_destruction
 --- !u!1 &1592382244
 GameObject:
   m_ObjectHideFlags: 0
@@ -3384,7 +3366,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitsSpawnerMono
   RegisterAsVirtualPoint: 0
-  _playerId: 1
   _unitId: tank
   _count: 1
   _spawnRadiusInUnits: 0
@@ -4180,29 +4161,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: spawner_tower_view
       objectReference: {fileID: 0}
-    - target: {fileID: 2926744493269152651, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
-      propertyPath: _functionFlags
-      value: 7
-      objectReference: {fileID: 0}
-    - target: {fileID: 2926744493269152651, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
-      propertyPath: _parameters.Health
-      value: 3000
-      objectReference: {fileID: 0}
-    - target: {fileID: 3892133552154018058, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
-      propertyPath: <CaptureBehaviour>k__BackingField.Value
-      value: 48
-      objectReference: {fileID: 0}
-    - target: {fileID: 4169649335500493925, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
-      propertyPath: _count
-      value: 0
+    - target: {fileID: 6900122044807294964, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: PlayerKey.Id
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 2425667935766510020, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1462667690}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

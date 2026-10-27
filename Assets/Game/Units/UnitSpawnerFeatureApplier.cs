@@ -5,7 +5,7 @@ namespace ZE.MechBattle
 {
     public class UnitSpawnerFeatureApplier : BuildingFeatureApplierBase<UnitsSpawnerMono>
     {
-        public override BuildingFunctionFlags RequiredFlagsMask => BuildingFunctionFlags.Spawner;
+        public override BuildingFunctionFlags RequiredFlagsMask => BuildingFunctionFlags.Spawner | BuildingFunctionFlags.PlayerAffinity;
         private readonly SpawnerFactory _spawnerFactory;
 
         [Inject] 

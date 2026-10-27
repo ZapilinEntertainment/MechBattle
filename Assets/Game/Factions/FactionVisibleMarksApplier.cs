@@ -19,7 +19,7 @@ namespace ZE.MechBattle
             _playerAffiliationComponents = world.GetStash<PlayerAffiliationComponent>();
         }
 
-        public void CheckView(Entity entity, IMonoView view)
+        public void CheckView(Entity entity, IView view)
         {
             var playerAffiliationComponent = _playerAffiliationComponents.Get(entity, out var havePlayerAffiliation);
             if (havePlayerAffiliation && view is IFactionableView factionableView)
@@ -28,6 +28,9 @@ namespace ZE.MechBattle
                 var material = _colouredMaterialsDepot.GetColouredMaterial(ColouredMaterialType.FactionColour, color);
                 factionableView.ApplyFactionMaterial(material);
             }
+
+            if (view is IBuildingView)
+                UnityEngine.Debug.Log($"{entity.Id} {havePlayerAffiliation} : {playerAffiliationComponent.PlayerKey.Id}");
         }
     
     }

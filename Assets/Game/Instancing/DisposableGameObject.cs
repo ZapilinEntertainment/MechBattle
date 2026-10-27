@@ -19,7 +19,11 @@ namespace ZE.MechBattle
         }
 
         public virtual void SetParent(Transform parent) => transform.parent = parent;
-        virtual protected void OnDisposed() => GameObject.Destroy(gameObject);
+        virtual protected void OnDisposed()
+        {
+            if (Application.isPlaying)
+                GameObject.Destroy(gameObject);
+        }
         private void OnDestroy()
         {
             IsDisposed = true;

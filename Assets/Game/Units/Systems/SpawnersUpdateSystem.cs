@@ -35,6 +35,7 @@ namespace ZE.MechBattle.Ecs {
 
         protected override FilterBuilder PrepareFilter() =>
             base.PrepareFilter()
+            .With<PlayerAffiliationComponent>()
             .Without<InitialDelayComponent>();
 
         public override void OnAwake()

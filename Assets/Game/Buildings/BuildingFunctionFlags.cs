@@ -9,6 +9,7 @@ namespace ZE.MechBattle
         Spawner = 1 << 0,
         CaptureResist = 1 <<1,
         Destructible = 1 << 2,
-        RESERVED = 1 <<3,
+        PlayerAffinity = 1 << 3,
+        RESERVED = 1 <<4,
     }
 }

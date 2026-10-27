@@ -1,4 +1,3 @@
-using Scellecs.Morpeh;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -27,7 +26,7 @@ namespace ZE.MechBattle.Ecs {
                 count++;
             }
 
-            //UnityEngine.Debug.Log($"{count} buildings converted");
+            UnityEngine.Debug.Log($"{count} buildings converted");
         }
 
      

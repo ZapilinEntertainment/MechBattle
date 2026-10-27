@@ -22,6 +22,8 @@ namespace ZE.MechBattle
             builder.Register<MechHeadRotationWorker>(Lifetime.Scoped);
 
             builder.RegisterEntryPoint<LocalPlayerInitializer>(Lifetime.Transient);
+
+            builder.Register<IBuildingFeatureApplier, BuildingPlayerAffinityApplier>(Lifetime.Singleton);
         }
 
         protected override PlayerSystemsInstallQueue CreateQueue() => new();

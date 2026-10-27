@@ -1,23 +1,23 @@
 using Scellecs.Morpeh;
 using VContainer;
-using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle
 {
     public class BuildingCaptureFeatureApplier : BuildingFeatureApplierBase<BuildingCaptureFeatureComponent>
     {
         public override BuildingFunctionFlags RequiredFlagsMask => BuildingFunctionFlags.CaptureResist;
-        private readonly Stash<CaptureBehaviourComponent> _captureComponents;
-
+        private readonly CaptureFeatureApplyHandler _applyHandler;
+        
+ 
         [Inject]
-        public BuildingCaptureFeatureApplier(World world)
+        public BuildingCaptureFeatureApplier(CaptureFeatureApplyHandler applyHandler)
         {
-            _captureComponents = world.GetStash<CaptureBehaviourComponent>();
+            _applyHandler = applyHandler;
         }
 
         protected override void ApplyBuildingFeature(Entity buildingEntity, BuildingCaptureFeatureComponent captureComponent)
         {
-            _captureComponents.Add(buildingEntity, new(captureComponent.CaptureBehaviour));
+            _applyHandler.Apply(buildingEntity, captureComponent.CaptureBehaviour);
         }
     }
 }

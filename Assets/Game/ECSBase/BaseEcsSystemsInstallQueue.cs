@@ -1,6 +1,6 @@
 namespace ZE.MechBattle.Ecs
 {
-    public class BaseEcsSystemsInstallQueue : FeatureSystemsInstallQueue
+    public sealed class BaseEcsSystemsInstallQueue : FeatureSystemsInstallQueue
     {
         protected override void Configure(ISystemsOperator installer)
         {

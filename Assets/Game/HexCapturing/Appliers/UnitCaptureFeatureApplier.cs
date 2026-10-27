@@ -1,24 +1,24 @@
 using Scellecs.Morpeh;
 using System;
 using VContainer;
-using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle
 {
     [Serializable]
     public class UnitCaptureFeatureApplier : UnitFeatureApplierBase<UnitCaptureConfig>
     {
-        private readonly Stash<CaptureBehaviourComponent> _captureComponents;
+        private readonly CaptureFeatureApplyHandler _applyHandler;
+
 
         [Inject]
-        public UnitCaptureFeatureApplier(World world)
+        public UnitCaptureFeatureApplier(CaptureFeatureApplyHandler applyHandler)
         {
-            _captureComponents = world.GetStash<CaptureBehaviourComponent>();
+            _applyHandler = applyHandler;
         }
 
         protected override void ApplyUnitFeature(Entity entity, UnitCaptureConfig config)
         {
-            _captureComponents.Add(entity, new(config.CaptureBehaviour));
+            _applyHandler.Apply(entity, config.CaptureBehaviour);
         }
     }
 }

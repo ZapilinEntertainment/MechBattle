@@ -54,7 +54,10 @@ namespace ZE.MechBattle.Ecs {
             {
                 var coord = _hexCoords.Get(capturableEntity).Value;
                 if (_updatedHexList.TryGetValue(coord, out var playerId))
+                {
                     _affinityHandler.SetEntityPlayerAffinity(capturableEntity, new(playerId));
+                }
+                    
             }
 
             _updatedHexList.Clear();

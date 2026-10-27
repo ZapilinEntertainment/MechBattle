@@ -212,6 +212,8 @@ GameObject:
   - component: {fileID: 2926744493269152651}
   - component: {fileID: 4169649335500493925}
   - component: {fileID: 3892133552154018058}
+  - component: {fileID: 822850974754404588}
+  - component: {fileID: 6900122044807294964}
   m_Layer: 0
   m_Name: bottom
   m_TagString: Untagged
@@ -251,16 +253,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 06ab1102bd11aa74b9d977a6989066c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.FactionBuildingView
-  _parameters:
-    Health: 100
   _colliders:
   - {fileID: 3067490651314443019}
-  _destroyEffectKey: test_building_destruction
-  _functionFlags: -1
+  _functionFlags: 15
   _blockConfig:
     IsValid: 1
-    Mode: 1
-    ExtentA: 12
+    Mode: 0
+    ExtentA: 11
     ExtentB: 12
     Flags: -1
   _colouredRenderers:
@@ -281,7 +280,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitsSpawnerMono
   RegisterAsVirtualPoint: 0
-  _playerId: 0
   _unitId: tank
   _count: 1
   _spawnRadiusInUnits: 25
@@ -303,6 +301,37 @@ MonoBehaviour:
   <CaptureBehaviour>k__BackingField:
     Type: 2
     Value: 6
+--- !u!114 &822850974754404588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2425667935766510020}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7995b2a652716a44a6039e6f849a412, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MechBattle::ZE.MechBattle.BuildingDamageableMonoComponent
+  <IsAttackTarget>k__BackingField: 1
+  <HealthPoints>k__BackingField: 250
+  <DestructionProtocol>k__BackingField:
+    IsValid: 1
+    EffectId: test_building_destruction
+--- !u!114 &6900122044807294964
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2425667935766510020}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5bfe90bb1a0a7e84eaa358ad976a386a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MechBattle::ZE.MechBattle.PlayerAffinityMonoComponent
+  PlayerKey:
+    Id: 0
 --- !u!1 &2913121675166457278
 GameObject:
   m_ObjectHideFlags: 0
@@ -550,11 +579,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e190c865da57f7d42bbbc2a4e8160c67, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.BuildingView
-  _parameters:
-    Health: 10
   _colliders:
   - {fileID: 7337545326065313578}
-  _destroyEffectKey: test_building_destruction
   _functionFlags: 0
   _blockConfig:
     IsValid: 0
@@ -864,11 +890,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e190c865da57f7d42bbbc2a4e8160c67, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.BuildingView
-  _parameters:
-    Health: 20
   _colliders:
   - {fileID: 134714856130934184}
-  _destroyEffectKey: test_building_destruction
   _functionFlags: 0
   _blockConfig:
     IsValid: 0
