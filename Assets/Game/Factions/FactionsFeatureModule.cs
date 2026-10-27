@@ -9,6 +9,7 @@ namespace ZE.MechBattle
         {
             // todo: rework to discrete factions system
             builder.Register<PlayerRelations>(Lifetime.Scoped);
+            builder.Register<FactionHandler>(Lifetime.Singleton);
         }
     }
 }

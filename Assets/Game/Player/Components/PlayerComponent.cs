@@ -1,5 +1,4 @@
 using Scellecs.Morpeh;
-using UnityEngine;
 using Unity.IL2CPP.CompilerServices;
 
 namespace ZE.MechBattle.Ecs {
@@ -9,9 +8,9 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public readonly struct PlayerComponent : IComponent 
     {
-        public readonly int Id;
+        public readonly PlayerKey PlayerKey;
 
-        public PlayerComponent(int id) => Id = id;
+        public PlayerComponent(PlayerKey key) => PlayerKey = key;
 
     }
 }

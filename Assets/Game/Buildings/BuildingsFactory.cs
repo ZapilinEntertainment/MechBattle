@@ -27,11 +27,20 @@ namespace ZE.MechBattle
             _viewSyncApplier = viewSyncApplier;
             _transformAspectHandler = transformAspectHandler;
 
-            _featureAppliers = new(4);
-            foreach (var featureApplier in featureAppliers)
+            
+            if (featureAppliers != null)
             {
-                _featureAppliers.Add(featureApplier);
+                _featureAppliers = new(4);
+                foreach (var featureApplier in featureAppliers)
+                {
+                    _featureAppliers.Add(featureApplier);
+                }
             }
+            else
+            {
+                _featureAppliers = new(0);
+            }
+            
 
             _disposableView = _world.GetStash<DisposableViewComponent>();
             _blockConfigs = _world.GetStash<BlockZoneConfigComponent>();

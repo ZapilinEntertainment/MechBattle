@@ -12,10 +12,18 @@ namespace ZE.MechBattle
         [Inject]
         public NavigationDataEntitiesFactoryBase(World world, IEnumerable<T> creationAppliers) : this(world)
         {
-            _creationAppliersList = new();
-            foreach (var applier in creationAppliers)
+            
+            if (creationAppliers != null)
             {
-                _creationAppliersList.Add(applier);
+                _creationAppliersList = new(8);
+                foreach (var applier in creationAppliers)
+                {
+                    _creationAppliersList.Add(applier);
+                }
+            }  
+            else
+            {
+                _creationAppliersList = new(0);
             }
         }
 
