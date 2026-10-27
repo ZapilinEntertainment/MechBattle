@@ -7,6 +7,8 @@ namespace ZE.MechBattle
         protected override void Configure(ISystemsOperator installer)
         {
             installer.AddSystem<HexCaptureStatusCalculationSystem>(SystemGroupOrder.PostMovement);
+            installer.AddSystem<EntitiesCaptureSystem>(SystemGroupOrder.PostMovement);
+            installer.AddSystem<TagsClearSystem<HexOwnerChangedTag>>(SystemGroupOrder.AfterDispose);
         }
     }
 }

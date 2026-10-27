@@ -9,7 +9,6 @@ namespace ZE.MechBattle
         [Tooltip("Set true, if spawner is not binded to any in-game object")]
         [SerializeField] public bool RegisterAsVirtualPoint = false;
         [Space]
-        [SerializeField] private int _playerId = 0;
         [SerializeField] private string _unitId;
         [Space]
         [SerializeField] private int _count;
@@ -22,7 +21,6 @@ namespace ZE.MechBattle
         public float InitialDelay => _initialDelay;
         public float UpdateIntervalDuration => _interval;
         public float3 WorldPos => transform.position;
-        public PlayerKey PlayerKey => new(_playerId);
 
         public SpawnerComponent GetSpawnerData(in StringDataDictionary stringDataDictionary)
         {

@@ -10,21 +10,36 @@ namespace ZE.MechBattle
         private readonly Stash<PlayerAffiliationComponent> _playerAffiliations;
         private readonly Stash<OwnerAffinityComponent> _ownerAffiliations;
         private readonly Stash<IgnoreUnitsCollisionByPlayermaskComponent> _ignoreCollisionComponents;
+        private readonly Stash<PlayerAffinityChangedTag> _affinityChangedTags;
+
         private readonly PlayerRelations _playerRelations;
 
         [Inject]
         public AffinityHandler(PlayerRelations playerRelations, World world)
         {
             _playerRelations = playerRelations;
+
             _playerAffiliations = world.GetStash<PlayerAffiliationComponent>();
             _ownerAffiliations = world.GetStash<OwnerAffinityComponent>();
             _ignoreCollisionComponents = world.GetStash<IgnoreUnitsCollisionByPlayermaskComponent>();
+            _affinityChangedTags = world.GetStash<PlayerAffinityChangedTag>();
         }
 
-        public void SetEntityPlayerAffinity(Entity entity, PlayerKey playerKey) => _playerAffiliations.Set(entity, new(playerKey));
+        public void SetEntityPlayerAffinity(Entity entity, PlayerKey playerKey)
+        {
+            if (_playerAffiliations.Has(entity))
+                _affinityChangedTags.Set(entity);
+            _playerAffiliations.Set(entity, new(playerKey));
+            
+            
+        }
         public void SetEntityOwnerAffinity(Entity entity, Entity owner) => _ownerAffiliations.Set(entity, new() { OwnerEntity = owner });
 
-        public void ClearOwnerAffinity(Entity entity) => _playerAffiliations.Remove(entity);
+        public void ClearOwnerAffinity(Entity entity)
+        {
+            _playerAffiliations.Remove(entity);
+            _affinityChangedTags.Set(entity);
+        }
 
         public void AddFriendlyFireProtection(Entity entity, PlayerKey playerKey) => _ignoreCollisionComponents.Set(entity, new(_playerRelations.GetFriendlyFireProtectionMask(playerKey)));
 

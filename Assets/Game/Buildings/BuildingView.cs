@@ -17,12 +17,9 @@ namespace ZE.MechBattle
             public CellOccupationLevelFlags Flags;
         }
 
-        [SerializeField] private DamageableEntityParameters _parameters;
         [SerializeField] private Collider[] _colliders;
-        [SerializeField] private string _destroyEffectKey;
         [SerializeField] private BuildingFunctionFlags _functionFlags;
         [SerializeField] private SerializedBlockZoneConfig _blockConfig;
-        public string ViewDestroyEffectKey => _destroyEffectKey;
         public BuildingFunctionFlags FunctionFlags => _functionFlags;
 
         public void FillCollidersList(ICollection<int> colliderInstanceIds)
@@ -33,7 +30,6 @@ namespace ZE.MechBattle
             }
         }
 
-        public DamageableEntityParameters GetParameters() => _parameters;
         public IView GetView() => this;
 
         public bool TryGetBlockZoneConfig(out BlockZoneConfigComponent blockZoneConfigComponent)

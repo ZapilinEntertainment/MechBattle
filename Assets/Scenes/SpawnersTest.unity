@@ -1387,6 +1387,75 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 624623555}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1001 &669242336
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2226561520213593192, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 56.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2226561520213593192, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2226561520213593192, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -37.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 2226561520213593192, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2226561520213593192, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2226561520213593192, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2226561520213593192, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2226561520213593192, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2226561520213593192, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2226561520213593192, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913121675166457278, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_Name
+      value: spawner_tower_view (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 2926744493269152651, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: _functionFlags
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 3892133552154018058, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: <CaptureBehaviour>k__BackingField.Type
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 6900122044807294964, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: PlayerKey.Id
+      value: -1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
 --- !u!1 &674355992
 GameObject:
   m_ObjectHideFlags: 0
@@ -2414,6 +2483,7 @@ GameObject:
   - component: {fileID: 1259888776}
   - component: {fileID: 1259888779}
   - component: {fileID: 1259888781}
+  - component: {fileID: 1259888782}
   m_Layer: 0
   m_Name: DEVELOP
   m_TagString: Untagged
@@ -2453,11 +2523,11 @@ MonoBehaviour:
   _playerId: 1
   _spawnRadius: 6
   _startHex:
-    x: -1
-    y: 1
-  _endHex:
     x: 1
     y: -1
+  _endHex:
+    x: 0
+    y: 0
 --- !u!114 &1259888776
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2663,13 +2733,13 @@ MonoBehaviour:
   _spawnByClick: 0
   _unitId: tank
   _playerId: 2
-  _spawnRadius: 6
+  _spawnRadius: 3
   _startHex:
-    x: -2
-    y: 4
+    x: 0
+    y: 0
   _endHex:
-    x: -2
-    y: 1
+    x: -1
+    y: 0
 --- !u!114 &1259888781
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2684,6 +2754,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.HexCaptureStatusDebugDrawer
   _captureData: []
   _maxCaptureValueAlpha: 0.5
+--- !u!114 &1259888782
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259888751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d7eb1e63915f6a4187d02939b2602a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.MovementOccupationCellsDrawer
 --- !u!1 &1324568865
 GameObject:
   m_ObjectHideFlags: 0
@@ -3284,7 +3366,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitsSpawnerMono
   RegisterAsVirtualPoint: 0
-  _playerId: 1
   _unitId: tank
   _count: 1
   _spawnRadiusInUnits: 0
@@ -4080,6 +4161,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: spawner_tower_view
       objectReference: {fileID: 0}
+    - target: {fileID: 6900122044807294964, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: PlayerKey.Id
+      value: 2
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4097,3 +4182,4 @@ SceneRoots:
   - {fileID: 601646811}
   - {fileID: 1592382245}
   - {fileID: 1938236582283688673}
+  - {fileID: 669242336}

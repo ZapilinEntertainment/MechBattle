@@ -1,5 +1,4 @@
 using VContainer;
-using VContainer.Unity;
 using ZE.MechBattle.Ecs;
 using ZE.MechBattle.Damage;
 
@@ -14,7 +13,8 @@ namespace ZE.MechBattle
             base.SceneScopeInstall(builder);
             builder.Register<DamageApplier>(Lifetime.Scoped);
             builder.Register<DamageRequestsList>(Lifetime.Scoped);
-            builder.Register<IReceivedDamageList, ReceivedDamageList>(Lifetime.Scoped).AsSelf();            
+            builder.Register<IReceivedDamageList, ReceivedDamageList>(Lifetime.Scoped).AsSelf();
+            builder.Register<IBuildingFeatureApplier, BuildingDamageablePartApplier>(Lifetime.Singleton);
         }
     }
 }

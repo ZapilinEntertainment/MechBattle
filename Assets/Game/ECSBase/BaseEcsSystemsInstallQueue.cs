@@ -1,6 +1,6 @@
 namespace ZE.MechBattle.Ecs
 {
-    public class BaseEcsSystemsInstallQueue : FeatureSystemsInstallQueue
+    public sealed class BaseEcsSystemsInstallQueue : FeatureSystemsInstallQueue
     {
         protected override void Configure(ISystemsOperator installer)
         {
@@ -37,7 +37,7 @@ namespace ZE.MechBattle.Ecs
 
             installer.AddSystem<LifetimeTrackingSystem>(SystemGroupOrder.Dispose);
             installer.AddSystem<EntityDisposeSystem>(SystemGroupOrder.Dispose);
-            installer.AddSystem<UpdateTagsClearSystem>(SystemGroupOrder.Dispose);
+            installer.AddSystem<TagsClearSystem<TransformUpdatedTag>>(SystemGroupOrder.Dispose);
             installer.AddSystem<CompletedRequestsClearSystem>(SystemGroupOrder.Dispose);
         }
     }

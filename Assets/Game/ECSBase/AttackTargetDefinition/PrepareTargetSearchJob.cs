@@ -18,6 +18,7 @@ namespace ZE.MechBattle.Ecs
         [ReadOnly] public NativeStash<PlayerAffiliationComponent> AffiliationsStash;
         [ReadOnly] public NativeStash<PositionComponent> PositionComponents;
         [ReadOnly] public NativeStash<TargetSearchRadiusComponent> SearchRadiusStash;
+        [ReadOnly] public NativeStash<TargetDataComponent> TargetDataStash;
         [ReadOnly] public NativeReference<int> HandlingEntitiesCount;
 
         public NativeHashMap<IntTriangularPos, int> EntitiesMap;
@@ -32,9 +33,22 @@ namespace ZE.MechBattle.Ecs
             var maxId = 0;
 
             var cellOccupantEntities = new NativeArray<Entity>(MovementCellsFilter.length, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            var skipEntitiesList = new NativeBitArray(MovementCellsFilter.length, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+
             for (var i = 0; i < MovementCellsFilter.length; i++)
             {
                 var occupationEntity = MovementDataStash.Get(MovementCellsFilter[i]).Value.Entity;
+                if (!TargetDataStash.Has(occupationEntity))
+                {
+                    skipEntitiesList.Set(i, true);
+                    continue;
+                }
+                else
+                {
+                    skipEntitiesList.Set(i, false);
+                }
+                    
+
                 cellOccupantEntities[i] = occupationEntity;
 
                 minId = math.min(minId, occupationEntity.Id);
@@ -55,9 +69,14 @@ namespace ZE.MechBattle.Ecs
             var uniqueEntitiesCount = 0;
             for (var i = 0; i < MovementCellsFilter.length; i++)
             {
+                var entity = cellOccupantEntities[i];
+                if (skipEntitiesList.IsSet(i))
+                    continue;
+
                 var tripos = CellComponentsStash.Get(MovementCellsFilter[i]).Tripos;
 
-                var occupantEntityId = cellOccupantEntities[i].Id - minId;
+                
+                var occupantEntityId = entity.Id - minId;
                 var occupantEntityDataIndex = entityIdToDataIndex[occupantEntityId];
                 if (occupantEntityDataIndex == -1)
                 {
@@ -77,6 +96,9 @@ namespace ZE.MechBattle.Ecs
 
             for (var i = 0; i < MovementCellsFilter.length; i++)
             {
+                if (skipEntitiesList.IsSet(i))
+                    continue;
+
                 var entity = cellOccupantEntities[i] ;
                 var dataIndex = entityIdToDataIndex[entity.Id - minId];
                 if (dataIndex == -1)
