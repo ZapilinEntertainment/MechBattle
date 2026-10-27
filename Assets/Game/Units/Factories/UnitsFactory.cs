@@ -24,7 +24,7 @@ namespace ZE.MechBattle
         private readonly Stash<HealthComponent> _healthComponents;
         private readonly Stash<UnitTag> _unitTags;
         private readonly Stash<CalculateTrianglePositionTag> _calculateTrianglePosTags;
-        private readonly Stash<CapturePowerComponent> _capturePowers;
+        private readonly Stash<TargetDataComponent> _targetData;
 
 
         [Inject]
@@ -44,11 +44,20 @@ namespace ZE.MechBattle
             _stringDataDictionary = stringDataDictionary;
             _viewSyncApplier = viewSyncApplier;
 
-            _unitFeatureAppliers = new(8);
-            foreach (var unitFeatureApplier in unitFeatureAppliers)
+            
+            if (unitFeatureAppliers != null)
             {
-                _unitFeatureAppliers.Add(unitFeatureApplier);
+                _unitFeatureAppliers = new(8);
+                foreach (var unitFeatureApplier in unitFeatureAppliers)
+                {
+                    _unitFeatureAppliers.Add(unitFeatureApplier);
+                }
             }
+            else
+            {
+                _unitFeatureAppliers = new(0);
+            }
+            
 
             _moveSpeeds = world.GetStash<MoveSpeedComponent>();
             _navigationAgents = world.GetStash<NavigationAgentComponent>();
@@ -56,8 +65,7 @@ namespace ZE.MechBattle
             _healthComponents = world.GetStash<HealthComponent>();
             _unitTags = world.GetStash<UnitTag>();
             _calculateTrianglePosTags = world.GetStash<CalculateTrianglePositionTag>();
-
-            _capturePowers = world.GetStash<CapturePowerComponent>();
+            _targetData = world.GetStash<TargetDataComponent>();
         }
 
         // todo: rework to generic version
@@ -108,9 +116,7 @@ namespace ZE.MechBattle
             _unitTags.Add(entity);
 
             _calculateTrianglePosTags.Add(entity);
-
-            if (unitConfig.CapturePower != 0f)
-                _capturePowers.Add(entity, new(unitConfig.CapturePower));
+            _targetData.Add(entity);
 
             foreach (var applier in _unitFeatureAppliers)
             {

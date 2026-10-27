@@ -1,26 +1,23 @@
 using System;
 using Scellecs.Morpeh;
-using UnityEngine;
 using Unity.IL2CPP.CompilerServices;
 
 namespace ZE.MechBattle.Ecs {
-    [System.Serializable]
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public readonly struct DisposableViewComponent : IComponent, IDisposable 
     {
-        private readonly GameObject _view;
+        public readonly IView View;
 
-        public DisposableViewComponent(GameObject gameObject)
+        public DisposableViewComponent(IView view)
         {
-            _view = gameObject;
+            View = view;
         }
 
         public void Dispose()
         {
-            if (Application.isPlaying)
-                GameObject.Destroy(_view);
+            View?.Dispose();
         }
 
     }

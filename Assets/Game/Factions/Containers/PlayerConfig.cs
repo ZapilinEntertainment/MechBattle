@@ -4,8 +4,8 @@ using UnityEngine;
 namespace ZE.MechBattle
 {
     [Serializable]
-    public struct DamageableEntityParameters
+    public struct PlayerConfig
     {
-        public float Health;
+        public Color Color;
     }
 }

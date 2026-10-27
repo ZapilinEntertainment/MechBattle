@@ -22,7 +22,7 @@ namespace ZE.MechBattle
 
             builder.Register<FactionVisibleMarksApplier>(Lifetime.Scoped);
 
-            builder.Register<IBuildingFeatureApplier, UnitSpawnerFeatureApplier>(Lifetime.Scoped);
+            builder.Register<IBuildingFeatureApplier, UnitSpawnerFeatureApplier>(Lifetime.Singleton);
 
             builder.RegisterEntryPoint<SceneUnitsInitializer>();
 

@@ -1,5 +1,4 @@
 using Scellecs.Morpeh;
-using Unity.Mathematics;
 using VContainer;
 using ZE.MechBattle.Ecs;
 
@@ -7,46 +6,24 @@ namespace ZE.MechBattle.PlayerData
 {
     public class PlayerFactory
     {
-        private int _nextPlayerId = 1;
         private readonly World _world;
-        private readonly MechCreateRequestsFactory _mechRequestsFactory;
-        private readonly PlayersList _playersList;
         private readonly Stash<PlayerComponent> _playerComponents;
+        private readonly Stash<FactionColorComponent> _colors;
 
         [Inject]
-        public PlayerFactory(
-            World world, 
-            MechCreateRequestsFactory mechRequestsFactory, 
-            IPlayersList playersList,
-            CreationRequestsHandler creationRequestsHandler)
+        public PlayerFactory(World world)
         {
-            _world = world;
+            _world = world;           
+
             _playerComponents = world.GetStash<PlayerComponent>();
-
-            _mechRequestsFactory = mechRequestsFactory;
-            _playersList = playersList as PlayersList;
+            _colors = world.GetStash<FactionColorComponent>();
         }
 
-        public Entity CreateLocalPlayer(RigidTransform spawnPoint)
+        public Entity CreatePlayer(PlayerKey key, PlayerConfig playerConfig)
         {
             var playerEntity = _world.CreateEntity();
-            var id = _nextPlayerId++;
-            _playerComponents.Add(playerEntity, new(id));
-            var playerKey = new PlayerKey(id);
-            _playersList.AddPlayerEntity(playerKey, playerEntity);
-
-             _mechRequestsFactory.CreateRequest(new(playerKey, spawnPoint.pos, spawnPoint.rot, directControl: true));
-
-            return playerEntity;
-        }
-
-        public Entity CreatePlayer()
-        {
-            var playerEntity = _world.CreateEntity();
-            var id = _nextPlayerId++;
-            _playerComponents.Add(playerEntity, new(id));
-            var playerKey = new PlayerKey(id);
-            _playersList.AddPlayerEntity(playerKey, playerEntity);
+            _playerComponents.Add(playerEntity, new(key));
+            _colors.Add(playerEntity, new(playerConfig.Color));
 
             return playerEntity;
         }

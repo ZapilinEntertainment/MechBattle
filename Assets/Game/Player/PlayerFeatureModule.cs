@@ -1,18 +1,13 @@
 using VContainer;
+using VContainer.Unity;
 using ZE.MechBattle.Ecs;
 using ZE.MechBattle.PlayerData;
-using ZE.MechBattle.UI;
-using ZE.Workers;
 
 namespace ZE.MechBattle
 {
     [System.Serializable]
-    public class PlayerFeatureModule : EcsFeatureModule<PlayerSystemsInstallQueue>, ISceneFeatureScopeInstaller, ISceneFeatureInitializer, IAppFeatureScopeInstaller
+    public class PlayerFeatureModule : EcsFeatureModule<PlayerSystemsInstallQueue>, ISceneFeatureScopeInstaller
     {
-        void IAppFeatureScopeInstaller.AppScopeInstall(IContainerBuilder builder)
-        {
-            builder.Register<LocalPlayerInitializer>(Lifetime.Transient);
-        }
 
         void ISceneFeatureScopeInstaller.SceneScopeInstall(IContainerBuilder builder)
         {
@@ -25,24 +20,10 @@ namespace ZE.MechBattle
 
             builder.Register<ICursorAimTracker,CursorAimTrackingWorker>(Lifetime.Scoped);
             builder.Register<MechHeadRotationWorker>(Lifetime.Scoped);
-        }
 
-        void ISceneFeatureInitializer.OnSceneContainerBuilt(IObjectResolver resolver)
-        {
-            base.OnSceneContainerBuilt(resolver);
-            var playerFactory = resolver.Resolve<PlayerFactory>();
-            var levelSettings = resolver.Resolve<LevelSettingsObject>();
+            builder.RegisterEntryPoint<LocalPlayerInitializer>(Lifetime.Transient);
 
-            var localPlayerSpawn = levelSettings.GetSpawnPoint(GameConstants.LOCAL_PLAYER_KEY);
-            var localPlayerEntity = playerFactory.CreateLocalPlayer(localPlayerSpawn.ToRigidTransform());
-
-            for (var i = 1; i < 4; i++)
-            {
-                playerFactory.CreatePlayer();
-            }
-
-            var playerInitializer = resolver.Resolve<LocalPlayerInitializer>();
-            playerInitializer.StartTracking(localPlayerEntity);
+            builder.Register<IBuildingFeatureApplier, BuildingPlayerAffinityApplier>(Lifetime.Singleton);
         }
 
         protected override PlayerSystemsInstallQueue CreateQueue() => new();

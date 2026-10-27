@@ -7,7 +7,7 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public readonly struct DamageReceivedComponent : IComponent 
+    public readonly struct DamageReceivedComponent : IOneFrameComponent 
     {
         public readonly Entity MaxDamageProducer;
         public DamageReceivedComponent(Entity maxDamageProducer)
