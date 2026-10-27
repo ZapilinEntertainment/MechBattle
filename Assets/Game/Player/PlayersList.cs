@@ -7,6 +7,7 @@ namespace ZE.MechBattle
     public interface IPlayersList
     {
         int Count { get; }
+        bool TryGetPlayerEntity(PlayerKey playerKey, out Entity entity);
         Entity GetPlayerEntity(PlayerKey playerKey);
         Entity GetLocalPlayerEntity();
     }
@@ -49,7 +50,21 @@ namespace ZE.MechBattle.PlayerData
             playerEntity = _playerFactory.CreatePlayer(key, playerConfig);
             _players.Add(key, playerEntity);
             return playerEntity;
-        } 
-        
+        }
+
+        public bool TryGetPlayerEntity(PlayerKey playerKey, out Entity entity)
+        {
+            if ((uint)playerKey.Id >= (uint)_configsList.Count)
+            {
+                entity = default;
+                return false;
+            }
+            else
+            {
+                entity = GetOrCreatePlayer(playerKey);
+                return true;
+            }
+                
+        }
     }
 }

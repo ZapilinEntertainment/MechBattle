@@ -22,7 +22,13 @@ namespace ZE.MechBattle
         public Entity GetLocalPlayerEntity() => _playersList.GetLocalPlayerEntity();
         public PlayerKey GetLocalPlayerKey() => _configsList.LocalPlayerKey;
 
-        public Color GetFactionColor(PlayerKey playerKey) => _factionColors.Get(_playersList.GetPlayerEntity(playerKey)).Color;
+        public Color GetFactionColor(PlayerKey playerKey) 
+        {
+            if (_playersList.TryGetPlayerEntity(playerKey, out var playerEntity))
+                return _factionColors.Get(playerEntity).Color;
+            else
+                return Color.white;
+        } 
     
     }
 }
