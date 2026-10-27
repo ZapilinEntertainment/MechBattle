@@ -2285,6 +2285,8 @@ MonoBehaviour:
     _serializedList:
     - Key: 1
       Value: {fileID: 1005800848}
+  _activeObjectsHost: {fileID: 601646811}
+  _navigationMapSettings: {fileID: 11400000, guid: 39c64f95c3d079b47937b0dd6bfa3578, type: 2}
 --- !u!1 &1254155893
 GameObject:
   m_ObjectHideFlags: 0
@@ -3434,9 +3436,8 @@ MonoBehaviour:
   autoRun: 0
   autoInjectGameObjects:
   - {fileID: 1259888751}
-  _mapSettings: {fileID: 11400000, guid: 39c64f95c3d079b47937b0dd6bfa3578, type: 2}
-  _levelSettings: {fileID: 1247844289}
-  _activeObjectsHost: {fileID: 601646811}
+  _autoRegisterMonoBehaviours:
+  - {fileID: 1247844289}
 --- !u!4 &1761267475
 Transform:
   m_ObjectHideFlags: 0

@@ -542,14 +542,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2631baf64fafbcc4f998ab5fcc5d0eec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitsSpawner
+  RegisterAsVirtualPoint: 0
   _playerId: 0
   _unitId: tank
   _count: 3
-  _spawnRadius: 15
+  _spawnRadiusInUnits: 0
   _interval: 5
   _initialDelay: 0
   _limit: -1
-  _status: 0
 --- !u!4 &231326429
 Transform:
   m_ObjectHideFlags: 0
@@ -2483,14 +2483,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2631baf64fafbcc4f998ab5fcc5d0eec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitsSpawner
+  RegisterAsVirtualPoint: 0
   _playerId: 1
   _unitId: tank
   _count: 3
-  _spawnRadius: 15
+  _spawnRadiusInUnits: 0
   _interval: 5
   _initialDelay: 0
   _limit: -1
-  _status: 0
 --- !u!4 &1028189645
 Transform:
   m_ObjectHideFlags: 0
@@ -2816,6 +2816,8 @@ MonoBehaviour:
     _serializedList:
     - Key: 1
       Value: {fileID: 1005800848}
+  _activeObjectsHost: {fileID: 601646811}
+  _navigationMapSettings: {fileID: 11400000, guid: 39c64f95c3d079b47937b0dd6bfa3578, type: 2}
 --- !u!1 &1254155893
 GameObject:
   m_ObjectHideFlags: 0
@@ -4096,9 +4098,8 @@ MonoBehaviour:
   autoRun: 0
   autoInjectGameObjects:
   - {fileID: 1259888751}
-  _mapSettings: {fileID: 11400000, guid: 39c64f95c3d079b47937b0dd6bfa3578, type: 2}
-  _levelSettings: {fileID: 1247844289}
-  _activeObjectsHost: {fileID: 601646811}
+  _autoRegisterMonoBehaviours:
+  - {fileID: 1247844289}
 --- !u!4 &1761267475
 Transform:
   m_ObjectHideFlags: 0
