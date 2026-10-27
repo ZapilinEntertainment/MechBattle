@@ -25,8 +25,6 @@ namespace ZE.MechBattle.Ecs {
                 _buildingsFactory.CreateEntityBySceneView(decoration);
                 count++;
             }
-
-            UnityEngine.Debug.Log($"{count} buildings converted");
         }
 
      

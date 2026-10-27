@@ -28,9 +28,6 @@ namespace ZE.MechBattle
                 var material = _colouredMaterialsDepot.GetColouredMaterial(ColouredMaterialType.FactionColour, color);
                 factionableView.ApplyFactionMaterial(material);
             }
-
-            if (view is IBuildingView)
-                UnityEngine.Debug.Log($"{entity.Id} {havePlayerAffiliation} : {playerAffiliationComponent.PlayerKey.Id}");
         }
     
     }

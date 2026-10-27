@@ -47,7 +47,17 @@ namespace ZE.MechBattle.Ecs {
 
             foreach (var hexEntity in _recaptureHexFilter)
             {
-                _updatedHexList.Add(_hexComponents.Get(hexEntity).Coord, _hexCaptureState.Get(hexEntity).ControllingPlayerId);
+                var playerId = _hexCaptureState.Get(hexEntity).ControllingPlayerId;
+                var hexCoord = _hexComponents.Get(hexEntity).Coord;
+
+                _updatedHexList.Add(hexCoord, playerId);
+
+
+                //if (playerId == -1)
+                //    UnityEngine.Debug.Log($"{hexCoord} decaptured");
+                //else
+                //    UnityEngine.Debug.Log($"{hexCoord} captured by {playerId}");
+
             }
 
             foreach (var capturableEntity in _capturableEntities)
