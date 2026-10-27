@@ -3412,6 +3412,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1761267475}
   - component: {fileID: 1761267474}
+  - component: {fileID: 1761267476}
   m_Layer: 0
   m_Name: SceneScope
   m_TagString: Untagged
@@ -3438,6 +3439,7 @@ MonoBehaviour:
   - {fileID: 1259888751}
   _autoRegisterMonoBehaviours:
   - {fileID: 1247844289}
+  - {fileID: 1761267476}
 --- !u!4 &1761267475
 Transform:
   m_ObjectHideFlags: 0
@@ -3453,6 +3455,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1761267476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1761267473}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02161f3cc74a4f54d8723aab58e3c87a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MechBattle::ZE.MechBattle.LevelPlayerConfigs
+  _configs:
+  - Color: {r: 0.3150703, g: 0.8867924, b: 0.31372374, a: 1}
+  - Color: {r: 0.8627452, g: 0.07843138, b: 0.2352941, a: 1}
+  - Color: {r: 0, g: 0.7490196, b: 1, a: 1}
+  - Color: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  _localPlayerIndex: 0
 --- !u!1 &1776215855
 GameObject:
   m_ObjectHideFlags: 0

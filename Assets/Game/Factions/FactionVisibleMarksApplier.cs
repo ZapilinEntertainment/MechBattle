@@ -7,14 +7,14 @@ namespace ZE.MechBattle
 {
     public class FactionVisibleMarksApplier
     {
-        private readonly IPlayersList _playersList;
+        private readonly FactionHandler _factionHandler;
         private readonly ColouredMaterialsDepot _colouredMaterialsDepot;
         private readonly Stash<PlayerAffiliationComponent> _playerAffiliationComponents;
 
         [Inject]
-        public FactionVisibleMarksApplier(World world, IPlayersList playersList, ColouredMaterialsDepot colouredMaterialsDepot)
+        public FactionVisibleMarksApplier(World world, FactionHandler factionHandler, ColouredMaterialsDepot colouredMaterialsDepot)
         {
-            _playersList = playersList;
+            _factionHandler = factionHandler;
             _colouredMaterialsDepot = colouredMaterialsDepot;
             _playerAffiliationComponents = world.GetStash<PlayerAffiliationComponent>();
         }
@@ -24,7 +24,7 @@ namespace ZE.MechBattle
             var playerAffiliationComponent = _playerAffiliationComponents.Get(entity, out var havePlayerAffiliation);
             if (havePlayerAffiliation && view is IFactionableView factionableView)
             {
-                var color = _playersList.GetPlayerColor(playerAffiliationComponent.PlayerKey);
+                var color = _factionHandler.GetFactionColor(playerAffiliationComponent.PlayerKey);
                 var material = _colouredMaterialsDepot.GetColouredMaterial(ColouredMaterialType.FactionColour, color);
                 factionableView.ApplyFactionMaterial(material);
             }
