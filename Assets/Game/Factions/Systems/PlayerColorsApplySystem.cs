@@ -10,37 +10,33 @@ namespace ZE.MechBattle.Ecs {
     {
         public World World { get; set;}
         private Filter _disposableViewsFilter;
-        private Stash<DisposableViewComponent> _disposableViews;
         private readonly FactionVisibleMarksApplier _factionVisibleMarksApplier;
+        private readonly EntityViewHandler _viewHandler;
 
         [Inject]
-        public PlayerColorsApplySystem(FactionVisibleMarksApplier factionVisibleMarksApplier)
+        public PlayerColorsApplySystem(FactionVisibleMarksApplier factionVisibleMarksApplier, EntityViewHandler viewHandler)
         {
             _factionVisibleMarksApplier = factionVisibleMarksApplier;
+            _viewHandler = viewHandler;
         }
 
         public void OnAwake() 
         {
             _disposableViewsFilter = World.Filter
-                .With<DisposableViewComponent>()
+                .With<ViewContainerComponent>()
                 .With<PlayerAffinityChangedTag>()
                 .Build();
-
-            _disposableViews = World.GetStash<DisposableViewComponent>();
         }
 
         public void OnUpdate(float deltaTime) 
         {
             foreach (var entity in _disposableViewsFilter)
             {
-                var view = _disposableViews.Get(entity).View;
-                _factionVisibleMarksApplier.CheckView(entity, view);
+                if (_viewHandler.TryGetEntityView(entity, out var view))
+                    _factionVisibleMarksApplier.CheckView(entity, view);
             }
         }
 
-        public void Dispose()
-        {
-
-        }
+        public void Dispose() { }
     }
 }

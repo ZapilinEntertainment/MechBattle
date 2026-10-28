@@ -24,8 +24,7 @@ namespace ZE.MechBattle.Views
             if (container.transform.childCount != 0)
                 UnityEngine.Debug.LogError("non-cleared");
 
-            var id = _nextId++;
-            _activeContainers.Add(id, container);
+            var id = RegisterContainer(container);
             return (container, id);
         }
 
@@ -35,6 +34,7 @@ namespace ZE.MechBattle.Views
                 return;
 
             _activeContainers.Remove(id);
+            // note: if container is poolable, it will return to pool by itself
             viewContainer.Dispose();
         }
 
@@ -50,8 +50,13 @@ namespace ZE.MechBattle.Views
         }
         public bool TryGetContainer(int id, out IViewContainer container) => _activeContainers.TryGetValue(id, out container);
 
-      
+        public int RegisterOneShotContainer(IViewContainer viewContainer) => RegisterContainer(viewContainer);
 
-        
+        private int RegisterContainer(IViewContainer viewContainer)
+        {
+            var id = _nextId++;
+            _activeContainers.Add(id, viewContainer);
+            return id;
+        }
     }
 }

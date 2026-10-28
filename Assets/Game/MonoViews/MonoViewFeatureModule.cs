@@ -11,13 +11,6 @@ namespace ZE.MechBattle
     {
         protected override MonoViewFeatureSystemsQueue CreateQueue() => new();
 
-        public override void OnSceneContainerBuilt(IObjectResolver resolver)
-        {
-            base.OnSceneContainerBuilt(resolver);
-            var world = resolver.Resolve<World>();
-            world.GetStash<DisposableViewComponent>().AsDisposable();
-        }
-
         public override void SceneScopeInstall(IContainerBuilder builder)
         {
             base.SceneScopeInstall(builder);

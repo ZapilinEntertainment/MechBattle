@@ -8,5 +8,7 @@ namespace ZE.MechBattle
         (ViewContainer container, int id) Get();
         bool TryGetContainer(int id, out IViewContainer container);
         void Release(int id);
+
+        int RegisterOneShotContainer(IViewContainer viewContainer);
     }
 }
