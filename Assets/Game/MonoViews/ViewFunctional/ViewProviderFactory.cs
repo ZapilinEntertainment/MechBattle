@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using VContainer;
-using R3;
+using ZE.Utils;
 
 namespace ZE.MechBattle.Views
 {
@@ -64,19 +64,19 @@ namespace ZE.MechBattle.Views
         private void OnViewLoaded(IAssetProvider assetProvider, ViewKey key)
         {
             var view = assetProvider.GetValue<SimpleView>();
-            if (view is PoolableView poolableView)
+            if (view is PoolableMonoView poolableView)
                 AddViewPool(poolableView, key);
             else
                 AddInstanceProvider(view, key);
         }
 
-        private void AddViewPool(PoolableView asset, ViewKey key)
+        private void AddViewPool(PoolableMonoView asset, ViewKey key)
         {
             lock (_lockObject)
             {
                 if (_providers.TryGetValue(key, out var placeholder))
                     placeholder.Dispose();
-                var pool = new ViewsPool(asset) ;            
+                var pool = new ViewsPool(_stringsDict.GetStringByKey(key.IdKey), asset, null) ;            
                 _providers[key] = pool;
             }            
         }

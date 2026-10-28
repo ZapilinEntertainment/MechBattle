@@ -1,54 +1,49 @@
+using System;
 using UnityEngine;
-using UnityEngine.Pool;
 
-namespace ZE.MechBattle.Vfx
+namespace ZE.Utils
 {
-    public abstract class MonoViewPoolBase<T> where T : MonoBehaviour, IPoolableObject<T>
+    public abstract class MonoViewPoolBase<T> : PoolBase<T> where T : MonoBehaviour, IPoolableObject<T>, IDisposable
     {
-        protected abstract string PoolHostObjectName { get; }
-        protected abstract int DefaultCapacity { get; }
-
-        // why so complex logic with releasers:
-        // ObjectPools and IObjectPools are not so flexible when sending them into elements to release
-        // (conversion issues)
-
-        protected readonly ObjectPool<T> Pool;
         private readonly Transform _hostObject;        
-        private readonly T _prefab;
-        private readonly PoolElementReleaser<T> _releaser;        
+        private readonly T _prefab;   
 
-        public MonoViewPoolBase(T prefab, Transform hostOfPools)
+        public MonoViewPoolBase(T prefab, Transform hostOfPools, string poolName, int defaultCapacity = 4, int maxCapacity = 1024) : base(defaultCapacity, maxCapacity)
         {
             _prefab = prefab;
-            _hostObject = new GameObject(PoolHostObjectName).transform;
+            _hostObject = new GameObject(poolName).transform;
             GameObject.DontDestroyOnLoad(_hostObject);
             _hostObject.parent = hostOfPools;
-            Pool = new(createFunc: Create, defaultCapacity: DefaultCapacity, actionOnGet: OnGet, actionOnRelease: OnRelease);
-
-            _releaser = new(Pool);
         }
 
-        public void Release(T instance) => Pool.Release(instance);
+        public void MarkAsDontDestroy() => GameObject.DontDestroyOnLoad(_hostObject.gameObject);
 
-        private T Create()
+        protected override T Instantiate() => GameObject.Instantiate(_prefab, _hostObject);
+
+        protected override void OnRelease(T instance)
         {
-            var instance = GameObject.Instantiate(_prefab, _hostObject);
-            instance.AssignReleaser(_releaser);
-            return instance;
+            base.OnRelease(instance);
+
+            if (instance.gameObject != null)
+                instance.gameObject.SetActive(false);         
+            instance.transform.SetParent(_hostObject);            
         }
 
-        private void OnRelease(T instance)
+
+        protected override void OnGet(T instance)
         {
-            instance.gameObject?.SetActive(false);
-            instance.OnRelease();            
-            instance.transform.SetParent(_hostObject);
-        }
-        private void OnGet(T instance)
-        {
-            instance.OnGet();
+            base.OnGet(instance);
             instance.gameObject.SetActive(true);
         }
 
-        public T Get() => Pool.Get();
+        public override void Dispose()
+        {
+            base.Dispose();
+
+            if (_hostObject != null)
+            {
+                GameObject.Destroy(_hostObject.gameObject);
+            }           
+        }
     }
 }

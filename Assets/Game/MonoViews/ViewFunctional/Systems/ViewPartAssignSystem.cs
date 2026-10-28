@@ -19,10 +19,10 @@ namespace ZE.MechBattle.Ecs {
         private Filter _filter;
         private Stash<ViewContainerComponent> _viewContainers;
         
-        private readonly IViewContainersPool _viewContainersList;
+        private readonly IViewContainersManager _viewContainersList;
 
         [Inject]
-        public ViewPartAssignSystem(ViewSynchronizationApplier viewSynchronizationApplier, IViewContainersPool viewContainersList)
+        public ViewPartAssignSystem(ViewSynchronizationApplier viewSynchronizationApplier, IViewContainersManager viewContainersList)
         {
             ViewSyncApplier = viewSynchronizationApplier;
             _viewContainersList = viewContainersList;
@@ -57,7 +57,7 @@ namespace ZE.MechBattle.Ecs {
                 else
                 {
                     var key = Requests.Get(entity).Key;                    
-                    var view = viewContainer.View;
+                    var view = viewContainer.ContainedView;
                     if (view is IComplexMonoView complexView && complexView.TryGetPartByKey(key, out var viewPart))
                         OnPartFound(entity, viewPart);
 #if UNITY_EDITOR

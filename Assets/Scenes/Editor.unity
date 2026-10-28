@@ -643,7 +643,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitsSpawner
   RegisterAsVirtualPoint: 0
-  _playerId: 1
   _unitId: tank
   _count: 5
   _spawnRadiusInUnits: 0
@@ -822,7 +821,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitsSpawner
   RegisterAsVirtualPoint: 0
-  _playerId: 0
   _unitId: tank
   _count: 5
   _spawnRadiusInUnits: 0
@@ -985,7 +983,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitsSpawner
   RegisterAsVirtualPoint: 0
-  _playerId: 0
   _unitId: tank
   _count: 5
   _spawnRadiusInUnits: 0
@@ -1769,7 +1766,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitsSpawner
   RegisterAsVirtualPoint: 0
-  _playerId: 1
   _unitId: tank
   _count: 3
   _spawnRadiusInUnits: 0
@@ -1932,7 +1928,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitsSpawner
   RegisterAsVirtualPoint: 0
-  _playerId: 2
   _unitId: tank
   _count: 5
   _spawnRadiusInUnits: 0
@@ -1984,7 +1979,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitsSpawner
   RegisterAsVirtualPoint: 0
-  _playerId: 2
   _unitId: tank
   _count: 5
   _spawnRadiusInUnits: 0
@@ -2524,7 +2518,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitsSpawner
   RegisterAsVirtualPoint: 0
-  _playerId: 1
   _unitId: tank
   _count: 5
   _spawnRadiusInUnits: 0
@@ -2842,6 +2835,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1259888753}
   - component: {fileID: 1259888768}
+  - component: {fileID: 1259888769}
   m_Layer: 0
   m_Name: DEVELOP
   m_TagString: Untagged
@@ -2876,6 +2870,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bcd5924c13cd8db45b6aef6f8b6788cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.DevelopMechAffector
+--- !u!114 &1259888769
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259888751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27b3c5f342613c941baa3cd08d72e4b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.EnemySquadSpawnUtility
+  _playerId: 1
+  _unitId: tank
+  _unitsCount: 100
+  _hexCoord:
+    x: 0
+    y: 0
 --- !u!1 &1324568865
 GameObject:
   m_ObjectHideFlags: 0
@@ -3476,7 +3488,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitsSpawner
   RegisterAsVirtualPoint: 0
-  _playerId: 0
   _unitId: tank
   _count: 5
   _spawnRadiusInUnits: 0
@@ -3528,7 +3539,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitsSpawner
   RegisterAsVirtualPoint: 0
-  _playerId: 2
   _unitId: tank
   _count: 5
   _spawnRadiusInUnits: 0
@@ -3691,7 +3701,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitsSpawner
   RegisterAsVirtualPoint: 0
-  _playerId: 2
   _unitId: tank
   _count: 3
   _spawnRadiusInUnits: 0
@@ -3728,7 +3737,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitsSpawner
   RegisterAsVirtualPoint: 0
-  _playerId: 0
   _unitId: tank
   _count: 3
   _spawnRadiusInUnits: 0
@@ -3760,6 +3768,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1761267475}
   - component: {fileID: 1761267474}
+  - component: {fileID: 1761267476}
   m_Layer: 0
   m_Name: SceneScope
   m_TagString: Untagged
@@ -3786,6 +3795,7 @@ MonoBehaviour:
   - {fileID: 1259888751}
   _autoRegisterMonoBehaviours:
   - {fileID: 1247844289}
+  - {fileID: 1761267476}
 --- !u!4 &1761267475
 Transform:
   m_ObjectHideFlags: 0
@@ -3801,6 +3811,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1761267476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1761267473}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02161f3cc74a4f54d8723aab58e3c87a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MechBattle::ZE.MechBattle.LevelPlayerConfigs
+  _configs:
+  - Color: {r: 0.6039216, g: 0.8039216, b: 0.1960784, a: 1}
+  - Color: {r: 0.6980392, g: 0.1333333, b: 0.1333333, a: 1}
+  _localPlayerIndex: 0
 --- !u!1 &1776215855
 GameObject:
   m_ObjectHideFlags: 0
@@ -3912,6 +3938,63 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1776215855}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1001 &1790515920
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2226561520213593192, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 44
+      objectReference: {fileID: 0}
+    - target: {fileID: 2226561520213593192, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2226561520213593192, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2226561520213593192, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2226561520213593192, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2226561520213593192, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2226561520213593192, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2226561520213593192, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2226561520213593192, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2226561520213593192, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913121675166457278, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
+      propertyPath: m_Name
+      value: spawner_tower_view
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 0dc320bc3195e2a4894cbbc58599b7d4, type: 3}
 --- !u!1 &1846152337
 GameObject:
   m_ObjectHideFlags: 0
@@ -4421,7 +4504,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitsSpawner
   RegisterAsVirtualPoint: 0
-  _playerId: 1
   _unitId: tank
   _count: 5
   _spawnRadiusInUnits: 0
@@ -4456,3 +4538,4 @@ SceneRoots:
   - {fileID: 709837160}
   - {fileID: 1005800849}
   - {fileID: 601646811}
+  - {fileID: 1790515920}

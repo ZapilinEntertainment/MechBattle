@@ -1,5 +1,4 @@
 using UnityEngine;
-using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle
 {

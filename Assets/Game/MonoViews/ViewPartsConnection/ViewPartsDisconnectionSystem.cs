@@ -1,22 +1,24 @@
 using Scellecs.Morpeh;
-using VContainer;
 using Unity.IL2CPP.CompilerServices;
+using VContainer;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public sealed class ViewsDisposeSystem : ISystem 
+    public sealed class ViewPartsDisconnectionSystem : ISystem 
     {
         public World World { get; set;}
         private Filter _filter;
         private Stash<ViewContainerComponent> _viewContainers;
-        private readonly IViewContainersPool _viewContainersPool;
+        private readonly IViewContainersManager _viewContainersPool;
+        private readonly ViewPartConnectionsList _connectionsList;
 
         [Inject]
-        public ViewsDisposeSystem(IViewContainersPool viewContainersList)
+        public ViewPartsDisconnectionSystem(IViewContainersManager viewContainersPool, ViewPartConnectionsList connectionsList)
         {
-            _viewContainersPool = viewContainersList;
+            _viewContainersPool = viewContainersPool;
+            _connectionsList = connectionsList;
         }
 
         public void OnAwake() 
@@ -24,6 +26,7 @@ namespace ZE.MechBattle.Ecs {
             _filter = World.Filter
                 .With<EntityDisposeTag>()
                 .With<ViewContainerComponent>()
+                .With<ViewPartConnectedTag>()
                 .Build();
 
             _viewContainers = World.GetStash<ViewContainerComponent>();
@@ -33,12 +36,12 @@ namespace ZE.MechBattle.Ecs {
         {
             foreach (var entity in _filter)
             {
-                var containerId = _viewContainers.Get(entity).Id;
-                //UnityEngine.Debug.Log($"entity {entity.Id}, container: {containerId}, {_viewContainersPool.TryGetContainer(containerId, out _)}");
-                if (!_viewContainersPool.TryGetContainer(containerId, out var viewContainer))
+                var viewContainerId = _viewContainers.Get(entity).Id;
+                if (!_viewContainersPool.TryGetContainer(viewContainerId, out var viewContainer)
+                    || viewContainer is not IViewConnectionsPoint viewConnectionsPoint)
                     continue;
 
-                _viewContainersPool.Release(containerId);
+                _connectionsList.DisconnectAll(viewConnectionsPoint);
             }
         }
 
