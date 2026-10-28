@@ -1,6 +1,3 @@
-using Unity.Mathematics;
-using UnityEngine;
-
 namespace ZE.MechBattle.Views
 {
     public interface IViewContainer
