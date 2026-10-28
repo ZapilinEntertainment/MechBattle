@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using ZE.MechBattle.Ecs;
+using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle
 {
-    public class BuildingView : DisposableGameObject, IView, IBuildingView, IMultiColliderView
+    public class BuildingView : DisposableGameObject, IView, IBuildingView, IMultiColliderView, IViewContainer
     {
         [Serializable]
         public struct SerializedBlockZoneConfig
@@ -21,6 +22,7 @@ namespace ZE.MechBattle
         [SerializeField] private BuildingFunctionFlags _functionFlags;
         [SerializeField] private SerializedBlockZoneConfig _blockConfig;
         public BuildingFunctionFlags FunctionFlags => _functionFlags;
+        public IView ContainedView => this;
 
         public void FillCollidersList(ICollection<int> colliderInstanceIds)
         {
@@ -29,8 +31,6 @@ namespace ZE.MechBattle
                 colliderInstanceIds.Add(collider.GetInstanceID());
             }
         }
-
-        public IView GetView() => this;
 
         public bool TryGetBlockZoneConfig(out BlockZoneConfigComponent blockZoneConfigComponent)
         {
@@ -44,6 +44,11 @@ namespace ZE.MechBattle
            ? new(_blockConfig.Mode, _blockConfig.ExtentA, _blockConfig.ExtentB, _blockConfig.Flags)
            : new(_blockConfig.Mode, _blockConfig.ExtentA, _blockConfig.Flags);
             return true;
+        }
+
+        public void OnViewInstanced(IView prefab)
+        {
+            // todo: here can be replacing simple primitive view ( prefab model) to more detalized one
         }
     }
 }

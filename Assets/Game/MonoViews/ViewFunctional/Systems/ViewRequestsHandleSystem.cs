@@ -34,13 +34,13 @@ namespace ZE.MechBattle.Ecs
 
         private readonly FinalViewFunctionalApplier _finalViewApplier;
         private readonly ViewProviderFactory _viewProviderFactory;
-        private readonly IViewContainersPool _viewContainersList;
+        private readonly IViewContainersManager _viewContainersList;
         private readonly List<ViewRequest> _executableRequests = new();
 
         [Inject]
         public ViewRequestsHandleSystem(
             ViewProviderFactory viewProviderFactory, 
-            IViewContainersPool viewContainersList,
+            IViewContainersManager viewContainersList,
             FinalViewFunctionalApplier finalViewApplier)
         {
             _viewProviderFactory = viewProviderFactory;
