@@ -18,16 +18,18 @@ namespace ZE.MechBattle
         public override void SceneScopeInstall(IContainerBuilder builder)
         {
             base.SceneScopeInstall(builder);
-            builder.Register<WeaponFactory>(Lifetime.Scoped);
-            builder.Register<WeaponRaycasterFactory>(Lifetime.Scoped);
+            builder.Register<WeaponFactory>(Lifetime.Singleton);
+            builder.Register<WeaponRaycasterFactory>(Lifetime.Singleton);
 
             builder.Register<WeaponAimMarkerWorker>(Lifetime.Transient);
             builder.Register<UILaserEyesPanelWorker>(Lifetime.Transient);
 
-            builder.Register<WeaponHandler>(Lifetime.Scoped);
+            builder.Register<WeaponHandler>(Lifetime.Singleton);
 
-            builder.Register<IWeaponsManager, MechWeaponsManager>(Lifetime.Scoped).AsSelf();
-            builder.Register<IUnitFeatureApplier, UnitWeaponApplier>(Lifetime.Scoped);
+            builder.Register<IWeaponsManager, MechWeaponsManager>(Lifetime.Singleton).AsSelf();
+            builder.Register<IUnitFeatureApplier, UnitWeaponApplier>(Lifetime.Singleton);
+            builder.Register<IBuildingFeatureApplier, BuildingWeaponFeatureApplier>(Lifetime.Singleton);
+            builder.Register<EntityArmamentApplier>(Lifetime.Singleton);
         }
 
         protected override WeaponSystemsInstallQueue CreateQueue() => new();

@@ -1,10 +1,13 @@
+using System;
+
 namespace ZE.MechBattle
 {
-    public class UnitWeaponConfig : IUnitFeatureConfig
+    [Serializable]
+    public class EntityArmamentConfig : IUnitFeatureConfig
     {
         public float Damage;
         public float MaxPrecisionAberration;
-        public ProjectileWeaponConfig ProjectileConfig;
+        public WeaponConfigBase WeaponConfig;
         public ViewPartAttachmentProtocol AttachmentProtocol;
     }
 }

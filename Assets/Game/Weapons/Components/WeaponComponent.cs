@@ -1,5 +1,6 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
+using TriInspector;
 
 namespace ZE.MechBattle.Ecs {
     [System.Serializable]
@@ -8,7 +9,7 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public readonly struct WeaponComponent : IComponent 
     {
-        public readonly Entity CommandEntity;
+        [ShowInInspector, ReadOnly] public readonly Entity CommandEntity;
 
         public WeaponComponent(Entity commandEntity) => CommandEntity = commandEntity;
     

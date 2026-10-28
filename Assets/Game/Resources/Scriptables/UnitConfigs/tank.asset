@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: tank
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.UnitConfig
   <FeatureConfigs>k__BackingField:
-  - rid: 2151671145719660615
+  - rid: 2151671206545981511
   - rid: 2151671185847091272
   <Health>k__BackingField: 4
   <CollisionAvoidancePriority>k__BackingField: 1
@@ -25,12 +25,18 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2151671145719660615
-      type: {class: UnitWeaponConfig, ns: ZE.MechBattle, asm: MechBattle}
+    - rid: 2151671185847091272
+      type: {class: UnitCaptureConfig, ns: ZE.MechBattle, asm: MechBattle}
       data:
-        Damage: 5
+        <CaptureBehaviour>k__BackingField:
+          Type: 1
+          Value: 1
+    - rid: 2151671206545981511
+      type: {class: EntityArmamentConfig, ns: ZE.MechBattle, asm: MechBattle}
+      data:
+        Damage: 10
         MaxPrecisionAberration: 0.01
-        ProjectileConfig: {fileID: 11400000, guid: e264f1e7d88a2a24baf9c073915d807b, type: 2}
+        WeaponConfig: {fileID: 11400000, guid: e264f1e7d88a2a24baf9c073915d807b, type: 2}
         AttachmentProtocol:
           LocalPosition:
             x: 0
@@ -40,9 +46,3 @@ MonoBehaviour:
             x: 0
             y: 0
             z: 0
-    - rid: 2151671185847091272
-      type: {class: UnitCaptureConfig, ns: ZE.MechBattle, asm: MechBattle}
-      data:
-        <CaptureBehaviour>k__BackingField:
-          Type: 1
-          Value: 1

@@ -1,8 +1,9 @@
 using Scellecs.Morpeh;
 using VContainer;
 using Unity.Mathematics;
+using ZE.MechBattle.Ecs;
 
-namespace ZE.MechBattle.Ecs
+namespace ZE.MechBattle
 {
     public class WeaponFactory
     {

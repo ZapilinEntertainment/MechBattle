@@ -55,11 +55,13 @@ namespace ZE.MechBattle
             _raycastFirelinesTag.Remove(weaponEntity);
         }
 
-        public void OnAttachedToUnit(Entity weaponEntity, Entity unitEntity, float maxPrecisionAberration)
+        public void OnAttachedToEntity(Entity weaponEntity, Entity entity, WeaponAttachMode mode, float maxPrecisionAberration)
         {
+            if (mode == WeaponAttachMode.Unit)
+                _weaponComponents.Set(entity, new(weaponEntity));
+
             _aimPrecisionComponents.Add(weaponEntity, new(maxPrecisionAberration));
-            _weaponComponents.Set(unitEntity, new(weaponEntity));
-            _affinityHandler.SetEntityOwnerAffinity(weaponEntity, unitEntity);
+            _affinityHandler.SetEntityOwnerAffinity(weaponEntity, entity);
         }
 
         public void OnDetachedFromUnit(Entity weaponEntity, Entity unitEntity)
