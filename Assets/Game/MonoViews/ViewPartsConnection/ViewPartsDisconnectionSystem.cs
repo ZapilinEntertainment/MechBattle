@@ -11,11 +11,11 @@ namespace ZE.MechBattle.Ecs {
         public World World { get; set;}
         private Filter _filter;
         private Stash<ViewContainerComponent> _viewContainers;
-        private readonly IViewContainersPool _viewContainersPool;
+        private readonly IViewContainersManager _viewContainersPool;
         private readonly ViewPartConnectionsList _connectionsList;
 
         [Inject]
-        public ViewPartsDisconnectionSystem(IViewContainersPool viewContainersPool, ViewPartConnectionsList connectionsList)
+        public ViewPartsDisconnectionSystem(IViewContainersManager viewContainersPool, ViewPartConnectionsList connectionsList)
         {
             _viewContainersPool = viewContainersPool;
             _connectionsList = connectionsList;

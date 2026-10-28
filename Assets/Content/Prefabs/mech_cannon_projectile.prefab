@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7858883109342210593}
-  - component: {fileID: 4188922766936632206}
+  - component: {fileID: 5278962275158153150}
   m_Layer: 0
   m_Name: mech_cannon_projectile
   m_TagString: Untagged
@@ -33,7 +33,7 @@ Transform:
   - {fileID: 3965374666045115338}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4188922766936632206
+--- !u!114 &5278962275158153150
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -42,9 +42,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1225702290902235250}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 417ce653224b33644b7b5ea9f8442158, type: 3}
+  m_Script: {fileID: 11500000, guid: 8cde4fbea6793924299755c6a39a0fc8, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ZE.MechBattle.PoolableView
+  m_EditorClassIdentifier: MechBattle::ZE.MechBattle.PoolableMonoView
 --- !u!1 &7338090469124416798
 GameObject:
   m_ObjectHideFlags: 0

@@ -10,7 +10,7 @@ namespace ZE.MechBattle
     // b) most of operation object are not defined as mono-objects, but some interfaces instead
     public class ViewPartsConnectionHandler
     {
-        private readonly IViewContainersPool _viewContainersPool;
+        private readonly IViewContainersManager _viewContainersPool;
         private readonly ViewPartConnectionsList _connectionsList;
         private readonly TransformAccessManager _transformAccessManager;
 
@@ -20,7 +20,7 @@ namespace ZE.MechBattle
         [Inject]
         public ViewPartsConnectionHandler(
             World world,
-            IViewContainersPool viewContainersPool, 
+            IViewContainersManager viewContainersPool, 
             ViewPartConnectionsList viewPartConnectionsList,
             TransformAccessManager transformAccessManager)
         {

@@ -2835,6 +2835,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1259888753}
   - component: {fileID: 1259888768}
+  - component: {fileID: 1259888769}
   m_Layer: 0
   m_Name: DEVELOP
   m_TagString: Untagged
@@ -2869,6 +2870,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bcd5924c13cd8db45b6aef6f8b6788cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.DevelopMechAffector
+--- !u!114 &1259888769
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259888751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27b3c5f342613c941baa3cd08d72e4b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.EnemySquadSpawnUtility
+  _playerId: 1
+  _unitId: tank
+  _unitsCount: 100
+  _hexCoord:
+    x: 0
+    y: 0
 --- !u!1 &1324568865
 GameObject:
   m_ObjectHideFlags: 0

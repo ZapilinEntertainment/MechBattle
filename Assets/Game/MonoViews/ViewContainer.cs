@@ -1,5 +1,6 @@
 using UnityEngine;
 using TriInspector;
+using ZE.Utils;
 
 namespace ZE.MechBattle.Views
 {
@@ -11,39 +12,34 @@ namespace ZE.MechBattle.Views
     // - per-frame instancing can be limited
     // - no exceptions with no-view entity
     // - when visible view loads, it will be correctly synchronised to all entity components
-    public class ViewContainer : MonoBehaviour, IViewContainer, IMonoView, IViewConnectionsPoint
+    public class ViewContainer : SimpleView, IViewContainer, IViewConnectionsPoint, IPoolableObject<ViewContainer>
     {
-        public Transform Transform { get; private set; }
-        public GameObject GameObject { get; private set; }
-
-        public IView View { get; private set; }
-        [ShowInInspector] private MonoBehaviour ViewAsMono => View as MonoBehaviour;
-
-        // poolable
-        public void Dispose() 
-        {
-            if (View != null)
-            {
-                View.Dispose();
-                View = null;
-            }           
-        }
+        public IView ContainedView { get; private set; }
+        [ShowInInspector] private MonoBehaviour ViewAsMono => ContainedView as MonoBehaviour;
+        private IPoolElementReleaser<ViewContainer> _releaser;
 
         public void OnViewInstanced(IView instance) 
         {
-            View = instance;
-            View.SetParent(Transform);
+            ContainedView = instance;
+            ContainedView.SetParent(Transform);
         }
 
-        public void SetParent(Transform parent) => Transform.SetParent(parent, false);
-        
-
-        public void Init()
+        protected override void OnDisposed()
         {
-            Transform = transform;
-            GameObject = gameObject;
+            _releaser.Release(this);
         }
 
-        public void SetVisibility(bool x) => GameObject.SetActive(x);
+        public void OnRelease()
+        {
+            if (ContainedView != null)
+            {
+                ContainedView.Dispose();
+                ContainedView = null;
+            }
+        }
+
+        public void AssignReleaser(IPoolElementReleaser<ViewContainer> releaser) => _releaser = releaser;
+
+        public void OnGet() { }
     }
 }

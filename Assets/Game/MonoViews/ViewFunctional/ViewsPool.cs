@@ -1,61 +1,24 @@
 using UnityEngine;
-using UnityEngine.Pool;
+using ZE.Utils;
 
 namespace ZE.MechBattle.Views
 {
-    public class ViewsPool : IViewProvider, IViewsPool
+    public class ViewsPool : MonoViewPoolBase<PoolableMonoView>, IViewProvider
     {
-        private readonly ObjectPool<IPoolableView> _pool;
-        private readonly PoolableView _prefab;
-        private readonly Transform _host;
-        private const string HOST_NAME = "view_pool";
+
+        public ViewsPool(string assetName, PoolableMonoView prefab, Transform hostOfPools) : base(
+            prefab, 
+            hostOfPools,
+            assetName + "_pool",
+            defaultCapacity : 8,
+            maxCapacity: GameConstants.MAX_VIEWS_COUNT)
+        {
+        }
 
         public bool IsReadyToProvide => true;
 
-        public Transform HostObject => _host;
+        // TODO: need to specific assets capacity
 
-        public ViewsPool(PoolableView prefab)
-        {
-            _prefab = prefab;
-
-            var hostGo = new GameObject(HOST_NAME);
-            GameObject.DontDestroyOnLoad(hostGo);
-            _host = hostGo.transform;
-
-            _pool = new ObjectPool<IPoolableView>(
-                createFunc: CreateView,
-                actionOnGet: OnTakenFromPool,
-                actionOnRelease: OnReturnedToPool
-                );
-        }
-
-        private IPoolableView CreateView()
-        {
-            var view = GameObject.Instantiate( _prefab, _host );
-            view.OnCreated(this);
-            view.gameObject.SetActive(false);
-            return view;
-        }
-
-        private void OnTakenFromPool(IPoolableView view)
-        {
-            view.OnTakenFromPool();
-        }
-
-        private void OnReturnedToPool(IPoolableView view)
-        {
-            view.OnReturnedToPool();
-        }
-
-        public IView GetView() => _pool.Get();
-
-        public void Dispose()
-        {
-            _pool.Dispose();
-            if (_host != null)
-                GameObject.Destroy(_host.gameObject);
-        }
-
-        public void ReturnElement(IPoolableView view) => _pool.Release(view);
+        public IView GetView() => Get();
     }
 }

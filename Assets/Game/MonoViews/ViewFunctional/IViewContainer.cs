@@ -1,8 +1,10 @@
+using System;
+
 namespace ZE.MechBattle.Views
 {
-    public interface IViewContainer
+    public interface IViewContainer : IDisposable
     {
-        IView View { get; }
+        IView ContainedView { get; }
         void OnViewInstanced(IView prefab);
     }
 }

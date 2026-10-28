@@ -1,4 +1,5 @@
 using Scellecs.Morpeh;
+using UnityEngine;
 using VContainer;
 using ZE.MechBattle.Ecs;
 using ZE.MechBattle.Views;
@@ -6,7 +7,7 @@ using ZE.MechBattle.Views;
 namespace ZE.MechBattle
 {
     [System.Serializable]
-    public class MonoViewFeatureModule : EcsFeatureModule<MonoViewFeatureSystemsQueue>, ISceneFeatureInitializer
+    public class MonoViewFeatureModule : EcsFeatureModule<MonoViewFeatureSystemsQueue>, ISceneFeatureInitializer, IAppFeatureScopeInstaller
     {
         protected override MonoViewFeatureSystemsQueue CreateQueue() => new();
 
@@ -31,14 +32,22 @@ namespace ZE.MechBattle
             if (filter.IsEmpty())
                 return;
 
-            var viewContainersList = resolver.Resolve<ViewContainersPool>();
+            var viewContainersList = resolver.Resolve<ViewContainersManager>();
             var viewContainerStash = world.GetStash<ViewContainerComponent>();
             foreach (var entity in filter)
             {
                 var viewContainer = viewContainerStash.Get(entity);
                 viewContainersList.Release(viewContainer.Id);
             }
+        }
 
+        public void AppScopeInstall(IContainerBuilder builder)
+        {
+            var viewContainer = Resources.Load<ViewContainer>("viewContainerPrefab");
+            builder.RegisterInstance<ViewContainer>(viewContainer);
+
+            builder.Register<IViewContainersManager, ViewContainersManager>(Lifetime.Singleton);
+            builder.Register<ViewContainersFactory>(Lifetime.Singleton);
         }
     }
 }

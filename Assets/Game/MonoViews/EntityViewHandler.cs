@@ -10,10 +10,10 @@ namespace ZE.MechBattle
     {
         private readonly Stash<ViewContainerComponent> _viewContainers;
         private readonly Stash<ViewPartRequestComponent> _viewPartRequestComponents;
-        private readonly ViewContainersPool _viewContainersList;
+        private readonly IViewContainersManager _viewContainersList;
 
         [Inject]
-        public EntityViewHandler(World world,ViewContainersPool viewContainersList )
+        public EntityViewHandler(World world, IViewContainersManager viewContainersList )
         {
             _viewContainersList = viewContainersList;
             _viewContainers = world.GetStash<ViewContainerComponent>();
@@ -27,7 +27,7 @@ namespace ZE.MechBattle
             if (!viewContainerExists || !_viewContainersList.TryGetContainer(viewContainerComponent.Id, out var viewContainer))
                 return false;
 
-            view = viewContainer.View as T;            
+            view = viewContainer.ContainedView as T;            
             return view != null;
         }
 
@@ -41,15 +41,15 @@ namespace ZE.MechBattle
                 return;
             }
 
-            if (viewContainer.View is not IComplexMonoView complexMonoView)
+            if (viewContainer.ContainedView is not IComplexMonoView complexMonoView)
             {
-                UnityEngine.Debug.LogError($"this view does not contain parts: {viewContainer.name}");
+                UnityEngine.Debug.LogError($"this view does not contain parts: {(viewContainer.ContainedView as MonoBehaviour).name}");
                 return;
             }
 
             if (!complexMonoView.TryGetPartByKey(partKey, out var viewPart))
             {
-                UnityEngine.Debug.LogError($"{partKey.ToString()} of {viewContainer.name}'s view not found");
+                UnityEngine.Debug.LogError($"{partKey.ToString()} of {(viewContainer.ContainedView as MonoBehaviour).name}'s view not found");
                 return;
             }
 
