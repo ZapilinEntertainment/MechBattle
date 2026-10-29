@@ -6,7 +6,7 @@ using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle
 {
-    public class BuildingView : DisposableGameObject, IView, IBuildingView, IMultiColliderView, IViewContainer
+    public class BuildingView : DisposableGameObject, IView, IBuildingView, IMultiColliderView, IViewContainer, IComplexMonoView
     {
         [Serializable]
         public struct SerializedBlockZoneConfig
@@ -49,6 +49,18 @@ namespace ZE.MechBattle
         public void OnViewInstanced(IView prefab)
         {
             // todo: here can be replacing simple primitive view ( prefab model) to more detalized one
+        }
+
+        public bool TryGetPartByKey(ViewPartKey key, out IViewPart viewPart)
+        {
+            if (TryGetComponent<BuildingViewPartsComponent>(out var viewpartsComponent)
+                && viewpartsComponent.TryGetViewPart(key, out viewPart))
+            {
+                return true;
+            }
+
+            viewPart = default;
+            return false;
         }
     }
 }

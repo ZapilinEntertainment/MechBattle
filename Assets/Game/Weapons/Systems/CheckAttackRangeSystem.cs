@@ -18,8 +18,16 @@ namespace ZE.MechBattle.Ecs {
 
         public void OnAwake() 
         {
-            _checkFilter = World.Filter.With<WeaponRangeComponent>().With<WeaponTargetPositionComponent>().Build();
-            _disableFilter = World.Filter.With<AttackRangeReachedTag>().Without<WeaponTargetPositionComponent>().Build();
+            _checkFilter = World.Filter
+                .With<AttackTargetComponent>()
+                .With<WeaponRangeComponent>()
+                .With<WeaponTargetPositionComponent>()
+                .Build();
+
+            _disableFilter = World.Filter
+                .With<AttackRangeReachedTag>()
+                .Without<WeaponTargetPositionComponent>()
+                .Build();
 
             _weaponTargetPositions = World.GetStash<WeaponTargetPositionComponent>();
             _attackRangeReachedTags = World.GetStash<AttackRangeReachedTag>();

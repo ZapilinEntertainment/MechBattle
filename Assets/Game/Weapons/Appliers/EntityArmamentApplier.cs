@@ -29,7 +29,7 @@ namespace ZE.MechBattle.Weapons
                 WeaponControllerEntity = Entity,
 
                 UseAutoStow = !isAttachingToBuilding,
-                UseAutoShot = !isAttachingToBuilding,
+                UseAutoShot = true,                
 
                 DamageParameters = new(config.WeaponConfig.DamageType, config.Damage),
             });
