@@ -24,7 +24,7 @@ namespace ZE.MechBattle.Weapons
                 ParentEntity = Entity,
                 ViewOwnerEntity = Entity,
                 WeaponConfig = config.WeaponConfig,
-                AttachmentProtocol = config.AttachmentProtocol,
+                WeaponAttachmentProtocol = config.AttachmentProtocol,
 
                 WeaponControllerEntity = Entity,
 

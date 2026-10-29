@@ -12,6 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c9cf684c8b41224e8a5e1ff216b575a, type: 3}
   m_Name: sentry_gun
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.ProjectileWeaponConfig
+  <FeatureFlags>k__BackingField: 7
+  _featureConfigs:
+  - rid: 2151671262960418892
+  - rid: 2151671262960418893
+  - rid: 2151671262960418894
   <DamageType>k__BackingField: 1
   <MinRange>k__BackingField: 0
   <MaxRange>k__BackingField: 100
@@ -55,3 +60,47 @@ MonoBehaviour:
       XAngleDegreesLimit: 45
       YAngleDegreesLimit: 0
   _projectileId: tank_projectile
+  references:
+    version: 2
+    RefIds:
+    - rid: 2151671262960418892
+      type: {class: WeaponTowerFeatureConfig, ns: ZE.MechBattle.Weapons, asm: MechBattle}
+      data:
+        <AutoStow>k__BackingField: 1
+        <RotationSpeedDegrees>k__BackingField: 90
+        <LocalPosition>k__BackingField:
+          x: 0
+          y: 0
+          z: 0
+        <ViewPartKey>k__BackingField:
+          Type: 1
+          Index: 0
+        <FwdRotationLimits>k__BackingField:
+          LimitAxleRotation:
+            x: 0
+            y: 0
+          XAngleDegreesLimit: 0
+          YAngleDegreesLimit: 0
+    - rid: 2151671262960418893
+      type: {class: WeaponBarrelConfig, ns: ZE.MechBattle.Weapons, asm: MechBattle}
+      data:
+        <AutoStow>k__BackingField: 0
+        <RotationSpeedDegrees>k__BackingField: 45
+        <LocalPosition>k__BackingField:
+          x: 0
+          y: 0
+          z: 0.66
+        <ViewPartKey>k__BackingField:
+          Type: 2
+          Index: 0
+        <FwdRotationLimits>k__BackingField:
+          LimitAxleRotation:
+            x: 1
+            y: 0
+          XAngleDegreesLimit: 45
+          YAngleDegreesLimit: 0
+    - rid: 2151671262960418894
+      type: {class: WeaponProjectileFiringConfig, ns: ZE.MechBattle, asm: MechBattle}
+      data:
+        <AimCheckMethod>k__BackingField: 0
+        _projectileId: tank_projectile

@@ -12,10 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 348cfce9a03663141ab74f20eea0627f, type: 3}
   m_Name: LaserEyes
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.MechRayWeaponConfig
+  <FeatureFlags>k__BackingField: 10
+  _featureConfigs:
+  - rid: 2151671262960418900
+  - rid: 2151671262960418901
   <DamageType>k__BackingField: 2
   <MinRange>k__BackingField: 0
-  <RecommendedRangePc>k__BackingField: 0.8
   <MaxRange>k__BackingField: 250
+  <RecommendedRangePc>k__BackingField: 0.8
   <Cooldown>k__BackingField: 5
   <ShotPoint>k__BackingField:
     x: 0
@@ -62,3 +66,29 @@ MonoBehaviour:
     DischargeTime: 3
     DischargeEnergyCost: 0
     ManualReleaseMinPercent: 0.5
+  references:
+    version: 2
+    RefIds:
+    - rid: 2151671262960418900
+      type: {class: WeaponBarrelConfig, ns: ZE.MechBattle.Weapons, asm: MechBattle}
+      data:
+        <AutoStow>k__BackingField: 0
+        <RotationSpeedDegrees>k__BackingField: 180
+        <LocalPosition>k__BackingField:
+          x: 0
+          y: 0
+          z: 0
+        <ViewPartKey>k__BackingField:
+          Type: 9
+          Index: 0
+        <FwdRotationLimits>k__BackingField:
+          LimitAxleRotation:
+            x: 0
+            y: 0
+          XAngleDegreesLimit: 0
+          YAngleDegreesLimit: 0
+    - rid: 2151671262960418901
+      type: {class: WeaponRaycastFiringConfig, ns: ZE.MechBattle, asm: MechBattle}
+      data:
+        <AimCheckMethod>k__BackingField: 0
+        _raycastEffectId: default_ray_effect

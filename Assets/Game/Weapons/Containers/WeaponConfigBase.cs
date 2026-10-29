@@ -1,21 +1,44 @@
 using Unity.Mathematics;
 using UnityEngine;
+using ZE.MechBattle.Weapons;
 
 namespace ZE.MechBattle
 {
-    public abstract class WeaponConfigBase : ScriptableObject
+    public abstract class WeaponConfigBase : ScriptableObject, IWeaponConfig
     {
+        [field: SerializeField] public WeaponFeatureFlags FeatureFlags { get; private set; }
+        [SerializeReference] private IWeaponFeatureConfig[] _featureConfigs;
+        public bool TryGetFeatureConfig<T>(out T config) where T : IWeaponFeatureConfig
+        {
+            foreach (var featureConfig in _featureConfigs)
+            {
+                if (featureConfig is T requiredConfig)
+                {
+                    config = requiredConfig;
+                    return true;
+                }
+            }
+
+            config = default;
+            return false;
+        }
+
+
         [field: SerializeField] public DamageType DamageType { get; private set; }
         [field: SerializeField] public float MinRange { get; private set; }        
         [field: SerializeField] public float MaxRange { get; private set; }
         [field: SerializeField, Range(0, 1)] public float RecommendedRangePc { get; private set; } = 0.8f;
         [field: SerializeField] public float Cooldown { get; private set; }
         [field: SerializeField] public float3 ShotPoint { get; private set; }
+
         [SerializeField] private string _muzzleEffectId;
         [SerializeField] private WeaponPartAttachmentProtocol _towerAttachmentProtocol;
         [SerializeField] private WeaponPartAttachmentProtocol _barrelAttachmentProtocol;
         public float RecommendedRange => math.lerp(MinRange, MaxRange, RecommendedRangePc);
         public abstract bool ContinuousFiring { get; }
+        public abstract WeaponAimCheckMethod AimCheckMethod { get; }
+
+    
 
         public abstract bool TryGetProjectileId(out string projectileId);
         public abstract bool TryGetRayEffectId(out string rayEffectId);
@@ -45,5 +68,7 @@ namespace ZE.MechBattle
             protocol = _barrelAttachmentProtocol;
             return protocol.IsValid;
         }
+
+        
     }
 }

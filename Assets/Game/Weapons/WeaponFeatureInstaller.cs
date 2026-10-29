@@ -29,7 +29,15 @@ namespace ZE.MechBattle
             builder.Register<IWeaponsManager, MechWeaponsManager>(Lifetime.Singleton).AsSelf();
             builder.Register<IUnitFeatureApplier, UnitWeaponApplier>(Lifetime.Singleton);
             builder.Register<IBuildingFeatureApplier, BuildingWeaponFeatureApplier>(Lifetime.Singleton);
+
+            builder.Register<WeaponPartsApplier>(Lifetime.Singleton);
+            builder.Register<IWeaponFeatureApplier, TowerPartsApplier>(Lifetime.Singleton);
+            builder.Register<IWeaponFeatureApplier, BarrelPartsApplier>(Lifetime.Singleton);
+            builder.Register<IWeaponFeatureApplier, WeaponProjectileFireApplier>(Lifetime.Singleton);
+            builder.Register<IWeaponFeatureApplier, WeaponRaycastFireApplier>(Lifetime.Singleton);
+
             builder.Register<EntityArmamentApplier>(Lifetime.Singleton);
+            builder.Register<AimMethodApplier>(Lifetime.Singleton);
         }
 
         protected override WeaponSystemsInstallQueue CreateQueue() => new();

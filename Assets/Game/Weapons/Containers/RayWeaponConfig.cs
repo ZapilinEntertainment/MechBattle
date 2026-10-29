@@ -9,6 +9,8 @@ namespace ZE.MechBattle
 
         public override bool ContinuousFiring => true;
 
+        public override WeaponAimCheckMethod AimCheckMethod => throw new System.NotImplementedException();
+
         public override bool TryGetProjectileId(out string projectileId)
         {
             projectileId = default;

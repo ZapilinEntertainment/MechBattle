@@ -12,6 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b43a1d0f6fbb3f4191bc547f7715197, type: 3}
   m_Name: DefaultMechGun
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.MechProjectileWeaponConfig
+  <FeatureFlags>k__BackingField: 6
+  _featureConfigs:
+  - rid: 2151671262960418898
+  - rid: 2151671262960418899
   <DamageType>k__BackingField: 1
   <MinRange>k__BackingField: 100
   <MaxRange>k__BackingField: 500
@@ -56,3 +60,29 @@ MonoBehaviour:
       YAngleDegreesLimit: 45
   _projectileId: mech_cannon_projectile
   _shotEnergyCost: 25
+  references:
+    version: 2
+    RefIds:
+    - rid: 2151671262960418898
+      type: {class: WeaponBarrelConfig, ns: ZE.MechBattle.Weapons, asm: MechBattle}
+      data:
+        <AutoStow>k__BackingField: 0
+        <RotationSpeedDegrees>k__BackingField: 35
+        <LocalPosition>k__BackingField:
+          x: 0
+          y: 0
+          z: 0
+        <ViewPartKey>k__BackingField:
+          Type: 2
+          Index: 0
+        <FwdRotationLimits>k__BackingField:
+          LimitAxleRotation:
+            x: 1
+            y: 1
+          XAngleDegreesLimit: 32
+          YAngleDegreesLimit: 45
+    - rid: 2151671262960418899
+      type: {class: WeaponProjectileFiringConfig, ns: ZE.MechBattle, asm: MechBattle}
+      data:
+        <AimCheckMethod>k__BackingField: 0
+        _projectileId: mech_cannon_projectile

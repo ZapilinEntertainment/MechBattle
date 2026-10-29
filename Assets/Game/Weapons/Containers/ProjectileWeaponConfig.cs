@@ -1,5 +1,4 @@
 using UnityEngine;
-using Unity.Mathematics;
 
 namespace ZE.MechBattle
 {
@@ -9,6 +8,8 @@ namespace ZE.MechBattle
         [SerializeField] private string _projectileId;
 
         public override bool ContinuousFiring => false;
+
+        public override WeaponAimCheckMethod AimCheckMethod => throw new System.NotImplementedException();
 
         public override bool TryGetProjectileId(out string projectileId)
         {

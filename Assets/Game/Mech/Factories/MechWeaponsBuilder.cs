@@ -112,7 +112,7 @@ namespace ZE.MechBattle.MechBuilding
                 ParentEntity = parent,
                 WeaponControllerEntity = _mainBuilder.MechEntity,
 
-                AttachmentProtocol = partAttachmentProtocol,
+                WeaponAttachmentProtocol = partAttachmentProtocol,
                 SyncTargetWithParent = true,
                 AlwaysCalculateShotPoint = true,
 
@@ -164,7 +164,7 @@ namespace ZE.MechBattle.MechBuilding
         {
             var eyeEntity = _weaponFactory.CreateWeapon(new()
             {
-                AttachmentProtocol = constructionSettings.AttachProtocol,
+                WeaponAttachmentProtocol = constructionSettings.AttachProtocol,
                 DamageParameters = new(_laserEyesConfig.DamageType, DevelopConstants.TEMP_EyesDamage),
                 WeaponConfig = _laserEyesConfig,
                 ParentEntity = headEntity,

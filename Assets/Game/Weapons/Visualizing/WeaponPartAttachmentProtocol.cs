@@ -4,6 +4,7 @@ using Unity.Mathematics;
 namespace ZE.MechBattle
 {
     [Serializable]
+    [System.Obsolete]
     public struct WeaponPartAttachmentProtocol
     {
         public bool IsValid;
