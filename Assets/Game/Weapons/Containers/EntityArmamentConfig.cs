@@ -7,7 +7,7 @@ namespace ZE.MechBattle
     {
         public float Damage;
         public float MaxPrecisionAberration;
-        public WeaponConfigBase WeaponConfig;
+        public WeaponConfig WeaponConfig;
         public ViewPartAttachmentProtocol AttachmentProtocol;
     }
 }

@@ -184,6 +184,7 @@ namespace ZE.MechBattle.Ecs
             _targetEntitiesData.Dispose();
             _handlingEntitiesData.Dispose();
             _handlingEntitiesCount.Dispose();
+            _resultingArray.Dispose();
         }
 
         private void UpdateRelationsMask()

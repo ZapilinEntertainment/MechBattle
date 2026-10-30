@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using Scellecs.Morpeh;
 using VContainer;
 using Unity.Mathematics;
 using ZE.MechBattle.Ecs;
+using ZE.MechBattle.Weapons;
 
 namespace ZE.MechBattle
 {
@@ -13,26 +15,14 @@ namespace ZE.MechBattle
         private readonly TransformAspectHandler _transformAspectHandler;
         private readonly WeaponHandler _weaponHandler;
 
+        private readonly List<IWeaponFeatureApplier> _featureAppliers;
+
         private readonly Stash<WeaponRangeComponent> _ranges;
         private readonly Stash<WeaponLoadingComponent> _weaponUpdateComponents;        
         private readonly Stash<WeaponMuzzleEffectComponent> _muzzleEffects;
-        private readonly Stash<WeaponTowerComponent> _weaponTowerComponents;
-        private readonly Stash<WeaponBarrelComponent> _weaponBarrelComponents;
         private readonly Stash<WeaponShotPoint> _weaponShotPoints;        
-        private readonly Stash<RotationSpeedComponent> _rotationSpeedComponents;
-
-        private readonly Stash<ViewPartRequestComponent> _viewPartRequests;
-        private readonly Stash<WeaponTowerStowTag> _towerStowTag;
-        private readonly Stash<WeaponBarrelStowTag> _barrelStowTag;
-     
-        private readonly Stash<LocalRotationLimitComponent> _localRotationLimits;
 
         private readonly Stash<DamageComponent> _damageComponents;
-
-        private readonly Stash<WeaponProjectileComponent> _weaponProjectileComponents;
-        private readonly Stash<WeaponRayComponent> _weaponRayComponents;
-
-        private readonly Stash<ContinuosFiringTag> _continuosFiringTag;
 
         private readonly Stash<SyncWithParentTargetTag> _syncTargetWithParent;
         private readonly Stash<SyncFireTagWithParentTag> _syncFireTagWithParent;
@@ -41,13 +31,16 @@ namespace ZE.MechBattle
 
         private readonly Stash<AlwaysCalculateShotPointTag> _alwaysCalculateShotPointsTag;
 
+        private readonly Stash<ContinuosFiringTag> _continuousFiringTags;
+
         [Inject]
         public WeaponFactory(
             World world, 
             ParentingRelationsApplier parentingRelationsApplier, 
             StringDataDictionary stringDataDictionary,
             TransformAspectHandler transformAspectHandler,
-            WeaponHandler weaponHandler)
+            WeaponHandler weaponHandler,
+            IEnumerable<IWeaponFeatureApplier> featureAppliers)
         {
             _world = world;
             _parentingRelationsApplier = parentingRelationsApplier;
@@ -55,47 +48,50 @@ namespace ZE.MechBattle
             _transformAspectHandler = transformAspectHandler;
             _weaponHandler = weaponHandler;
 
+            if (featureAppliers != null)
+            {
+                _featureAppliers = new(8);
+                foreach (var featureApplier in featureAppliers)
+                {
+                    _featureAppliers.Add(featureApplier);
+                }
+                _featureAppliers.Sort();
+            }
+            else
+            {
+                _featureAppliers = new(0);
+            }
+           
+
             _ranges = _world.GetStash<WeaponRangeComponent>();
             _weaponUpdateComponents = world.GetStash<WeaponLoadingComponent>();
             _muzzleEffects = world.GetStash<WeaponMuzzleEffectComponent>();            
-
-            _weaponTowerComponents = world.GetStash<WeaponTowerComponent>();
-            _weaponBarrelComponents = world.GetStash<WeaponBarrelComponent>();
 
             _weaponShotPoints = world.GetStash<WeaponShotPoint>();
 
             _syncTargetWithParent = world.GetStash<SyncWithParentTargetTag>();
             _syncFireTagWithParent = world.GetStash<SyncFireTagWithParentTag>();
 
-            _viewPartRequests = world.GetStash<ViewPartRequestComponent>();
-            _towerStowTag = world.GetStash<WeaponTowerStowTag>();
-            _barrelStowTag = world.GetStash<WeaponBarrelStowTag>();
-
-            _rotationSpeedComponents = world.GetStash<RotationSpeedComponent>();
-            _localRotationLimits = world.GetStash<LocalRotationLimitComponent>();
-
             _damageComponents = world.GetStash<DamageComponent>();
-            _weaponProjectileComponents = world.GetStash<WeaponProjectileComponent>();
-            _weaponRayComponents = world.GetStash<WeaponRayComponent>();
-
-            _continuosFiringTag = world.GetStash<ContinuosFiringTag>();
             _weaponComponents = world.GetStash<WeaponComponent>();
 
             _alwaysCalculateShotPointsTag = world.GetStash<AlwaysCalculateShotPointTag>();
+
+            _continuousFiringTags = world.GetStash<ContinuosFiringTag>();
         }
 
         public struct WeaponCreationProtocol
         {
             public Entity ParentEntity;
             public Entity WeaponControllerEntity;
-            public WeaponConfigBase WeaponConfig;
-            public ViewPartAttachmentProtocol AttachmentProtocol;
+            public IWeaponConfig WeaponConfig;
+            public ViewPartAttachmentProtocol WeaponAttachmentProtocol;
 
-            public bool UseAutoShot;
-            public bool UseAutoStow;
             public bool SyncTargetWithParent;
             public bool SyncFireTagWithParent;
             public bool AlwaysCalculateShotPoint;
+            public bool UseAutoShot;
+            public bool UseAutoStow;
             public Entity ViewOwnerEntity;
 
             public DamageApplyParameters DamageParameters;
@@ -113,67 +109,37 @@ namespace ZE.MechBattle
             {
                 ParentEntity = protocol.ParentEntity,
                 ChildEntity = weaponEntity,
-                LocalPos = protocol.AttachmentProtocol.LocalPosition,
-                LocalRot = protocol.AttachmentProtocol.LocalRotation,
+                LocalPos = protocol.WeaponAttachmentProtocol.LocalPosition,
+                LocalRot = protocol.WeaponAttachmentProtocol.LocalRotation,
                 ViewOwnerEntity = viewOwnerEntity
             });
-                
-            var addTower = weaponConfig.TryGetTowerAttachmentProtocol(out var towerAttachmentProtocol);
-            Entity towerEntity;
-            if (addTower)
+
+            var constructionProtocol = new WeaponConstructionProtocol()
             {
-                towerEntity = AttachWeaponPart(weaponEntity, viewOwnerEntity, towerAttachmentProtocol);
-                _viewPartRequests.Add(towerEntity, new(towerAttachmentProtocol.ViewPartKey));
+                WeaponEntity = weaponEntity,
+                WeaponConfig = weaponConfig,
+                ViewOwnerEntity = viewOwnerEntity,
+                AutoStow = protocol.UseAutoStow
+            };
 
-                _weaponTowerComponents.Add(weaponEntity, new(towerEntity));
-                if (protocol.UseAutoStow) 
-                    _towerStowTag.Add(towerEntity);
+            ApplySimpleFeatures(weaponEntity, weaponConfig.FeatureFlags);
 
-                if (math.any( towerAttachmentProtocol.FwdRotationLimits.LimitAxleRotation))
-                    _localRotationLimits.Set(towerEntity, new(towerAttachmentProtocol.FwdRotationLimits));
-
-                //UnityEngine.Debug.Log($"built tower with id {towerEntity.Id}");
-            }
-            else
+            foreach (var featureApplier in _featureAppliers)
             {
-                towerEntity = default;
+                if ((featureApplier.RequiredFlags & weaponConfig.FeatureFlags) == featureApplier.RequiredFlags)
+                    featureApplier.Apply(ref constructionProtocol);
             }
 
-            if (weaponConfig.TryGetBarrelAttachmentProtocol(out var barrelAttachmentProtocol))
-            {
-                var barrelEntity = AttachWeaponPart(parentEntity: addTower ? towerEntity : weaponEntity, viewOwnerEntity, barrelAttachmentProtocol);
-
-                _viewPartRequests.Add(barrelEntity, new(barrelAttachmentProtocol.ViewPartKey));
-                _weaponBarrelComponents.Add(weaponEntity, new(barrelEntity));
-
-                if (protocol.UseAutoStow)
-                    _barrelStowTag.Add(barrelEntity);
-
-                if (math.any(barrelAttachmentProtocol.FwdRotationLimits.LimitAxleRotation))
-                    _localRotationLimits.Set(barrelEntity, new(barrelAttachmentProtocol.FwdRotationLimits));
-
-                // UnityEngine.Debug.Log($"built barrel with id {barrelEntity.Id}");
-            }
-
-            ApplyWeaponComponents(weaponEntity, protocol);
+            ApplyBasicWeaponComponents(weaponEntity, weaponConfig);
+            ApplyProtocolSpecificComponents(weaponEntity, protocol);
 
             return weaponEntity;
         }
 
-        public void ApplyWeaponComponents(Entity weaponEntity, WeaponCreationProtocol protocol)
+        private void ApplyProtocolSpecificComponents(Entity weaponEntity, in WeaponCreationProtocol protocol)
         {
             _weaponComponents.Add(weaponEntity, new(protocol.WeaponControllerEntity));
 
-            var weaponConfig = protocol.WeaponConfig;
-
-            if (weaponConfig.TryGetMuzzleEffectId(out var muzzleEffectId))
-            {
-                var idKey = _stringDictionary.StringToKey(muzzleEffectId);
-                var vfxKey = new VfxKey(idKey);
-                _muzzleEffects.Add(weaponEntity, new(vfxKey));
-            }
-
-            _weaponShotPoints.Add(weaponEntity, new(weaponConfig.ShotPoint));
             if (protocol.AlwaysCalculateShotPoint)
                 _alwaysCalculateShotPointsTag.Add(weaponEntity);
 
@@ -183,53 +149,34 @@ namespace ZE.MechBattle
             if (protocol.SyncFireTagWithParent)
                 _syncFireTagWithParent.Add(weaponEntity);
 
-
-            SetupAttackComponents(weaponEntity, protocol);
-        }
-
-        private void SetupAttackComponents(Entity weaponEntity, WeaponCreationProtocol protocol)
-        {
-            var weaponConfig = protocol.WeaponConfig;
-
-            if (weaponConfig.TryGetProjectileId(out var projectileId))
-                _weaponProjectileComponents.Add(weaponEntity, new(_stringDictionary.StringToKey(projectileId)));
-
-            if (weaponConfig.TryGetRayEffectId(out var rayEffectId))
-                _weaponRayComponents.Add(weaponEntity, new(_stringDictionary.StringToKey(rayEffectId)));
-
             if (protocol.DamageParameters.IsValid)
                 _damageComponents.Add(weaponEntity, new() { DamageParameters = protocol.DamageParameters });
 
+            if (protocol.UseAutoShot)
+                _weaponHandler.OnAutoshotEnabled(weaponEntity);
+        }
+
+
+        // todo: rework to discrete applier if any data needed in other appliers
+        private void ApplyBasicWeaponComponents(Entity weaponEntity, IWeaponConfig weaponConfig)
+        {
             _ranges.Add(weaponEntity, new(weaponConfig.MinRange, weaponConfig.MaxRange, weaponConfig.RecommendedRangePc));
             _weaponUpdateComponents.Add(weaponEntity, new(weaponConfig.Cooldown));
 
-            if (protocol.UseAutoShot)
-                _weaponHandler.OnAutoshotEnabled(weaponEntity);
+            if (weaponConfig.TryGetMuzzleEffectId(out var muzzleEffectId))
+            {
+                var idKey = _stringDictionary.StringToKey(muzzleEffectId);
+                var vfxKey = new VfxKey(idKey);
+                _muzzleEffects.Add(weaponEntity, new(vfxKey));
+            }
 
-            if (weaponConfig.ContinuousFiring)
-                _continuosFiringTag.Add(weaponEntity);
+            _weaponShotPoints.Add(weaponEntity, new(weaponConfig.ShotPoint));
         }
 
-        private Entity AttachWeaponPart(Entity parentEntity, Entity viewOwnerEntity, WeaponPartAttachmentProtocol protocol)
+        private void ApplySimpleFeatures(Entity weaponEntity, WeaponFeatureFlags flags)
         {
-            var weaponPartEntity = _world.CreateEntity();
-            _transformAspectHandler.InitializePositionAndRotationComponents(weaponPartEntity);
-            _parentingRelationsApplier.Apply(new()
-            {
-                ChildEntity = weaponPartEntity,
-                ParentEntity = parentEntity,
-                LocalPos = protocol.LocalPosition,
-                LocalRot = quaternion.identity,
-                ViewOwnerEntity = viewOwnerEntity
-            });
-
-            var rotationSpeedDegrees = protocol.RotationSpeedDegrees;
-            if (rotationSpeedDegrees != 0f)
-                _rotationSpeedComponents.Add(weaponPartEntity, new(math.radians(rotationSpeedDegrees)));
-
-            _syncTargetWithParent.Add(weaponPartEntity);
-
-            return weaponPartEntity;
+            if (flags.HasFlag(WeaponFeatureFlags.ContinuousFiring))
+                _continuousFiringTags.Add(weaponEntity);
         }
     }
 }

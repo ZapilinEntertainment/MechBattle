@@ -36,7 +36,7 @@ MonoBehaviour:
       data:
         Damage: 10
         MaxPrecisionAberration: 0.01
-        WeaponConfig: {fileID: 11400000, guid: e264f1e7d88a2a24baf9c073915d807b, type: 2}
+        WeaponConfig: {fileID: 11400000, guid: 74279dbdd0fa75d409e405ade2eef81e, type: 2}
         AttachmentProtocol:
           LocalPosition:
             x: 0

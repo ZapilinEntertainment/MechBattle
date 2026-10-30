@@ -12,22 +12,23 @@ namespace ZE.MechBattle.MechBuilding
         private readonly EntityViewHandler _viewHandler;
         private readonly MonoViewFactory _viewFactory;
         private readonly MechWeaponsManager _weaponsManager;
-        private readonly World _world;
+        private readonly AimMethodApplier _aimMethodApplier;
 
-        private readonly Stash<WeaponKeyComponent> _weaponKeyComponents;
+        private readonly Stash<WeaponKeyComponent> _weaponKeyComponents;               
+        private readonly Stash<EnergySourceComponent> _energySourceComponents;
+
+        private readonly Stash<WeaponDischargeEnergyConsumption> _dischargeEnergyCosts;
+        private readonly Stash<WeaponChargeEnergyConsumption> _chargeEnergyCosts;
+        private readonly Stash<ShotEnergyCostComponent> _shotEnergyCosts;
         private readonly Stash<WeaponChargeComponent> _weaponChargeComponents;
         private readonly Stash<ContinuosFiringTag> _continuousFiringTags;
-        private readonly Stash<ShotEnergyCostComponent> _shotEnergyCosts;
-        private readonly Stash<WeaponChargeEnergyConsumption> _chargeEnergyCosts;
-        private readonly Stash<WeaponDischargeEnergyConsumption> _dischargeEnergyCosts;
-        private readonly Stash<EnergySourceComponent> _energySourceComponents;
 
         private MechBuilder _mainBuilder;
         private MechConfig _mechConfig;
         private MechEnergyModuleBuilder _energyModuleBuilder;
-        private WeaponConfigBase _mainWeaponConfigLeft;
-        private WeaponConfigBase _mainWeaponConfigRight;
-        private WeaponConfigBase _laserEyesConfig;
+        private WeaponConfig _mainWeaponConfigLeft;
+        private WeaponConfig _mainWeaponConfigRight;
+        private WeaponConfig _laserEyesConfig;
 
         [Inject]
         public MechWeaponsBuilder(
@@ -36,7 +37,8 @@ namespace ZE.MechBattle.MechBuilding
             WeaponHandler weaponHandler,
             EntityViewHandler viewHandler,
             MonoViewFactory viewFactory,
-            MechWeaponsManager weaponsManager
+            MechWeaponsManager weaponsManager,
+            AimMethodApplier aimMethodApplier
             )
         {
             _weaponFactory = weaponFactory;
@@ -44,25 +46,25 @@ namespace ZE.MechBattle.MechBuilding
             _weaponHandler = weaponHandler;
             _viewFactory = viewFactory;
             _weaponsManager = weaponsManager;
-            _world = world;
+            _aimMethodApplier = aimMethodApplier;
 
             _weaponKeyComponents = world.GetStash<WeaponKeyComponent>();
+            _energySourceComponents = world.GetStash<EnergySourceComponent>();
+
+            _dischargeEnergyCosts = world.GetStash<WeaponDischargeEnergyConsumption>();
+            _chargeEnergyCosts = world.GetStash<WeaponChargeEnergyConsumption>();
+            _shotEnergyCosts = world.GetStash<ShotEnergyCostComponent>();
             _weaponChargeComponents = world.GetStash<WeaponChargeComponent>();
             _continuousFiringTags = world.GetStash<ContinuosFiringTag>();
-            _shotEnergyCosts = world.GetStash<ShotEnergyCostComponent>();
-
-            _chargeEnergyCosts = world.GetStash<WeaponChargeEnergyConsumption>();
-            _dischargeEnergyCosts = world.GetStash<WeaponDischargeEnergyConsumption>();
-            _energySourceComponents = world.GetStash<EnergySourceComponent>();
         }
 
         public void BuildWeapons(
             MechBuilder mechBuilder, 
             MechConfig mechConfig,
             MechEnergyModuleBuilder energyModuleBuilder,
-            WeaponConfigBase mainWeaponConfigLeft,
-            WeaponConfigBase mainWeaponConfigRight,
-            WeaponConfigBase laserEyesConfig)
+            WeaponConfig mainWeaponConfigLeft,
+            WeaponConfig mainWeaponConfigRight,
+            WeaponConfig laserEyesConfig)
         {
             _mainBuilder = mechBuilder;
             _energyModuleBuilder = energyModuleBuilder;
@@ -92,7 +94,7 @@ namespace ZE.MechBattle.MechBuilding
             _weaponsManager.AddWeapon(mechEntity, mainWeaponRight, rightWeaponKey);
         }
 
-        private Entity BuildSlotEquipment(Entity parent, MechSlot slot, string equipmentId, WeaponConfigBase weaponConfig)
+        private Entity BuildSlotEquipment(Entity parent, MechSlot slot, string equipmentId, WeaponConfig weaponConfig)
         {
             // todo: different types of equipment, not only weapons
             if (!_mechConfig.TryGetSlotInfo(slot, out var slotInfo))
@@ -104,7 +106,7 @@ namespace ZE.MechBattle.MechBuilding
             return BuildMechWeapon(parent, equipmentId, weaponConfig, slotInfo.AttachmentProtocol);
         }
 
-        private Entity BuildMechWeapon(Entity parent, string weaponId, WeaponConfigBase weaponConfig, ViewPartAttachmentProtocol partAttachmentProtocol)
+        private Entity BuildMechWeapon(Entity parent, string weaponId, WeaponConfig weaponConfig, ViewPartAttachmentProtocol partAttachmentProtocol)
         {
             var weaponEntity = _weaponFactory.CreateWeapon(new()
             {
@@ -112,7 +114,7 @@ namespace ZE.MechBattle.MechBuilding
                 ParentEntity = parent,
                 WeaponControllerEntity = _mainBuilder.MechEntity,
 
-                AttachmentProtocol = partAttachmentProtocol,
+                WeaponAttachmentProtocol = partAttachmentProtocol,
                 SyncTargetWithParent = true,
                 AlwaysCalculateShotPoint = true,
 
@@ -120,8 +122,7 @@ namespace ZE.MechBattle.MechBuilding
             });
             _viewFactory.MakeViewReceiver(weaponEntity, weaponId + "_view");
 
-            if (weaponConfig is IMechWeaponConfig mechWeaponConfig)
-                AddMechSpecificComponents(weaponEntity, mechWeaponConfig);
+            AddMechSpecificComponents(weaponEntity);
 
             return weaponEntity;
         }
@@ -164,7 +165,7 @@ namespace ZE.MechBattle.MechBuilding
         {
             var eyeEntity = _weaponFactory.CreateWeapon(new()
             {
-                AttachmentProtocol = constructionSettings.AttachProtocol,
+                WeaponAttachmentProtocol = constructionSettings.AttachProtocol,
                 DamageParameters = new(_laserEyesConfig.DamageType, DevelopConstants.TEMP_EyesDamage),
                 WeaponConfig = _laserEyesConfig,
                 ParentEntity = headEntity,
@@ -172,45 +173,23 @@ namespace ZE.MechBattle.MechBuilding
                 SyncFireTagWithParent = true,
                 AlwaysCalculateShotPoint = true,
                 ViewOwnerEntity = _mainBuilder.MechEntity,
-                WeaponControllerEntity = _mainBuilder.MechEntity,               
-                
+                WeaponControllerEntity = _mainBuilder.MechEntity,              
             });
 
             var barrel = _weaponHandler.GetBarrelEntity(eyeEntity);
             _viewHandler.OverrideViewRequestKey(barrel, constructionSettings.Key);
 
-            if (_laserEyesConfig is IMechWeaponConfig mechWeaponConfig)
-                AddMechSpecificComponents(eyeEntity, mechWeaponConfig);
+          //  eyeEntity.AddComponent<WeaponDirectAimTag>();
+
+            AddMechSpecificComponents(eyeEntity);
 
             return eyeEntity;
         }
 
-        private void AddMechSpecificComponents(Entity weaponEntity, IMechWeaponConfig mechWeaponConfig)
+        private void AddMechSpecificComponents(Entity weaponEntity)
         {
-            if (mechWeaponConfig.TryGetShotEnergyCost(out var cost))
-                _shotEnergyCosts.Add(weaponEntity, new(cost));
-
-            if (mechWeaponConfig.TryGetChargeSettings(out var chargeSettings))
-                AddChargeComponent(weaponEntity, chargeSettings);
-
             _energySourceComponents.Set(weaponEntity, new(_energyModuleBuilder.ReactorEntity));
-        }
-
-        private void AddChargeComponent(Entity weaponEntity, WeaponChargeSettings chargeSettings)
-        {
-            _weaponChargeComponents.Set(weaponEntity, new(chargeSettings));
-
-            if (chargeSettings.DischargeTime != 0f)
-            {
-                _continuousFiringTags.Set(weaponEntity);
-                if (chargeSettings.DischargeEnergyCost != 0f)
-                    _dischargeEnergyCosts.Set(weaponEntity, new(chargeSettings.DischargeEnergyCost));
-            }               
-
-            if (chargeSettings.ChargeEnergyCost != 0f)
-            {
-                _chargeEnergyCosts.Set(weaponEntity, new(chargeSettings.ChargeEnergyCost));
-            }
+            _aimMethodApplier.AddMethodTag(weaponEntity);
         }
     }
 }
