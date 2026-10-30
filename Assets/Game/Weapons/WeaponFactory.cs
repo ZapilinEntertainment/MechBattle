@@ -129,7 +129,7 @@ namespace ZE.MechBattle
                 if ((featureApplier.RequiredFlags & weaponConfig.FeatureFlags) == featureApplier.RequiredFlags)
                     featureApplier.Apply(ref constructionProtocol);
             }
-           
+
             ApplyBasicWeaponComponents(weaponEntity, weaponConfig);
             ApplyProtocolSpecificComponents(weaponEntity, protocol);
 

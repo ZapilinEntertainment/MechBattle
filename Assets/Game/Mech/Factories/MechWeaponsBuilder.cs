@@ -12,7 +12,7 @@ namespace ZE.MechBattle.MechBuilding
         private readonly EntityViewHandler _viewHandler;
         private readonly MonoViewFactory _viewFactory;
         private readonly MechWeaponsManager _weaponsManager;
-        private readonly World _world;
+        private readonly AimMethodApplier _aimMethodApplier;
 
         private readonly Stash<WeaponKeyComponent> _weaponKeyComponents;               
         private readonly Stash<EnergySourceComponent> _energySourceComponents;
@@ -26,9 +26,9 @@ namespace ZE.MechBattle.MechBuilding
         private MechBuilder _mainBuilder;
         private MechConfig _mechConfig;
         private MechEnergyModuleBuilder _energyModuleBuilder;
-        private WeaponConfigBase _mainWeaponConfigLeft;
-        private WeaponConfigBase _mainWeaponConfigRight;
-        private WeaponConfigBase _laserEyesConfig;
+        private WeaponConfig _mainWeaponConfigLeft;
+        private WeaponConfig _mainWeaponConfigRight;
+        private WeaponConfig _laserEyesConfig;
 
         [Inject]
         public MechWeaponsBuilder(
@@ -37,7 +37,8 @@ namespace ZE.MechBattle.MechBuilding
             WeaponHandler weaponHandler,
             EntityViewHandler viewHandler,
             MonoViewFactory viewFactory,
-            MechWeaponsManager weaponsManager
+            MechWeaponsManager weaponsManager,
+            AimMethodApplier aimMethodApplier
             )
         {
             _weaponFactory = weaponFactory;
@@ -45,7 +46,7 @@ namespace ZE.MechBattle.MechBuilding
             _weaponHandler = weaponHandler;
             _viewFactory = viewFactory;
             _weaponsManager = weaponsManager;
-            _world = world;
+            _aimMethodApplier = aimMethodApplier;
 
             _weaponKeyComponents = world.GetStash<WeaponKeyComponent>();
             _energySourceComponents = world.GetStash<EnergySourceComponent>();
@@ -61,9 +62,9 @@ namespace ZE.MechBattle.MechBuilding
             MechBuilder mechBuilder, 
             MechConfig mechConfig,
             MechEnergyModuleBuilder energyModuleBuilder,
-            WeaponConfigBase mainWeaponConfigLeft,
-            WeaponConfigBase mainWeaponConfigRight,
-            WeaponConfigBase laserEyesConfig)
+            WeaponConfig mainWeaponConfigLeft,
+            WeaponConfig mainWeaponConfigRight,
+            WeaponConfig laserEyesConfig)
         {
             _mainBuilder = mechBuilder;
             _energyModuleBuilder = energyModuleBuilder;
@@ -93,7 +94,7 @@ namespace ZE.MechBattle.MechBuilding
             _weaponsManager.AddWeapon(mechEntity, mainWeaponRight, rightWeaponKey);
         }
 
-        private Entity BuildSlotEquipment(Entity parent, MechSlot slot, string equipmentId, WeaponConfigBase weaponConfig)
+        private Entity BuildSlotEquipment(Entity parent, MechSlot slot, string equipmentId, WeaponConfig weaponConfig)
         {
             // todo: different types of equipment, not only weapons
             if (!_mechConfig.TryGetSlotInfo(slot, out var slotInfo))
@@ -105,7 +106,7 @@ namespace ZE.MechBattle.MechBuilding
             return BuildMechWeapon(parent, equipmentId, weaponConfig, slotInfo.AttachmentProtocol);
         }
 
-        private Entity BuildMechWeapon(Entity parent, string weaponId, WeaponConfigBase weaponConfig, ViewPartAttachmentProtocol partAttachmentProtocol)
+        private Entity BuildMechWeapon(Entity parent, string weaponId, WeaponConfig weaponConfig, ViewPartAttachmentProtocol partAttachmentProtocol)
         {
             var weaponEntity = _weaponFactory.CreateWeapon(new()
             {
@@ -172,12 +173,13 @@ namespace ZE.MechBattle.MechBuilding
                 SyncFireTagWithParent = true,
                 AlwaysCalculateShotPoint = true,
                 ViewOwnerEntity = _mainBuilder.MechEntity,
-                WeaponControllerEntity = _mainBuilder.MechEntity,               
-                
+                WeaponControllerEntity = _mainBuilder.MechEntity,              
             });
 
             var barrel = _weaponHandler.GetBarrelEntity(eyeEntity);
             _viewHandler.OverrideViewRequestKey(barrel, constructionSettings.Key);
+
+          //  eyeEntity.AddComponent<WeaponDirectAimTag>();
 
             AddMechSpecificComponents(eyeEntity);
 
@@ -187,6 +189,7 @@ namespace ZE.MechBattle.MechBuilding
         private void AddMechSpecificComponents(Entity weaponEntity)
         {
             _energySourceComponents.Set(weaponEntity, new(_energyModuleBuilder.ReactorEntity));
+            _aimMethodApplier.AddMethodTag(weaponEntity);
         }
     }
 }

@@ -15,8 +15,8 @@ namespace ZE.MechBattle.MechBuilding
         private readonly RepairFeatureApplier _repairFeatureApplier;
 
         private readonly MechConfig TEMP_mechConfig;
-        private readonly WeaponConfigBase TEMP_mainWeaponConfig;
-        private readonly WeaponConfigBase TEMP_eyesWeaponConfig;
+        private readonly WeaponConfig TEMP_mainWeaponConfig;
+        private readonly WeaponConfig TEMP_eyesWeaponConfig;
         private const int TEMP_repairTeamsCount = 3;
 
         [Inject]
@@ -27,8 +27,8 @@ namespace ZE.MechBattle.MechBuilding
             RepairFeatureApplier repairFeatureApplier,
 
             [Key(DevelopConstants.DEFAULT_MECH_ID)] MechConfig mechConfig,
-            [Key(DevelopConstants.DEFAULT_MECH_GUN_ID)] WeaponConfigBase weaponConfig,
-            [Key(DevelopConstants.LASER_EYES_WEAPON_ID)] WeaponConfigBase eyesWeaponConfig)
+            [Key(DevelopConstants.DEFAULT_MECH_GUN_ID)] WeaponConfig weaponConfig,
+            [Key(DevelopConstants.LASER_EYES_WEAPON_ID)] WeaponConfig eyesWeaponConfig)
         {
             _resolver = resolver;
             _triposCalculator = triposCalculator;

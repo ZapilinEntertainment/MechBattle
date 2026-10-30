@@ -45,11 +45,11 @@ namespace ZE.MechBattle
 
         async Awaitable<IResourceBinder> ISessionAsyncResourceLoader.LoadSessionResourcesAsync(IObjectResolver resolver)
         {
-            var weaponConfig = await AssetsManager.LoadAssetDirectly<WeaponConfigBase>(DevelopConstants.DEFAULT_MECH_GUN_ID + "_config");
-            var defaultWeaponBinding = new KeyedResourceBinding<WeaponConfigBase, string>(weaponConfig, DevelopConstants.DEFAULT_MECH_GUN_ID);
+            var weaponConfig = await AssetsManager.LoadAssetDirectly<WeaponConfig>(DevelopConstants.DEFAULT_MECH_GUN_ID + "_config");
+            var defaultWeaponBinding = new KeyedResourceBinding<WeaponConfig, string>(weaponConfig, DevelopConstants.DEFAULT_MECH_GUN_ID);
 
-            var eyesConfig = await AssetsManager.LoadAssetDirectly<WeaponConfigBase>(DevelopConstants.LASER_EYES_WEAPON_ID + "_config");
-            var eyesWeaponBinding = new KeyedResourceBinding<WeaponConfigBase, string>(eyesConfig, DevelopConstants.LASER_EYES_WEAPON_ID);
+            var eyesConfig = await AssetsManager.LoadAssetDirectly<WeaponConfig>(DevelopConstants.LASER_EYES_WEAPON_ID + "_config");
+            var eyesWeaponBinding = new KeyedResourceBinding<WeaponConfig, string>(eyesConfig, DevelopConstants.LASER_EYES_WEAPON_ID);
 
             return new AsyncResourcesScopeBinder(new IResourceBinder[] { defaultWeaponBinding, eyesWeaponBinding });
         }

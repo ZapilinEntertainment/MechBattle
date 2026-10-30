@@ -8,12 +8,14 @@ namespace ZE.MechBattle.Weapons
         public WeaponFeatureFlags RequiredFlags => WeaponFeatureFlags.RaycastFire;
         public WeaponFeatureApplyOrder ApplyOrder => WeaponFeatureApplyOrder.Projectiles;
         private readonly Stash<WeaponRayComponent> _weaponRays;
+        private readonly Stash<WeaponAimMethodComponent> _aimMethods;
         private readonly StringDataDictionary _stringDataDictionary;
 
         public WeaponRaycastFireApplier(World world, StringDataDictionary stringDataDictionary)
         {
             _stringDataDictionary = stringDataDictionary;
             _weaponRays = world.GetStash<WeaponRayComponent>();
+            _aimMethods = world.GetStash<WeaponAimMethodComponent>();
         }
 
         public void Apply(ref WeaponConstructionProtocol constructionProtocol)
@@ -28,6 +30,8 @@ namespace ZE.MechBattle.Weapons
 
             if (raycastConfig.TryGetRaycastEffectId(out var rayEffectId))
                 _weaponRays.Add(constructionProtocol.WeaponEntity, new(_stringDataDictionary.StringToKey(rayEffectId)));
+
+            _aimMethods.Add(constructionProtocol.WeaponEntity, new(raycastConfig.AimCheckMethod));
         }
     }
 }

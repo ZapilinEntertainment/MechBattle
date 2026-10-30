@@ -53,21 +53,31 @@ namespace ZE.MechBattle
 
         public void AddMethodTag(Entity weaponEntity)
         {
-            var aimMethod = _aimMethods.Get(weaponEntity).Value;
-            var tagStash = _tagStashes[(byte)aimMethod];
+            var aimMethod = _aimMethods.Get(weaponEntity,out var aimExists);
+            if (!aimExists)
+            {
+#if UNITY_EDITOR
+                UnityEngine.Debug.LogWarning($"no aim method component at {weaponEntity.Id}");
+#endif
+                return;
+            }
+
+            var tagStash = _tagStashes[(byte)aimMethod.Value];
             tagStash.AddAll(weaponEntity);
 
             var barrelComponent = _barrels.Get(weaponEntity, out var haveBarrel);
             if (haveBarrel)
                 tagStash.AddAimTag(barrelComponent.BarrelEntity);
-            
         }
 
         public void RemoveMethodTag(Entity weaponEntity)
         {
-            var aimMethod = _aimMethods.Get(weaponEntity).Value;
-            var tagStash = _tagStashes[(byte)aimMethod];
-            tagStash.AddAll(weaponEntity);
+            var aimMethod = _aimMethods.Get(weaponEntity, out var aimExists);
+            if (!aimExists)
+                return;
+
+            var tagStash = _tagStashes[(byte)aimMethod.Value];
+            tagStash.RemoveAll(weaponEntity);
 
             var barrelComponent = _barrels.Get(weaponEntity, out var haveBarrel);
             if (haveBarrel)

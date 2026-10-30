@@ -4,8 +4,8 @@ using ZE.MechBattle.Weapons;
 
 namespace ZE.MechBattle
 {
-    [CreateAssetMenu(fileName = nameof(WeaponConfigBase), menuName = "Scriptable Objects/" + nameof(WeaponConfigBase))]
-    public class WeaponConfigBase : ScriptableObject, IWeaponConfig
+    [CreateAssetMenu(fileName = nameof(WeaponConfig), menuName = "Scriptable Objects/" + nameof(WeaponConfig))]
+    public class WeaponConfig : ScriptableObject, IWeaponConfig
     {
         [field: SerializeField] public WeaponFeatureFlags FeatureFlags { get; private set; }
         [SerializeReference] private IWeaponFeatureConfig[] _featureConfigs;

@@ -52,7 +52,6 @@ namespace ZE.MechBattle
         public void OnAutoshotDisabled(Entity weaponEntity)
         {
             _weaponAutoShotTags.Remove(weaponEntity);
-            _aimMethodApplier.RemoveMethodTag(weaponEntity);
         }
 
         public void OnAttachedToEntity(Entity weaponEntity, Entity entity, WeaponAttachMode mode, float maxPrecisionAberration)

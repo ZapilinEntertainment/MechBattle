@@ -95,23 +95,8 @@ namespace ZE.MechBattle.Ecs {
         }
 
         public void Dispose() 
-        { 
-            #if UNITY_EDITOR
-            try 
-            {
-                FinalDispose();
-            }
-            catch
-            {
-                // editor-related problems
-            }
-#else
-            FinalDispose();
-#endif
-        }
-
-        private void FinalDispose()
         {
+            _activeJobHandle.Complete();
             _commandsList.Dispose();
             _resultsList.Dispose();
         }
