@@ -20,23 +20,9 @@ namespace ZE.MechBattle
         private readonly Stash<WeaponRangeComponent> _ranges;
         private readonly Stash<WeaponLoadingComponent> _weaponUpdateComponents;        
         private readonly Stash<WeaponMuzzleEffectComponent> _muzzleEffects;
-        private readonly Stash<WeaponTowerComponent> _weaponTowerComponents;
-        private readonly Stash<WeaponBarrelComponent> _weaponBarrelComponents;
         private readonly Stash<WeaponShotPoint> _weaponShotPoints;        
-        private readonly Stash<RotationSpeedComponent> _rotationSpeedComponents;
-
-        private readonly Stash<ViewPartRequestComponent> _viewPartRequests;
-        private readonly Stash<WeaponTowerStowTag> _towerStowTag;
-        private readonly Stash<WeaponBarrelStowTag> _barrelStowTag;
-     
-        private readonly Stash<LocalRotationLimitComponent> _localRotationLimits;
 
         private readonly Stash<DamageComponent> _damageComponents;
-
-        private readonly Stash<WeaponProjectileComponent> _weaponProjectileComponents;
-        private readonly Stash<WeaponRayComponent> _weaponRayComponents;
-
-        private readonly Stash<ContinuosFiringTag> _continuosFiringTag;
 
         private readonly Stash<SyncWithParentTargetTag> _syncTargetWithParent;
         private readonly Stash<SyncFireTagWithParentTag> _syncFireTagWithParent;
@@ -44,6 +30,8 @@ namespace ZE.MechBattle
         private readonly Stash<WeaponComponent> _weaponComponents;
 
         private readonly Stash<AlwaysCalculateShotPointTag> _alwaysCalculateShotPointsTag;
+
+        private readonly Stash<ContinuosFiringTag> _continuousFiringTags;
 
         [Inject]
         public WeaponFactory(
@@ -79,29 +67,17 @@ namespace ZE.MechBattle
             _weaponUpdateComponents = world.GetStash<WeaponLoadingComponent>();
             _muzzleEffects = world.GetStash<WeaponMuzzleEffectComponent>();            
 
-            _weaponTowerComponents = world.GetStash<WeaponTowerComponent>();
-            _weaponBarrelComponents = world.GetStash<WeaponBarrelComponent>();
-
             _weaponShotPoints = world.GetStash<WeaponShotPoint>();
 
             _syncTargetWithParent = world.GetStash<SyncWithParentTargetTag>();
             _syncFireTagWithParent = world.GetStash<SyncFireTagWithParentTag>();
 
-            _viewPartRequests = world.GetStash<ViewPartRequestComponent>();
-            _towerStowTag = world.GetStash<WeaponTowerStowTag>();
-            _barrelStowTag = world.GetStash<WeaponBarrelStowTag>();
-
-            _rotationSpeedComponents = world.GetStash<RotationSpeedComponent>();
-            _localRotationLimits = world.GetStash<LocalRotationLimitComponent>();
-
             _damageComponents = world.GetStash<DamageComponent>();
-            _weaponProjectileComponents = world.GetStash<WeaponProjectileComponent>();
-            _weaponRayComponents = world.GetStash<WeaponRayComponent>();
-
-            _continuosFiringTag = world.GetStash<ContinuosFiringTag>();
             _weaponComponents = world.GetStash<WeaponComponent>();
 
             _alwaysCalculateShotPointsTag = world.GetStash<AlwaysCalculateShotPointTag>();
+
+            _continuousFiringTags = world.GetStash<ContinuosFiringTag>();
         }
 
         public struct WeaponCreationProtocol
@@ -146,6 +122,8 @@ namespace ZE.MechBattle
                 AutoStow = protocol.UseAutoStow
             };
 
+            ApplySimpleFeatures(weaponEntity, weaponConfig.FeatureFlags);
+
             foreach (var featureApplier in _featureAppliers)
             {
                 if ((featureApplier.RequiredFlags & weaponConfig.FeatureFlags) == featureApplier.RequiredFlags)
@@ -158,7 +136,7 @@ namespace ZE.MechBattle
             return weaponEntity;
         }
 
-        public void ApplyProtocolSpecificComponents(Entity weaponEntity, in WeaponCreationProtocol protocol)
+        private void ApplyProtocolSpecificComponents(Entity weaponEntity, in WeaponCreationProtocol protocol)
         {
             _weaponComponents.Add(weaponEntity, new(protocol.WeaponControllerEntity));
 
@@ -195,6 +173,10 @@ namespace ZE.MechBattle
             _weaponShotPoints.Add(weaponEntity, new(weaponConfig.ShotPoint));
         }
 
-        
+        private void ApplySimpleFeatures(Entity weaponEntity, WeaponFeatureFlags flags)
+        {
+            if (flags.HasFlag(WeaponFeatureFlags.ContinuousFiring))
+                _continuousFiringTags.Add(weaponEntity);
+        }
     }
 }

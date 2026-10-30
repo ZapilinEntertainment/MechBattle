@@ -5,9 +5,7 @@ namespace ZE.MechBattle
     {
         public bool IsValid;
         public float ChargeTime;
-        public float ChargeEnergyCost;
         public float DischargeTime;
-        public float DischargeEnergyCost;
         public float ManualReleaseMinPercent;
     
     }

@@ -4,7 +4,8 @@ using ZE.MechBattle.Weapons;
 
 namespace ZE.MechBattle
 {
-    public abstract class WeaponConfigBase : ScriptableObject, IWeaponConfig
+    [CreateAssetMenu(fileName = nameof(WeaponConfigBase), menuName = "Scriptable Objects/" + nameof(WeaponConfigBase))]
+    public class WeaponConfigBase : ScriptableObject, IWeaponConfig
     {
         [field: SerializeField] public WeaponFeatureFlags FeatureFlags { get; private set; }
         [SerializeReference] private IWeaponFeatureConfig[] _featureConfigs;
@@ -32,16 +33,8 @@ namespace ZE.MechBattle
         [field: SerializeField] public float3 ShotPoint { get; private set; }
 
         [SerializeField] private string _muzzleEffectId;
-        [SerializeField] private WeaponPartAttachmentProtocol _towerAttachmentProtocol;
-        [SerializeField] private WeaponPartAttachmentProtocol _barrelAttachmentProtocol;
         public float RecommendedRange => math.lerp(MinRange, MaxRange, RecommendedRangePc);
-        public abstract bool ContinuousFiring { get; }
-        public abstract WeaponAimCheckMethod AimCheckMethod { get; }
 
-    
-
-        public abstract bool TryGetProjectileId(out string projectileId);
-        public abstract bool TryGetRayEffectId(out string rayEffectId);
 
         public bool TryGetMuzzleEffectId(out string muzzleEffectId)
         {
@@ -55,20 +48,6 @@ namespace ZE.MechBattle
                 muzzleEffectId = _muzzleEffectId;
                 return true;
             }
-        }
-
-        public bool TryGetTowerAttachmentProtocol(out WeaponPartAttachmentProtocol protocol)
-        {
-            protocol = _towerAttachmentProtocol;
-            return protocol.IsValid;
-        }
-
-        public bool TryGetBarrelAttachmentProtocol(out WeaponPartAttachmentProtocol protocol)
-        {
-            protocol = _barrelAttachmentProtocol;
-            return protocol.IsValid;
-        }
-
-        
+        }        
     }
 }

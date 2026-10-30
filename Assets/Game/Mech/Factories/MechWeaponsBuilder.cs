@@ -14,13 +14,14 @@ namespace ZE.MechBattle.MechBuilding
         private readonly MechWeaponsManager _weaponsManager;
         private readonly World _world;
 
-        private readonly Stash<WeaponKeyComponent> _weaponKeyComponents;
+        private readonly Stash<WeaponKeyComponent> _weaponKeyComponents;               
+        private readonly Stash<EnergySourceComponent> _energySourceComponents;
+
+        private readonly Stash<WeaponDischargeEnergyConsumption> _dischargeEnergyCosts;
+        private readonly Stash<WeaponChargeEnergyConsumption> _chargeEnergyCosts;
+        private readonly Stash<ShotEnergyCostComponent> _shotEnergyCosts;
         private readonly Stash<WeaponChargeComponent> _weaponChargeComponents;
         private readonly Stash<ContinuosFiringTag> _continuousFiringTags;
-        private readonly Stash<ShotEnergyCostComponent> _shotEnergyCosts;
-        private readonly Stash<WeaponChargeEnergyConsumption> _chargeEnergyCosts;
-        private readonly Stash<WeaponDischargeEnergyConsumption> _dischargeEnergyCosts;
-        private readonly Stash<EnergySourceComponent> _energySourceComponents;
 
         private MechBuilder _mainBuilder;
         private MechConfig _mechConfig;
@@ -47,13 +48,13 @@ namespace ZE.MechBattle.MechBuilding
             _world = world;
 
             _weaponKeyComponents = world.GetStash<WeaponKeyComponent>();
+            _energySourceComponents = world.GetStash<EnergySourceComponent>();
+
+            _dischargeEnergyCosts = world.GetStash<WeaponDischargeEnergyConsumption>();
+            _chargeEnergyCosts = world.GetStash<WeaponChargeEnergyConsumption>();
+            _shotEnergyCosts = world.GetStash<ShotEnergyCostComponent>();
             _weaponChargeComponents = world.GetStash<WeaponChargeComponent>();
             _continuousFiringTags = world.GetStash<ContinuosFiringTag>();
-            _shotEnergyCosts = world.GetStash<ShotEnergyCostComponent>();
-
-            _chargeEnergyCosts = world.GetStash<WeaponChargeEnergyConsumption>();
-            _dischargeEnergyCosts = world.GetStash<WeaponDischargeEnergyConsumption>();
-            _energySourceComponents = world.GetStash<EnergySourceComponent>();
         }
 
         public void BuildWeapons(
@@ -120,8 +121,7 @@ namespace ZE.MechBattle.MechBuilding
             });
             _viewFactory.MakeViewReceiver(weaponEntity, weaponId + "_view");
 
-            if (weaponConfig is IMechWeaponConfig mechWeaponConfig)
-                AddMechSpecificComponents(weaponEntity, mechWeaponConfig);
+            AddMechSpecificComponents(weaponEntity);
 
             return weaponEntity;
         }
@@ -179,38 +179,14 @@ namespace ZE.MechBattle.MechBuilding
             var barrel = _weaponHandler.GetBarrelEntity(eyeEntity);
             _viewHandler.OverrideViewRequestKey(barrel, constructionSettings.Key);
 
-            if (_laserEyesConfig is IMechWeaponConfig mechWeaponConfig)
-                AddMechSpecificComponents(eyeEntity, mechWeaponConfig);
+            AddMechSpecificComponents(eyeEntity);
 
             return eyeEntity;
         }
 
-        private void AddMechSpecificComponents(Entity weaponEntity, IMechWeaponConfig mechWeaponConfig)
+        private void AddMechSpecificComponents(Entity weaponEntity)
         {
-            if (mechWeaponConfig.TryGetShotEnergyCost(out var cost))
-                _shotEnergyCosts.Add(weaponEntity, new(cost));
-
-            if (mechWeaponConfig.TryGetChargeSettings(out var chargeSettings))
-                AddChargeComponent(weaponEntity, chargeSettings);
-
             _energySourceComponents.Set(weaponEntity, new(_energyModuleBuilder.ReactorEntity));
-        }
-
-        private void AddChargeComponent(Entity weaponEntity, WeaponChargeSettings chargeSettings)
-        {
-            _weaponChargeComponents.Set(weaponEntity, new(chargeSettings));
-
-            if (chargeSettings.DischargeTime != 0f)
-            {
-                _continuousFiringTags.Set(weaponEntity);
-                if (chargeSettings.DischargeEnergyCost != 0f)
-                    _dischargeEnergyCosts.Set(weaponEntity, new(chargeSettings.DischargeEnergyCost));
-            }               
-
-            if (chargeSettings.ChargeEnergyCost != 0f)
-            {
-                _chargeEnergyCosts.Set(weaponEntity, new(chargeSettings.ChargeEnergyCost));
-            }
         }
     }
 }

@@ -8,7 +8,10 @@ namespace ZE.MechBattle
         HaveBarrel = 1 << 1,
         ProjectileFire = 1 << 2,
         RaycastFire = 1 << 3,
-        RESERVED = 1 << 4
+        EnergyConsumption = 1 << 4,
+        Chargeable = 1 << 5,
+        ContinuousFiring = 1 << 6,
+        RESERVED = 1 << 7
     
     }
 }

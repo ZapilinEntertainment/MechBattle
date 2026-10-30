@@ -6,6 +6,7 @@ namespace ZE.MechBattle
         Tower = 1,
         Barrel = 2,
         Projectiles = 3,
+        Other = 4,
         Last = byte.MaxValue    
     }
 }

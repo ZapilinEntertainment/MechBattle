@@ -35,6 +35,7 @@ namespace ZE.MechBattle
             builder.Register<IWeaponFeatureApplier, BarrelPartsApplier>(Lifetime.Singleton);
             builder.Register<IWeaponFeatureApplier, WeaponProjectileFireApplier>(Lifetime.Singleton);
             builder.Register<IWeaponFeatureApplier, WeaponRaycastFireApplier>(Lifetime.Singleton);
+            builder.Register<IWeaponFeatureApplier, WeaponChargeFeatureApplier>(Lifetime.Singleton);
 
             builder.Register<EntityArmamentApplier>(Lifetime.Singleton);
             builder.Register<AimMethodApplier>(Lifetime.Singleton);
@@ -44,11 +45,11 @@ namespace ZE.MechBattle
 
         async Awaitable<IResourceBinder> ISessionAsyncResourceLoader.LoadSessionResourcesAsync(IObjectResolver resolver)
         {
-            var weaponConfig = await AssetsManager.LoadAssetDirectly<ProjectileWeaponConfig>(DevelopConstants.DEFAULT_MECH_GUN_ID + "_config");
-            var defaultWeaponBinding = new KeyedResourceBinding<ProjectileWeaponConfig, string>(weaponConfig, DevelopConstants.DEFAULT_MECH_GUN_ID);
+            var weaponConfig = await AssetsManager.LoadAssetDirectly<WeaponConfigBase>(DevelopConstants.DEFAULT_MECH_GUN_ID + "_config");
+            var defaultWeaponBinding = new KeyedResourceBinding<WeaponConfigBase, string>(weaponConfig, DevelopConstants.DEFAULT_MECH_GUN_ID);
 
-            var eyesConfig = await AssetsManager.LoadAssetDirectly<RayWeaponConfig>(DevelopConstants.LASER_EYES_WEAPON_ID + "_config");
-            var eyesWeaponBinding = new KeyedResourceBinding<RayWeaponConfig, string>(eyesConfig, DevelopConstants.LASER_EYES_WEAPON_ID);
+            var eyesConfig = await AssetsManager.LoadAssetDirectly<WeaponConfigBase>(DevelopConstants.LASER_EYES_WEAPON_ID + "_config");
+            var eyesWeaponBinding = new KeyedResourceBinding<WeaponConfigBase, string>(eyesConfig, DevelopConstants.LASER_EYES_WEAPON_ID);
 
             return new AsyncResourcesScopeBinder(new IResourceBinder[] { defaultWeaponBinding, eyesWeaponBinding });
         }

@@ -4264,7 +4264,7 @@ MonoBehaviour:
   <Armaments>k__BackingField:
   - Damage: 10
     MaxPrecisionAberration: 0.01
-    WeaponConfig: {fileID: 11400000, guid: e1b78ab1d78bbd0438616413d906a1e3, type: 2}
+    WeaponConfig: {fileID: 11400000, guid: 1f358c2a937bfc44b8cedacb7b8019cf, type: 2}
     AttachmentProtocol:
       LocalPosition:
         x: 0

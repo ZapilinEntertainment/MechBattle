@@ -9,13 +9,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 348cfce9a03663141ab74f20eea0627f, type: 3}
+  m_Script: {fileID: 11500000, guid: 5d185959e04f3ed4a93b44834e0f1272, type: 3}
   m_Name: LaserEyes
-  m_EditorClassIdentifier: MechBattle::ZE.MechBattle.MechRayWeaponConfig
-  <FeatureFlags>k__BackingField: 10
+  m_EditorClassIdentifier: MechBattle::ZE.MechBattle.WeaponConfigBase
+  <FeatureFlags>k__BackingField: 122
   _featureConfigs:
-  - rid: 2151671262960418900
-  - rid: 2151671262960418901
+  - rid: 2151671262960418905
+  - rid: 2151671262960418906
+  - rid: 2151671262960418907
+  - rid: 2151671262960418908
   <DamageType>k__BackingField: 2
   <MinRange>k__BackingField: 0
   <MaxRange>k__BackingField: 250
@@ -43,14 +45,14 @@ MonoBehaviour:
       XAngleDegreesLimit: 0
       YAngleDegreesLimit: 0
   _barrelAttachmentProtocol:
-    IsValid: 1
-    RotationSpeedDegrees: 180
+    IsValid: 0
+    RotationSpeedDegrees: 0
     LocalPosition:
       x: 0
       y: 0
       z: 0
     ViewPartKey:
-      Type: 9
+      Type: 0
       Index: 0
     FwdRotationLimits:
       LimitAxleRotation:
@@ -58,18 +60,10 @@ MonoBehaviour:
         y: 0
       XAngleDegreesLimit: 0
       YAngleDegreesLimit: 0
-  _rayEffectId: default_ray_effect
-  _chargeSettings:
-    IsValid: 1
-    ChargeTime: 3
-    ChargeEnergyCost: 350
-    DischargeTime: 3
-    DischargeEnergyCost: 0
-    ManualReleaseMinPercent: 0.5
   references:
     version: 2
     RefIds:
-    - rid: 2151671262960418900
+    - rid: 2151671262960418905
       type: {class: WeaponBarrelConfig, ns: ZE.MechBattle.Weapons, asm: MechBattle}
       data:
         <AutoStow>k__BackingField: 0
@@ -87,8 +81,22 @@ MonoBehaviour:
             y: 0
           XAngleDegreesLimit: 0
           YAngleDegreesLimit: 0
-    - rid: 2151671262960418901
+    - rid: 2151671262960418906
       type: {class: WeaponRaycastFiringConfig, ns: ZE.MechBattle, asm: MechBattle}
       data:
         <AimCheckMethod>k__BackingField: 0
         _raycastEffectId: default_ray_effect
+    - rid: 2151671262960418907
+      type: {class: WeaponEnergyCostConfig, ns: ZE.MechBattle.Weapons, asm: MechBattle}
+      data:
+        <DischargeCost>k__BackingField: 0
+        <ChargeCost>k__BackingField: 350
+        <ShotCost>k__BackingField: 0
+    - rid: 2151671262960418908
+      type: {class: WeaponChargeFeatureConfig, ns: ZE.MechBattle.Weapons, asm: MechBattle}
+      data:
+        <ChargeSettings>k__BackingField:
+          IsValid: 0
+          ChargeTime: 3
+          DischargeTime: 3
+          ManualReleaseMinPercent: 0.5

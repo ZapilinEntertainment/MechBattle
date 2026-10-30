@@ -2,6 +2,7 @@ using UnityEngine;
 using VContainer;
 using ZE.MechBattle.Ecs;
 using ZE.MechBattle.Mech.UI;
+using ZE.MechBattle.Weapons;
 
 namespace ZE.MechBattle
 {
@@ -27,6 +28,8 @@ namespace ZE.MechBattle
             builder.Register<UIMechReactorWindowWorker>(Lifetime.Transient);
 
             builder.Register<MechEnergyModuleBuilder>(Lifetime.Transient);
+
+            builder.Register<IWeaponFeatureApplier, WeaponEnergyCostFeatureApplier>(Lifetime.Singleton);
         }
 
         async Awaitable<IResourceBinder> ISessionAsyncResourceLoader.LoadSessionResourcesAsync(IObjectResolver resolver)

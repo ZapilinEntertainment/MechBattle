@@ -9,13 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b43a1d0f6fbb3f4191bc547f7715197, type: 3}
+  m_Script: {fileID: 11500000, guid: 5d185959e04f3ed4a93b44834e0f1272, type: 3}
   m_Name: DefaultMechGun
-  m_EditorClassIdentifier: MechBattle::ZE.MechBattle.MechProjectileWeaponConfig
-  <FeatureFlags>k__BackingField: 6
+  m_EditorClassIdentifier: MechBattle::ZE.MechBattle.WeaponConfigBase
+  <FeatureFlags>k__BackingField: 22
   _featureConfigs:
-  - rid: 2151671262960418898
-  - rid: 2151671262960418899
+  - rid: 2151671274954555463
+  - rid: 2151671274954555464
+  - rid: 2151671274954555465
   <DamageType>k__BackingField: 1
   <MinRange>k__BackingField: 100
   <MaxRange>k__BackingField: 500
@@ -26,44 +27,10 @@ MonoBehaviour:
     y: 0
     z: 15
   _muzzleEffectId: tank_shot
-  _towerAttachmentProtocol:
-    IsValid: 0
-    RotationSpeedDegrees: 0
-    LocalPosition:
-      x: 0
-      y: 0
-      z: 0
-    ViewPartKey:
-      Type: 0
-      Index: 0
-    FwdRotationLimits:
-      LimitAxleRotation:
-        x: 0
-        y: 0
-      XAngleDegreesLimit: 0
-      YAngleDegreesLimit: 0
-  _barrelAttachmentProtocol:
-    IsValid: 1
-    RotationSpeedDegrees: 35
-    LocalPosition:
-      x: 0
-      y: 0
-      z: 0
-    ViewPartKey:
-      Type: 2
-      Index: 0
-    FwdRotationLimits:
-      LimitAxleRotation:
-        x: 1
-        y: 1
-      XAngleDegreesLimit: 32
-      YAngleDegreesLimit: 45
-  _projectileId: mech_cannon_projectile
-  _shotEnergyCost: 25
   references:
     version: 2
     RefIds:
-    - rid: 2151671262960418898
+    - rid: 2151671274954555463
       type: {class: WeaponBarrelConfig, ns: ZE.MechBattle.Weapons, asm: MechBattle}
       data:
         <AutoStow>k__BackingField: 0
@@ -81,8 +48,14 @@ MonoBehaviour:
             y: 1
           XAngleDegreesLimit: 32
           YAngleDegreesLimit: 45
-    - rid: 2151671262960418899
+    - rid: 2151671274954555464
       type: {class: WeaponProjectileFiringConfig, ns: ZE.MechBattle, asm: MechBattle}
       data:
         <AimCheckMethod>k__BackingField: 0
         _projectileId: mech_cannon_projectile
+    - rid: 2151671274954555465
+      type: {class: WeaponEnergyCostConfig, ns: ZE.MechBattle.Weapons, asm: MechBattle}
+      data:
+        <DischargeCost>k__BackingField: 0
+        <ChargeCost>k__BackingField: 0
+        <ShotCost>k__BackingField: 25
