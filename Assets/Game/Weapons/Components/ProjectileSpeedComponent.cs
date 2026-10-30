@@ -6,11 +6,11 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public readonly struct ProjectileMoveSpeed : IComponent 
+    public readonly struct ProjectileSpeedComponent : IComponent 
     {
         public readonly float Value;
 
-        public ProjectileMoveSpeed(float value) => Value = value;
+        public ProjectileSpeedComponent(float value) => Value = value;
 
     }
 }

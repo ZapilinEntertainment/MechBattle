@@ -14,7 +14,7 @@ namespace ZE.MechBattle.Ecs {
     public sealed class ProjectileMoveSystem : PausableSystem 
     {
         private Filter _filter;
-        private Stash<MoveSpeedComponent> _speed;
+        private Stash<ProjectileMoveVectorComponent> _moveVectors;
         private Stash<ExplosionTimerComponent> _explosionTimer;
         private Stash<ExplodeTag> _explodeTags;
         private Stash<CollisionComponent> _collisionResults;
@@ -23,7 +23,6 @@ namespace ZE.MechBattle.Ecs {
         private readonly TransformAspectHandler _transformAspect;
         private readonly CollidersTable _collidersTable;
         private readonly AffinityHandler _affinityHandler;
-        private readonly List<float3> _movementVectorsCache = new (DEFAULT_CAPACITY);
         private readonly List<Entity> _projectilesList = new(DEFAULT_CAPACITY);
         private readonly QueryParameters _queryParameters;
         private const int DEFAULT_CAPACITY = 32;
@@ -51,12 +50,11 @@ namespace ZE.MechBattle.Ecs {
         public override void OnAwake()
         {
             _filter = World.Filter
-                .With<ProjectileComponent>()
-                .With<MoveSpeedComponent>()
+                .With<ProjectileMoveVectorComponent>()
                 .Without<ExplodeTag>()
                 .Build();
 
-            _speed = World.GetStash<MoveSpeedComponent>();
+            _moveVectors = World.GetStash<ProjectileMoveVectorComponent>();
             _explosionTimer = World.GetStash<ExplosionTimerComponent>();
             _explodeTags = World.GetStash<ExplodeTag>();
             _collisionResults = World.GetStash<CollisionComponent>();
@@ -94,10 +92,8 @@ namespace ZE.MechBattle.Ecs {
                     {
                         var projectile = _projectilesList[i];
                         var position = _transformAspect.GetPosition(projectile);
-                        var direction = _transformAspect.GetForward(projectile);
-                        var step = _speed.Get(projectile).Value * deltaTime;
-                        raycastCommands[i] = new RaycastCommand(position, direction, _queryParameters, step);
-                        _movementVectorsCache.Add(step * direction);
+                        var moveDir = _moveVectors.Get(projectile);
+                        raycastCommands[i] = new RaycastCommand(position, moveDir.NormalizedDirection,  _queryParameters, moveDir.Magnitude);
                     }
 
                     var results = new NativeArray<RaycastHit>(2 * count, Allocator.TempJob);
@@ -126,7 +122,9 @@ namespace ZE.MechBattle.Ecs {
 
                         if (continueMovement)
                         {
-                            _transformAspect.Translate(projectile, _movementVectorsCache[i], Space.World);
+                            var moveDir = _moveVectors.Get(projectile);
+                            _transformAspect.SetRotation(projectile, quaternion.LookRotation(moveDir.NormalizedDirection, math.up()));
+                            _transformAspect.Translate(projectile, moveDir.Magnitude * moveDir.NormalizedDirection, Space.World);
                         }                            
                         else
                         {
@@ -137,7 +135,6 @@ namespace ZE.MechBattle.Ecs {
 
                     raycastCommands.Dispose();
                     results.Dispose();
-                    _movementVectorsCache.Clear();
                 }
 
                 _projectilesList.Clear();
@@ -147,7 +144,6 @@ namespace ZE.MechBattle.Ecs {
         protected override void InternalDispose()
         {
             _projectilesList.Clear();
-            _movementVectorsCache.Clear();
         }
     }
 }

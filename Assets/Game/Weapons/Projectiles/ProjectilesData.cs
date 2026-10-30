@@ -15,6 +15,7 @@ namespace ZE.MechBattle
             public string ExplosionEffectKey;
             public float ExplosionRadius;
             public float Lifetime;
+            public float GravityCf;
         }
 
         [SerializeField] private SerializedDictionary<string, ProjectileData> _data = new();

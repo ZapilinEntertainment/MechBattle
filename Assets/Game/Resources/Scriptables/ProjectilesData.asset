@@ -20,7 +20,8 @@ MonoBehaviour:
         ViewId: mech_cannon_projectile
         ExplosionEffectKey: test_explosion
         ExplosionRadius: 0
-        Lifetime: 3
+        Lifetime: 30
+        GravityCf: 0
     - Key: tank_projectile
       Value:
         Speed: 250
@@ -28,3 +29,4 @@ MonoBehaviour:
         ExplosionEffectKey: test_explosion
         ExplosionRadius: 0
         Lifetime: 3
+        GravityCf: 0

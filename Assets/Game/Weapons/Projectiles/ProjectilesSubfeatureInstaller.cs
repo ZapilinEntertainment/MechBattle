@@ -22,6 +22,7 @@ namespace ZE.MechBattle.Projectiles
             installer.AddSystem<RestorationSystem>(SystemGroupOrder.Default);
             installer.AddSystem<ProjectileCreateSystem>(SystemGroupOrder.Default);
 
+            installer.AddSystem<ProjectilesMoveVectorCalculationSystem>(SystemGroupOrder.RegularUpdate);
             installer.AddSystem<ProjectileMoveSystem>(SystemGroupOrder.RegularUpdate);
             installer.AddSystem<ProjectilesExplodeSystem>(SystemGroupOrder.RegularUpdate);
         }

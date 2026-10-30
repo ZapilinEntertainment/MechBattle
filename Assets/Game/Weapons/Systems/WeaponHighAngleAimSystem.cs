@@ -10,7 +10,7 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public sealed class WeaponHighAngleAimSystem : WeaponAimCalculationSystemBase<WeaponHighAngleAimTag>
     {
-        private Stash<ProjectileMoveSpeed> _projectileMoveSpeed;
+        private Stash<ProjectileSpeedComponent> _projectileMoveSpeed;
 
         public WeaponHighAngleAimSystem(TransformAspectHandler transformAspectHandler, SceneFlagsManager sceneFlagsManager) : base(transformAspectHandler, sceneFlagsManager)
         {
@@ -19,7 +19,7 @@ namespace ZE.MechBattle.Ecs {
         public override void OnAwake()
         {
             base.OnAwake();
-            _projectileMoveSpeed = World.GetStash<ProjectileMoveSpeed>();
+            _projectileMoveSpeed = World.GetStash<ProjectileSpeedComponent>();
         }
 
         protected override void SetAim(Entity weaponEntity, bool haveTower, float3 localTargetPos)

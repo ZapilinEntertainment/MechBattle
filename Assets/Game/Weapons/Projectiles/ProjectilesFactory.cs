@@ -20,6 +20,7 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<ExplosionParametersComponent> _explosionComponents;
         private readonly Stash<OwnerAffinityComponent> _projectilesOwner;
         private readonly Stash<IgnoreUnitsCollisionByPlayermaskComponent> _ignoreCollisions;
+        private readonly Stash<GravityAccelerationValueComponent> _gravityComponents;
 
         [Inject]
         public ProjectilesFactory(
@@ -42,6 +43,7 @@ namespace ZE.MechBattle.Ecs
             _projectilesOwner = _world.GetStash<OwnerAffinityComponent>();
             _speed = _world.GetStash<MoveSpeedComponent>();
             _ignoreCollisions = _world.GetStash<IgnoreUnitsCollisionByPlayermaskComponent>();
+            _gravityComponents = _world.GetStash<GravityAccelerationValueComponent>();
         }
 
         public Entity Build(string id, RigidTransform point, Entity weaponEntity, Entity shooterEntity) => Build(id, _stringDict.StringToKey(id), point, weaponEntity, shooterEntity);
@@ -59,25 +61,27 @@ namespace ZE.MechBattle.Ecs
             if (_world.IsDisposed(shooterEntity))
                 return default;
 
-            var entity = _viewFactory.CreateViewReceiver(projectileData.ViewId);
-            _transformAspectHandler.MoveToPoint(entity, point);
+            var projectileEntity = _viewFactory.CreateViewReceiver(projectileData.ViewId);
+            _transformAspectHandler.MoveToPoint(projectileEntity, point);
 
-            _speed.Set(entity,new() { Value = projectileData.Speed});
-            _explosionTimer.Set(entity, new() { Value = projectileData.Lifetime});
-            _projectilesOwner.Set(entity, new() { OwnerEntity = shooterEntity });
+            _speed.Set(projectileEntity,new() { Value = projectileData.Speed});
+            _explosionTimer.Set(projectileEntity, new() { Value = projectileData.Lifetime});
+            _projectilesOwner.Set(projectileEntity, new() { OwnerEntity = shooterEntity });
+            if (projectileData.GravityCf != 0f)
+                _gravityComponents.Add(projectileEntity, new(projectileData.GravityCf));
              
-            SetVfxExplosionComponent(entity, idkey, projectileData);
-            SetExplosionComponent(entity, projectileData);
+            SetVfxExplosionComponent(projectileEntity, idkey, projectileData);
+            SetExplosionComponent(projectileEntity, projectileData);
 
             var shooterDamageComponent = _damage.Get(weaponEntity, out var haveDamage);
             if (haveDamage) 
-                _damage.Set(entity, new() { DamageParameters = shooterDamageComponent.DamageParameters });
+                _damage.Set(projectileEntity, new() { DamageParameters = shooterDamageComponent.DamageParameters });
 
             var ignoreCollisionComponent = _ignoreCollisions.Get(shooterEntity, out var ignoreSomePlayers);
             if (ignoreSomePlayers)
-                _ignoreCollisions.Set(entity, ignoreCollisionComponent);
+                _ignoreCollisions.Set(projectileEntity, ignoreCollisionComponent);
 
-            return entity;
+            return projectileEntity;
         }
 
         private void SetVfxExplosionComponent(Entity entity, int idkey, in ProjectilesData.ProjectileData projectileData)
@@ -86,9 +90,9 @@ namespace ZE.MechBattle.Ecs
             if (!string.IsNullOrEmpty(projectileData.ExplosionEffectKey))
             {
                 var vfxKey = _stringDict.StringToKey(projectileData.ExplosionEffectKey);
-                 projectileComponent.ExplosionEffectKey = new VfxKey(vfxKey);
-                _projectiles.Set(entity, projectileComponent);
-            }               
+                 projectileComponent.ExplosionEffectKey = new VfxKey(vfxKey);                
+            }
+            _projectiles.Add(entity, projectileComponent);
         }
 
         private void SetExplosionComponent(Entity entity, in ProjectilesData.ProjectileData projectileData)
