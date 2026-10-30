@@ -14,9 +14,7 @@ namespace ZE.MechBattle
 
             builder.Register<WorldDisposer>(Lifetime.Transient).As<IDisposable>();
             builder.Register<World>(_ => CreateWorld(), Lifetime.Singleton);
-
-            builder.Register<ProjectileRequestsFactory>(Lifetime.Singleton);
-            builder.Register<ProjectilesFactory>(Lifetime.Singleton);
+                     
             builder.Register<MonoViewFactory>(Lifetime.Singleton);
             builder.Register<ExplosionRequestsBuilder>(Lifetime.Singleton);       
 

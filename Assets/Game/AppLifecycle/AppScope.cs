@@ -37,8 +37,7 @@ namespace ZE.MechBattle.Ecs
             builder.Register<AssetsManager>(Lifetime.Singleton);            
             builder.Register<StringDataDictionary>(Lifetime.Singleton);
             builder.Register<AppFlagsManager>(Lifetime.Singleton);        
-            builder.Register<ViewProviderFactory>(Lifetime.Singleton);
-            IFeatureInstaller.RegisterScriptable<ProjectilesData>(builder);
+            builder.Register<ViewProviderFactory>(Lifetime.Singleton);           
 
             // start loading heavy resources:
             builder.RegisterEntryPoint<AppAsyncEntryPoint>();

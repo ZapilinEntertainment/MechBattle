@@ -1,3 +1,5 @@
+using ZE.MechBattle.Projectiles;
+
 namespace ZE.MechBattle.Ecs
 {
     public class WeaponSystemsInstallQueue : FeatureSystemsInstallQueue
@@ -26,6 +28,8 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<WeaponStopFireSystem>(SystemGroupOrder.WeaponUpdates);
 
             installer.AddSystem<WeaponStowSystem>(SystemGroupOrder.WeaponUpdates);
+
+            ProjectilesSubfeatureInstaller.ConfigureSystems(installer);
         }
     }
 }

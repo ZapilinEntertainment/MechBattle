@@ -14,13 +14,7 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<AttackTargetValidationSystem>(SystemGroupOrder.Default);
             installer.AddSystem<AttackTargetSpecificationSystem>(SystemGroupOrder.Default);
             installer.AddSystem<WeaponTargetSelectSystem>(SystemGroupOrder.Default);
-            installer.AddSystem<CompositeTargetClearTagSystem>(SystemGroupOrder.AfterDispose);
-
-            installer.AddSystem<RestorationSystem>(SystemGroupOrder.Default);
-            installer.AddSystem<ProjectileCreateSystem>(SystemGroupOrder.Default);            
-
-            installer.AddSystem<ProjectileMoveSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<ProjectilesExplodeSystem>(SystemGroupOrder.RegularUpdate);
+            installer.AddSystem<CompositeTargetClearTagSystem>(SystemGroupOrder.AfterDispose);            
 
             // requires job completion
             installer.AddSystem<LocalRotationSystem>(SystemGroupOrder.TransformUpdates1);
