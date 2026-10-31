@@ -41,7 +41,7 @@ namespace ZE.MechBattle.Ecs {
                 normalizedTargetDir = math.normalize(localTargetPos);
             }
 
-            if (HighAngleCalculator.TrySolveHighArc(float3.zero, normalizedTargetDir, projectileSpeed, Physics.gravity.y, out var targetVector, out var flightTime))
+            if (HighAngleCalculator.TrySolveHighArc(float3.zero, normalizedTargetDir, projectileSpeed, -Physics.gravity.y, out var targetVector, out var flightTime))
             {
                 SetBarrelLocalAim(barrelEntity, targetVector);
             }

@@ -10,7 +10,7 @@ namespace ZE.MechBattle.Ecs
         private readonly World _world;
         private readonly MonoViewFactory _viewFactory;
         private readonly StringDataDictionary _stringDict;
-        private readonly ProjectilesData _projectileData;
+        private readonly IProjectileDataList _projectileData;
         private readonly TransformAspectHandler _transformAspectHandler;
 
         private readonly Stash<MoveSpeedComponent> _speed;
@@ -27,7 +27,7 @@ namespace ZE.MechBattle.Ecs
             World world, 
             MonoViewFactory viewBuilder, 
             StringDataDictionary stringDict,
-            ProjectilesData projectileData,
+            IProjectileDataList projectileData,
             TransformAspectHandler transformAspectHandler)
         {
             _world = world;
@@ -46,20 +46,14 @@ namespace ZE.MechBattle.Ecs
             _gravityComponents = _world.GetStash<GravityAccelerationValueComponent>();
         }
 
-        public Entity Build(string id, RigidTransform point, Entity weaponEntity, Entity shooterEntity) => Build(id, _stringDict.StringToKey(id), point, weaponEntity, shooterEntity);
+      
+        public Entity Build(string id, RigidTransform point, Entity weaponEntity, Entity shooterEntity) => Build(_stringDict.StringToKey(id), point, weaponEntity, shooterEntity);
 
-        public Entity Build(int idkey, RigidTransform point, Entity weaponEntity, Entity shooterEntity) => Build(_stringDict.GetStringByKey(idkey), idkey, point, weaponEntity, shooterEntity);
 
-        private Entity Build(string id, int idkey, RigidTransform point, Entity weaponEntity, Entity shooterEntity)
+        public Entity Build(int idkey, RigidTransform point, Entity weaponEntity, Entity shooterEntity)
         {
-            if (!_projectileData.TryGetProjectileData(id, out var projectileData))
-            {
-                Debug.LogError($"projectile data of {id} not found");
-                return default;
-            }
-
-            if (_world.IsDisposed(shooterEntity))
-                return default;
+            if (_world.IsDisposed(shooterEntity) || !_projectileData.TryGetProjectileData(idkey, out var projectileData))
+                return default;        
 
             var projectileEntity = _viewFactory.CreateViewReceiver(projectileData.ViewId);
             _transformAspectHandler.MoveToPoint(projectileEntity, point);
@@ -84,7 +78,7 @@ namespace ZE.MechBattle.Ecs
             return projectileEntity;
         }
 
-        private void SetVfxExplosionComponent(Entity entity, int idkey, in ProjectilesData.ProjectileData projectileData)
+        private void SetVfxExplosionComponent(Entity entity, int idkey, in ProjectileData projectileData)
         {
              var projectileComponent = new ProjectileComponent() { IdKey = idkey};
             if (!string.IsNullOrEmpty(projectileData.ExplosionEffectKey))
@@ -95,7 +89,7 @@ namespace ZE.MechBattle.Ecs
             _projectiles.Add(entity, projectileComponent);
         }
 
-        private void SetExplosionComponent(Entity entity, in ProjectilesData.ProjectileData projectileData)
+        private void SetExplosionComponent(Entity entity, in ProjectileData projectileData)
         {
             if (projectileData.ExplosionRadius == 0f)
                 return;

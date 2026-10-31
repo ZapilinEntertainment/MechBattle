@@ -9,12 +9,13 @@ namespace ZE.MechBattle.Projectiles
         public static void SceneScopeInstall(IContainerBuilder builder)
         {
             builder.Register<ProjectilesFactory>(Lifetime.Singleton);
-            builder.Register<ProjectileRequestsFactory>(Lifetime.Singleton);
+            builder.Register<ProjectileRequestsFactory>(Lifetime.Singleton);            
         }
 
         public static void AppScopeInstall(IContainerBuilder builder)
         {
             IFeatureInstaller.RegisterScriptable<ProjectilesData>(builder);
+            builder.Register<IProjectileDataList, CachedProjectileDataList>(Lifetime.Singleton);
         }
 
         public static void ConfigureSystems(ISystemsOperator installer)

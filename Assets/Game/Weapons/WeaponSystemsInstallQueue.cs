@@ -13,6 +13,7 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<WeaponTargetPositionSetSystem>(SystemGroupOrder.WeaponUpdates);
             installer.AddSystem<CheckAttackRangeSystem>(SystemGroupOrder.WeaponUpdates);            
             installer.AddSystem<WeaponDirectAimCalculationSystem>(SystemGroupOrder.WeaponUpdates);
+            installer.AddSystem<WeaponHighAngleAimSystem>(SystemGroupOrder.WeaponUpdates);
 
             installer.AddSystem<AimCheckSystem>(SystemGroupOrder.WeaponUpdates);
             installer.AddSystem<FiringLineRaycastCheckSystem>(SystemGroupOrder.WeaponUpdates);

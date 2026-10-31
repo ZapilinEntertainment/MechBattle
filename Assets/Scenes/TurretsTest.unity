@@ -2449,7 +2449,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.UnitSquadSpawnUtility
   _spawnByClick: 0
   _unitId: tank
-  _playerId: 1
+  _playerId: 2
   _spawnRadius: 6
   _startHex:
     x: 1
@@ -2469,7 +2469,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27b3c5f342613c941baa3cd08d72e4b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.EnemySquadSpawnUtility
-  _playerId: 1
+  _playerId: 2
   _unitId: tank
   _unitsCount: 100
   _hexCoord:
@@ -2510,7 +2510,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.BotMechSpawnUtility
   _spawnData:
-  - IsActive: 1
+  - IsActive: 0
     PlayerId: 1
     SpawnPoint:
       rot:
@@ -3874,7 +3874,7 @@ Transform:
   m_GameObject: {fileID: 2013449722989223843}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: -19, y: 0, z: 63.1}
+  m_LocalPosition: {x: -83.7, y: 0, z: -6.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4119,7 +4119,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.PlayerAffinityMonoComponent
   PlayerKey:
-    Id: 0
+    Id: 1
 --- !u!23 &2702443292466929132
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -4292,11 +4292,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80998bc804c0381449a5c8a67f1338b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.BuildingArmamentsComponent
-  <TargetSearchRadius>k__BackingField: 120
+  <TargetSearchRadius>k__BackingField: 200
   <Armaments>k__BackingField:
   - Damage: 10
     MaxPrecisionAberration: 0.01
-    WeaponConfig: {fileID: 11400000, guid: 1f358c2a937bfc44b8cedacb7b8019cf, type: 2}
+    WeaponConfig: {fileID: 11400000, guid: 47d352fa88bc1f340a8934adff94965c, type: 2}
     AttachmentProtocol:
       LocalPosition:
         x: 0

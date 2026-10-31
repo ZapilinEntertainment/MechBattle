@@ -11,7 +11,7 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public sealed class FiringLineRaycastCheckSystem : ISystem 
+    public sealed class FiringLineRaycastCheckSystem : FiringLineCheckSystemBase<WeaponDirectAimTag> 
     {
         private readonly struct EntityCastData
         {
@@ -25,16 +25,6 @@ namespace ZE.MechBattle.Ecs {
             }
         }
 
-        public World World { get; set;}
-        private Filter _filter;
-        private bool _isJobActive = false;
-        private JobHandle _activeJobHandle;
-        private NativeList<RaycastCommand> _commandsList;
-        private NativeList<RaycastHit> _resultsList;
-
-        private Stash<AttackTargetComponent> _attackTargets;
-        private Stash<FireLineClearTag> _fireLineClearTag;
-        private Stash<WeaponShotPoint> _weaponShotPoints;
         private Stash<WeaponRangeComponent> _weaponRanges;
 
         private readonly AffinityHandler _affinityHandler;
@@ -49,59 +39,31 @@ namespace ZE.MechBattle.Ecs {
         };
 
         [Inject]
-        public FiringLineRaycastCheckSystem(CollidersTable collidersTable, AffinityHandler affinityHandler)
+        public FiringLineRaycastCheckSystem(CollidersTable collidersTable, AffinityHandler affinityHandler, SceneFlagsManager flagsManager) : base(flagsManager)
         {
             _collidersTable = collidersTable;
             _affinityHandler = affinityHandler;
         }
 
-        public void OnAwake() 
+        public override void OnAwake()
         {
-            _filter = World.Filter
-                .With<AttackTargetComponent>()                
-                .With<CalculateFireLineByRaycastTag>()
-                .With<AttackRangeReachedTag>()
-                .Build();
-
-            _attackTargets = World.GetStash<AttackTargetComponent>();
-            _fireLineClearTag = World.GetStash<FireLineClearTag>();
-            _weaponShotPoints = World.GetStash<WeaponShotPoint>();
+            base.OnAwake();
             _weaponRanges = World.GetStash<WeaponRangeComponent>();
-
-            _commandsList = new NativeList<RaycastCommand>(Allocator.Persistent);
-            _resultsList = new NativeList<RaycastHit>(Allocator.Persistent);
         }
 
-        public void OnUpdate(float deltaTime) 
+        protected override void LaunchNextJob()
         {
-            if (_isJobActive)
-            {
-                ApplyPreviousJob();
-                _isJobActive = false;
-            }
-
-            if (_filter.IsEmpty())
-                return;
-
             foreach (var entity in _filter)
             {
                 var targetEntity = _attackTargets.Get(entity).Entity;
                 _activeJobEntities.Add(new(entity, targetEntity));
             }
 
-           if (_activeJobEntities.Count != 0)
+            if (_activeJobEntities.Count != 0)
                 PrepareAndLaunchJob();
-
         }
 
-        public void Dispose() 
-        {
-            _activeJobHandle.Complete();
-            _commandsList.Dispose();
-            _resultsList.Dispose();
-        }
-
-        private void ApplyPreviousJob()
+        override protected void ApplyPreviousJob()
         {
             _activeJobHandle.Complete();
             for (var i = 0; i < _activeJobEntities.Count; i++)
