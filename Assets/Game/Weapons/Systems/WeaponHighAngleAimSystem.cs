@@ -11,6 +11,7 @@ namespace ZE.MechBattle.Ecs {
     public sealed class WeaponHighAngleAimSystem : WeaponAimCalculationSystemBase<WeaponHighAngleAimTag>
     {
         private Stash<ProjectileSpeedComponent> _projectileMoveSpeed;
+        private Stash<HighAimResultsComponent> _highAimResults;
 
         public WeaponHighAngleAimSystem(TransformAspectHandler transformAspectHandler, SceneFlagsManager sceneFlagsManager) : base(transformAspectHandler, sceneFlagsManager)
         {
@@ -19,7 +20,9 @@ namespace ZE.MechBattle.Ecs {
         public override void OnAwake()
         {
             base.OnAwake();
+
             _projectileMoveSpeed = World.GetStash<ProjectileSpeedComponent>();
+            _highAimResults = World.GetStash<HighAimResultsComponent>();
         }
 
         protected override void SetAim(Entity weaponEntity, bool haveTower, float3 localTargetPos)
@@ -41,9 +44,14 @@ namespace ZE.MechBattle.Ecs {
                 normalizedTargetDir = math.normalize(localTargetPos);
             }
 
-            if (HighAngleCalculator.TrySolveHighArc(float3.zero, normalizedTargetDir, projectileSpeed, -Physics.gravity.y, out var targetVector, out var flightTime))
+            if (HighAngleTrajectorySolver.TryExecute(float3.zero, localTargetPos, projectileSpeed, -Physics.gravity.y, out var targetVector, out var flightTime))
             {
                 SetBarrelLocalAim(barrelEntity, targetVector);
+                _highAimResults.Set(weaponEntity, new() { FlightTime = flightTime, NormalizedDirectionVector = targetVector });
+            }
+            else
+            {
+                _highAimResults.Remove(weaponEntity);
             }
         }
     }

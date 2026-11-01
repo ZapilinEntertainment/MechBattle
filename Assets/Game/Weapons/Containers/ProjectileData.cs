@@ -10,6 +10,6 @@ namespace ZE.MechBattle
         public string ExplosionEffectKey;
         public float ExplosionRadius;
         public float Lifetime;
-        public float GravityCf;
+        public bool UseGravity;
     }
 }

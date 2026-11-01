@@ -3,11 +3,11 @@ using Unity.Mathematics;
 
 namespace ZE.MechBattle.Weapons
 {
-    public class HighAngleCalculator
+    public class HighAngleTrajectorySolver
     {
         [BurstCompile]
         // logic by Deepseek
-        public static bool TrySolveHighArc(
+        public static bool TryExecute(
             float3 startPos, 
             float3 targetPos, 
             float projectileSpeed, 

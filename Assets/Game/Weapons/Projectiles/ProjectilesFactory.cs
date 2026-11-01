@@ -20,7 +20,7 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<ExplosionParametersComponent> _explosionComponents;
         private readonly Stash<OwnerAffinityComponent> _projectilesOwner;
         private readonly Stash<IgnoreUnitsCollisionByPlayermaskComponent> _ignoreCollisions;
-        private readonly Stash<GravityAccelerationValueComponent> _gravityComponents;
+        private readonly Stash<GravityAffectedProjectileTag> _gravityComponents;
 
         [Inject]
         public ProjectilesFactory(
@@ -43,7 +43,7 @@ namespace ZE.MechBattle.Ecs
             _projectilesOwner = _world.GetStash<OwnerAffinityComponent>();
             _speed = _world.GetStash<MoveSpeedComponent>();
             _ignoreCollisions = _world.GetStash<IgnoreUnitsCollisionByPlayermaskComponent>();
-            _gravityComponents = _world.GetStash<GravityAccelerationValueComponent>();
+            _gravityComponents = _world.GetStash<GravityAffectedProjectileTag>();
         }
 
       
@@ -61,8 +61,8 @@ namespace ZE.MechBattle.Ecs
             _speed.Set(projectileEntity,new() { Value = projectileData.Speed});
             _explosionTimer.Set(projectileEntity, new() { Value = projectileData.Lifetime});
             _projectilesOwner.Set(projectileEntity, new() { OwnerEntity = shooterEntity });
-            if (projectileData.GravityCf != 0f)
-                _gravityComponents.Add(projectileEntity, new(projectileData.GravityCf));
+            if (projectileData.UseGravity)
+                _gravityComponents.Add(projectileEntity);
              
             SetVfxExplosionComponent(projectileEntity, idkey, projectileData);
             SetExplosionComponent(projectileEntity, projectileData);

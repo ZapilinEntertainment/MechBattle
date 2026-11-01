@@ -11,7 +11,7 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
 
-    public sealed class ProjectileMoveSystem : PausableSystem 
+    public sealed class ProjectileMoveApplySystem : PausableSystem 
     {
         private Filter _filter;
         private Stash<ProjectileMoveVectorComponent> _moveVectors;
@@ -28,7 +28,7 @@ namespace ZE.MechBattle.Ecs {
         private const int DEFAULT_CAPACITY = 32;
 
         [Inject]
-        public ProjectileMoveSystem(
+        public ProjectileMoveApplySystem(
             TransformAspectHandler transformAspectHandler, 
             SceneFlagsManager sceneFlags, 
             CollidersTable collidersTable,

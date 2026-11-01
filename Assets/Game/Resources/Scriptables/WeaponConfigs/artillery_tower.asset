@@ -19,7 +19,7 @@ MonoBehaviour:
   - rid: 2151671274954555471
   <DamageType>k__BackingField: 1
   <MinRange>k__BackingField: 0
-  <MaxRange>k__BackingField: 200
+  <MaxRange>k__BackingField: 500
   <RecommendedRangePc>k__BackingField: 0.9
   <Cooldown>k__BackingField: 1
   <ShotPoint>k__BackingField:
@@ -64,10 +64,10 @@ MonoBehaviour:
           LimitAxleRotation:
             x: 1
             y: 0
-          XAngleDegreesLimit: 45
+          XAngleDegreesLimit: 89.99
           YAngleDegreesLimit: 0
     - rid: 2151671274954555471
       type: {class: WeaponProjectileFiringConfig, ns: ZE.MechBattle, asm: MechBattle}
       data:
         <AimCheckMethod>k__BackingField: 1
-        _projectileId: tank_projectile
+        _projectileId: artillery_projectile
