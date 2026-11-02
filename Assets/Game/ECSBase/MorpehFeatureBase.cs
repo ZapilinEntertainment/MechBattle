@@ -32,6 +32,9 @@ namespace ZE.MechBattle
 
             builder.Register<CreationResultsList>(Lifetime.Singleton);
             builder.Register<CreationRequestsHandler>(Lifetime.Singleton);
+
+            builder.Register<TargetSearchFeatureApplierBase>(Lifetime.Singleton);
+            builder.Register<IUnitFeatureApplier, TargetSearchFeatureUnitApplier>(Lifetime.Singleton);
            
         }
 

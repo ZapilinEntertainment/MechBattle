@@ -9,11 +9,13 @@ namespace ZE.MechBattle
     {
         public override BuildingFunctionFlags RequiredFlagsMask => BuildingFunctionFlags.HaveArmaments;
         private readonly EntityArmamentApplier _entityArmamentApplier;
+        private readonly TargetSearchFeatureApplierBase _searchFeatureApplier;
         private readonly Stash<TargetSearchRadiusComponent> _targetSearchRadiusComponents;
 
         [Inject]
-        public BuildingWeaponFeatureApplier(EntityArmamentApplier entityArmamentApplier, World world)
+        public BuildingWeaponFeatureApplier(EntityArmamentApplier entityArmamentApplier, World world, TargetSearchFeatureApplierBase searchFeatureApplierBase)
         {
+            _searchFeatureApplier = searchFeatureApplierBase;
             _entityArmamentApplier = entityArmamentApplier;
             _targetSearchRadiusComponents = world.GetStash<TargetSearchRadiusComponent>();
         }
@@ -23,7 +25,7 @@ namespace ZE.MechBattle
             if (monoComponent.Armaments == null)
                 return;
 
-            _targetSearchRadiusComponents.Add(entity, new(monoComponent.TargetSearchRadius));
+            _searchFeatureApplier.ApplyTargetSearchFeature(entity, monoComponent.TargetSearchCd, monoComponent.TargetSearchRadius, monoComponent.MinTargetDistance);
             foreach (var armamentConfig in monoComponent.Armaments)
             {
                 _entityArmamentApplier.Apply(entity, armamentConfig, WeaponAttachMode.Building);
