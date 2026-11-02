@@ -374,7 +374,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.BuildingDamageableMonoComponent
   <IsAttackTarget>k__BackingField: 1
-  <HealthPoints>k__BackingField: 2000
+  <HealthPoints>k__BackingField: 500
   <DestructionProtocol>k__BackingField:
     IsValid: 1
     EffectId: test_building_destruction
@@ -420,6 +420,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.BuildingArmamentsComponent
   <TargetSearchRadius>k__BackingField: 300
+  <MinTargetDistance>k__BackingField: 100
+  <TargetSearchCd>k__BackingField: 10
   <Armaments>k__BackingField:
   - Damage: 10
     MaxPrecisionAberration: 0.01

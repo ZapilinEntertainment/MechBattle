@@ -14,22 +14,31 @@ namespace ZE.MechBattle.Ecs
         public CalculationProcessStage Stage { get; private set; }
 
         private NativeArray<PlayerRelationsMask> _relationMasks;
-        private JobHandle _activeJobHandle;
+        private JobHandle _prepareJobHandle;
+        private JobHandle _shortRangeJobHandle;
+        private JobHandle _longRangeJobHandle;
         private NativeHashMap<IntTriangularPos, int> _entitiesMap;
-        private NativeArray<ClosestTargetDefineJob.HandlingEntityData> _handlingEntitiesData;
+        private NativeArray<TargetSearchingEntityData> _handlingEntitiesData;
         private NativeArray<Entity> _resultingArray;
         private NativeReference<int> _handlingEntitiesCount;
+        private NativeHashMap<int2, uint> _playerHexPresence;
 
-        private readonly NativeList<ClosestTargetDefineJob.TargetEntityData> _targetEntitiesData;
+        private readonly NativeList<PotentialTargetEntityData> _targetEntitiesData;
 
         private readonly float _triangleHeight;
+        private readonly float _triangleHeightInverted;
         private readonly float _hexEdgeLength;
+        private readonly int _longRangeSearchLimit;
+        private readonly int _trianglesPerHexEdge;
+
         private readonly World _world;
-        private readonly PlayerRelations _relations;       
+        private readonly PlayerRelations _relations;
+        private readonly INavigationMap _navigationMap;
 
         private readonly Stash<PlayerAffiliationComponent> _affiliationComponents;
         private readonly Stash<PositionComponent> _positionComponents;
         private readonly Stash<TargetSearchRadiusComponent> _targetSearchRadiusComponents;
+        private readonly Stash<HexCoordComponent> _hexCoords;
 
         private readonly Filter _movementCellsFilter;
         private readonly Stash<CellMovementDataComponent> _movementCells;
@@ -48,21 +57,26 @@ namespace ZE.MechBattle.Ecs
         {
             _relations = relations;
             _world = world;
+            _navigationMap = map;
 
-            _hexEdgeLength = map.HexEdgeLength;
-            _triangleHeight = map.TriangleHeight;
+            _hexEdgeLength = _navigationMap.HexEdgeLength;
+            _triangleHeight = _navigationMap.TriangleHeight;
+            _triangleHeightInverted = _navigationMap.InvertedTriangleHeight;
+            _trianglesPerHexEdge = _navigationMap.TrianglesPerHexEdge;
+            _longRangeSearchLimit = _trianglesPerHexEdge * 2;
 
             _affiliationComponents = _world.GetStash<PlayerAffiliationComponent>();
             _positionComponents = _world.GetStash<PositionComponent>();
             _targetSearchRadiusComponents = _world.GetStash<TargetSearchRadiusComponent>();
 
             _relationMasks = new NativeArray<PlayerRelationsMask>(playersList.Count, ALLOCATOR);
-            _targetEntitiesData = new NativeList<ClosestTargetDefineJob.TargetEntityData>(ALLOCATOR);
+            _targetEntitiesData = new NativeList<PotentialTargetEntityData>(ALLOCATOR);
             _handlingEntitiesCount = new(ALLOCATOR);
 
             _movementCellsFilter = _world.Filter.With<CellMovementDataComponent>().Build();
             _movementCells = _world.GetStash<CellMovementDataComponent>();
             _cellComponents = _world.GetStash<CellEntityComponent>();
+            _hexCoords = _world.GetStash<HexCoordComponent>();
 
             _targetData = _world.GetStash<TargetDataComponent>();
         }
@@ -71,7 +85,7 @@ namespace ZE.MechBattle.Ecs
         {
             if (Stage == CalculationProcessStage.Calculating)
             {
-                if (_activeJobHandle.IsCompleted)
+                if (_prepareJobHandle.IsCompleted & _longRangeJobHandle.IsCompleted & _shortRangeJobHandle.IsCompleted)
                     Stage = CalculationProcessStage.Complete;
             }
 
@@ -96,6 +110,7 @@ namespace ZE.MechBattle.Ecs
             // create or extend if size is not enough
             _entitiesMap = ExtendNativeCollectionCommand.Execute(_entitiesMap, nativeCellsFilter.length, ALLOCATOR);
             _handlingEntitiesData = ExtendNativeCollectionCommand.ExecuteIfNeeded(_handlingEntitiesData, _handlingEntitiesCount.Value, ALLOCATOR);
+            _playerHexPresence = ExtendNativeCollectionCommand.Execute(_playerHexPresence, _navigationMap.GetHexCount(), ALLOCATOR);
             _targetEntitiesData.Clear();
 
             var prepareJob = new PrepareTargetSearchJob()
@@ -113,39 +128,60 @@ namespace ZE.MechBattle.Ecs
                 HandlingEntitiesCount = _handlingEntitiesCount,
 
                 HandlingEntitiesData = _handlingEntitiesData,
-                TargetEntitiesData = _targetEntitiesData
+                TargetEntitiesData = _targetEntitiesData,
 
+                TriangleHeightInverted = _triangleHeightInverted,
+                LongRangeSearchLimit = _longRangeSearchLimit,
                 
+                HexCoords = _hexCoords.AsNative(),
+                PlayerPresenceMap = _playerHexPresence
             };
 
             var handle = prepareJob.Schedule();
-            _activeJobHandle = handle;
+            _prepareJobHandle = handle;
             return handle;
         }
 
-        public JobHandle ScheduleCalculationJob(JobHandle dependentHandle)
+        public JobHandle ScheduleCalculationJob(JobHandle prepareJobHandle)
         {
             UpdateRelationsMask();
 
             var elementsCount = _handlingEntitiesCount.Value == 0 ? _handlingEntitiesData.Length : _handlingEntitiesCount.Value;
             _resultingArray = ExtendNativeCollectionCommand.ExecuteIfNeeded(_resultingArray, elementsCount, ALLOCATOR);
 
-            var calculationJob = new ClosestTargetDefineJob()
+
+            var targetDataArray = _targetEntitiesData.AsDeferredJobArray();
+            var handlingEntitiesData = _handlingEntitiesData.AsReadOnly();
+
+
+            var shortRangeJob = new ClosestTargetDefineJob()
             {
-                TargetEntitiesData = _targetEntitiesData.AsDeferredJobArray(),
-                HandlingEntitiesData = _handlingEntitiesData.AsReadOnly(),
+                TargetEntitiesData = targetDataArray,
+                HandlingEntitiesData = handlingEntitiesData,
                 EntitiesMap = _entitiesMap.AsReadOnly(),
                 EnemiesMask = _relationMasks,
 
                 HexEdgeLength = _hexEdgeLength,
                 TriangleHeight = _triangleHeight,
 
-                ResultingTargets = _resultingArray
+                ResultingTargets = _resultingArray,                      
             };
+           _shortRangeJobHandle = shortRangeJob.Schedule(elementsCount, BATCH_COUNT, prepareJobHandle);
 
-           var handle = calculationJob.Schedule(elementsCount, BATCH_COUNT, dependentHandle);
-            _activeJobHandle = handle;
-            return handle;
+            var longRangeJob = new LongRangeTargetDefineJob()
+            {
+                TargetEntitiesData = targetDataArray,
+                HandlingEntitiesData = handlingEntitiesData,
+                EnemiesMask = _relationMasks,
+                ResultingTargets = _resultingArray,
+
+                HexEdgeLength = _hexEdgeLength,
+                TrianglesPerHexEdge = _trianglesPerHexEdge,
+                PlayerPresenceMap = _playerHexPresence.AsReadOnly(),
+            };
+            _longRangeJobHandle = longRangeJob.Schedule(elementsCount, BATCH_COUNT, prepareJobHandle);
+
+            return JobHandle.CombineDependencies(_shortRangeJobHandle, _longRangeJobHandle);
         }
 
         // return both, becuase system will hook prepare job handle to World.Handle (uses native stashes)
@@ -154,13 +190,13 @@ namespace ZE.MechBattle.Ecs
             Stage = CalculationProcessStage.Calculating;
             var prepareJobHandle = SchedulePrepareDataJob(attackersFilter, handlingEntitiesLimit);
             var calculationJobHandle = ScheduleCalculationJob(prepareJobHandle);
-            _activeJobHandle = calculationJobHandle;
             return (prepareJobHandle, calculationJobHandle);
         }
 
         public void ApplyResults(Predicate<(Entity attacker, Entity target)> applyAction)
         {
-            _activeJobHandle.Complete();
+            _shortRangeJobHandle.Complete();
+            _longRangeJobHandle.Complete();
 
             var success = 0;
             for (var i = 0; i < _handlingEntitiesCount.Value; i++)
@@ -178,13 +214,17 @@ namespace ZE.MechBattle.Ecs
 
         public void Dispose()
         {
-            _activeJobHandle.Complete();
+            _prepareJobHandle.Complete();
+            _longRangeJobHandle.Complete();
+            _shortRangeJobHandle.Complete();
+
             _relationMasks.Dispose();
             _entitiesMap.Dispose();
             _targetEntitiesData.Dispose();
             _handlingEntitiesData.Dispose();
             _handlingEntitiesCount.Dispose();
             _resultingArray.Dispose();
+            _playerHexPresence.Dispose();
         }
 
         private void UpdateRelationsMask()

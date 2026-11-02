@@ -18,9 +18,8 @@ namespace ZE.MechBattle
         private readonly List<IUnitFeatureApplier> _unitFeatureAppliers;
 
         private readonly Stash<MoveSpeedComponent> _moveSpeeds;
-        private readonly Stash<NavigationAgentComponent> _navigationAgents;
+        private readonly Stash<NavigationAgentComponent> _navigationAgents;        
         
-        private readonly Stash<TargetSearchRadiusComponent> _targetSearchRadiusComponents; 
         private readonly Stash<HealthComponent> _healthComponents;
         private readonly Stash<UnitTag> _unitTags;
         private readonly Stash<CalculateTrianglePositionTag> _calculateTrianglePosTags;
@@ -60,8 +59,7 @@ namespace ZE.MechBattle
             
 
             _moveSpeeds = world.GetStash<MoveSpeedComponent>();
-            _navigationAgents = world.GetStash<NavigationAgentComponent>();
-            _targetSearchRadiusComponents = world.GetStash<TargetSearchRadiusComponent>();
+            _navigationAgents = world.GetStash<NavigationAgentComponent>();            
             _healthComponents = world.GetStash<HealthComponent>();
             _unitTags = world.GetStash<UnitTag>();
             _calculateTrianglePosTags = world.GetStash<CalculateTrianglePositionTag>();
@@ -103,10 +101,7 @@ namespace ZE.MechBattle
 
         private void Setup(Entity entity, IUnitConfig unitConfig) 
         {
-            _navigationAgents.Add(entity);
-
-            if (unitConfig.TargetSearchRadius != 0f)
-                _targetSearchRadiusComponents.Add(entity, new(unitConfig.TargetSearchRadius));
+            _navigationAgents.Add(entity);           
 
             if (unitConfig.MoveSpeed != 0f)
                 _moveSpeeds.Set(entity, new() { Value = unitConfig.MoveSpeed });
