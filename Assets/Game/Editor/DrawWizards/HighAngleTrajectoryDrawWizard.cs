@@ -102,9 +102,13 @@ public class TrajectorySegmentsWizard : ScriptableWizard
 
         // segments draw
         Handles.color = Color.yellow;
-        Handles.DrawLine(_segments.StartSegment.Start, _segments.StartSegment.End);
-        Handles.DrawLine(_segments.MiddleSegment.Start, _segments.MiddleSegment.End);
-        Handles.DrawLine(_segments.EndSegment.Start, _segments.EndSegment.End);
+        var raycastCommand1 = _segments.StartSegment.ToRaycastCommand(default);
+        var raycastCommand2 = _segments.MiddleSegment.ToRaycastCommand(default);
+        var raycastCommand3 = _segments.EndSegment.ToRaycastCommand(default);
+
+        //Handles.DrawLine(_segments.StartSegment.Start, _segments.StartSegment.End);
+        //Handles.DrawLine(_segments.MiddleSegment.Start, _segments.MiddleSegment.End);
+        //Handles.DrawLine(_segments.EndSegment.Start, _segments.EndSegment.End);
 
         // Точки старта/цели.
         Handles.color = Color.green;

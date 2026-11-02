@@ -1,5 +1,6 @@
 using Scellecs.Morpeh;
 using Scellecs.Morpeh.Native;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
@@ -10,6 +11,7 @@ namespace ZE.MechBattle.Weapons
 {
 
     // note: movement prediction must be calculated inside Aim System, not here
+    [BurstCompile]
     public struct HighAngleFirelineCheckPreparationJob : IJobParallelFor
     {
         [ReadOnly] public NativeArray<Entity>.ReadOnly WeaponEntity;
@@ -17,7 +19,7 @@ namespace ZE.MechBattle.Weapons
         [ReadOnly] public NativeStash<HighAimResultsComponent> AimResults;
         [ReadOnly] public NativeStash<ProjectileSpeedComponent> ProjectileSpeed;
 
-        // writes in 3 cells per itertation
+        // writes in 3 cells per iteration
         [NativeDisableParallelForRestriction][WriteOnly] public NativeArray<RaycastCommand> RaycastInput;
 
         public float Gravity;

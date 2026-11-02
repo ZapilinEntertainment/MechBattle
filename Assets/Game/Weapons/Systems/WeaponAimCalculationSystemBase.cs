@@ -13,14 +13,12 @@ namespace ZE.MechBattle.Ecs
     {
         protected Stash<WeaponBarrelComponent> _weaponBarrels;
         protected Stash<LocalTargetRotationComponent> _aims;
+        protected Stash<WeaponTargetPositionComponent> _targetPositions;
+        protected Stash<WeaponTowerComponent> _weaponTowers;
+        protected readonly TransformAspectHandler _transformAspectHandler;
 
         private Filter _aimingTowerWeaponsFilter;
-        private Filter _aimingBarrelWeaponsFilter;
-
-        private Stash<WeaponTargetPositionComponent> _targetPositions;       
-        private Stash<WeaponTowerComponent> _weaponTowers;
-        
-        private readonly TransformAspectHandler _transformAspectHandler;
+        private Filter _aimingBarrelWeaponsFilter;        
 
         [Inject]
         public WeaponAimCalculationSystemBase(TransformAspectHandler transformAspectHandler, SceneFlagsManager sceneFlagsManager) : base(sceneFlagsManager)
@@ -36,10 +34,7 @@ namespace ZE.MechBattle.Ecs
                 .With<T>()
                 .Build();
 
-            _aimingBarrelWeaponsFilter = World.Filter
-                .With<WeaponBarrelComponent>()
-                .With<WeaponTargetPositionComponent>()
-                .With<T>()
+            _aimingBarrelWeaponsFilter = GetBarrelFilterBuilder()
                 .Build();
 
             _targetPositions = World.GetStash<WeaponTargetPositionComponent>();
@@ -69,21 +64,21 @@ namespace ZE.MechBattle.Ecs
 
             foreach (var weaponEntity in _aimingBarrelWeaponsFilter)
             {
-                var targetPos = _targetPositions.Get(weaponEntity).Value;
-                var towerComponent = _weaponTowers.Get(weaponEntity, out var haveTower);
-                var parentPoint = _transformAspectHandler.GetPoint(haveTower ? towerComponent.TowerEntity : weaponEntity);
-                var localTargetPos = MathExtensions.InverseTransformPoint(targetPos, parentPoint.pos, parentPoint.rot);
-
-                SetAim(weaponEntity, haveTower, localTargetPos);
+                SetBarrelAim(weaponEntity);
             }
         }
 
-        protected abstract void SetAim(Entity weaponEntity, bool haveTower, float3 localTargetPos);
+        protected abstract void SetBarrelAim(Entity weaponEntity);
 
         protected void SetBarrelLocalAim(Entity barrelEntity, float3 normalizedTargetDir)
         {
             var localRotation = math.normalize(quaternion.LookRotation(normalizedTargetDir, math.up()));
             _aims.Set(barrelEntity, new() { Value = localRotation });
         }
+
+        protected virtual FilterBuilder GetBarrelFilterBuilder() => World.Filter
+                .With<WeaponBarrelComponent>()
+                .With<WeaponTargetPositionComponent>()
+                .With<T>();
     }
 }

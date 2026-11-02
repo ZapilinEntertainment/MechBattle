@@ -14,8 +14,8 @@ namespace ZE.MechBattle.Ecs {
     {
         protected bool _isJobActive = false;
         protected JobHandle _activeJobHandle;
-        protected NativeList<RaycastCommand> _commandsList;
-        protected NativeList<RaycastHit> _resultsList;
+        protected NativeArray<RaycastCommand> _raycastCommands;
+        protected NativeArray<RaycastHit> _results;
 
         protected Stash<AttackTargetComponent> _attackTargets;
         protected Stash<FireLineClearTag> _fireLineClearTag;
@@ -34,6 +34,7 @@ namespace ZE.MechBattle.Ecs {
             hitTriggers = QueryTriggerInteraction.Ignore,
             layerMask = LayerConstants.FirelineCastMask
         };
+        protected const Allocator ALLOCATOR = Allocator.Persistent;
 
         public FiringLineCheckSystemBase(CollidersTable collidersTable, AffinityHandler affinityHandler, SceneFlagsManager flags) : base(flags)
         {
@@ -50,8 +51,8 @@ namespace ZE.MechBattle.Ecs {
             _weaponShotPoints = World.GetStash<WeaponShotPoint>();
             _weaponRanges = World.GetStash<WeaponRangeComponent>();
 
-            _commandsList = new NativeList<RaycastCommand>(Allocator.Persistent);
-            _resultsList = new NativeList<RaycastHit>(Allocator.Persistent);
+            _raycastCommands = default;
+            _results = default;
         }
 
         public override void OnUpdate(float deltaTime)
@@ -71,8 +72,8 @@ namespace ZE.MechBattle.Ecs {
         protected override void InternalDispose()
         {
             _activeJobHandle.Complete();
-            _commandsList.Dispose();
-            _resultsList.Dispose();
+            _raycastCommands.Dispose();
+            _results.Dispose();
         }
 
         protected void TryLaunchNextJob()
@@ -100,14 +101,15 @@ namespace ZE.MechBattle.Ecs {
         {
             _isJobActive = false;
             _activeJobEntities.Clear();
-            _commandsList.Clear();
-            _resultsList.Clear();
         }
 
         // returns true if fireline is not obstructed completely or obstructed by enemy
         protected bool IsFirelineClear(int resultsIndex, Entity weaponEntity, Entity targetEntity)
         {
-            var result = _resultsList[resultsIndex];
+            var c = _raycastCommands[resultsIndex];
+            MessageBroker.Publish(c);
+
+            var result = _results[resultsIndex];
             if (result.colliderInstanceID != 0)
             {
                 // if raycast hit actual target or at least hit enemy:

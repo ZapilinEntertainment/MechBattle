@@ -3,6 +3,7 @@ using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 using Unity.Mathematics;
 using VContainer;
+using ZE.Utils;
 
 namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -17,17 +18,21 @@ namespace ZE.MechBattle.Ecs {
 
         protected override void PrepareAndLaunchJob()
         {
+            var count = _activeJobEntities.Count;
+            _results = ExtendNativeCollectionCommand.ExecuteIfNeeded(_results, count, ALLOCATOR);
+            _raycastCommands = ExtendNativeCollectionCommand.ExecuteIfNeeded(_raycastCommands, count, ALLOCATOR);
+
+            var i = 0;
             foreach (var entityCastData in _activeJobEntities)
             {
                 var shotPoint = _weaponShotPoints.Get(entityCastData.WeaponEntity).WorldPoint;
                 var range = _weaponRanges.Get(entityCastData.WeaponEntity).MaxRange;
 
-                _commandsList.Add(new RaycastCommand(from: shotPoint.pos, direction: math.forward(shotPoint.rot), _queryParameters, range));
+                _raycastCommands[i++] = new RaycastCommand(from: shotPoint.pos, direction: math.forward(shotPoint.rot), _queryParameters, range);
             }
-            _resultsList.ResizeUninitialized(_activeJobEntities.Count);
+            
 
-            // Schedule the batch of raycasts.
-            _activeJobHandle = RaycastCommand.ScheduleBatch(_commandsList.AsArray(), _resultsList.AsArray(), minCommandsPerJob: 64, maxHits: 1);
+            _activeJobHandle = RaycastCommand.ScheduleBatch(_raycastCommands.GetSubArray(0, count), _results.GetSubArray(0, count), minCommandsPerJob: 64, maxHits: 1);
             _isJobActive = true;
         }
 

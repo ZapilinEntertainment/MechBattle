@@ -95,7 +95,7 @@ namespace ZE.MechBattle.Ecs
 
             // create or extend if size is not enough
             _entitiesMap = ExtendNativeCollectionCommand.Execute(_entitiesMap, nativeCellsFilter.length, ALLOCATOR);
-            _handlingEntitiesData = ExtendNativeCollectionCommand.Execute(_handlingEntitiesData, _handlingEntitiesCount.Value, ALLOCATOR);
+            _handlingEntitiesData = ExtendNativeCollectionCommand.ExecuteIfNeeded(_handlingEntitiesData, _handlingEntitiesCount.Value, ALLOCATOR);
             _targetEntitiesData.Clear();
 
             var prepareJob = new PrepareTargetSearchJob()
@@ -128,7 +128,7 @@ namespace ZE.MechBattle.Ecs
             UpdateRelationsMask();
 
             var elementsCount = _handlingEntitiesCount.Value == 0 ? _handlingEntitiesData.Length : _handlingEntitiesCount.Value;
-            _resultingArray = ExtendNativeCollectionCommand.Execute(_resultingArray, elementsCount, ALLOCATOR);
+            _resultingArray = ExtendNativeCollectionCommand.ExecuteIfNeeded(_resultingArray, elementsCount, ALLOCATOR);
 
             var calculationJob = new ClosestTargetDefineJob()
             {

@@ -12,8 +12,13 @@ namespace ZE.MechBattle.Ecs {
         {
         }
 
-        protected override void SetAim(Entity weaponEntity, bool haveTower, float3 localTargetPos)
+        protected override void SetBarrelAim(Entity weaponEntity)
         {
+            var targetPos = _targetPositions.Get(weaponEntity).Value;
+            var towerComponent = _weaponTowers.Get(weaponEntity, out var haveTower);
+            var parentPoint = _transformAspectHandler.GetPoint(haveTower ? towerComponent.TowerEntity : weaponEntity);
+            var localTargetPos = MathExtensions.InverseTransformPoint(targetPos, parentPoint.pos, parentPoint.rot);
+
             var barrelEntity = _weaponBarrels.Get(weaponEntity).BarrelEntity;
 
             float3 normalizedTargetDir;
