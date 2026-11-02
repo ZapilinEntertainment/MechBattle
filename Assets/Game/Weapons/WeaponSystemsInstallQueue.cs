@@ -1,3 +1,5 @@
+using ZE.MechBattle.Projectiles;
+
 namespace ZE.MechBattle.Ecs
 {
     public class WeaponSystemsInstallQueue : FeatureSystemsInstallQueue
@@ -11,9 +13,11 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<WeaponTargetPositionSetSystem>(SystemGroupOrder.WeaponUpdates);
             installer.AddSystem<CheckAttackRangeSystem>(SystemGroupOrder.WeaponUpdates);            
             installer.AddSystem<WeaponDirectAimCalculationSystem>(SystemGroupOrder.WeaponUpdates);
+            installer.AddSystem<WeaponHighAngleAimSystem>(SystemGroupOrder.WeaponUpdates);
 
             installer.AddSystem<AimCheckSystem>(SystemGroupOrder.WeaponUpdates);
             installer.AddSystem<FiringLineRaycastCheckSystem>(SystemGroupOrder.WeaponUpdates);
+            installer.AddSystem<FiringLineHighArcCheckSystem>(SystemGroupOrder.WeaponUpdates);
 
             installer.AddSystem<WeaponChargeEnergyConsumeSystem>(SystemGroupOrder.WeaponUpdates);
             installer.AddSystem<WeaponChargeUpdateSystem>(SystemGroupOrder.WeaponUpdates);
@@ -26,6 +30,8 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<WeaponStopFireSystem>(SystemGroupOrder.WeaponUpdates);
 
             installer.AddSystem<WeaponStowSystem>(SystemGroupOrder.WeaponUpdates);
+
+            ProjectilesSubfeatureInstaller.ConfigureSystems(installer);
         }
     }
 }

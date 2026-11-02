@@ -4,6 +4,7 @@ using VContainer;
 using Unity.Mathematics;
 using ZE.MechBattle.Ecs;
 using ZE.MechBattle.Weapons;
+using ZE.MechBattle.Projectiles;
 
 namespace ZE.MechBattle
 {
@@ -16,6 +17,7 @@ namespace ZE.MechBattle
         private readonly WeaponHandler _weaponHandler;
 
         private readonly List<IWeaponFeatureApplier> _featureAppliers;
+       
 
         private readonly Stash<WeaponRangeComponent> _ranges;
         private readonly Stash<WeaponLoadingComponent> _weaponUpdateComponents;        
@@ -177,6 +179,6 @@ namespace ZE.MechBattle
         {
             if (flags.HasFlag(WeaponFeatureFlags.ContinuousFiring))
                 _continuousFiringTags.Add(weaponEntity);
-        }
+        }       
     }
 }

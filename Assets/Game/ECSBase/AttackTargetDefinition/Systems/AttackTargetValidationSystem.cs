@@ -20,11 +20,12 @@ namespace ZE.MechBattle.Ecs {
         public void OnUpdate(float deltaTime) 
         {
             foreach (var entity in _targetCheckFilter)
-            {
+            {               
                 var target = _targetsStash.Get(entity).Entity;
-                if (!World.Has(target))
+                if (World.IsDisposed(target))
                 {
                     _targetsStash.Remove(entity);
+                    //UnityEngine.Debug.Log($"cleared {target.Id}");
                 }                    
             }
         }
