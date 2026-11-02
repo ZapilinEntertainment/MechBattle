@@ -19,11 +19,16 @@ namespace ZE.MechBattle.Ecs
         [ReadOnly] public NativeStash<PositionComponent> PositionComponents;
         [ReadOnly] public NativeStash<TargetSearchRadiusComponent> SearchRadiusStash;
         [ReadOnly] public NativeStash<TargetDataComponent> TargetDataStash;
+        [ReadOnly] public NativeStash<HexCoordComponent> HexCoords;
         [ReadOnly] public NativeReference<int> HandlingEntitiesCount;
 
         public NativeHashMap<IntTriangularPos, int> EntitiesMap;
-        public NativeList<ClosestTargetDefineJob.TargetEntityData> TargetEntitiesData;
-        [WriteOnly] public NativeArray<ClosestTargetDefineJob.HandlingEntityData> HandlingEntitiesData;       
+        public NativeList<PotentialTargetEntityData> TargetEntitiesData;
+        public NativeHashMap<int2, uint> PlayerPresenceMap;
+        public float TriangleHeightInverted;
+        public int LongRangeSearchLimit;
+
+        [WriteOnly] public NativeArray<TargetSearchingEntityData> HandlingEntitiesData;       
         
 
         public void Execute()
@@ -38,7 +43,7 @@ namespace ZE.MechBattle.Ecs
             for (var i = 0; i < MovementCellsFilter.length; i++)
             {
                 var occupationEntity = MovementDataStash.Get(MovementCellsFilter[i]).Value.Entity;
-                if (!TargetDataStash.Has(occupationEntity))
+                if (!TargetDataStash.Has(occupationEntity) || !HexCoords.Has(occupationEntity))
                 {
                     skipEntitiesList.Set(i, true);
                     continue;
@@ -73,8 +78,7 @@ namespace ZE.MechBattle.Ecs
                 if (skipEntitiesList.IsSet(i))
                     continue;
 
-                var tripos = CellComponentsStash.Get(MovementCellsFilter[i]).Tripos;
-
+                var tripos = CellComponentsStash.Get(MovementCellsFilter[i]).Tripos;                
                 
                 var occupantEntityId = entity.Id - minId;
                 var occupantEntityDataIndex = entityIdToDataIndex[occupantEntityId];
@@ -84,7 +88,7 @@ namespace ZE.MechBattle.Ecs
                     entityIdToDataIndex[occupantEntityId] = occupantEntityDataIndex;
                 }
                     
-                EntitiesMap.Add(tripos, occupantEntityDataIndex);               
+                EntitiesMap.Add(tripos, occupantEntityDataIndex);
             }
            // UnityEngine.Debug.Log($"unique entities count: {uniqueEntitiesCount}");
 
@@ -107,9 +111,25 @@ namespace ZE.MechBattle.Ecs
                 if (isDataPrepared.IsSet(dataIndex))
                     continue;
 
-                var playerAffiliationComponent = AffiliationsStash.Get(entity, out var haveAffiliation);    
-                TargetEntitiesData[dataIndex] = new(entity, haveAffiliation ? playerAffiliationComponent.PlayerKey.Id : -1, PositionComponents.Get(entity).Value);
+                var playerAffiliationComponent = AffiliationsStash.Get(entity, out var haveAffiliation);
+                var hexCoord = HexCoords.Get(entity).Value;
+                var playerId = haveAffiliation ? playerAffiliationComponent.PlayerKey.Id : -1;
+
+                TargetEntitiesData[dataIndex] = new(
+                    entity, 
+                    playerId, 
+                    PositionComponents.Get(entity).Value,
+                    hexPos: hexCoord);
                 isDataPrepared.Set(dataIndex, true);
+
+                if (playerId != -1)
+                {
+                    if (!PlayerPresenceMap.TryGetValue(hexCoord, out var playerPresenceMask))
+                        playerPresenceMask = 0;
+
+                    PlayerPresenceMap[hexCoord] = playerPresenceMask |= (uint)(1 << playerId);
+                }
+                
             }
 
             // 4. save handling entities data
@@ -131,10 +151,35 @@ namespace ZE.MechBattle.Ecs
                 {
                     // if not - add to the end of target entities data
                     handlingEntityDataIndex = uniqueEntitiesCount++;
-                    TargetEntitiesData.Add(new(entity, AffiliationsStash.Get(entity).PlayerKey.Id, PositionComponents.Get(entity).Value));
+                    var hexCoord = HexCoords.Get(entity).Value;
+                    var playerId = AffiliationsStash.Get(entity).PlayerKey.Id;
+
+                    TargetEntitiesData.Add(new(
+                        entity,
+                        playerId, 
+                        PositionComponents.Get(entity).Value,
+                        hexPos: hexCoord
+                        ));
+
+                    if (playerId != -1)
+                    {
+                        if (!PlayerPresenceMap.TryGetValue(hexCoord, out var playerPresenceMask))
+                            playerPresenceMask = 0;
+
+                        PlayerPresenceMap[hexCoord] = playerPresenceMask |= (uint)(1 << playerId);
+                    }
                 }
 
-                HandlingEntitiesData[i] = new(handlingEntityDataIndex, SearchRadiusStash.Get(entity).Value);
+                var searchRadiusComponent = SearchRadiusStash.Get(entity);
+                var searchRadiusInUnits = searchRadiusComponent.MaxRadius;
+
+                var trisRadius = (int)math.ceil(searchRadiusInUnits * TriangleHeightInverted) + 1;
+                HandlingEntitiesData[i] = new(
+                    handlingEntityDataIndex, 
+                    searchRadiusInUnits , 
+                    trisRadius, 
+                    trisRadius >= LongRangeSearchLimit,
+                    minRange: searchRadiusComponent.MinRadius);
             }
 
              //UnityEngine.Debug.Log($"final unique entities count: {uniqueEntitiesCount} / {TargetEntitiesData.Length}");

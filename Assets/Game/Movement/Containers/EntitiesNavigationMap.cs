@@ -107,6 +107,8 @@ namespace ZE.MechBattle
 
         public bool TryGetEntity(IntTriangularPos tripos, out Entity entity) => 
             _cells.TryGetValue(tripos, out entity);
+
+        public int GetHexCount() => _hexes.Count;
         #endregion
     }
 }

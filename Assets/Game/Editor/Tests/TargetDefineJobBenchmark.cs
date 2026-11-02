@@ -185,7 +185,7 @@ namespace ZE.MechBattle.Editor.Tests
             _targetsStash.Set(entity);
             _hexCoordsStash.Set(entity, new() { Value = hexCoord });
             _positionsStash.Set(entity, new() { Value = TriangularMath.TriangularToWorld(pos, _map.TriangleHeight) });
-            _targetSearchRadiusStash.Set(entity, new(_targetSearchRadius));
+            _targetSearchRadiusStash.Set(entity, new(_targetSearchRadius, 0f));
             return entity;
         }
     }

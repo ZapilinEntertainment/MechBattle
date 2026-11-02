@@ -45,5 +45,9 @@ namespace ZE.MechBattle
         int IUnitConfig.CapturePower => ((IUnitConfig)_unitConfig).CapturePower;
 
         public IUnitFeatureConfig[] FeatureConfigs => ((IUnitConfig)_unitConfig).FeatureConfigs;
+
+        public float MinTargetDistance => ((IUnitConfig)_unitConfig).MinTargetDistance;
+
+        public float TargetSearchCooldown => ((IUnitConfig)_unitConfig).TargetSearchCooldown;
     }
 }

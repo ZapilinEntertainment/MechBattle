@@ -106,8 +106,8 @@ namespace ZE.MechBattle.Ecs {
         // returns true if fireline is not obstructed completely or obstructed by enemy
         protected bool IsFirelineClear(int resultsIndex, Entity weaponEntity, Entity targetEntity)
         {
-            var c = _raycastCommands[resultsIndex];
-            MessageBroker.Publish(c);
+            //var c = _raycastCommands[resultsIndex];
+            //MessageBroker.Publish(c);
 
             var result = _results[resultsIndex];
             if (result.colliderInstanceID != 0)

@@ -16,13 +16,13 @@ namespace ZE.MechBattle.Ecs
         private Filter _searchEntitiesFilter;
         private Filter _cellsFilter;
         private Stash<ClosestAttackTargetComponent> _closestTargets;
-        private Stash<NextCloseTargetSearchTimeComponent> _cooldownComponents;
+        private Stash<NextCloseTargetSearchTimeComponent> _nextTimeComponents;
+        private Stash<ClosestTargetSearchCooldownComponent> _cooldowns;
 
         private readonly INavigationMap _navigationMap;
         private readonly TargetDefineProcess _targetDefineProcess;
         private readonly Predicate<(Entity attacker, Entity target)> _applyFunc;
 
-        private const float CLOSEST_TARGET_SEARCH_COOLDOWN = 3f;
         private const int MAX_HANDLING_ENTITIES_COUNT = 1024;
 
         [Inject]
@@ -45,6 +45,7 @@ namespace ZE.MechBattle.Ecs
                 .With<TargetSearchRadiusComponent>()
                 .With<PlayerAffiliationComponent>()                
                 .With<HexCoordComponent>()
+                .With<ClosestTargetSearchCooldownComponent>()
                 .Without<EntityDisposeTag>()
                 .Without<NextCloseTargetSearchTimeComponent>()
                 .Build();
@@ -52,7 +53,8 @@ namespace ZE.MechBattle.Ecs
             _cellsFilter = World.Filter.With<CellMovementDataComponent>().Without<EntityDisposeTag>().Build();
 
             _closestTargets = World.GetStash<ClosestAttackTargetComponent>();
-            _cooldownComponents = World.GetStash<NextCloseTargetSearchTimeComponent>();
+            _nextTimeComponents = World.GetStash<NextCloseTargetSearchTimeComponent>();
+            _cooldowns = World.GetStash<ClosestTargetSearchCooldownComponent>();
         }
 
         public override void OnUpdate(float deltaTime) 
@@ -96,7 +98,7 @@ namespace ZE.MechBattle.Ecs
             var correctTarget = !World.IsDisposed(result.target);
             if (correctTarget)
                 _closestTargets.Set(result.attacker, new() { Entity = result.target });
-            _cooldownComponents.Set(result.attacker, new(Time.time + CLOSEST_TARGET_SEARCH_COOLDOWN));
+            _nextTimeComponents.Set(result.attacker, new(Time.time + _cooldowns.Get(result.attacker).Value));
 
             return correctTarget;
         }
