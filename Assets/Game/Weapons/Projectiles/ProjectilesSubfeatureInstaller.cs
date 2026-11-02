@@ -20,9 +20,7 @@ namespace ZE.MechBattle.Projectiles
 
         public static void ConfigureSystems(ISystemsOperator installer)
         {
-            installer.AddSystem<RestorationSystem>(SystemGroupOrder.Default);
             installer.AddSystem<ProjectileCreateSystem>(SystemGroupOrder.Default);
-
             installer.AddSystem<ProjectileGravityAffectionSystem>(SystemGroupOrder.RegularUpdate);
             installer.AddSystem<ProjectilesMoveVectorCalculationSystem>(SystemGroupOrder.RegularUpdate);            
             installer.AddSystem<ProjectileMoveApplySystem>(SystemGroupOrder.RegularUpdate);

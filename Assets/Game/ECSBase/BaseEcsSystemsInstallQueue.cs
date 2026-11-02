@@ -11,6 +11,7 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<ClosestTargetSearchDelaySystem>(SystemGroupOrder.EarlyUpdate);
             installer.AddSystem<ClosestAttackTargetDefineSystem>(SystemGroupOrder.EarlyUpdate);
 
+            installer.AddSystem<RestorationSystem>(SystemGroupOrder.Default);
             installer.AddSystem<AttackTargetValidationSystem>(SystemGroupOrder.Default);
             installer.AddSystem<AttackTargetSpecificationSystem>(SystemGroupOrder.Default);
             installer.AddSystem<WeaponTargetSelectSystem>(SystemGroupOrder.Default);
@@ -33,6 +34,8 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<EntityDisposeSystem>(SystemGroupOrder.Dispose);
             installer.AddSystem<TagsClearSystem<TransformUpdatedTag>>(SystemGroupOrder.Dispose);
             installer.AddSystem<CompletedRequestsClearSystem>(SystemGroupOrder.Dispose);
+
+            
         }
     }
 }
