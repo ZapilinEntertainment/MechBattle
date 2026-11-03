@@ -27,7 +27,7 @@ namespace ZE.MechBattle.Develop
 
             _filter = world.Filter
                 .With<NavigationAgentComponent>()
-                .With<UnitTag>()
+                .With<UnitKeyComponent>()
                 .Build();
         }
 

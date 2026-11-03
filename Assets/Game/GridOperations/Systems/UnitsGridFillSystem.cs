@@ -24,7 +24,7 @@ namespace ZE.MechBattle.Ecs {
         {
             _filter = World.Filter
                 .With<HexCoordComponent>()
-                .With<UnitTag>()
+                .With<UnitKeyComponent>()
                 .Without<EntityDisposeTag>()
                 .Build();
 
