@@ -1,6 +1,6 @@
 using System;
 
-namespace ZE.MechBattle
+namespace ZE.Utils
 {
     public interface IPoolableObject<T> : IDisposable, IPoolableObject
     {

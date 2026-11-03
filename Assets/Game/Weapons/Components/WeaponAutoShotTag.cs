@@ -1,5 +1,4 @@
 using Scellecs.Morpeh;
-using UnityEngine;
 using Unity.IL2CPP.CompilerServices;
 
 namespace ZE.MechBattle.Ecs {

@@ -1,16 +1,12 @@
 using UnityEngine;
-using ZE.MechBattle.Vfx;
+using ZE.Utils;
 
 namespace ZE.MechBattle
 {
     public class EnergyCellUiViewPool : MonoViewPoolBase<EnergyCellUiView>
     {
-        public EnergyCellUiViewPool(EnergyCellUiView prefab, Transform hostOfPools) : base(prefab, hostOfPools)
+        public EnergyCellUiViewPool(EnergyCellUiView prefab, Transform hostOfPools) : base(prefab, hostOfPools, nameof(EnergyCellUiViewPool), 16, 128)
         {
         }
-
-        protected override string PoolHostObjectName => nameof(EnergyCellUiViewPool);
-
-        protected override int DefaultCapacity => 16;
     }
 }

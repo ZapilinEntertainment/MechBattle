@@ -51,11 +51,7 @@ namespace ZE.MechBattle.Editor.Tests
             _cellEntityComponents = _world.GetStash<CellEntityComponent>();
             _cellMovementDataComponents = _world.GetStash<CellMovementDataComponent>();
 
-            var playersList = new PlayersList();
-            for (var i = 0; i < playersList.Count; i++)
-            {
-                playersList.AddPlayerEntity(new PlayerKey(i), _world.CreateEntity());
-            }
+            var playersList = CreatePlayersList(_world);
             _relations = new();
             _process = new(_map, playersList, _movementCellsMap, _relations, _world);
         }
@@ -65,6 +61,15 @@ namespace ZE.MechBattle.Editor.Tests
         {
             _process.Dispose();
             _world.Dispose();
+        }
+
+        private static PlayersList CreatePlayersList(World world)
+        {
+            var playerFactory = new PlayerFactory(world);
+
+            var configs = new PlayerConfig[2];
+            var playerConfigs = new PlayerConfigsList(configs, new(0));
+            return new PlayersList(playerFactory, playerConfigs);
         }
 
 
@@ -180,7 +185,7 @@ namespace ZE.MechBattle.Editor.Tests
             _targetsStash.Set(entity);
             _hexCoordsStash.Set(entity, new() { Value = hexCoord });
             _positionsStash.Set(entity, new() { Value = TriangularMath.TriangularToWorld(pos, _map.TriangleHeight) });
-            _targetSearchRadiusStash.Set(entity, new(_targetSearchRadius));
+            _targetSearchRadiusStash.Set(entity, new(_targetSearchRadius, 0f));
             return entity;
         }
     }

@@ -40,7 +40,7 @@ namespace ZE.MechBattle.Ecs {
             {
                 var projectileId = _projectiles.Get(weaponEntity).ProjectileKey;
                 var shotPoint = _shotPoints.Get(weaponEntity).WorldPoint;
-                _requestsFactory.CreateProjectileRequestByKey(projectileId, shotPoint, weaponEntity);
+                _requestsFactory.CreateProjectileRequestById(projectileId, shotPoint, weaponEntity);
             }
         }
 

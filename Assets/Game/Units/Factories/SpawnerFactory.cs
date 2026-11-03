@@ -63,8 +63,6 @@ namespace ZE.MechBattle
             _triangularPositionApplier.Apply(entity, spawner.WorldPos);
             _positionComponents.Set(entity, new() { Value = spawner.WorldPos });
 
-            _playerAffiliationComponents.Set(entity, new(spawner.PlayerKey));
-
             if (spawner.TryGetLimit(out var limit))
                 _spawnOperationsLeftComponents.Set(entity, new() { Value = limit});
             else

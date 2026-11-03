@@ -29,7 +29,7 @@ namespace ZE.MechBattle.Develop
         private bool _isReady = false;
         private Filter _hexFilter;
         private INavigationMap _navigationMap;
-        private IPlayersList _playersList;
+        private FactionHandler _factionsHandler;
         private Stash<HexComponent> _hexComponents;
         private Stash<HexCaptureStateComponent> _captureStates;
 
@@ -48,11 +48,11 @@ namespace ZE.MechBattle.Develop
         }
 
         [Inject]
-        public void Inject(World world, INavigationMap map, IPlayersList playersList)
+        public void Inject(World world, INavigationMap map, FactionHandler factionHandler)
         {
             _hexFilter = world.Filter.With<HexComponent>().With<HexCaptureStateComponent>().Build();
             _navigationMap = map;
-            _playersList = playersList;
+            _factionsHandler = factionHandler;
 
             _hexComponents = world.GetStash<HexComponent>();
             _captureStates = world.GetStash<HexCaptureStateComponent>();
@@ -83,7 +83,7 @@ namespace ZE.MechBattle.Develop
                 if (captureState.ControllingPlayerId == -1)
                     continue;
 
-                var playerColor = _playersList.GetPlayerColor(new PlayerKey(captureState.ControllingPlayerId));
+                var playerColor = _factionsHandler.GetFactionColor(new PlayerKey(captureState.ControllingPlayerId));
                 playerColor.a = captureState.CaptureProgress * _maxCaptureValueAlpha;
                 _drawData.Add(new(new Vector3(worldPos.x, 0.01f, worldPos.y), playerColor));
             }

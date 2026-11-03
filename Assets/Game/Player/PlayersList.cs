@@ -1,14 +1,15 @@
 using System.Collections.Generic;
-using UnityEngine;
 using Scellecs.Morpeh;
+using VContainer;
 
 namespace ZE.MechBattle
 {
     public interface IPlayersList
     {
         int Count { get; }
-        Color GetPlayerColor(PlayerKey playerKey);
+        bool TryGetPlayerEntity(PlayerKey playerKey, out Entity entity);
         Entity GetPlayerEntity(PlayerKey playerKey);
+        Entity GetLocalPlayerEntity();
     }
 }
 
@@ -17,41 +18,53 @@ namespace ZE.MechBattle.PlayerData
     
     public class PlayersList : IPlayersList
     {
-        private struct PlayerData
+        public int Count => _configsList.Count;
+        private readonly Dictionary<PlayerKey, Entity> _players = new();
+        private readonly PlayerFactory _playerFactory;
+        private readonly PlayerConfigsList _configsList;
+
+        [Inject]
+        public PlayersList(PlayerFactory playerFactory, PlayerConfigsList playerConfigsList)
         {
-            public Entity Entity;
-            public Color Color;
+            _playerFactory = playerFactory;
+            _configsList = playerConfigsList;
         }
 
-        private readonly Dictionary<PlayerKey, PlayerData> _players = new();
-        private readonly Color[] _colors = new Color[MAX_PLAYERS]
+        public Entity GetPlayerEntity(PlayerKey key) => GetOrCreatePlayer(key);
+        public Entity GetLocalPlayerEntity() => GetOrCreatePlayer(_configsList.LocalPlayerKey);
+
+        private Entity GetOrCreatePlayer(PlayerKey key)
         {
-            Color.white,
-            Color.blue,
-            Color.red,
-            Color.green,
-            Color.yellow,
-            Color.purple,
-            Color.pink,
-            Color.orange
-        };
+            if (_players.TryGetValue(key, out var playerEntity))
+                return playerEntity;
 
-        // #MAX_PLAYERS - dependency
-        private const int MAX_PLAYERS = 8;    
-        public int Count => MAX_PLAYERS;
-
-        public Color GetPlayerColor(PlayerKey playerKey) => _players.TryGetValue(playerKey, out var playerData) ? playerData.Color : Color.white;
-        public Entity GetPlayerEntity(PlayerKey playerKey) => _players.TryGetValue(playerKey, out var playerData) ? playerData.Entity : default;
-
-        public void AddPlayerEntity(PlayerKey playerKey, Entity entity)
-        {
-            var data = new PlayerData()
+            var id = key.Id;
+            if (!_configsList.TryGetPlayerConfig(id, out var playerConfig))
             {
-                Entity = entity,
-                Color = _colors[playerKey.Id]
-            };
+#if UNITY_EDITOR
+                UnityEngine.Debug.LogError($"no player {id} config presented");
+                return default;
+#endif
+            }
 
-            _players.Add(playerKey, data);
+            playerEntity = _playerFactory.CreatePlayer(key, playerConfig);
+            _players.Add(key, playerEntity);
+            return playerEntity;
+        }
+
+        public bool TryGetPlayerEntity(PlayerKey playerKey, out Entity entity)
+        {
+            if ((uint)playerKey.Id >= (uint)_configsList.Count)
+            {
+                entity = default;
+                return false;
+            }
+            else
+            {
+                entity = GetOrCreatePlayer(playerKey);
+                return true;
+            }
+                
         }
     }
 }

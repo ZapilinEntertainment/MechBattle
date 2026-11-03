@@ -22,6 +22,7 @@ namespace ZE.MechBattle.MechBuilding
         private readonly Stash<CompositeTargetComponent> _compositeTargetComponents;
         private readonly Stash<CalculateTrianglePositionTag> _calculateTrianglePosTags;
         private readonly Stash<PrimaryTargetingObjectTag> _primaryTargetingObject;
+        private readonly Stash<TargetDataComponent> _targetData;
 
         [Inject]
         public MechBuilder(MonoViewFactory viewFactory, TransformAspectHandler transformAspectHandler, World world)
@@ -35,6 +36,7 @@ namespace ZE.MechBattle.MechBuilding
             _compositeTargetComponents = world.GetStash<CompositeTargetComponent>();
             _calculateTrianglePosTags = world.GetStash<CalculateTrianglePositionTag>();
             _primaryTargetingObject = world.GetStash<PrimaryTargetingObjectTag>();
+            _targetData = world.GetStash<TargetDataComponent>();
         }
 
         public Entity Build(MechConfig mechConfig, float3 position, quaternion rotation)
@@ -50,6 +52,8 @@ namespace ZE.MechBattle.MechBuilding
             _calculateTrianglePosTags.Add(MechEntity);
 
             _primaryTargetingObject.Add(MechEntity);
+
+            _targetData.Add(MechEntity);
 
             return MechEntity;
         }

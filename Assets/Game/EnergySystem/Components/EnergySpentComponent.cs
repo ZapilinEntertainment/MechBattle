@@ -6,7 +6,7 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public struct EnergySpentComponent : IComponent 
+    public struct EnergySpentComponent : IOneFrameComponent 
     {
         public float Volume;
     

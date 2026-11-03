@@ -9,10 +9,6 @@ namespace ZE.MechBattle
 {
     public class SceneScope : FeaturedScopeBase<ISceneFeatureScopeInstaller, ISceneFeatureInitializer, ISceneFeaturePostInitializer>
     {
-        [SerializeField] private MapSettingsSO _mapSettings;
-        [SerializeField] private LevelSettingsObject _levelSettings;
-        [SerializeField] private Transform _activeObjectsHost;
-
         protected override void Configure(IContainerBuilder builder)
         {
             base.Configure(builder);
@@ -24,15 +20,9 @@ namespace ZE.MechBattle
             builder.Register<SceneFlagsManager>(Lifetime.Scoped);
             builder.Register<RestorablesList>(Lifetime.Scoped);            
 
-            builder.Register<ColouredMaterialsDepot>(Lifetime.Scoped);
+            builder.Register<ColouredMaterialsDepot>(Lifetime.Scoped);            
 
-            builder.RegisterInstance(_mapSettings.ToSettingsObject());
-
-            builder.RegisterInstance(_levelSettings);
-
-            RegisterStates(builder);
-
-            builder.RegisterBuildCallback(resolver => resolver.Resolve<SceneController>().ActiveSceneObjectsHost = _activeObjectsHost);
+            RegisterStates(builder);            
 
 #if UNITY_EDITOR
             UnityEngine.Debug.Log("scene scope configured");

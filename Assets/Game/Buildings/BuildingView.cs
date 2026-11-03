@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using ZE.MechBattle.Ecs;
+using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle
 {
-    public class BuildingView : DisposableGameObject, IView, IBuildingView, IMultiColliderView
+    public class BuildingView : DisposableGameObject, IView, IBuildingView, IMultiColliderView, IViewContainer, IComplexMonoView
     {
         [Serializable]
         public struct SerializedBlockZoneConfig
@@ -17,13 +18,11 @@ namespace ZE.MechBattle
             public CellOccupationLevelFlags Flags;
         }
 
-        [SerializeField] private DamageableEntityParameters _parameters;
         [SerializeField] private Collider[] _colliders;
-        [SerializeField] private string _destroyEffectKey;
         [SerializeField] private BuildingFunctionFlags _functionFlags;
         [SerializeField] private SerializedBlockZoneConfig _blockConfig;
-        public string ViewDestroyEffectKey => _destroyEffectKey;
         public BuildingFunctionFlags FunctionFlags => _functionFlags;
+        public IView ContainedView => this;
 
         public void FillCollidersList(ICollection<int> colliderInstanceIds)
         {
@@ -32,9 +31,6 @@ namespace ZE.MechBattle
                 colliderInstanceIds.Add(collider.GetInstanceID());
             }
         }
-
-        public DamageableEntityParameters GetParameters() => _parameters;
-        public IView GetView() => this;
 
         public bool TryGetBlockZoneConfig(out BlockZoneConfigComponent blockZoneConfigComponent)
         {
@@ -48,6 +44,23 @@ namespace ZE.MechBattle
            ? new(_blockConfig.Mode, _blockConfig.ExtentA, _blockConfig.ExtentB, _blockConfig.Flags)
            : new(_blockConfig.Mode, _blockConfig.ExtentA, _blockConfig.Flags);
             return true;
+        }
+
+        public void OnViewInstanced(IView prefab)
+        {
+            // todo: here can be replacing simple primitive view ( prefab model) to more detalized one
+        }
+
+        public bool TryGetPartByKey(ViewPartKey key, out IViewPart viewPart)
+        {
+            if (TryGetComponent<BuildingViewPartsComponent>(out var viewpartsComponent)
+                && viewpartsComponent.TryGetViewPart(key, out viewPart))
+            {
+                return true;
+            }
+
+            viewPart = default;
+            return false;
         }
     }
 }

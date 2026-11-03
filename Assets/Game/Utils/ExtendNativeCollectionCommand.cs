@@ -72,7 +72,7 @@ namespace ZE.Utils
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static NativeArray<TValue> Execute<TValue>(NativeArray<TValue> array, int newCapacity, Allocator allocator)
+        public static NativeArray<TValue> ExecuteIfNeeded<TValue>(NativeArray<TValue> array, int newCapacity, Allocator allocator)
             where TValue : unmanaged
         {
             var rebuild = false;

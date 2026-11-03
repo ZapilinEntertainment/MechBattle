@@ -5,6 +5,7 @@ using VContainer;
 using Unity.Burst;
 using System.Runtime.CompilerServices;
 using Scellecs.Morpeh.Native;
+using ZE.MechBattle.Navigation;
 
 namespace ZE.MechBattle.Ecs
 {
@@ -21,10 +22,13 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<LocalPositionComponent> _localPositions;
         private readonly Stash<LocalRotationComponent> _localRotation;
         private readonly Stash<ParentEntityComponent> _parentEntities;
+        private readonly INavigationMap _navigationMap;
 
         [Inject]
-        public TransformAspectHandler(World world)
+        public TransformAspectHandler(World world, INavigationMap navigationMap)
         {
+            _navigationMap = navigationMap;
+
             _positions = world.GetStash<PositionComponent>();
             _rotations = world.GetStash<RotationComponent>();
             _updateTags = world.GetStash<TransformUpdatedTag>();
@@ -53,6 +57,12 @@ namespace ZE.MechBattle.Ecs
             ref var rotationComponent = ref _rotations.Get(entity, out var rotationExists);
             if (!rotationExists || math.lengthsq(rotationComponent.Value) == 0f)
                 _rotations.Set(entity, new() { Value = quaternion.identity });
+        }
+
+        public void InitializeTriangularAndHexPositions(Entity entity, float3 worldPos)
+        {
+            _triangularPositions.Set(entity, new() { Value = TriangularMath.WorldToTrianglePosInvertedHeight(worldPos, _navigationMap.InvertedTriangleHeight) });
+            _hexCoordComponents.Set(entity, new() { Value = HexMath.DefineHex(worldPos.xz, _navigationMap.HexEdgeLength) });
         }
 
         public float3 GetPosition(Entity entity) => _positions.Get(entity).Value;

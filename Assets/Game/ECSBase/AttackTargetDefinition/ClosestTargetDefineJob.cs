@@ -1,8 +1,8 @@
 using Scellecs.Morpeh;
-using Scellecs.Morpeh.Native;
 using System;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Mathematics;
 using ZE.MechBattle.Navigation;
@@ -12,52 +12,26 @@ namespace ZE.MechBattle.Ecs
     [BurstCompile]
     public struct ClosestTargetDefineJob : IJobParallelFor
     {
-        public readonly struct HandlingEntityData
-        {
-            public readonly int EntityDataIndex;
-            public readonly float SearchRadiusInUnits;
-
-            public HandlingEntityData(int entityDataIndex, float searchRadiusInUnits)
-            {
-                EntityDataIndex = entityDataIndex;
-                SearchRadiusInUnits = searchRadiusInUnits;
-            }
-        }
-
-        public readonly struct TargetEntityData
-        {
-            public readonly int PlayerId;
-            public readonly Entity Entity;            
-            public readonly float3 WorldPos;
-
-            public TargetEntityData(Entity entity, int playerId, float3 worldPos)
-            {
-                Entity = entity;
-                PlayerId = playerId;
-                WorldPos = worldPos;
-            }
-        }
-
         public float HexEdgeLength;
         public float TriangleHeight;
 
         [ReadOnly] public NativeArray<PlayerRelationsMask> EnemiesMask;
         [ReadOnly] public NativeHashMap<IntTriangularPos, int>.ReadOnly EntitiesMap;
-        [ReadOnly] public NativeArray<TargetEntityData> TargetEntitiesData;
-        [ReadOnly] public NativeArray<HandlingEntityData>.ReadOnly HandlingEntitiesData;
+        [ReadOnly] public NativeArray<PotentialTargetEntityData> TargetEntitiesData;
+        [ReadOnly] public NativeArray<TargetSearchingEntityData>.ReadOnly HandlingEntitiesData;
 
-        [WriteOnly] public NativeArray<Entity> ResultingTargets;
+        [NativeDisableContainerSafetyRestriction][WriteOnly] public NativeArray<Entity> ResultingTargets;
 
         public void Execute(int index)
         {
             // note: using local functions and inner caching can increase execution time
             var handlingEntityData= HandlingEntitiesData[index];
             var handlingEntityDataIndex = handlingEntityData.EntityDataIndex;
-            if (handlingEntityDataIndex == -1)
+            if (handlingEntityDataIndex == -1 || handlingEntityData.UseLongRangeSearch)
                 return;
 
 
-            var searchRadiusInTriangles = (int)math.ceil(handlingEntityData.SearchRadiusInUnits / TriangleHeight) + 1;
+            
             var entityData = TargetEntitiesData[handlingEntityDataIndex];
 
             Entity closestEntity = default;
@@ -65,6 +39,7 @@ namespace ZE.MechBattle.Ecs
             var entityOwnerId = entityData.PlayerId;
             var entityEnemiesMask = EnemiesMask[entityOwnerId];
             var closestDistanceSq = handlingEntityData.SearchRadiusInUnits * handlingEntityData.SearchRadiusInUnits;
+            var minPossibleDistanceSq = handlingEntityData.MinRange * handlingEntityData.MinRange;
 
             var closestVirtualHexCenter = HexLogic.GetClosestVirtualHexPos(entityPosition, TriangleHeight);
             Span<IntTriangularPos> innerRingTriangles = stackalloc IntTriangularPos[6];
@@ -77,7 +52,7 @@ namespace ZE.MechBattle.Ecs
             }
 
             // enumerate one row per sector (ring enumeration), until closest enemy found
-            for (var rowIndex = 0; rowIndex < searchRadiusInTriangles; rowIndex++)
+            for (var rowIndex = 0; rowIndex < handlingEntityData.SearchRadiusInTriangles; rowIndex++)
             {
                 var rowCandidateFound = false;
                 for (var sectorIndex = 0; sectorIndex < 6; sectorIndex++)
@@ -95,7 +70,7 @@ namespace ZE.MechBattle.Ecs
                             continue;
 
                         var distanceSq = math.distancesq(entityPosition, targetEntityData.WorldPos);
-                        if (distanceSq < closestDistanceSq)
+                        if (distanceSq < closestDistanceSq && distanceSq >= minPossibleDistanceSq)
                         {
                             closestDistanceSq = distanceSq;
                             closestEntity = targetEntityData.Entity;

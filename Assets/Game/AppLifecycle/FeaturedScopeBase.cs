@@ -1,16 +1,26 @@
+using UnityEngine;
 using System.Collections.Generic;
 using VContainer;
 using VContainer.Unity;
+using ZE.MechBattle;
 
 public abstract class FeaturedScopeBase<FeatureInstallerType, FeatureInitializerType, FeaturePostInitializerType> : LifetimeScope
         where FeatureInstallerType : IFeatureInstaller
         where FeatureInitializerType: IFeatureInitializer
         where FeaturePostInitializerType: IFeaturePostInitializer
 {
+    [SerializeField] private ScopeConfigurationComponent[] _autoRegisterMonoBehaviours;
     protected IReadOnlyList<IFeatureModule> FeatureModulesList { get;private set; }   
 
     protected override void Configure(IContainerBuilder builder)
     {
+        if (_autoRegisterMonoBehaviours != null)
+        {
+            foreach (var configData in _autoRegisterMonoBehaviours)
+                configData.OnConfigure(builder);
+        }
+       
+
         FeatureModulesList = Parent.Container.Resolve<FeaturesModulesList>().Modules;
         BindInstallers(builder);
         builder.RegisterBuildCallback(container => 

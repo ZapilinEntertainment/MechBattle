@@ -1,5 +1,4 @@
 using Scellecs.Morpeh;
-using UnityEngine;
 using Unity.IL2CPP.CompilerServices;
 
 namespace ZE.MechBattle.Ecs {
@@ -9,11 +8,13 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public struct TargetSearchRadiusComponent : IComponent 
     {
-        public float Value;
+        public readonly float MaxRadius;
+        public readonly float MinRadius;
     
-        public TargetSearchRadiusComponent(float value)
+        public TargetSearchRadiusComponent(float maxRadius, float minRadius)
         {
-            Value = value;
+            MaxRadius = maxRadius;
+            MinRadius = minRadius;
         }
     }
 }

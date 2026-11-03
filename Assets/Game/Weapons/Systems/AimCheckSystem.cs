@@ -60,8 +60,10 @@ namespace ZE.MechBattle.Ecs {
         private bool IsWeaponPartInLimit(Entity weaponPartEntity, float limit)
         {
             var localRotation = _localRotations.Get(weaponPartEntity).Value;
-            var targetRotation = _localTargetRotations.Get(weaponPartEntity).Value;
-            return math.angle(localRotation, targetRotation) <= limit ;
+            var targetComponent = _localTargetRotations.Get(weaponPartEntity, out var targetExists);
+            if (!targetExists)
+                return false;
+            return math.angle(localRotation, targetComponent.Value) <= limit ;
         }
     }
 }

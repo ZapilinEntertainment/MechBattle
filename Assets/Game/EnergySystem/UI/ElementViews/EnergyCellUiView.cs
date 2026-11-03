@@ -1,6 +1,6 @@
-using System;
 using UnityEngine;
 using UnityEngine.UI;
+using ZE.Utils;
 
 namespace ZE.MechBattle
 {
@@ -62,6 +62,9 @@ namespace ZE.MechBattle
 
         public void OnRelease() 
         {
+            if (gameObject == null)
+                return;
+
             _energyLine.fillAmount = 0f;
             _damageLine.fillAmount = 0f;
             _repairMarker.SetActive(false);

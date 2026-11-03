@@ -1,7 +1,5 @@
-using UnityEngine;
 using Scellecs.Morpeh;
 using VContainer;
-using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle.Ecs
 {
@@ -9,7 +7,7 @@ namespace ZE.MechBattle.Ecs
     {
         private readonly World _world;
         private readonly ViewSynchronizationApplier _viewSyncApplier;
-        private readonly ViewContainersPool _viewContainersPool;
+        private readonly IViewContainersManager _viewContainersPool;
         private readonly StringDataDictionary _stringDataDict;
 
         private readonly Stash<ViewLoadRequestTag> _viewRequests;
@@ -21,7 +19,7 @@ namespace ZE.MechBattle.Ecs
         public MonoViewFactory(
             World world,
             ViewSynchronizationApplier viewSyncApplier,
-            ViewContainersPool viewContainersPool,
+            IViewContainersManager viewContainersPool,
             StringDataDictionary stringDataDictionary)
         {
             _world = world;

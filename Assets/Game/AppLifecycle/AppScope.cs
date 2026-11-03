@@ -20,7 +20,6 @@ namespace ZE.MechBattle.Ecs
 
     public class AppScope : LifetimeScope
     {
-        [SerializeField] private ViewContainer _viewContainerPrefab;
         [SerializeField] private FeaturesModulesList _modules;
 
         protected override void Configure(IContainerBuilder builder)
@@ -34,15 +33,11 @@ namespace ZE.MechBattle.Ecs
             }
             builder.RegisterInstance<FeaturesModulesList>(_modules);
 
-            // pre-setted values (serialized)           
-            PrepareViews(builder);
-
             // global managers with no resource dependencies
             builder.Register<AssetsManager>(Lifetime.Singleton);            
             builder.Register<StringDataDictionary>(Lifetime.Singleton);
             builder.Register<AppFlagsManager>(Lifetime.Singleton);        
-            builder.Register<ViewProviderFactory>(Lifetime.Singleton);
-            IFeatureInstaller.RegisterScriptable<ProjectilesData>(builder);
+            builder.Register<ViewProviderFactory>(Lifetime.Singleton);           
 
             // start loading heavy resources:
             builder.RegisterEntryPoint<AppAsyncEntryPoint>();
@@ -50,12 +45,6 @@ namespace ZE.MechBattle.Ecs
 #if UNITY_EDITOR
             UnityEngine.Debug.Log("app scope configured");
 #endif
-        }
-
-        private void PrepareViews(IContainerBuilder builder)
-        {
-            builder.RegisterInstance<ViewContainer>(_viewContainerPrefab);
-            builder.RegisterComponentOnNewGameObject<ViewContainersPool>(Lifetime.Singleton, typeof(ViewContainersPool).ToString()).AsSelf().As<IViewContainersPool>();
         }
     }
 }

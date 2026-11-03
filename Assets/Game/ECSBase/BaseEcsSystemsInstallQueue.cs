@@ -1,6 +1,6 @@
 namespace ZE.MechBattle.Ecs
 {
-    public class BaseEcsSystemsInstallQueue : FeatureSystemsInstallQueue
+    public sealed class BaseEcsSystemsInstallQueue : FeatureSystemsInstallQueue
     {
         protected override void Configure(ISystemsOperator installer)
         {
@@ -11,20 +11,15 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<ClosestTargetSearchDelaySystem>(SystemGroupOrder.EarlyUpdate);
             installer.AddSystem<ClosestAttackTargetDefineSystem>(SystemGroupOrder.EarlyUpdate);
 
+            installer.AddSystem<RestorationSystem>(SystemGroupOrder.Default);
             installer.AddSystem<AttackTargetValidationSystem>(SystemGroupOrder.Default);
             installer.AddSystem<AttackTargetSpecificationSystem>(SystemGroupOrder.Default);
             installer.AddSystem<WeaponTargetSelectSystem>(SystemGroupOrder.Default);
-            installer.AddSystem<CompositeTargetClearTagSystem>(SystemGroupOrder.AfterDispose);
-
-            installer.AddSystem<RestorationSystem>(SystemGroupOrder.Default);
-            installer.AddSystem<ProjectileCreateSystem>(SystemGroupOrder.Default);            
-
-            installer.AddSystem<ProjectileMoveSystem>(SystemGroupOrder.RegularUpdate);
-            installer.AddSystem<ProjectilesExplodeSystem>(SystemGroupOrder.RegularUpdate);
+            installer.AddSystem<CompositeTargetClearTagSystem>(SystemGroupOrder.AfterDispose);           
 
             // requires job completion
             installer.AddSystem<LocalRotationSystem>(SystemGroupOrder.TransformUpdates1);
-
+          
             installer.AddSystem<HierarchyTransformUpdateTagSync>(SystemGroupOrder.TransformUpdates2);
             installer.AddSystem<ChildPointsUpdateSystem>(SystemGroupOrder.TransformUpdates2);
             installer.AddSystem<TransformsSyncSystem>(SystemGroupOrder.TransformUpdates2);
@@ -37,7 +32,7 @@ namespace ZE.MechBattle.Ecs
 
             installer.AddSystem<LifetimeTrackingSystem>(SystemGroupOrder.Dispose);
             installer.AddSystem<EntityDisposeSystem>(SystemGroupOrder.Dispose);
-            installer.AddSystem<UpdateTagsClearSystem>(SystemGroupOrder.Dispose);
+            installer.AddSystem<TagsClearSystem<TransformUpdatedTag>>(SystemGroupOrder.Dispose);
             installer.AddSystem<CompletedRequestsClearSystem>(SystemGroupOrder.Dispose);
         }
     }

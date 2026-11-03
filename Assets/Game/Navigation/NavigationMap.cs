@@ -38,6 +38,7 @@ namespace ZE.MechBattle.Navigation
         void OnInitialized();
         bool ContainsHex(int2 hexCoord);
         bool TryGetHex(int2 hexCoord, out INavigationHex protectedHex);
+        int GetHexCount();
         INavigationHex GetOrCreateHex(int2 hexCoord);
        
 
@@ -150,6 +151,7 @@ namespace ZE.MechBattle.Navigation
           _cells.TryGetValue(pos, out var cell)
           ? cell
           : NavigationLogic.CreateDefaultCell(this, pos);
-       
+
+        public int GetHexCount() => _hexes.Count;
     }
 }

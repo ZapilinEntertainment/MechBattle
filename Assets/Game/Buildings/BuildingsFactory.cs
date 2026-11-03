@@ -1,7 +1,8 @@
+using System.Collections.Generic;
 using Scellecs.Morpeh;
-using UnityEngine;
 using VContainer;
 using ZE.MechBattle.Ecs;
+using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle
 {
@@ -9,56 +10,68 @@ namespace ZE.MechBattle
     {
         private readonly World _world;
         private readonly ViewSynchronizationApplier _viewSyncApplier;
-        private readonly StringDataDictionary _stringDataDictionary;
-        private readonly SpawnerFactory _spawnerFactory;
-
-        private readonly Stash<HealthComponent> _health;
-        private readonly Stash<ViewDestroyEffectComponent> _viewDestroyEffect;
-        private readonly Stash<DisposableViewComponent> _disposableView;
+        private readonly TransformAspectHandler _transformAspectHandler;
+        private readonly EntityViewHandler _viewHandler;
+        private readonly List<IBuildingFeatureApplier> _featureAppliers;
+      
         private readonly Stash<BlockZoneConfigComponent> _blockConfigs;
 
         [Inject]
         public BuildingsFactory(
             World world, 
             ViewSynchronizationApplier viewSyncApplier, 
-            StringDataDictionary stringDataDictionary,
-            SpawnerFactory spawnerFactory)
+            TransformAspectHandler transformAspectHandler,
+            EntityViewHandler viewHandler,
+            IEnumerable<IBuildingFeatureApplier> featureAppliers)
         {
             _world = world;
             _viewSyncApplier = viewSyncApplier;
-            _stringDataDictionary = stringDataDictionary;
-            _spawnerFactory = spawnerFactory;
+            _transformAspectHandler = transformAspectHandler;
+            _viewHandler = viewHandler;
 
-            _health = _world.GetStash<HealthComponent>();
-            _viewDestroyEffect = _world.GetStash<ViewDestroyEffectComponent>();
-            _disposableView = _world.GetStash<DisposableViewComponent>();
+            
+            if (featureAppliers != null)
+            {
+                _featureAppliers = new(4);
+                foreach (var featureApplier in featureAppliers)
+                {
+                    _featureAppliers.Add(featureApplier);
+                }
+            }
+            else
+            {
+                _featureAppliers = new(0);
+            }
+            
+
             _blockConfigs = _world.GetStash<BlockZoneConfigComponent>();
         }
 
         public Entity CreateEntityBySceneView(IBuildingView view)
         {
-            var entity = _world.CreateEntity();         
+            var entity = _world.CreateEntity();
+            _transformAspectHandler.InitializeTriangularAndHexPositions(entity, view.Transform.position);
 
-            var parameters = view.GetParameters();
-            _health.Set(entity, new(parameters.Health));
-
-            var destroyEffectKey = view.ViewDestroyEffectKey;
-            if (!string.IsNullOrEmpty(destroyEffectKey))
+            if (view is IViewContainer viewContainer)
             {
-                var encodedKey = _stringDataDictionary.StringToKey(destroyEffectKey);
-                _viewDestroyEffect.Set(entity, new() { EffectKey = encodedKey });
+                _viewHandler.AddOneShotViewAsViewContainer(entity, viewContainer);
             }
-
-            _disposableView.Add(entity, new(view.GameObject));
+#if UNITY_EDITOR
+            else
+            {
+                UnityEngine.Debug.LogWarning($"entity {entity.Id} cannot be added as container");
+            }
+#endif
 
             if (view.TryGetBlockZoneConfig(out var blockComponent))
                 _blockConfigs.Add(entity, blockComponent);
 
             var functionalFlags = view.FunctionFlags;
-            if (functionalFlags.HasFlag(BuildingFunctionFlags.Spawner) && view.GameObject.TryGetComponent<UnitsSpawnerMono>(out var spawner))
-            {
-                _spawnerFactory.SetupSpawnerData(entity, spawner);
-            }
+            foreach (var applier in _featureAppliers)
+            {                
+                if ((applier.RequiredFlagsMask & view.FunctionFlags) == applier.RequiredFlagsMask)
+                    applier.ApplyBuildingFeature(entity, view);
+            }          
 
             // should be last for correct entity components check
             _viewSyncApplier.Apply(entity, view, applyViewPosition: true);

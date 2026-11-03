@@ -2,15 +2,22 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Scellecs.Morpeh;
+using VContainer;
 
 namespace ZE.MechBattle
 {
 
     public class CollidersTable : IDisposable
     {
-        // TODO: add session end clearing
         private readonly Dictionary<int, Entity> _table = new();
+        private readonly World _world;
         private const int EXPECTED_MAX_COLLIDERS_COUNT = 8;
+
+        [Inject]
+        public CollidersTable(World world)
+        {
+            _world = world;
+        }
 
         public void RegisterCollider(Entity colliderOwner, int key) 
         {
@@ -44,7 +51,25 @@ namespace ZE.MechBattle
             }
         }
 
-        public bool TryGetColliderOwner(int key, out Entity colliderOwner) => _table.TryGetValue(key, out colliderOwner);
+        public bool TryGetColliderOwner(int key, out Entity colliderOwner)
+        {
+            if (_table.TryGetValue(key, out colliderOwner))
+            {
+                if (_world.IsDisposed(colliderOwner))
+                {
+                    _table.Remove(key);
+                    colliderOwner = default;
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+
+            colliderOwner = default;
+            return false;
+        }
 
         public void Dispose()
         {

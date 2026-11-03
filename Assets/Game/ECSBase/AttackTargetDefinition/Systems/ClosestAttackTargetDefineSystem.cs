@@ -11,16 +11,18 @@ namespace ZE.MechBattle.Ecs
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public sealed class ClosestAttackTargetDefineSystem : ISystem 
+    public sealed class ClosestAttackTargetDefineSystem : PausableSystem 
     {
-        public World World { get; set;}
-        private Filter _filter;
+        private Filter _searchEntitiesFilter;
+        private Filter _cellsFilter;
         private Stash<ClosestAttackTargetComponent> _closestTargets;
-        private Stash<NextCloseTargetSearchTimeComponent> _cooldownComponents;
+        private Stash<NextCloseTargetSearchTimeComponent> _nextTimeComponents;
+        private Stash<ClosestTargetSearchCooldownComponent> _cooldowns;
 
+        private readonly INavigationMap _navigationMap;
         private readonly TargetDefineProcess _targetDefineProcess;
         private readonly Predicate<(Entity attacker, Entity target)> _applyFunc;
-        private const float CLOSEST_TARGET_SEARCH_COOLDOWN = 3f;
+
         private const int MAX_HANDLING_ENTITIES_COUNT = 1024;
 
         [Inject]
@@ -29,29 +31,37 @@ namespace ZE.MechBattle.Ecs
             INavigationMap map, 
             IPlayersList playersList, 
             PlayerRelations playerRelations,
-            World world)
+            SceneFlagsManager sceneFlagsManager,
+            World world) : base(sceneFlagsManager)
         {
-            _targetDefineProcess = new(map, playersList, movementCellsMap, playerRelations, world);
+            _navigationMap = map;
+            _targetDefineProcess = new(_navigationMap, playersList, movementCellsMap, playerRelations, world);
             _applyFunc = TryApplyTarget;
         }
 
-        public void OnAwake() 
+        public override void OnAwake() 
         {
-            _filter = World.Filter
+            _searchEntitiesFilter = World.Filter
                 .With<TargetSearchRadiusComponent>()
-                .With<PlayerAffiliationComponent>()
+                .With<PlayerAffiliationComponent>()                
                 .With<HexCoordComponent>()
+                .With<ClosestTargetSearchCooldownComponent>()
                 .Without<EntityDisposeTag>()
                 .Without<NextCloseTargetSearchTimeComponent>()
                 .Build();
-            // todo: add cd component check
+
+            _cellsFilter = World.Filter.With<CellMovementDataComponent>().Without<EntityDisposeTag>().Build();
 
             _closestTargets = World.GetStash<ClosestAttackTargetComponent>();
-            _cooldownComponents = World.GetStash<NextCloseTargetSearchTimeComponent>();
+            _nextTimeComponents = World.GetStash<NextCloseTargetSearchTimeComponent>();
+            _cooldowns = World.GetStash<ClosestTargetSearchCooldownComponent>();
         }
 
-        public void OnUpdate(float deltaTime) 
+        public override void OnUpdate(float deltaTime) 
         {
+            if (!_navigationMap.IsInitialized || IsPaused)
+                return;
+
             var commitRequired = false;
             switch (_targetDefineProcess.UpdateStage())
             {
@@ -68,14 +78,14 @@ namespace ZE.MechBattle.Ecs
             if (commitRequired)
                 World.Commit();
 
-            if (_filter.IsNotEmpty())
+            if (_searchEntitiesFilter.IsNotEmpty() && _cellsFilter.IsNotEmpty())
             {
                 // preparing job handle (1/2)
-                World.JobHandle = _targetDefineProcess.Launch(_filter, MAX_HANDLING_ENTITIES_COUNT).prepareJobHandle;                
+                World.JobHandle = _targetDefineProcess.Launch(_searchEntitiesFilter, MAX_HANDLING_ENTITIES_COUNT).prepareJobHandle;                
             }                
         }
 
-        public void Dispose()
+        protected override void InternalDispose()
         {
             _targetDefineProcess.Dispose();
         }
@@ -88,7 +98,7 @@ namespace ZE.MechBattle.Ecs
             var correctTarget = !World.IsDisposed(result.target);
             if (correctTarget)
                 _closestTargets.Set(result.attacker, new() { Entity = result.target });
-            _cooldownComponents.Set(result.attacker, new(Time.time + CLOSEST_TARGET_SEARCH_COOLDOWN));
+            _nextTimeComponents.Set(result.attacker, new(Time.time + _cooldowns.Get(result.attacker).Value));
 
             return correctTarget;
         }
