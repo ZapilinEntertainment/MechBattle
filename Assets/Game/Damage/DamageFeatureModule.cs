@@ -15,6 +15,8 @@ namespace ZE.MechBattle
             builder.Register<DamageRequestsList>(Lifetime.Scoped);
             builder.Register<IReceivedDamageList, ReceivedDamageList>(Lifetime.Scoped).AsSelf();
             builder.Register<IBuildingFeatureApplier, BuildingDamageablePartApplier>(Lifetime.Singleton);
+
+            ExplosionSubfeatureInstaller.OnSceneScopeInstall(builder);
         }
     }
 }

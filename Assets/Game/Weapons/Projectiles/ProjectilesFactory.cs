@@ -60,7 +60,7 @@ namespace ZE.MechBattle.Ecs
 
             _speed.Set(projectileEntity,new() { Value = projectileData.Speed});
             _explosionTimer.Set(projectileEntity, new() { Value = projectileData.Lifetime});
-            _projectilesOwner.Set(projectileEntity, new() { OwnerEntity = shooterEntity });
+            _projectilesOwner.Set(projectileEntity, new(shooterEntity));
             if (projectileData.UseGravity)
                 _gravityComponents.Add(projectileEntity);
              

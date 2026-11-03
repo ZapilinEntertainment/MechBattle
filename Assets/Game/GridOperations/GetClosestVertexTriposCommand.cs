@@ -33,5 +33,7 @@ namespace ZE.MechBattle
             return cellTripos + closestVertex.ToTriposOffsetVector(cellTripos.IsPeak);
         }
 
+        [BurstCompile]
+        public static IntTriangularPos Execute(float3 worldPos, float triangleHeight) => Execute(worldPos, triangleHeight, TriangularMath.WorldToTrianglePos(worldPos, triangleHeight));
     }
 }

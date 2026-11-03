@@ -33,7 +33,7 @@ namespace ZE.MechBattle
             
             
         }
-        public void SetEntityOwnerAffinity(Entity entity, Entity owner) => _ownerAffiliations.Set(entity, new() { OwnerEntity = owner });
+        public void SetEntityOwnerAffinity(Entity entity, Entity owner) => _ownerAffiliations.Set(entity, new(owner));
 
         public void ClearOwnerAffinity(Entity entity)
         {

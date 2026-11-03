@@ -121,8 +121,10 @@ namespace ZE.MechBattle.Ecs {
         {
             var position = _positionComponents.Get(projectile).Value;
             var damage = _damageComponents.Get(projectile, out var isDamagingProjectile);
+            var caster = _ownerComponents.Get(projectile).OwnerEntity;
+
             if (isDamagingProjectile)
-                _explosionRequestsBuilder.RequestExplosion(position, parameters, damage.DamageParameters);
+                _explosionRequestsBuilder.RequestExplosion(caster, position, parameters, damage.DamageParameters);
         }
 
         private void RequestDirectDamage(Entity projectile, Entity target) 

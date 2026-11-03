@@ -2890,7 +2890,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.SquadsMassSpawnUtility
   _setups:
-  - IsActive: 1
+  - IsActive: 0
     UnitsCount: 500
     UnitId: tank
     PlayerId: 0
@@ -2901,7 +2901,7 @@ MonoBehaviour:
     TargetHex:
       x: -3
       y: 4
-  - IsActive: 1
+  - IsActive: 0
     UnitsCount: 500
     UnitId: tank
     PlayerId: 0
@@ -2912,7 +2912,7 @@ MonoBehaviour:
     TargetHex:
       x: -2
       y: 4
-  - IsActive: 1
+  - IsActive: 0
     UnitsCount: 500
     UnitId: tank
     PlayerId: 0
@@ -2923,7 +2923,7 @@ MonoBehaviour:
     TargetHex:
       x: -1
       y: 3
-  - IsActive: 1
+  - IsActive: 0
     UnitsCount: 500
     UnitId: tank
     PlayerId: 0

@@ -15,8 +15,7 @@ namespace ZE.MechBattle
             builder.Register<WorldDisposer>(Lifetime.Transient).As<IDisposable>();
             builder.Register<World>(_ => CreateWorld(), Lifetime.Singleton);
                      
-            builder.Register<MonoViewFactory>(Lifetime.Singleton);
-            builder.Register<ExplosionRequestsBuilder>(Lifetime.Singleton);       
+            builder.Register<MonoViewFactory>(Lifetime.Singleton);              
 
             builder.Register<DelayApplier>(Lifetime.Singleton);
             builder.Register<TriangularPositionApplier>(Lifetime.Singleton);

@@ -34,8 +34,6 @@ namespace ZE.MechBattle.Ecs
             installer.AddSystem<EntityDisposeSystem>(SystemGroupOrder.Dispose);
             installer.AddSystem<TagsClearSystem<TransformUpdatedTag>>(SystemGroupOrder.Dispose);
             installer.AddSystem<CompletedRequestsClearSystem>(SystemGroupOrder.Dispose);
-
-            
         }
     }
 }
