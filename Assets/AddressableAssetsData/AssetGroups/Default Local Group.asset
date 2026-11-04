@@ -60,6 +60,13 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5e52cfedf7af6a34ba7cad148a3ac56b
+    m_Address: faction_colouring_material
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Material
+    - SessionPreload
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6cbede1961a239642b2412e4eed550ea
     m_Address: laser_eyes_weapon_config
     m_ReadOnly: 0

@@ -17,6 +17,17 @@ namespace ZE.MechBattle
     {
         private readonly Dictionary<string, IAssetProvider> _cachedAssets = new();
 
+        public static async Awaitable LoadAssetsByLabel<T>(Action<T, string> handleAction, params string[] labels)
+        {
+            var locations = await Addressables.LoadResourceLocationsAsync(labels, Addressables.MergeMode.Union, typeof(T));
+            foreach (var location in locations)
+            {
+                var result = await Addressables.LoadAssetAsync<T>(location);
+                handleAction(result, location.PrimaryKey);
+            }
+            Addressables.Release(locations);            
+        }
+
 
         public IAssetProvider GetAssetProvider(string assetKey)
         {
