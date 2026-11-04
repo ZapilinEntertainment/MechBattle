@@ -33,5 +33,22 @@ namespace ZE.MechBattle
         int CapturePower { get; }
         float TargetSearchCooldown { get; }
 
+        bool TryGetFeaturedConfig<T>(out T config) where T : IUnitFeatureConfig
+        {
+            if (FeatureConfigs != null)
+            {
+                foreach (var presentedFeatureConfig in FeatureConfigs)
+                {
+                    if (presentedFeatureConfig is T suitableConfig)
+                    {
+                        config = suitableConfig;
+                        return true;
+                    }
+                }
+            }
+
+            config = default;
+            return false;
+        }
     }
 }

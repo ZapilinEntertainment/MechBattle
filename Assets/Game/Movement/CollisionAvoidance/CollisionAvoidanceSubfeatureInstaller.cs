@@ -1,6 +1,7 @@
 using Scellecs.Morpeh;
 using VContainer;
 using ZE.MechBattle.Ecs;
+using ZE.MechBattle.Units;
 
 namespace ZE.MechBattle.Movement.CollisionAvoidance
 {
@@ -34,6 +35,12 @@ namespace ZE.MechBattle.Movement.CollisionAvoidance
             public void ApplyUnitFeature(Entity entity, IUnitConfig config)
             {
                 _movementCollisionAvoidanceComponents.Add(entity, new(config.CollisionAvoidancePriority));
+            }
+
+            public bool TryCacheApplier(IUnitConfig config, out ICachedApplier position)
+            {
+                position = new BaseConfigCachedApplier(this, config);
+                return true;
             }
         }
 
