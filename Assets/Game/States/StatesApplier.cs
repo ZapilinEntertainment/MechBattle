@@ -1,6 +1,7 @@
 using Scellecs.Morpeh;
 using VContainer;
 using ZE.MechBattle.Ecs.States;
+using ZE.MechBattle.Units;
 
 namespace ZE.MechBattle.Ecs
 {
@@ -32,6 +33,12 @@ namespace ZE.MechBattle.Ecs
         }
 
         public void SetNextState(Entity entity, StateKey stateKey) => _stateComponents.Get(entity).NextState = stateKey;
+
+        public bool TryCacheApplier(IUnitConfig config, out ICachedApplier position)
+        {
+            position = new BaseConfigCachedApplier(this, config);
+            return true;
+        }
 
         void IUnitFeatureApplier.ApplyUnitFeature(Entity entity, IUnitConfig config)
         {

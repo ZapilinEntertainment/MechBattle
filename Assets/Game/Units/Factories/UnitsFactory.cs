@@ -3,11 +3,15 @@ using VContainer;
 using Scellecs.Morpeh;
 using ZE.MechBattle.Ecs;
 using Unity.Mathematics;
+using ZE.MechBattle.Units;
 
 namespace ZE.MechBattle
 {
     public class UnitsFactory : IEntityCreationFactory
     {
+        private enum CachedResultMode : byte { Undefined, NoConfigPresented, CachedConfig }
+        private readonly Dictionary<UnitKey, CachedUnitCompositeApplier> _compositeCachedAppliers = new();
+
         private readonly World _world;
         private readonly TransformAspectHandler _transformAspectHandler;
         private readonly MonoViewFactory _viewFactory;
@@ -115,13 +119,26 @@ namespace ZE.MechBattle
             _calculateTrianglePosTags.Add(entity);
             _targetData.Add(entity);
 
-            foreach (var applier in _unitFeatureAppliers)
+
+            // results caching: units are too much in numbers, with few in types, so could skip multiple checks per creation
+            if (!_compositeCachedAppliers.TryGetValue(unitKey, out var compositeCachedApplier))
             {
-                applier.ApplyUnitFeature(entity, unitConfig);
+                compositeCachedApplier = CacheAppliersIntoComposite(unitConfig);
+                _compositeCachedAppliers.Add(unitKey, compositeCachedApplier);
             }
-                
+            compositeCachedApplier.Apply(entity);                
         }
 
+        private CachedUnitCompositeApplier CacheAppliersIntoComposite(IUnitConfig config)
+        {
+            var compositeApplier = new CachedUnitCompositeApplier();
+            foreach (var applier in _unitFeatureAppliers)
+            {
+                if (applier.TryCacheApplier(config, out var cachedApplier))
+                    compositeApplier.Add(cachedApplier);
+            }
+            return compositeApplier;
+        }
        
     }
 }
