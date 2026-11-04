@@ -1,3 +1,4 @@
+using ZE.MechBattle.Damage;
 using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle
@@ -9,6 +10,8 @@ namespace ZE.MechBattle
             installer.AddSystem<DamageCalculationSystem>(SystemGroupOrder.DamageCalculation);
             installer.AddSystem<HealthDamageApplySystem>(SystemGroupOrder.DamageApply2);
             installer.AddSystem<ReceivedDamageDataClearSystem>(SystemGroupOrder.DamageApply2);
+
+            ExplosionSubfeatureInstaller.InstallSystems(installer);
         }
     }
 }

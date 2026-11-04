@@ -6,8 +6,11 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public struct OwnerAffinityComponent : IComponent 
+    public readonly struct OwnerAffinityComponent : IComponent 
     {
-        public Entity OwnerEntity;    
+        // who launches projectile / is root entity
+        public readonly Entity OwnerEntity;
+
+        public OwnerAffinityComponent(Entity ownerEntity) => OwnerEntity = ownerEntity;
     }
 }

@@ -1,0 +1,39 @@
+using UnityEngine;
+using VContainer;
+using Scellecs.Morpeh;
+using ZE.MechBattle.Ecs;
+
+namespace ZE.MechBattle
+{
+    public class ExplosionRequestsBuilder
+    {
+        private readonly World _world;
+        private readonly Stash<ExplosionParametersComponent> _explosions;
+        private readonly Stash<PositionComponent> _virtualPosition;
+        private readonly Stash<DamageComponent> _damage;
+        private readonly Stash<ExplosionCreateRequestTag> _tags;
+        private readonly Stash<OwnerAffinityComponent> _affinity;
+
+        [Inject]
+        public ExplosionRequestsBuilder(World world)
+        {
+            _world = world;
+            _explosions = _world.GetStash<ExplosionParametersComponent>();
+            _virtualPosition = _world.GetStash<PositionComponent>();
+            _damage = _world.GetStash<DamageComponent>();
+            _tags = _world.GetStash<ExplosionCreateRequestTag>();
+            _affinity = _world.GetStash<OwnerAffinityComponent>();
+        }
+
+        public void RequestExplosion(Entity caster, Vector3 pos, ExplosionParameters explosionParameters, DamageApplyParameters damageParameters)
+        {
+            var entity = _world.CreateEntity();
+            _tags.Add(entity);
+            _virtualPosition.Set(entity, new() { Value = pos});
+            _explosions.Set(entity, new() { Parameters = explosionParameters });
+            _damage.Set(entity, new DamageComponent() { DamageParameters = damageParameters});
+            _affinity.Set(entity, new(caster));
+        }
+    
+    }
+}

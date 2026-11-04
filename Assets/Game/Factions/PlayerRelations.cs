@@ -28,6 +28,7 @@ namespace ZE.MechBattle
 
     public readonly struct PlayerRelationsMask
     {
+        public uint MaskValue => _mask.Value;
         private readonly BitField32 _mask;
 
         public PlayerRelationsMask(BitField32 mask) => _mask = mask;

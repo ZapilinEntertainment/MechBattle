@@ -41,7 +41,7 @@ namespace ZE.MechBattle
         {
             foreach (var weaponEntity in _weaponsManager.GetNextGroupWeapon(mechEntity, MechWeaponGroup.Primary))
             {
-                _weaponHandler.OnAttachedToUnit(weaponEntity, mechEntity, maxPrecisionAberration);
+                _weaponHandler.OnAttachedToEntity(weaponEntity, mechEntity, WeaponAttachMode.Mech, maxPrecisionAberration);
                 _weaponHandler.OnAutoshotEnabled(weaponEntity);
             }
         }

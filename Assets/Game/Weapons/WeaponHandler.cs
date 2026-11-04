@@ -8,6 +8,7 @@ namespace ZE.MechBattle
     {
         private readonly World _world;
         private readonly AffinityHandler _affinityHandler;
+        private readonly AimMethodApplier _aimMethodApplier;
 
         private readonly Stash<WeaponTowerComponent> _towers;
         private readonly Stash<WeaponBarrelComponent> _barrels;
@@ -20,13 +21,13 @@ namespace ZE.MechBattle
         private readonly Stash<UnitWeaponComponent> _weaponComponents;
 
         private readonly Stash<WeaponAutoShotTag> _weaponAutoShotTags;
-        private readonly Stash<CalculateFireLineByRaycastTag> _raycastFirelinesTag;
 
         [Inject]
-        public WeaponHandler(World world, AffinityHandler affinityHandler)
+        public WeaponHandler(World world, AffinityHandler affinityHandler, AimMethodApplier aimMethodApplier)
         {
             _world = world;
             _affinityHandler = affinityHandler;
+            _aimMethodApplier = aimMethodApplier;
 
             _towers = _world.GetStash<WeaponTowerComponent>();
             _barrels = _world.GetStash<WeaponBarrelComponent>();
@@ -40,26 +41,26 @@ namespace ZE.MechBattle
             _weaponComponents = _world.GetStash<UnitWeaponComponent>();
 
             _weaponAutoShotTags = _world.GetStash<WeaponAutoShotTag>();
-            _raycastFirelinesTag = _world.GetStash<CalculateFireLineByRaycastTag>();
         }
 
         public void OnAutoshotEnabled(Entity weaponEntity)
         {
             _weaponAutoShotTags.Add(weaponEntity);
-            _raycastFirelinesTag.Add(weaponEntity);
+            _aimMethodApplier.AddMethodTag(weaponEntity);
         }
 
         public void OnAutoshotDisabled(Entity weaponEntity)
         {
             _weaponAutoShotTags.Remove(weaponEntity);
-            _raycastFirelinesTag.Remove(weaponEntity);
         }
 
-        public void OnAttachedToUnit(Entity weaponEntity, Entity unitEntity, float maxPrecisionAberration)
+        public void OnAttachedToEntity(Entity weaponEntity, Entity entity, WeaponAttachMode mode, float maxPrecisionAberration)
         {
+            if (mode == WeaponAttachMode.Unit)
+                _weaponComponents.Set(entity, new(weaponEntity));
+
             _aimPrecisionComponents.Add(weaponEntity, new(maxPrecisionAberration));
-            _weaponComponents.Set(unitEntity, new(weaponEntity));
-            _affinityHandler.SetEntityOwnerAffinity(weaponEntity, unitEntity);
+            _affinityHandler.SetEntityOwnerAffinity(weaponEntity, entity);
         }
 
         public void OnDetachedFromUnit(Entity weaponEntity, Entity unitEntity)

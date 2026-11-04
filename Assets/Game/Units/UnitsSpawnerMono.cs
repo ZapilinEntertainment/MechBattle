@@ -4,6 +4,7 @@ using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle
 {
+    [AddComponentMenu(DirectoryConstants.BUILDING_COMPONENTS_PATH + "Units spawn")]
     public class UnitsSpawnerMono : MonoBehaviour, ISpawner
     {
         [Tooltip("Set true, if spawner is not binded to any in-game object")]

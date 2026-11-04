@@ -450,7 +450,6 @@ MonoBehaviour:
   autoRun: 1
   autoInjectGameObjects:
   - {fileID: 0}
-  _viewContainerPrefab: {fileID: 3616711230607137784, guid: f203c5d2f9e05b84a9dff0e348fc5357, type: 3}
   _modules: {fileID: 11400000, guid: 80cdcb1138b8905458b91d742266872a, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

@@ -3,11 +3,15 @@ using VContainer;
 using Scellecs.Morpeh;
 using ZE.MechBattle.Ecs;
 using Unity.Mathematics;
+using ZE.MechBattle.Units;
 
 namespace ZE.MechBattle
 {
     public class UnitsFactory : IEntityCreationFactory
     {
+        private enum CachedResultMode : byte { Undefined, NoConfigPresented, CachedConfig }
+        private readonly Dictionary<UnitKey, CachedUnitCompositeApplier> _compositeCachedAppliers = new();
+
         private readonly World _world;
         private readonly TransformAspectHandler _transformAspectHandler;
         private readonly MonoViewFactory _viewFactory;
@@ -18,11 +22,10 @@ namespace ZE.MechBattle
         private readonly List<IUnitFeatureApplier> _unitFeatureAppliers;
 
         private readonly Stash<MoveSpeedComponent> _moveSpeeds;
-        private readonly Stash<NavigationAgentComponent> _navigationAgents;
+        private readonly Stash<NavigationAgentComponent> _navigationAgents;        
         
-        private readonly Stash<TargetSearchRadiusComponent> _targetSearchRadiusComponents; 
         private readonly Stash<HealthComponent> _healthComponents;
-        private readonly Stash<UnitTag> _unitTags;
+        private readonly Stash<UnitKeyComponent> _unitKeys;
         private readonly Stash<CalculateTrianglePositionTag> _calculateTrianglePosTags;
         private readonly Stash<TargetDataComponent> _targetData;
 
@@ -60,20 +63,21 @@ namespace ZE.MechBattle
             
 
             _moveSpeeds = world.GetStash<MoveSpeedComponent>();
-            _navigationAgents = world.GetStash<NavigationAgentComponent>();
-            _targetSearchRadiusComponents = world.GetStash<TargetSearchRadiusComponent>();
+            _navigationAgents = world.GetStash<NavigationAgentComponent>();            
             _healthComponents = world.GetStash<HealthComponent>();
-            _unitTags = world.GetStash<UnitTag>();
+            _unitKeys = world.GetStash<UnitKeyComponent>();
             _calculateTrianglePosTags = world.GetStash<CalculateTrianglePositionTag>();
             _targetData = world.GetStash<TargetDataComponent>();
         }
 
-        // todo: rework to generic version
+        // todo: rework to generic version for scene-place views
+        // todo: update required - not working properly
+        [System.Obsolete]
         public Entity Build(TankView view)
         {
             var entity = _world.CreateEntity();
             _viewSyncApplier.Apply(entity, view, applyViewPosition: true);
-            Setup(entity, view);
+            Setup(entity, view, new(_stringDataDictionary.StringToKey("tank")));
 
             return entity;
         }
@@ -95,36 +99,46 @@ namespace ZE.MechBattle
             var entity = _viewFactory.CreateViewReceiver(unitConfig.ViewId);
             _transformAspectHandler.MoveToPoint(entity, point);
 
-            Setup(entity, unitConfig);
+            Setup(entity, unitConfig, unitKey);
                
             return entity;
         }
     
 
-        private void Setup(Entity entity, IUnitConfig unitConfig) 
+        private void Setup(Entity entity, IUnitConfig unitConfig, UnitKey unitKey) 
         {
-            _navigationAgents.Add(entity);
-
-            if (unitConfig.TargetSearchRadius != 0f)
-                _targetSearchRadiusComponents.Add(entity, new(unitConfig.TargetSearchRadius));
+            _navigationAgents.Add(entity);           
 
             if (unitConfig.MoveSpeed != 0f)
                 _moveSpeeds.Set(entity, new() { Value = unitConfig.MoveSpeed });
 
             _healthComponents.Set(entity, new(unitConfig.Health));
 
-            _unitTags.Add(entity);
+            _unitKeys.Add(entity, new(unitKey));
 
             _calculateTrianglePosTags.Add(entity);
             _targetData.Add(entity);
 
-            foreach (var applier in _unitFeatureAppliers)
+
+            // results caching: units are too much in numbers, with few in types, so could skip multiple checks per creation
+            if (!_compositeCachedAppliers.TryGetValue(unitKey, out var compositeCachedApplier))
             {
-                applier.ApplyUnitFeature(entity, unitConfig);
+                compositeCachedApplier = CacheAppliersIntoComposite(unitConfig);
+                _compositeCachedAppliers.Add(unitKey, compositeCachedApplier);
             }
-                
+            compositeCachedApplier.Apply(entity);                
         }
 
+        private CachedUnitCompositeApplier CacheAppliersIntoComposite(IUnitConfig config)
+        {
+            var compositeApplier = new CachedUnitCompositeApplier();
+            foreach (var applier in _unitFeatureAppliers)
+            {
+                if (applier.TryCacheApplier(config, out var cachedApplier))
+                    compositeApplier.Add(cachedApplier);
+            }
+            return compositeApplier;
+        }
        
     }
 }

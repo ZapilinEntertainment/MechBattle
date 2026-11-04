@@ -1,3 +1,4 @@
+using TriInspector;
 using UnityEngine;
 
 namespace ZE.MechBattle
@@ -9,10 +10,15 @@ namespace ZE.MechBattle
         [field: SerializeField] public float Health { get; private set; }
         [field:SerializeField] public MovementCollisionAvoidancePriority CollisionAvoidancePriority { get; private set;} = MovementCollisionAvoidancePriority.SmallUnit;
         [field:SerializeField] public string ViewId { get; private set;}
+        [PropertySpace]
         [field:SerializeField] public float TargetSearchRadius { get;private set;}
+        [field: SerializeField] public float MinTargetDistance { get; private set; }
+        [field: SerializeField] public float TargetSearchCooldown { get; private set; } = 3f;
+        [PropertySpace]
         [field: SerializeField] public BehaviourKey BehaviourKey { get; private set; }
         [field: SerializeField] public float MoveSpeed { get; private set; }
         [field: SerializeField] public int CapturePower { get; private set; } = 1;
+        
     }
 
     public interface IUnitConfig
@@ -22,8 +28,27 @@ namespace ZE.MechBattle
         MovementCollisionAvoidancePriority CollisionAvoidancePriority { get;}
         float Health { get; }
         float TargetSearchRadius { get;}
+        float MinTargetDistance { get; }
         float MoveSpeed { get;}
         int CapturePower { get; }
+        float TargetSearchCooldown { get; }
 
+        bool TryGetFeaturedConfig<T>(out T config) where T : IUnitFeatureConfig
+        {
+            if (FeatureConfigs != null)
+            {
+                foreach (var presentedFeatureConfig in FeatureConfigs)
+                {
+                    if (presentedFeatureConfig is T suitableConfig)
+                    {
+                        config = suitableConfig;
+                        return true;
+                    }
+                }
+            }
+
+            config = default;
+            return false;
+        }
     }
 }
