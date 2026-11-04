@@ -32,7 +32,8 @@ namespace ZE.MechBattle.AssetsManagement
 
         public void Dispose()
         {
-            _handle.Release();
+            if (_handle.IsValid()) 
+                _handle.Release();
             _isReadyToProvideProperty.Dispose();
         }
     }

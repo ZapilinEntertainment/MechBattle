@@ -20,8 +20,6 @@ namespace ZE.MechBattle
             builder.Register<SceneFlagsManager>(Lifetime.Scoped);
             builder.Register<RestorablesList>(Lifetime.Scoped);            
 
-            builder.Register<ColouredMaterialsDepot>(Lifetime.Scoped);            
-
             RegisterStates(builder);            
 
 #if UNITY_EDITOR

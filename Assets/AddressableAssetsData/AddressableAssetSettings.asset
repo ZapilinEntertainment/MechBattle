@@ -104,6 +104,8 @@ MonoBehaviour:
   m_LabelTable:
     m_LabelNames:
     - default
+    - Material
+    - SessionPreload
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: bb16069eb93bacc4a97eb87507dbb024, type: 2}

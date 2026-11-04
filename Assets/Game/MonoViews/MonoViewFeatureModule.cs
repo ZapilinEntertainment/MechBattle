@@ -7,16 +7,18 @@ using ZE.MechBattle.Views;
 namespace ZE.MechBattle
 {
     [System.Serializable]
-    public class MonoViewFeatureModule : EcsFeatureModule<MonoViewFeatureSystemsQueue>, ISceneFeatureInitializer, IAppFeatureScopeInstaller
+    public class MonoViewFeatureModule : EcsFeatureModule<MonoViewFeatureSystemsQueue>, ISceneFeatureInitializer, IAppFeatureScopeInstaller, ISessionAsyncResourceLoader
     {
         protected override MonoViewFeatureSystemsQueue CreateQueue() => new();
 
         public override void SceneScopeInstall(IContainerBuilder builder)
         {
             base.SceneScopeInstall(builder);
-            builder.Register<FinalViewFunctionalApplier>(Lifetime.Scoped);
-            builder.Register<EntityViewHandler>(Lifetime.Scoped);
-            builder.Register<ViewPartsConnectionHandler>(Lifetime.Scoped);
+            builder.Register<FinalViewFunctionalApplier>(Lifetime.Singleton);
+            builder.Register<EntityViewHandler>(Lifetime.Singleton);
+            builder.Register<ViewPartsConnectionHandler>(Lifetime.Singleton);
+            
+            builder.Register<ColouredMaterialsDepot>(Lifetime.Singleton);
         }
 
         public override void OnWorldDispose(World world, IObjectResolver resolver)
@@ -41,6 +43,17 @@ namespace ZE.MechBattle
 
             builder.Register<IViewContainersManager, ViewContainersManager>(Lifetime.Singleton);
             builder.Register<ViewContainersFactory>(Lifetime.Singleton);
+
+            builder.Register<MaterialsDepot>(Lifetime.Singleton);
+        }
+
+        public async Awaitable<IResourceBinder> LoadSessionResourcesAsync(IObjectResolver resolver)
+        {
+            var materialsDepot = resolver.Resolve<MaterialsDepot>();
+            await AssetsManager.LoadAssetsByLabel<Material>(
+                (material, primaryKey) => materialsDepot.RegisterMaterial(primaryKey, material),
+                AssetConstants.MATERIAL_LABEL, AssetConstants.SESSION_PRELOAD_LABEL);
+            return null;
         }
     }
 }
