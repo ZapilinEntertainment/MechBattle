@@ -45,6 +45,9 @@ namespace ZE.MechBattle
             builder.Register<ViewContainersFactory>(Lifetime.Singleton);
 
             builder.Register<MaterialsDepot>(Lifetime.Singleton);
+            builder.Register<MeshesDepot>(Lifetime.Singleton);
+
+            builder.Register<VirtualRenderer>(Lifetime.Singleton);
         }
 
         public async Awaitable<IResourceBinder> LoadSessionResourcesAsync(IObjectResolver resolver)

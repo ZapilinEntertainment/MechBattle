@@ -18,6 +18,7 @@ namespace ZE.MechBattle
             _stringDataDictionary = stringDataDictionary;
         }
 
+        public bool TryGetMaterialById(int idKey, out Material material) => _materials.TryGetValue(idKey, out material);
         public Material GetMaterialById(int idKey) => _materials.TryGetValue(idKey, out var material) ? material : default;
         public Material GetMaterialByKey(string key)
         {
