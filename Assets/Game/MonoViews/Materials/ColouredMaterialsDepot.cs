@@ -18,7 +18,7 @@ namespace ZE.MechBattle
         public ColouredMaterialsDepot(MaterialsDepot depot)
         {
             _materialsDepot = depot;
-            var idKey = _materialsDepot.GetMaterialIdKey(AssetConstants.FACTION_COLOURING_MATERIAL);
+            _materialsDepot.TryGetElementIndex(AssetConstants.FACTION_COLOURING_MATERIAL, out var idKey);
             _materialsList.Add((ColouredMaterialType.FactionColour, Color.white), idKey);
         }
 
@@ -30,9 +30,9 @@ namespace ZE.MechBattle
         public Material GetColouredMaterial(ColouredMaterialType type, Color color)
         {
             if (_materialsList.TryGetValue((type, color), out var materialId))
-                return _materialsDepot.GetMaterialById(materialId);
+                return _materialsDepot[materialId];
 
-            var original = _materialsDepot.GetMaterialById( _materialsList[(type, Color.white)]);
+            var original = _materialsDepot[_materialsList[(type, Color.white)]];
             var colouredCopy = GameObject.Instantiate(original);
             colouredCopy.color = color;
             _materialsDepot

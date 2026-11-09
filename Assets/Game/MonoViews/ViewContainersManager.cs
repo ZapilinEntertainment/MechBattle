@@ -8,22 +8,31 @@ namespace ZE.MechBattle.Views
         private int _nextId = 1;       
         // both pooled and non-pooled
         private readonly Dictionary<int, IViewContainer> _activeContainers = new();
-        private readonly ViewContainersFactory _containersFactory;
+        private readonly MonoViewContainersFactory _monoContainersFactory;
+        private readonly VirtualViewContainersFactory _virtualContainersFactory;
 
         [Inject]
-        public ViewContainersManager(ViewContainersFactory factory)
+        public ViewContainersManager(MonoViewContainersFactory monoContainersFactory, VirtualViewContainersFactory virtualViewContainersFactory)
         {
-            _containersFactory = factory;
+            _monoContainersFactory = monoContainersFactory;
+            _virtualContainersFactory = virtualViewContainersFactory;
         }
        
 
-        public (ViewContainer container, int id) Get()
+        public (MonoViewContainer container, int id) GetMonoContainer()
         {
-            var container = _containersFactory.Get();
+            var container = _monoContainersFactory.Get();
 
             if (container.transform.childCount != 0)
-                UnityEngine.Debug.LogError("non-cleared");
+                UnityEngine.Debug.LogError("non-cleared mono container");
 
+            var id = RegisterContainer(container);
+            return (container, id);
+        }
+
+        public (VirtualViewContainer container, int id) GetVirtualContainer()
+        {
+            var container = _virtualContainersFactory.Get();
             var id = RegisterContainer(container);
             return (container, id);
         }
@@ -50,6 +59,7 @@ namespace ZE.MechBattle.Views
         }
         public bool TryGetContainer(int id, out IViewContainer container) => _activeContainers.TryGetValue(id, out container);
 
+        // for disposable (non-pooled) containers, ex.: buildings
         public int RegisterOneShotContainer(IViewContainer viewContainer) => RegisterContainer(viewContainer);
 
         private int RegisterContainer(IViewContainer viewContainer)

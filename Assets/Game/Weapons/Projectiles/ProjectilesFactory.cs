@@ -55,7 +55,7 @@ namespace ZE.MechBattle.Ecs
             if (_world.IsDisposed(shooterEntity) || !_projectileData.TryGetProjectileData(idkey, out var projectileData))
                 return default;        
 
-            var projectileEntity = _viewFactory.CreateViewReceiver(projectileData.ViewId);
+            var projectileEntity = _viewFactory.CreateViewEntity(projectileData.ViewId);
             _transformAspectHandler.MoveToPoint(projectileEntity, point);
 
             _speed.Set(projectileEntity,new() { Value = projectileData.Speed});

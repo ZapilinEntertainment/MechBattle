@@ -11,7 +11,7 @@ namespace ZE.MechBattle.Views
             hostOfPools,
             assetName + "_pool",
             defaultCapacity : 8,
-            maxCapacity: GameConstants.MAX_VIEWS_COUNT)
+            maxCapacity: GameConstants.MAX_MONO_VIEWS_COUNT)
         {
         }
 

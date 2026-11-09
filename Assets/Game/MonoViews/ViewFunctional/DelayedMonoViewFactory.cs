@@ -1,9 +1,10 @@
 using Scellecs.Morpeh;
 using VContainer;
+using ZE.MechBattle.Ecs;
 
-namespace ZE.MechBattle.Ecs
+namespace ZE.MechBattle.Views
 {
-    public class MonoViewFactory
+    public class DelayedMonoViewFactory : IViewInstanceStrategy
     {
         private readonly World _world;
         private readonly ViewSynchronizationApplier _viewSyncApplier;
@@ -13,14 +14,13 @@ namespace ZE.MechBattle.Ecs
         private readonly Stash<ViewLoadRequestTag> _viewRequests;
         private readonly Stash<ViewContainerComponent> _viewContainers;
         private readonly Stash<ViewKeyComponent> _viewKeyComponents;
-       
 
         [Inject]
-        public MonoViewFactory(
-            World world,
-            ViewSynchronizationApplier viewSyncApplier,
-            IViewContainersManager viewContainersPool,
-            StringDataDictionary stringDataDictionary)
+        public DelayedMonoViewFactory(
+         World world,
+         ViewSynchronizationApplier viewSyncApplier,
+         IViewContainersManager viewContainersPool,
+         StringDataDictionary stringDataDictionary)
         {
             _world = world;
             _viewSyncApplier = viewSyncApplier;
@@ -30,7 +30,14 @@ namespace ZE.MechBattle.Ecs
             _viewRequests = world.GetStash<ViewLoadRequestTag>();
             _viewContainers = world.GetStash<ViewContainerComponent>();
             _viewKeyComponents = world.GetStash<ViewKeyComponent>();
-        }        
+        }
+
+        public Entity CreateViewEntity(string viewId)
+        {
+            var entity = CreateViewContainer();
+            AddViewReceivingComponents(entity, viewId);
+            return entity;
+        }
 
         public Entity CreateViewContainer()
         {
@@ -39,22 +46,15 @@ namespace ZE.MechBattle.Ecs
             return entity;
         }
 
-        public Entity CreateViewReceiver(string viewId)
-        {
-            var entity = CreateViewContainer();
-            AddViewReceivingComponents(entity, viewId);
-            return entity;
-        }
-
         public void MakeViewReceiver(Entity entity, string viewId)
         {
             AddViewContainerComponents(entity);
-            AddViewReceivingComponents(entity, viewId);            
+            AddViewReceivingComponents(entity, viewId);
         }
 
         private void AddViewContainerComponents(Entity entity)
         {
-            var (container, id) = _viewContainersPool.Get();
+            var (container, id) = _viewContainersPool.GetMonoContainer();
             _viewSyncApplier.Apply(entity, container, applyViewPosition: false, doViewChecks: false);
             _viewContainers.Add(entity, new(id));
         }

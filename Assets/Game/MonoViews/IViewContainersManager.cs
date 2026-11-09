@@ -5,7 +5,7 @@ namespace ZE.MechBattle
 
     public interface IViewContainersManager
     {
-        (ViewContainer container, int id) Get();
+        (MonoViewContainer container, int id) GetMonoContainer();
         bool TryGetContainer(int id, out IViewContainer container);
         void Release(int id);
 

@@ -25,19 +25,16 @@ namespace ZE.MechBattle.Develop
         private IEntitiesNavigationMap _navigationMap;
         private Filter _filter;
         private Stash<CellEntityComponent> _cellEntities;
-        private VirtualRenderer _virtualRenderer;
         private List<Matrix4x4> _matricesList = new();
 
 
         [Inject]
-        public void Inject(IEntitiesNavigationMap navigationMap, World world, VirtualRenderer virtualRenderer)
+        public void Inject(IEntitiesNavigationMap navigationMap, World world)
         {
             _navigationMap = navigationMap;
             _filter = world.Filter.With<CellEntityComponent>().Build();
             _cellEntities = world.GetStash<CellEntityComponent>();
             _isInjected = true;
-
-            _virtualRenderer = virtualRenderer;
         }
 
         [EnableInPlayMode, Button("Draw")]
@@ -82,7 +79,7 @@ namespace ZE.MechBattle.Develop
         private void Update()
         {
             if (_draw)
-                _virtualRenderer.DrawMatrices(_mesh, _material, _matricesList);
+                VirtualRenderer.DrawMatrices(_mesh, _material, _matricesList);
 
 
         }

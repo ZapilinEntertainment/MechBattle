@@ -1,6 +1,7 @@
 using Scellecs.Morpeh;
 using VContainer;
 using ZE.MechBattle.Ecs;
+using ZE.MechBattle.Views;
 using ZE.MechBattle.Weapons;
 
 namespace ZE.MechBattle.MechBuilding
@@ -10,7 +11,7 @@ namespace ZE.MechBattle.MechBuilding
         private readonly WeaponFactory _weaponFactory;
         private readonly WeaponHandler _weaponHandler;
         private readonly EntityViewHandler _viewHandler;
-        private readonly MonoViewFactory _viewFactory;
+        private readonly DelayedMonoViewFactory _viewFactory;
         private readonly MechWeaponsManager _weaponsManager;
         private readonly AimMethodApplier _aimMethodApplier;
 
@@ -36,7 +37,7 @@ namespace ZE.MechBattle.MechBuilding
             WeaponFactory weaponFactory, 
             WeaponHandler weaponHandler,
             EntityViewHandler viewHandler,
-            MonoViewFactory viewFactory,
+            DelayedMonoViewFactory viewFactory,
             MechWeaponsManager weaponsManager,
             AimMethodApplier aimMethodApplier
             )

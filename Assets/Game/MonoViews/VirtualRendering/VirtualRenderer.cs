@@ -9,7 +9,7 @@ namespace ZE.MechBattle.Views
         private readonly MeshesDepot _meshesDepot;
         private readonly MaterialsDepot _materialsDepot;
         private readonly Dictionary<DrawInstanceGroupKey, GroupDrawer> _drawers = new();
-        private readonly List<Matrix4x4> _matrixArgumentsList = new();
+        private static readonly List<Matrix4x4> _matrixArgumentsList = new();
         private const int BATCH_LIMIT = 1023;
 
         private class GroupDrawer
@@ -51,19 +51,24 @@ namespace ZE.MechBattle.Views
                     continue;
 
                 var key = drawerGroupKvp.Key;
-                if (!_meshesDepot.TryGetMesh(key.MeshId, out var mesh) || !_materialsDepot.TryGetMaterialById(key.MaterialId, out var material))
-                {
-#if UNITY_EDITOR
-                    UnityEngine.Debug.LogError("invalid mesh or material id");
-#endif
-                    continue;
-                }
-
-                DrawMatrices(mesh, material, drawer.Matrices);
+                DrawMatrices(key, drawer.Matrices);
             }
         }
 
-        public void DrawMatrices(Mesh mesh, Material material, List<Matrix4x4> matrices) 
+        public void DrawMatrices(DrawInstanceGroupKey key, List<Matrix4x4> matrices)
+        {
+            if (!_meshesDepot.TryGetElement(key.MeshId, out var mesh) || !_materialsDepot.TryGetElement(key.MaterialId, out var material))
+            {
+#if UNITY_EDITOR
+                UnityEngine.Debug.LogError("invalid mesh or material id");
+#endif
+                return;
+            }
+
+            DrawMatrices(mesh, material, matrices);
+        }
+
+        public static void DrawMatrices(Mesh mesh, Material material, List<Matrix4x4> matrices) 
         {
             var readIndex = 0;
             var length = matrices.Count;

@@ -41,7 +41,7 @@ namespace ZE.MechBattle.MechBuilding
 
         public Entity Build(MechConfig mechConfig, float3 position, quaternion rotation)
         {
-            MechEntity = _viewFactory.CreateViewReceiver(DevelopConstants.DEFAULT_MECH_ID + "_view");
+            MechEntity = _viewFactory.CreateViewEntity(DevelopConstants.DEFAULT_MECH_ID + "_view");
             _transformAspectHandler.MoveToPoint(MechEntity, position, rotation);
 
             _collisionAvoidanceComponent.Add(MechEntity, new(MovementCollisionAvoidancePriority.Mech, mechConfig.AvoidanceRadiusInUnits));

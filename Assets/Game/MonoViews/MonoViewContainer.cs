@@ -12,11 +12,11 @@ namespace ZE.MechBattle.Views
     // - per-frame instancing can be limited
     // - no exceptions with no-view entity
     // - when visible view loads, it will be correctly synchronised to all entity components
-    public class ViewContainer : SimpleView, IViewContainer, IViewConnectionsPoint, IPoolableObject<ViewContainer>
+    public class MonoViewContainer : SimpleView, IViewContainer, IViewConnectionsPoint, IPoolableObject<MonoViewContainer>
     {
         public IView ContainedView { get; private set; }
         [ShowInInspector] private MonoBehaviour ViewAsMono => ContainedView as MonoBehaviour;
-        private IPoolElementReleaser<ViewContainer> _releaser;
+        private IPoolElementReleaser<MonoViewContainer> _releaser;
 
         public void OnViewInstanced(IView instance) 
         {
@@ -38,7 +38,7 @@ namespace ZE.MechBattle.Views
             }
         }
 
-        public void AssignReleaser(IPoolElementReleaser<ViewContainer> releaser) => _releaser = releaser;
+        public void AssignReleaser(IPoolElementReleaser<MonoViewContainer> releaser) => _releaser = releaser;
 
         public void OnGet() { }
     }

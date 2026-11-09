@@ -1,6 +1,7 @@
 using Scellecs.Morpeh;
 using VContainer;
 using Unity.Mathematics;
+using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle.Ecs
 {
@@ -19,7 +20,7 @@ namespace ZE.MechBattle.Ecs
 
         private readonly World _world;
         private readonly TransformAspectHandler _transformHandler;
-        private readonly MonoViewFactory _monoViewFactory;
+        private readonly DelayedMonoViewFactory _monoViewFactory;
 
         private readonly Stash<ParentEntityComponent> _parents;
         private readonly Stash<LocalPositionComponent> _localPositions;
@@ -32,7 +33,7 @@ namespace ZE.MechBattle.Ecs
         
 
         [Inject]
-        public ParentingRelationsApplier(World world, TransformAspectHandler transformAspectHandler, MonoViewFactory monoViewFactory)
+        public ParentingRelationsApplier(World world, TransformAspectHandler transformAspectHandler, DelayedMonoViewFactory monoViewFactory)
         {
             _world = world;
             _parents = _world.GetStash<ParentEntityComponent>();

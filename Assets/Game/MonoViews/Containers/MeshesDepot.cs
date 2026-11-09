@@ -1,21 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
+using ZE.Utils;
 
 namespace ZE.MechBattle
 {
-    public class MeshesDepot
+    public class MeshesDepot : AssetDictionary<Mesh>
     {
-        private readonly Dictionary<int, Mesh> _dict = new(8);
-        private int _nextId = 1;
-
-        public int Register(Mesh mesh)
-        {
-            var id = _nextId++;
-            _dict.Add(id, mesh);
-            return id;
-        }
-
-        public bool TryGetMesh(int id, out Mesh mesh) => _dict.TryGetValue(id, out mesh);
     
     }
 }

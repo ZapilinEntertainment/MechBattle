@@ -12,6 +12,9 @@ namespace ZE.MechBattle.Views
 
             installer.AddSystem<ViewPartsDisconnectionSystem>(SystemGroupOrder.DisposedObjectsOperations);
             installer.AddSystem<ViewsDisposeSystem>(SystemGroupOrder.DisposedObjectsOperations);
+
+            installer.AddSystem<VirtualViewsCheckSystem>(SystemGroupOrder.Default);
+            installer.AddSystem<VirtualViewsRenderSystem>(SystemGroupOrder.Default);
         }
     }
 }

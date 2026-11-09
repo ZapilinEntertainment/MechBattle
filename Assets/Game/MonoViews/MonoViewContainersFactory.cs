@@ -5,36 +5,36 @@ using ZE.Utils;
 
 namespace ZE.MechBattle
 {
-    public class ViewContainersFactory
+    public class MonoViewContainersFactory
     {
-        private class ContainersViewPool : MonoViewPoolBase<ViewContainer>
+        private class MonoContainersViewPool : MonoViewPoolBase<MonoViewContainer>
         {
             private readonly Transform _activeObjectsHost;
 
-            public ContainersViewPool(
+            public MonoContainersViewPool(
                 Transform activeObjectsHost,
-                ViewContainer prefab) : base(
+                MonoViewContainer prefab) : base(
                     prefab, 
                     hostOfPools: null,
                     "view_containers_pool",
                     defaultCapacity : 128,
-                    maxCapacity : GameConstants.MAX_VIEWS_COUNT)
+                    maxCapacity : GameConstants.MAX_MONO_VIEWS_COUNT)
             {
                 _activeObjectsHost = activeObjectsHost;
             }
 
-            protected override void OnGet(ViewContainer instance)
+            protected override void OnGet(MonoViewContainer instance)
             {
                 base.OnGet(instance);
                 instance.SetParent(_activeObjectsHost);
             }
         }
 
-        private readonly ContainersViewPool _pool;
-        private readonly ViewContainer _viewContainerPrefab;
+        private readonly MonoContainersViewPool _pool;
+        private readonly MonoViewContainer _viewContainerPrefab;
 
         [Inject]
-        public ViewContainersFactory(ViewContainer viewContainerPrefab, SceneController sceneController)
+        public MonoViewContainersFactory(MonoViewContainer viewContainerPrefab, SceneController sceneController)
         {
             _viewContainerPrefab = viewContainerPrefab;
 
@@ -42,6 +42,6 @@ namespace ZE.MechBattle
             _pool.MarkAsDontDestroy();
         }
 
-        public ViewContainer Get() => _pool.Get();
+        public MonoViewContainer Get() => _pool.Get();
     }
 }
