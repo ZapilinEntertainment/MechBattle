@@ -21,8 +21,8 @@ namespace ZE.MechBattle.Ecs
 
         private readonly World _world;
         private readonly TransformAspectHandler _transformHandler;
-        private readonly DelayedMonoViewFactory _monoViewFactory;
         private readonly FinalViewFunctionalApplier _finalViewFunctionalApplier;
+        private readonly ViewApplicationStrategiesList _strategiesList;
 
         private readonly Stash<ParentEntityComponent> _parents;
         private readonly Stash<LocalPositionComponent> _localPositions;
@@ -38,8 +38,8 @@ namespace ZE.MechBattle.Ecs
         public ParentingRelationsApplier(
             World world, 
             TransformAspectHandler transformAspectHandler, 
-            DelayedMonoViewFactory monoViewFactory,
-            FinalViewFunctionalApplier finalViewFunctionalApplier)
+            FinalViewFunctionalApplier finalViewFunctionalApplier,
+            ViewApplicationStrategiesList strategiesList)
         {
             _world = world;
             _parents = _world.GetStash<ParentEntityComponent>();
@@ -51,8 +51,8 @@ namespace ZE.MechBattle.Ecs
             _viewPartsRequestComponents = _world.GetStash<ViewPartRequestComponent>();
 
             _transformHandler = transformAspectHandler;
-            _monoViewFactory = monoViewFactory;
             _finalViewFunctionalApplier = finalViewFunctionalApplier;
+            _strategiesList = strategiesList;
         }
 
         public void Apply(ExecutionProtocol protocol)
@@ -91,9 +91,12 @@ namespace ZE.MechBattle.Ecs
             return true;
         }
 
-        public Entity CreateChildEntityForViewPart(RigidTransform point, Entity parent, Entity viewOwner, ViewPartKey viewPartKey, bool separateViewObject = false)
+        public Entity CreateChildEntityForViewPart(RigidTransform point, Entity parent, Entity viewOwner, ViewPartKey viewPartKey, ViewMode viewMode)
         {
-            var entity = separateViewObject ? _monoViewFactory.CreateViewContainer() : _world.CreateEntity();
+            var entity = _world.CreateEntity();
+            if (viewMode != ViewMode.None)
+                _strategiesList[viewMode].AddEmptyViewContainer(entity);
+
             Apply(new()
             {
                 ParentEntity = parent,
@@ -108,7 +111,7 @@ namespace ZE.MechBattle.Ecs
             return entity;
         }
 
-        public void SetViewParent(Entity entity, IView view, IViewContainer container)
+        public void SetViewParent(Entity viewEntity, IView view, IViewContainer container)
         {
             if (view is IMonoView monoView)
             {
@@ -118,7 +121,7 @@ namespace ZE.MechBattle.Ecs
 
                     // note: there is difference with viewSyncApplier:
                     // at this moment view is already applied to entity, but it is container view
-                    _finalViewFunctionalApplier.CheckAndApply(entity, monoView);
+                    _finalViewFunctionalApplier.CheckAndApply(viewEntity, monoView);
                 }
                 else
                 {

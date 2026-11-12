@@ -1,12 +1,6 @@
-using System.Collections.Generic;
 using UnityEngine;
-using ZE.UiService;
 using VContainer;
 using VContainer.Unity;
-using ZE.MechBattle.Vfx;
-using ZE.MechBattle.Views;
-using ZE.Flags;
-using System.IO;
 
 namespace ZE.MechBattle.Ecs
 {
@@ -15,8 +9,6 @@ namespace ZE.MechBattle.Ecs
     // session scope ->
     // SessionAsyncEntryPoint(loading resources for scene scope) ->
     // scene scope
-
-    // most views are lazy-loading (adding empty container and then load view afterwards)
 
     public class AppScope : LifetimeScope
     {
@@ -36,8 +28,7 @@ namespace ZE.MechBattle.Ecs
             // global managers with no resource dependencies
             builder.Register<AssetsManager>(Lifetime.Singleton);            
             builder.Register<StringDataDictionary>(Lifetime.Singleton);
-            builder.Register<AppFlagsManager>(Lifetime.Singleton);        
-            builder.Register<ViewProviderFactory>(Lifetime.Singleton);           
+            builder.Register<AppFlagsManager>(Lifetime.Singleton);                
 
             // start loading heavy resources:
             builder.RegisterEntryPoint<AppAsyncEntryPoint>();

@@ -3,6 +3,6 @@ namespace ZE.MechBattle
 {
     public abstract class BuildingViewPartsComponent : MonoBehaviour
     {
-        public abstract bool TryGetViewPart(ViewPartKey key, out IMonoViewPart viewPart);
+        public abstract bool TryGetViewPart(ViewPartKey key, out IMonoView viewPart);
     }
 }

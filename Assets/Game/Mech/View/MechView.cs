@@ -23,7 +23,7 @@ namespace ZE.MechBattle
                 cinCamera.enabled = true;
         }
 
-        public bool TryGetMonoPartView(ViewPartKey key, out IMonoViewPart viewPart)
+        public bool TryGetMonoPartView(ViewPartKey key, out IMonoView viewPart)
         {
             if (key.Index < 0 || key.Index > 1)
             {

@@ -18,7 +18,7 @@ MonoBehaviour:
   - rid: 6586387193149522013
   - rid: 6586387193149522009
   - rid: 6586387193149522010
-  - rid: 6586387193149522011
+  - rid: 1846645460064796744
   - rid: 6586387193149522012
   - rid: 6586387193149522014
   - rid: 6586387193149522015
@@ -35,6 +35,9 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
+    - rid: 1846645460064796744
+      type: {class: ViewFeatureModule, ns: ZE.MechBattle, asm: MechBattle}
+      data: 
     - rid: 2151671048505917511
       type: {class: EntitiesMapModule, ns: ZE.MechBattle.Navigation.Ecs, asm: MechBattle}
       data: 
@@ -58,9 +61,6 @@ MonoBehaviour:
       data: 
     - rid: 6586387193149522010
       type: {class: GridOperationsInstaller, ns: ZE.MechBattle, asm: MechBattle}
-      data: 
-    - rid: 6586387193149522011
-      type: {class: MonoViewFeatureModule, ns: ZE.MechBattle, asm: MechBattle}
       data: 
     - rid: 6586387193149522012
       type: {class: MechFeatureInstaller, ns: ZE.MechBattle, asm: MechBattle}

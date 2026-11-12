@@ -8,7 +8,7 @@ namespace ZE.MechBattle
         [SerializeField] private Transform _tower;
         [SerializeField] private Transform _barrel;
 
-        public override bool TryGetViewPart(ViewPartKey key, out IMonoViewPart viewPart)
+        public override bool TryGetViewPart(ViewPartKey key, out IMonoView viewPart)
         {
             switch (key.Type)
             {

@@ -11,9 +11,9 @@ namespace ZE.MechBattle.Ecs
         private readonly TransformAccessManager _transformAccessManager;
         private readonly Stash<TransformUpdatedTag> _transformUpdatedTags;
         private readonly TransformAspectHandler _transformAspectHandler;
-        private readonly FinalViewFunctionalApplier _finalViewFunctionalApplier;
-        private readonly IViewContainersManager _viewContainersManager;
+        private readonly FinalViewFunctionalApplier _finalViewFunctionalApplier;        
         private readonly VirtualViewApplier _virtualViewApplier;
+        private readonly ViewPartHandler _viewPartHandler;
 
         [Inject]
         public ViewSynchronizationApplier(
@@ -22,13 +22,15 @@ namespace ZE.MechBattle.Ecs
             TransformAspectHandler transformAspectHandler,
             ColliderOwnityApplier colliderOwnityApplier,
             FinalViewFunctionalApplier finalViewFunctionalApplier,
-            VirtualViewApplier virtualViewApplier)
+            VirtualViewApplier virtualViewApplier,
+            ViewPartHandler viewPartHandler)
         {
             _world = world;
             _transformAccessManager = accessManager;
             _transformAspectHandler = transformAspectHandler;
             _finalViewFunctionalApplier = finalViewFunctionalApplier;
             _virtualViewApplier = virtualViewApplier;
+            _viewPartHandler = viewPartHandler;
 
             _transformUpdatedTags = _world.GetStash<TransformUpdatedTag>();
         }
@@ -68,18 +70,10 @@ namespace ZE.MechBattle.Ecs
         }
 
         public void BindEntityToViewPart(Entity entity, int viewContainerId, ViewPartKey partKey)
-        {
-            if (!_viewContainersManager.TryGetContainer(viewContainerId, out var viewContainer))
+        {         
+            if (_viewPartHandler.TryGetViewPart<IMonoView>(viewContainerId, partKey, out var viewPartMono))
             {
-#if UNITY_EDITOR
-                UnityEngine.Debug.LogError($"no view container found for entity {entity.Id}");
-                return;
-#endif
-            }
-
-            if (viewContainer.TryGetPartView(partKey, out var partView))
-            {
-                Apply(entity, partView, false);
+                Apply(entity, viewPartMono, false);
             }
             else
             {

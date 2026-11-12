@@ -14,7 +14,7 @@ namespace ZE.MechBattle
 
         private readonly World _world;
         private readonly TransformAspectHandler _transformAspectHandler;
-        private readonly MonoViewFactory _viewFactory;
+        private readonly ViewFactory _viewFactory;
         private readonly StringDataDictionary _stringDataDictionary;
         private readonly ViewSynchronizationApplier _viewSyncApplier;
         private readonly IUnitConfigsList _unitConfigs;
@@ -34,7 +34,7 @@ namespace ZE.MechBattle
         public UnitsFactory(
             World world, 
             TransformAspectHandler transformAspectHandler,
-            MonoViewFactory viewFactory,
+            ViewFactory viewFactory,
             StringDataDictionary stringDataDictionary,
             ViewSynchronizationApplier viewSyncApplier,
             IUnitConfigsList unitConfigsList,

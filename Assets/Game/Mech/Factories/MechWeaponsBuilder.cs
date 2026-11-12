@@ -1,7 +1,6 @@
 using Scellecs.Morpeh;
 using VContainer;
 using ZE.MechBattle.Ecs;
-using ZE.MechBattle.Views;
 using ZE.MechBattle.Weapons;
 
 namespace ZE.MechBattle.MechBuilding
@@ -11,7 +10,7 @@ namespace ZE.MechBattle.MechBuilding
         private readonly WeaponFactory _weaponFactory;
         private readonly WeaponHandler _weaponHandler;
         private readonly EntityViewHandler _viewHandler;
-        private readonly DelayedMonoViewFactory _viewFactory;
+        private readonly ViewApplier _viewApplier;
         private readonly MechWeaponsManager _weaponsManager;
         private readonly AimMethodApplier _aimMethodApplier;
 
@@ -37,7 +36,7 @@ namespace ZE.MechBattle.MechBuilding
             WeaponFactory weaponFactory, 
             WeaponHandler weaponHandler,
             EntityViewHandler viewHandler,
-            DelayedMonoViewFactory viewFactory,
+            ViewApplier viewApplier,
             MechWeaponsManager weaponsManager,
             AimMethodApplier aimMethodApplier
             )
@@ -45,7 +44,7 @@ namespace ZE.MechBattle.MechBuilding
             _weaponFactory = weaponFactory;
             _viewHandler = viewHandler;
             _weaponHandler = weaponHandler;
-            _viewFactory = viewFactory;
+            _viewApplier = viewApplier;
             _weaponsManager = weaponsManager;
             _aimMethodApplier = aimMethodApplier;
 
@@ -121,7 +120,9 @@ namespace ZE.MechBattle.MechBuilding
 
                 DamageParameters = new(weaponConfig.DamageType, DevelopConstants.TEMP_MainGunDamage),
             });
-            _viewFactory.MakeViewReceiver(weaponEntity, weaponId + "_view");
+
+            // todo: rework to discrete weapon applier (with shot point)
+            _viewApplier.ApplyView(weaponEntity, weaponId + "_view");
 
             AddMechSpecificComponents(weaponEntity);
 

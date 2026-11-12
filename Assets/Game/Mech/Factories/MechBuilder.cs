@@ -13,7 +13,7 @@ namespace ZE.MechBattle.MechBuilding
         public Entity UpperPartEntity { get; private set; }
         public Entity HeadEntity { get; private set; }
 
-        private readonly MonoViewFactory _viewFactory;
+        private readonly ViewFactory _viewFactory;
         private readonly TransformAspectHandler _transformAspectHandler;
 
         private readonly Stash<MechComponent> _mechComponent;
@@ -25,7 +25,7 @@ namespace ZE.MechBattle.MechBuilding
         private readonly Stash<TargetDataComponent> _targetData;
 
         [Inject]
-        public MechBuilder(MonoViewFactory viewFactory, TransformAspectHandler transformAspectHandler, World world)
+        public MechBuilder(ViewFactory viewFactory, TransformAspectHandler transformAspectHandler, World world)
         {
             _viewFactory = viewFactory;
             _transformAspectHandler = transformAspectHandler;

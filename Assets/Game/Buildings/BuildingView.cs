@@ -45,7 +45,7 @@ namespace ZE.MechBattle
             return true;
         }
 
-        public bool TryGetMonoPartView(ViewPartKey key, out IMonoViewPart viewPart)
+        public bool TryGetMonoPartView(ViewPartKey key, out IMonoView viewPart)
         {
             if (TryGetComponent<BuildingViewPartsComponent>(out var viewpartsComponent)
                 && viewpartsComponent.TryGetViewPart(key, out viewPart))

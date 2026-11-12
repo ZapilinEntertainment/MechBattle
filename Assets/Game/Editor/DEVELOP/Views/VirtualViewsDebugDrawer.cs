@@ -79,7 +79,7 @@ namespace ZE.MechBattle.Develop
         private void Update()
         {
             if (_draw)
-                VirtualRenderer.DrawMatrices(_mesh, _material, _matricesList);
+                VirtualRenderer.DrawMatrices(_mesh, 0, _material, _matricesList);
 
 
         }

@@ -132,7 +132,7 @@ namespace ZE.MechBattle.MechBuilding
                     parent,
                     viewOwner,
                     key,
-                    separateViewObject: _separatingKeys.Contains(key));
+                    viewMode: _separatingKeys.Contains(key) ? ViewMode.DelayedMono : ViewMode.None);
             }
             else
             {

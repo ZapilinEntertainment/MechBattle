@@ -9,7 +9,7 @@ namespace ZE.MechBattle
     {
         private readonly SceneFlagsManager _sceneFlags;
         private readonly LifetimeTrackingManager _lifetimeTrackingManager;
-        private readonly Stash<ViewLoadRequestTag> _viewLoadRequests;
+        private readonly Stash<ViewLoadRequestComponent> _viewLoadRequests;
         private readonly WorkersFactory _workersFactory;
 
         private readonly LevelSettingsObject _levelSettings;
@@ -36,7 +36,7 @@ namespace ZE.MechBattle
             _levelSettings = levelObject;
             _mechCreateRequestsFactory = mechCreateRequestsFactory;
 
-            _viewLoadRequests = world.GetStash<ViewLoadRequestTag>();
+            _viewLoadRequests = world.GetStash<ViewLoadRequestComponent>();
         }
 
         public void Initialize()
