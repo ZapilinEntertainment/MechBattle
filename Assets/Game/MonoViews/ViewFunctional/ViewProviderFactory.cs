@@ -61,9 +61,9 @@ namespace ZE.MechBattle.Views
             _providers.Clear();
         }
 
-        private void OnViewLoaded(IAssetProvider assetProvider, ViewKey key)
+        private void OnViewLoaded(IMonoAssetProvider assetProvider, ViewKey key)
         {
-            var view = assetProvider.GetValue<SimpleView>();
+            var view = assetProvider.GetComponent<SimpleView>();
             if (view is PoolableMonoView poolableView)
                 AddViewPool(poolableView, key);
             else

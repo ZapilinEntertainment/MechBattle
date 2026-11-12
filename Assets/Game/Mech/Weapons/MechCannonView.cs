@@ -6,7 +6,7 @@ namespace ZE.MechBattle
     {
         [SerializeField] private Transform _aimingPart;
 
-        public bool TryGetPartByKey(ViewPartKey key, out IViewPart viewPart)
+        public bool TryGetMonoPartView(ViewPartKey key, out IMonoViewPart viewPart)
         {
             if (key.Type == ViewPartType.Barrel)
             {

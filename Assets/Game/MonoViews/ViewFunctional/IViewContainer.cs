@@ -4,7 +4,7 @@ namespace ZE.MechBattle.Views
 {
     public interface IViewContainer : IDisposable
     {
-        IView ContainedView { get; }
-        void OnViewInstanced(IView prefab);
+        bool TryGetPartView(ViewPartKey key, out IView view);
+        void AddContainedView(IView view);
     }
 }

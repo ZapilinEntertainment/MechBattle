@@ -1,6 +1,5 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
-using UnityEngine;
 using VContainer;
 
 namespace ZE.MechBattle.Ecs {
@@ -56,13 +55,8 @@ namespace ZE.MechBattle.Ecs {
                 }
                 else
                 {
-                    var key = Requests.Get(entity).Key;                    
-                    var view = viewContainer.ContainedView;
-                    if (view is IComplexMonoView complexView && complexView.TryGetPartByKey(key, out var viewPart))
-                        OnPartFound(entity, viewPart);
-#if UNITY_EDITOR
-                    else UnityEngine.Debug.LogWarning($"view part {key.Type} not found for entity {entity.Id}");
-#endif
+                    var key = Requests.Get(entity).Key;
+                    ViewSyncApplier.BindEntityToViewPart(entity, viewContainerComponent.Id, key);
                 }
 
                 Requests.Remove(entity);
@@ -70,9 +64,5 @@ namespace ZE.MechBattle.Ecs {
         }
 
         public void Dispose() { }
-        protected void OnPartFound(Entity entity, IViewPart part)
-        {
-            ViewSyncApplier.Apply(entity, part, applyViewPosition: false);
-        }
     }
 }

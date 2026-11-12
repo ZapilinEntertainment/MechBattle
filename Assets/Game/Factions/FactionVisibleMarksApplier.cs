@@ -19,7 +19,7 @@ namespace ZE.MechBattle
             _playerAffiliationComponents = world.GetStash<PlayerAffiliationComponent>();
         }
 
-        public void CheckView(Entity entity, IView view)
+        public void CheckView(Entity entity, IMonoView view)
         {
             var playerAffiliationComponent = _playerAffiliationComponents.Get(entity, out var havePlayerAffiliation);
             if (havePlayerAffiliation && view is IFactionableView factionableView)

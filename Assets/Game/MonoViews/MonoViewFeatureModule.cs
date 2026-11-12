@@ -23,6 +23,7 @@ namespace ZE.MechBattle
             builder.Register<MonoViewFactory>(Lifetime.Singleton);
             builder.Register<DelayedMonoViewFactory>(Lifetime.Singleton);
             builder.Register<VirtualViewFactory>(Lifetime.Singleton);
+            builder.Register<VirtualViewApplier>(Lifetime.Singleton);
         }
 
         public override void OnWorldDispose(World world, IObjectResolver resolver)
@@ -53,7 +54,8 @@ namespace ZE.MechBattle
             builder.Register<MeshesDepot>(Lifetime.Singleton);
 
             builder.Register<VirtualRenderer>(Lifetime.Singleton);
-            builder.Register<VirtualViewConfigsList>(Lifetime.Singleton);           
+            builder.Register<VirtualViewConfigsList>(Lifetime.Singleton);
+            builder.Register<CompositeVirtualViewConfigsList>(Lifetime.Singleton);
         }
 
         public async Awaitable<IResourceBinder> LoadSessionResourcesAsync(IObjectResolver resolver)
@@ -64,7 +66,7 @@ namespace ZE.MechBattle
                 AssetConstants.MATERIAL_LABEL, AssetConstants.SESSION_PRELOAD_LABEL);
 
             var virtualViewConfigs = resolver.Resolve<VirtualViewConfigsList>();
-            await AssetsManager.LoadAssetsByLabel<VirtualViewConfiguration>(
+            await AssetsManager.LoadAssetsByLabel<VirtualViewConfigurationObject>(
                 (config, primaryKey) => virtualViewConfigs.RegisterElement(primaryKey, config),
                 AssetConstants.VIRTUAL_VIEW_CONFIG_LABEL, AssetConstants.SESSION_PRELOAD_LABEL);
 

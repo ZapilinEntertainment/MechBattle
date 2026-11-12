@@ -11,85 +11,36 @@ namespace ZE.MechBattle
         // note: for complex views - continue develop virtual view containers
 
         private readonly World _world;
-        private readonly VirtualViewConfigsList _configsList;
-        private readonly MeshesDepot _meshesDepot;
-        private readonly MaterialsDepot _materialsDepot;
-        private readonly Stash<VirtualViewComponent> _virtualViews;
-        private readonly Dictionary<string, VirtualViewComponent> _viewKeyToComponent = new();
+        private readonly VirtualViewApplier _virtualViewApplier;
+        
 
         [Inject]
-        public VirtualViewFactory(World world, VirtualViewConfigsList configsList, MeshesDepot meshesDepot, MaterialsDepot materialsDepot)
+        public VirtualViewFactory(World world, VirtualViewApplier virtualViewApplier)
         {
             _world = world;
-            _configsList = configsList;
-            _meshesDepot = meshesDepot;
-            _materialsDepot = materialsDepot;
-
-            _virtualViews = _world.GetStash<VirtualViewComponent>();
+            _virtualViewApplier = virtualViewApplier;
         }
 
-        Entity IViewInstanceStrategy.CreateViewEntity(string viewId)
+        Entity IViewInstanceStrategy.CreateViewEntity(string rawViewId)
         {
-            // note: view id here looks like "virtual:ViewId"
-            // yes, duplicating positions for caching (virtual:X and X)
-
-            if (!_viewKeyToComponent.TryGetValue(viewId, out var component))
-            {
-                var realId = viewId.Substring(ViewConstants.VIRTUAL_VIEW_PREFIX.Length);
-                if (!TryLoadComponentFromConfig(realId, out component))
-                    return default;
-
-                _viewKeyToComponent.Add(viewId, component);
-            }
-
-            return CreateViewEntity(component);
+            // raw view id looks like: "virtual:VIEW_ID"
+            var entity = _world.CreateEntity();
+            _virtualViewApplier.ApplyRawViewId(entity, rawViewId);
+            return entity;
         }
 
         public Entity CreateViewEntity(string viewConfigId)
         {
-            if (!_viewKeyToComponent.TryGetValue(viewConfigId, out var component))
-            {
-                if (!TryLoadComponentFromConfig(viewConfigId, out component))
-                    return default;
-
-                _viewKeyToComponent.Add(viewConfigId, component);
-            }
-            return CreateViewEntity(component);
-        }
-
-        public Entity CreateViewEntity(IVirtualViewConfig config) => CreateViewEntity(ConfigToComponent(config));
-
-        public Entity CreateViewEntity(VirtualViewComponent viewComponent)
-        {
             var entity = _world.CreateEntity();
-            _virtualViews.Add(entity, viewComponent);
+            _virtualViewApplier.Apply(entity, viewConfigId);
             return entity;
         }
 
-        private bool TryLoadComponentFromConfig(string key, out VirtualViewComponent component)
+        public Entity CreateViewEntity(VirtualViewConfigurationObject config)
         {
-            if (!_configsList.TryGetElement(key, out var config))
-            {
-                UnityEngine.Debug.Log("cannot find config " + key);
-                component = default;
-                return false;
-            }
-
-            component = ConfigToComponent(config);
-            return true;
-        }
-
-        private VirtualViewComponent ConfigToComponent(IVirtualViewConfig config)
-        {
-            var meshId = -1;
-            if (!string.IsNullOrEmpty(config.MeshKey))
-                _meshesDepot.TryGetElementIndex(config.MeshKey, out meshId);
-
-            var materialId = -1;
-            if (!string.IsNullOrEmpty(config.MaterialKey))
-                _materialsDepot.TryGetElementIndex(config.MaterialKey, out materialId);
-
-            return new(meshId, materialId, config.Scale, config.VisibilityLimit);
-        }
+            var entity = _world.CreateEntity();
+            _virtualViewApplier.Apply(entity, config.Data);
+            return entity;
+        }      
     }
 }

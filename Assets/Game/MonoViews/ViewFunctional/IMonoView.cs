@@ -7,5 +7,6 @@ namespace ZE.MechBattle
     {
         public Transform Transform { get;}    
         public GameObject GameObject { get; }
+        void SetParent(Transform parent);
     }
 }

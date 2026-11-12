@@ -3,7 +3,7 @@ using UnityEngine;
 namespace ZE.MechBattle
 {
     // simple container-wrapper for transferring mech part transforms
-    public class ViewPartContainer : IViewPart, IViewConnectionsPoint
+    public class ViewPartContainer : IMonoViewPart, IViewConnectionsPoint
     {
         public Transform Transform => _transform;
         public GameObject GameObject => _transform.gameObject;

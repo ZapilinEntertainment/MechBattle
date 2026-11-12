@@ -10,7 +10,7 @@ namespace ZE.MechBattle
         [SerializeField] private Collider _collider;
         [SerializeField] private Renderer _renderer;
 
-        public bool TryGetPartByKey(ViewPartKey key, out IViewPart viewPart)
+        public bool TryGetMonoPartView(ViewPartKey key, out IMonoViewPart viewPart)
         {
             if (key.Type == ViewPartType.Tower)
             {

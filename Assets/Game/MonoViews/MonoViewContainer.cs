@@ -14,15 +14,9 @@ namespace ZE.MechBattle.Views
     // - when visible view loads, it will be correctly synchronised to all entity components
     public class MonoViewContainer : SimpleView, IViewContainer, IViewConnectionsPoint, IPoolableObject<MonoViewContainer>
     {
-        public IView ContainedView { get; private set; }
+        public IMonoView ContainedView { get; private set; }
         [ShowInInspector] private MonoBehaviour ViewAsMono => ContainedView as MonoBehaviour;
         private IPoolElementReleaser<MonoViewContainer> _releaser;
-
-        public void OnViewInstanced(IView instance) 
-        {
-            ContainedView = instance;
-            ContainedView.SetParent(Transform);
-        }
 
         protected override void OnDisposed()
         {
@@ -41,5 +35,38 @@ namespace ZE.MechBattle.Views
         public void AssignReleaser(IPoolElementReleaser<MonoViewContainer> releaser) => _releaser = releaser;
 
         public void OnGet() { }
+
+        public bool TryGetPartView(ViewPartKey key, out IView view)
+        {
+            if (ContainedView != null && ContainedView is IComplexMonoView complexMonoView && complexMonoView.TryGetMonoPartView(key, out var partView))
+            {
+                view = partView;
+                return true;
+            }
+
+            view = default;
+            return false;
+        }
+
+        public void AddContainedView(IView view)
+        {
+            if (ContainedView != null)
+            {
+#if UNITY_EDITOR
+                UnityEngine.Debug.LogError("already contain view");
+#endif
+                return;
+            }
+
+            if (ContainedView is not IMonoView monoView)
+            {
+#if UNITY_EDITOR
+                UnityEngine.Debug.LogError("unsuitable view");
+#endif
+                return;
+            }
+
+            ContainedView = monoView;
+        }
     }
 }

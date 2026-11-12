@@ -22,7 +22,6 @@ namespace ZE.MechBattle
         [SerializeField] private BuildingFunctionFlags _functionFlags;
         [SerializeField] private SerializedBlockZoneConfig _blockConfig;
         public BuildingFunctionFlags FunctionFlags => _functionFlags;
-        public IView ContainedView => this;
 
         public void FillCollidersList(ICollection<int> colliderInstanceIds)
         {
@@ -46,12 +45,7 @@ namespace ZE.MechBattle
             return true;
         }
 
-        public void OnViewInstanced(IView prefab)
-        {
-            // todo: here can be replacing simple primitive view ( prefab model) to more detalized one
-        }
-
-        public bool TryGetPartByKey(ViewPartKey key, out IViewPart viewPart)
+        public bool TryGetMonoPartView(ViewPartKey key, out IMonoViewPart viewPart)
         {
             if (TryGetComponent<BuildingViewPartsComponent>(out var viewpartsComponent)
                 && viewpartsComponent.TryGetViewPart(key, out viewPart))
@@ -61,6 +55,24 @@ namespace ZE.MechBattle
 
             viewPart = default;
             return false;
+        }
+
+        public bool TryGetPartView(ViewPartKey key, out IView view)
+        {
+            // todo: rework if buildings virtual rendering added
+            if (!TryGetMonoPartView(key, out var monoView))
+            {
+                view = default;
+                return false;
+            }
+
+            view = monoView;
+            return true;
+        }
+
+        public void AddContainedView(IView view)
+        {
+            throw new NotImplementedException();
         }
     }
 }

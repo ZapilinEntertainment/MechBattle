@@ -32,8 +32,8 @@ namespace ZE.MechBattle.Ecs
         private Stash<ViewKeyComponent> _viewKeys;
         private Stash<ViewContainerComponent> _viewContainerComponents;
 
-        private readonly FinalViewFunctionalApplier _finalViewApplier;
         private readonly ViewProviderFactory _viewProviderFactory;
+        private readonly ParentingRelationsApplier _parentingRelationsApplier;
         private readonly IViewContainersManager _viewContainersList;
         private readonly List<ViewRequest> _executableRequests = new();
 
@@ -41,11 +41,11 @@ namespace ZE.MechBattle.Ecs
         public ViewRequestsHandleSystem(
             ViewProviderFactory viewProviderFactory, 
             IViewContainersManager viewContainersList,
-            FinalViewFunctionalApplier finalViewApplier)
+            ParentingRelationsApplier parentingRelationsApplier)
         {
             _viewProviderFactory = viewProviderFactory;
             _viewContainersList = viewContainersList;
-            _finalViewApplier = finalViewApplier;
+            _parentingRelationsApplier = parentingRelationsApplier;
         }
 
         public void OnAwake()
@@ -110,13 +110,8 @@ namespace ZE.MechBattle.Ecs
             }
 
             var view = request.Provider.GetView();
-            viewContainer.OnViewInstanced(view);
-
-            // note: there is difference with viewSyncApplier:
-            // at this moment view is already applied to entity, but it is container view
-            // this view is real visible view which can container (if it is mono, not a gizmo, handler or draw object)
-            if (view is IMonoView monoView) 
-                _finalViewApplier.CheckAndApply(request.ReceiveEntity, monoView);
+            viewContainer.AddContainedView(view);
+            _parentingRelationsApplier.SetViewParent(request.ReceiveEntity, view, viewContainer);
         }
     }
 }

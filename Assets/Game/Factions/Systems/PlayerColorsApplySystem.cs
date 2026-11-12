@@ -32,7 +32,7 @@ namespace ZE.MechBattle.Ecs {
         {
             foreach (var entity in _disposableViewsFilter)
             {
-                if (_viewHandler.TryGetEntityView(entity, out var view))
+                if (_viewHandler.TryGetEntityMonoView(entity, out var view))
                     _factionVisibleMarksApplier.CheckView(entity, view);
             }
         }

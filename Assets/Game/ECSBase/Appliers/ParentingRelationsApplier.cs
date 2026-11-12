@@ -2,6 +2,7 @@ using Scellecs.Morpeh;
 using VContainer;
 using Unity.Mathematics;
 using ZE.MechBattle.Views;
+using UnityEngine;
 
 namespace ZE.MechBattle.Ecs
 {
@@ -21,6 +22,7 @@ namespace ZE.MechBattle.Ecs
         private readonly World _world;
         private readonly TransformAspectHandler _transformHandler;
         private readonly DelayedMonoViewFactory _monoViewFactory;
+        private readonly FinalViewFunctionalApplier _finalViewFunctionalApplier;
 
         private readonly Stash<ParentEntityComponent> _parents;
         private readonly Stash<LocalPositionComponent> _localPositions;
@@ -33,7 +35,11 @@ namespace ZE.MechBattle.Ecs
         
 
         [Inject]
-        public ParentingRelationsApplier(World world, TransformAspectHandler transformAspectHandler, DelayedMonoViewFactory monoViewFactory)
+        public ParentingRelationsApplier(
+            World world, 
+            TransformAspectHandler transformAspectHandler, 
+            DelayedMonoViewFactory monoViewFactory,
+            FinalViewFunctionalApplier finalViewFunctionalApplier)
         {
             _world = world;
             _parents = _world.GetStash<ParentEntityComponent>();
@@ -46,6 +52,7 @@ namespace ZE.MechBattle.Ecs
 
             _transformHandler = transformAspectHandler;
             _monoViewFactory = monoViewFactory;
+            _finalViewFunctionalApplier = finalViewFunctionalApplier;
         }
 
         public void Apply(ExecutionProtocol protocol)
@@ -101,5 +108,38 @@ namespace ZE.MechBattle.Ecs
             return entity;
         }
 
+        public void SetViewParent(Entity entity, IView view, IViewContainer container)
+        {
+            if (view is IMonoView monoView)
+            {
+                if (container is MonoBehaviour monoBehaviour)
+                {
+                    monoView.SetParent(monoBehaviour.transform);
+
+                    // note: there is difference with viewSyncApplier:
+                    // at this moment view is already applied to entity, but it is container view
+                    _finalViewFunctionalApplier.CheckAndApply(entity, monoView);
+                }
+                else
+                {
+                    throw new System.NotImplementedException("container type switch not implemented");
+                }
+                return;
+            }
+
+            if (view is IVirtualView virtualView)
+            {
+                if (container is VirtualViewContainer virtualViewContainer)
+                {
+
+                }
+                else
+                {
+                    throw new System.NotImplementedException("container type not suitable");
+                }
+            }
+
+            throw new System.NotImplementedException();
+        }
     }
 }

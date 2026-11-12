@@ -65,10 +65,10 @@ namespace ZE.MechBattle.Views
                 return;
             }
 
-            DrawMatrices(mesh, material, matrices);
+            DrawMatrices(mesh, key.SubmeshIndex, material, matrices);
         }
 
-        public static void DrawMatrices(Mesh mesh, Material material, List<Matrix4x4> matrices) 
+        public static void DrawMatrices(Mesh mesh, int submeshIndex, Material material, List<Matrix4x4> matrices) 
         {
             var readIndex = 0;
             var length = matrices.Count;
@@ -76,7 +76,7 @@ namespace ZE.MechBattle.Views
             if (length < BATCH_LIMIT)
             {
                 // all group can be drawn in one batch
-                Graphics.DrawMeshInstanced(mesh, 0, material, matrices);
+                Graphics.DrawMeshInstanced(mesh, submeshIndex, material, matrices);
             }
             else
             {

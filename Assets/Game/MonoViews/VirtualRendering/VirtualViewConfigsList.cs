@@ -1,9 +1,8 @@
-using System.Collections.Generic;
 using ZE.Utils;
 
-namespace ZE.MechBattle
+namespace ZE.MechBattle.Views
 {
-    public class VirtualViewConfigsList : AssetDictionary<VirtualViewConfiguration>
+    public class VirtualViewConfigsList : AssetDictionary<VirtualViewSetupData>
     {
        
     }

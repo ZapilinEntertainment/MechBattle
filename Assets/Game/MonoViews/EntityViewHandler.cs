@@ -11,11 +11,14 @@ namespace ZE.MechBattle
         private readonly Stash<ViewContainerComponent> _viewContainers;
         private readonly Stash<ViewPartRequestComponent> _viewPartRequestComponents;
         private readonly IViewContainersManager _viewContainersManager;
+        private readonly ParentingRelationsApplier _parentingRelationsApplier;
 
         [Inject]
-        public EntityViewHandler(World world, IViewContainersManager viewContainersList )
+        public EntityViewHandler(World world, IViewContainersManager viewContainersList, ParentingRelationsApplier parentingRelationsApplier )
         {
             _viewContainersManager = viewContainersList;
+            _parentingRelationsApplier = parentingRelationsApplier;
+
             _viewContainers = world.GetStash<ViewContainerComponent>();
             _viewPartRequestComponents = world.GetStash<ViewPartRequestComponent>();
         }
@@ -28,7 +31,7 @@ namespace ZE.MechBattle
 
         public bool TryGetEntityView<T>(Entity entity, out T view) where T : class, IView
         {
-            if (!TryGetEntityView(entity, out var containedView))
+            if (!TryGetEntityMonoView(entity, out var containedView))
             {
                 view = default;
                 return false;
@@ -38,14 +41,16 @@ namespace ZE.MechBattle
             return view != null;
         }
 
-        public bool TryGetEntityView(Entity entity, out IView view)
+        public bool TryGetEntityMonoView(Entity entity, out IMonoView view)
         {
             view = default;
             var viewContainerComponent = _viewContainers.Get(entity, out var viewContainerExists);
-            if (!viewContainerExists || !_viewContainersManager.TryGetContainer(viewContainerComponent.Id, out var viewContainer))
+            if (!viewContainerExists 
+                || !_viewContainersManager.TryGetContainer(viewContainerComponent.Id, out var viewContainer)
+                ||  viewContainer is not MonoViewContainer monoViewContainer)
                 return false;
 
-            view = viewContainer.ContainedView;
+            view = monoViewContainer.ContainedView;
             return view != null;
         }
 
@@ -53,21 +58,21 @@ namespace ZE.MechBattle
 
         public void TransferPartAuthority(int ownerContainerId, Entity subViewEntity, ViewPartKey partKey)
         {
-            if (!_viewContainersManager.TryGetContainer(ownerContainerId, out var viewContainer))
+            if (!_viewContainersManager.TryGetContainer(ownerContainerId, out var viewContainer) || viewContainer is not MonoViewContainer monoContainer)
             {
-                UnityEngine.Debug.LogError($"container {ownerContainerId} not found");
+                UnityEngine.Debug.LogError($"container {ownerContainerId} not found or not monoview");
                 return;
             }
 
-            if (viewContainer.ContainedView is not IComplexMonoView complexMonoView)
+            if (monoContainer.ContainedView is not IComplexMonoView complexMonoView)
             {
-                UnityEngine.Debug.LogError($"this view does not contain parts: {(viewContainer.ContainedView as MonoBehaviour).name}");
+                UnityEngine.Debug.LogError($"this view does not contain parts: {(monoContainer.ContainedView as MonoBehaviour).name}");
                 return;
             }
 
-            if (!complexMonoView.TryGetPartByKey(partKey, out var viewPart))
+            if (!complexMonoView.TryGetMonoPartView(partKey, out var viewPart))
             {
-                UnityEngine.Debug.LogError($"{partKey.ToString()} of {(viewContainer.ContainedView as MonoBehaviour).name}'s view not found");
+                UnityEngine.Debug.LogError($"{partKey.ToString()} of {(monoContainer.ContainedView as MonoBehaviour).name}'s view not found");
                 return;
             }
 
@@ -77,7 +82,7 @@ namespace ZE.MechBattle
                 return;
             }
 
-            partOwnerViewContainer.OnViewInstanced(viewPart);
+            monoContainer.AddContainedView(viewPart);
         }
     }
 }

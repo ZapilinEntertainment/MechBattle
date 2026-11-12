@@ -3,7 +3,7 @@ using System;
 namespace ZE.MechBattle
 {
     [Serializable]
-    public struct ViewPartKey
+    public struct ViewPartKey : IEquatable<ViewPartKey>
     {
         public ViewPartType Type;
         public int Index;
@@ -20,11 +20,13 @@ namespace ZE.MechBattle
             Index = 0;
         }
 
-        public bool IsValid => Type != ViewPartType.Undefined;
+        public readonly bool IsValid => Type != ViewPartType.Undefined;
 
         public static ViewPartKey Head => new(ViewPartType.Head, 0);
         public static ViewPartKey UpperPart => new(ViewPartType.UpperPart, 0);
         public static ViewPartKey Chassis => new(ViewPartType.ChassisRoot, 0);
+        public static ViewPartKey Undefined => new(ViewPartType.Undefined, 0);
+
         public static ViewPartKey GetHipKey(bool isRight) => new(ViewPartType.Hip, SideToIndex(isRight));
         public static ViewPartKey GetAnkleKey(bool isRight) => new(ViewPartType.Ankle, SideToIndex(isRight));
         public static ViewPartKey GetFootKey(bool isRight) => new(ViewPartType.Foot, SideToIndex(isRight));
@@ -35,5 +37,10 @@ namespace ZE.MechBattle
         private static int SideToIndex(bool isRight) => isRight ? RIGHT_INDEX : LEFT_INDEX;
 
         public override string ToString() => $"{Type} : {Index}";
+
+        public readonly bool Equals(ViewPartKey other) => other.Type == Type && other.Index == Index;
+
+        public static bool operator ==(ViewPartKey A, ViewPartKey B) => A.Equals(B);
+        public static bool operator !=(ViewPartKey A, ViewPartKey B) => !A.Equals(B);
     }
 }

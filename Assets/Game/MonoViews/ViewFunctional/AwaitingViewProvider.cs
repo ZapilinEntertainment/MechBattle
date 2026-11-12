@@ -8,12 +8,12 @@ namespace ZE.MechBattle.Views
         public bool IsReadyToProvide => false;
         private bool _isCompleted = false;
         private readonly IDisposable _subscription;
-        private readonly IAssetProvider _provider;
-        private readonly Action<IAssetProvider> _onViewLoadedAction;
+        private readonly IMonoAssetProvider _provider;
+        private readonly Action<IMonoAssetProvider> _onViewLoadedAction;
 
         public IView GetView() => null;
 
-        public AwaitingViewProvider(IAssetProvider assetProvider, Action<IAssetProvider> onViewLoadedAction)
+        public AwaitingViewProvider(IMonoAssetProvider assetProvider, Action<IMonoAssetProvider> onViewLoadedAction)
         {
             _provider = assetProvider;
             _onViewLoadedAction = onViewLoadedAction;
