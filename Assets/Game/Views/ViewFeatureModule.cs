@@ -81,10 +81,11 @@ namespace ZE.MechBattle
             LoadPrebuiltMesh(meshDepot, ViewConstants.CUBE_MESH_KEY, "Cube.fbx");
             LoadPrebuiltMesh(meshDepot, ViewConstants.SPHERE_MESH_KEY, "Sphere.fbx");
 
+            await AssetsManager.LoadAssetsByLabel<Mesh>(
+               (mesh, primaryKey) => meshDepot.RegisterElement(primaryKey, mesh),
+               AssetConstants.MESH_LABEL, AssetConstants.SESSION_PRELOAD_LABEL);
+
             //LoadPrebuiltMesh(meshDepot, ViewConstants.CYLINDER_MESH_KEY, "Cylinder.fbx");
-            // is not z-oriented
-            var cylinderMesh = await AssetsManager.LoadAssetDirectly<Mesh>("cylinder");
-            meshDepot.RegisterElement(ViewConstants.CYLINDER_MESH_KEY, cylinderMesh);
 
             return null;
         }

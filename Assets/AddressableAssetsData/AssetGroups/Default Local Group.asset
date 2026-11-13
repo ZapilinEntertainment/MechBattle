@@ -31,7 +31,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 139a850f5ba8dcc438e2d75e09fb9059
-    m_Address: mech_cannon_projectile
+    m_Address: mech_cannon_projectile_vview
     m_ReadOnly: 0
     m_SerializedLabels:
     - SessionPreload
@@ -90,9 +90,11 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a496c14cd47174348924d2c155545fad
-    m_Address: cylinder
+    m_Address: cylinder_bullet
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - Mesh
+    - SessionPreload
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: adeca2a169eb98e418dbbada755dae66
     m_Address: tank_view
@@ -117,7 +119,7 @@ MonoBehaviour:
     - SessionPreload
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: df3775a601cf7fa4fa93587957d03007
-    m_Address: tank_projectile
+    m_Address: tank_projectile_vview
     m_ReadOnly: 0
     m_SerializedLabels:
     - SessionPreload

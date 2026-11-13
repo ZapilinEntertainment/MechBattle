@@ -88,7 +88,7 @@ namespace ZE.MechBattle
                 return;
             }
 
-            partMonoContainer.AddContainedView(viewPart);            
+            partMonoContainer.AddContainedView(viewPart);
         }
     }
 }
