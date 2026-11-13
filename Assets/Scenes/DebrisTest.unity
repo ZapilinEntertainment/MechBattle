@@ -495,6 +495,7 @@ GameObject:
   - component: {fileID: 1259888769}
   - component: {fileID: 1259888786}
   - component: {fileID: 1259888787}
+  - component: {fileID: 1259888788}
   m_Layer: 0
   m_Name: DEVELOP
   m_TagString: Untagged
@@ -697,7 +698,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.VirtualViewCreateUtility
   _config:
+    <Position>k__BackingField:
+      x: 0
+      y: 0
+      z: 0
+    _eulerAngles:
+      x: 0
+      y: 0
+      z: 0
     <MeshKey>k__BackingField: cylinder
+    <SubmeshIndex>k__BackingField: 0
     <MaterialKey>k__BackingField: yellow_unlit
     <Scale>k__BackingField:
       x: 0.5
@@ -705,6 +715,18 @@ MonoBehaviour:
       z: 0.5
     <VisibilityLimit>k__BackingField: 0
   _visibilityLimit: 0
+--- !u!114 &1259888788
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259888751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bcd5924c13cd8db45b6aef6f8b6788cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZE.MechBattle.Develop::ZE.MechBattle.Develop.DevelopMechAffector
 --- !u!1001 &1414578816
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -28,7 +28,7 @@ namespace ZE.MechBattle.Develop
                 .AddTo(_compositeDisposable);
         }
 
-        [Button]
+        [Button, EnableInPlayMode]
         public void DestroyMech()
         {
             if (_world.IsDisposed(_mechEntity))

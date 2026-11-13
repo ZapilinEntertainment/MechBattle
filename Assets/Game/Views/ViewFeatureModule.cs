@@ -30,6 +30,9 @@ namespace ZE.MechBattle
 
             builder.Register<ViewPartHandler>(Lifetime.Singleton);
             builder.Register<ViewContainerHandler>(Lifetime.Singleton);
+
+            builder.Register<SceneViewsCleaner>(Lifetime.Transient);
+            builder.RegisterDisposeCallback(container => container.Resolve<SceneViewsCleaner>().Execute());
         }
 
         public override void OnWorldDispose(World world, IObjectResolver resolver)
