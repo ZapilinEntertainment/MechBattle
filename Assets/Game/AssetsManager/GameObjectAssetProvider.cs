@@ -4,7 +4,7 @@ using ZE.MechBattle.AssetsManagement;
 
 namespace ZE.MechBattle
 {
-    public class GameObjectAssetProvider : AssetProvider<GameObject>
+    public class GameObjectAssetProvider : AssetProvider<GameObject>, IMonoAssetProvider
     {
         public GameObjectAssetProvider(AsyncOperationHandle<GameObject> handle) : base(handle)
         {

@@ -38,7 +38,7 @@ namespace ZE.MechBattle.Views
 
         public bool TryGetPartView(ViewPartKey key, out IView view)
         {
-            if (ContainedView != null && ContainedView is IComplexMonoView complexMonoView && complexMonoView.TryGetMonoPartView(key, out var partView))
+            if (ContainedView != null && ContainedView is ComplexMonoView complexMonoView && complexMonoView.TryGetMonoPartView(key, out var partView))
             {
                 view = partView;
                 return true;
@@ -59,6 +59,21 @@ namespace ZE.MechBattle.Views
             }
 
             ContainedView = monoView;
+            ContainedView.SetParent(transform);
+        }
+
+        public bool TryGetContainedViewAs<T>(out T view) where T : IView
+        {
+            if (ContainedView is T convertedView)
+            {
+                view = convertedView;
+                return true;
+            }
+            else
+            {
+                view = default;
+                return false;
+            }
         }
     }
 }

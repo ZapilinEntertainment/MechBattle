@@ -21,5 +21,10 @@ namespace ZE.MechBattle.Views
         {
             
         }
+
+        public bool TryGetContainedViewAs<T>(out T view) where T : IView
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

@@ -2,11 +2,11 @@ using UnityEngine;
 
 namespace ZE.MechBattle
 {
-    public class MechCannonView : SimpleView, IComplexMonoView
+    public class MechCannonView : ComplexMonoView
     {
         [SerializeField] private Transform _aimingPart;
 
-        public bool TryGetMonoPartView(ViewPartKey key, out IMonoView viewPart)
+        public override bool TryGetMonoPartView(ViewPartKey key, out IMonoView viewPart)
         {
             if (key.Type == ViewPartType.Barrel)
             {

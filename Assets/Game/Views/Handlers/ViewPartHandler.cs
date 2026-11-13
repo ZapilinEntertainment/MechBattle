@@ -24,7 +24,7 @@ namespace ZE.MechBattle.Views
 #endif
             }
 
-            if (viewContainer is IComplexView complexView && complexView.TryGetViewPart<T>(key, out view))
+            if (viewContainer.TryGetContainedViewAs(out IComplexView complexView) && complexView.TryGetViewPart(key, out view))
                 return true;
 
 #if UNITY_EDITOR

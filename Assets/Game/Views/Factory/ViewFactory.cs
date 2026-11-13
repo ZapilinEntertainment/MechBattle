@@ -18,10 +18,10 @@ namespace ZE.MechBattle
             _viewStrategies = viewApplicationStrategies;
         }
         
-        public Entity CreateViewEntity(string id)
+        public Entity CreateViewEntity(ViewKey viewKey)
         {
             var entity = _world.CreateEntity();
-            _viewApplier.ApplyView(entity, id);
+            _viewApplier.ApplyView(entity, viewKey);
             return entity;
         }
         

@@ -120,6 +120,6 @@ namespace ZE.MechBattle.MechBuilding
         }
 
         private ViewMode GetPartViewMode(bool separated) =>
-             separated ? ViewMode.DelayedMono : ViewMode.None;
+            separated ? ViewMode.DelayedMono : ViewMode.None;
     }
 }

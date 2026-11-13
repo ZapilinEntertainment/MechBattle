@@ -59,6 +59,12 @@ namespace ZE.MechBattle.Ecs
                 {
                     var encodedViewId = _requests.Get(entity).EncodedAssetNameId;
                     var provider = _viewProviderFactory.GetViewProvider(encodedViewId);
+                    if (provider == null)
+                    {
+                        UnityEngine.Debug.LogError("no view provider found");
+                        continue;
+                    }
+
                     if (provider.IsReadyToProvide)
                     {
                         _executableRequests.Add(new()

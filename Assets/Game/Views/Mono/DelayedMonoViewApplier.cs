@@ -7,8 +7,8 @@ namespace ZE.MechBattle.Views
     public class DelayedMonoViewApplier : IViewApplyStrategy
     {
         private readonly ViewSynchronizationApplier _viewSyncApplier;
+        private readonly StringDataDictionary _stringDataDictionary;
         private readonly IViewContainersManager _viewContainersPool;
-        private readonly StringDataDictionary _stringDataDict;
 
         private readonly Stash<ViewLoadRequestComponent> _viewRequests;
         private readonly Stash<ViewContainerComponent> _viewContainers;
@@ -19,12 +19,12 @@ namespace ZE.MechBattle.Views
         public DelayedMonoViewApplier(
          World world,
          ViewSynchronizationApplier viewSyncApplier,
-         IViewContainersManager viewContainersPool,
-         StringDataDictionary stringDataDictionary)
+         StringDataDictionary stringDataDictionary,
+         IViewContainersManager viewContainersPool)
         {
             _viewSyncApplier = viewSyncApplier;
             _viewContainersPool = viewContainersPool;
-            _stringDataDict = stringDataDictionary;
+            _stringDataDictionary = stringDataDictionary;
 
             _viewRequests = world.GetStash<ViewLoadRequestComponent>();
             _viewContainers = world.GetStash<ViewContainerComponent>();
@@ -32,20 +32,19 @@ namespace ZE.MechBattle.Views
 
         public void ApplyView(Entity entity, string viewId)
         {
-            AddViewContainerComponents(entity);
-            AddViewReceivingComponents(entity, viewId);
-        }
+            if (string.IsNullOrEmpty(viewId))
+            {
+                UnityEngine.Debug.LogError("null view id");
+                return;
+            }
 
-        public void AddViewContainerComponents(Entity entity)
-        {
-            var container = AddEmptyViewContainer(entity);
-            _viewSyncApplier.Apply(entity, container, applyViewPosition: false, doViewChecks: false);
-            
+            AddEmptyViewContainer(entity);
+            AddViewReceivingComponents(entity, viewId);
         }
 
         private void AddViewReceivingComponents(Entity entity, string viewId)
         {
-            _viewRequests.Add(entity);
+            _viewRequests.Add(entity, new(_stringDataDictionary.StringToKey(viewId)));
         }
 
         IViewContainer IViewApplyStrategy.AddEmptyViewContainer(Entity entity) => AddEmptyViewContainer(entity);
@@ -54,6 +53,7 @@ namespace ZE.MechBattle.Views
         {
             var (container, id) = _viewContainersPool.GetMonoContainer();
             _viewContainers.Add(entity, new(id));
+            _viewSyncApplier.Apply(entity, container, applyViewPosition: false, doViewChecks: false);
             return container;
         }
     }

@@ -96,7 +96,7 @@ namespace ZE.MechBattle
                 return default;
             }
 
-            var entity = _viewFactory.CreateViewEntity(unitConfig.ViewId);
+            var entity = _viewFactory.CreateViewEntity(unitConfig.ViewKey);
             _transformAspectHandler.MoveToPoint(entity, point);
 
             Setup(entity, unitConfig, unitKey);

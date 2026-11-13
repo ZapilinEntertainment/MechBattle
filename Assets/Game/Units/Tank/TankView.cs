@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace ZE.MechBattle
 {
-    public class TankView : SimpleView, IUnitConfig, IComplexMonoView, ISingleColliderView, IFactionableView
+    public class TankView : ComplexMonoView, IUnitConfig, ISingleColliderView, IFactionableView
     {
         [SerializeField] private Transform _tower;
         [SerializeField] private Transform _barrel;
@@ -10,7 +10,7 @@ namespace ZE.MechBattle
         [SerializeField] private Collider _collider;
         [SerializeField] private Renderer _renderer;
 
-        public bool TryGetMonoPartView(ViewPartKey key, out IMonoView viewPart)
+        public override bool TryGetMonoPartView(ViewPartKey key, out IMonoView viewPart)
         {
             if (key.Type == ViewPartType.Tower)
             {

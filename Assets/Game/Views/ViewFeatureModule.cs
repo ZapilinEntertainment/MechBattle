@@ -22,10 +22,14 @@ namespace ZE.MechBattle
 
             builder.Register<ViewFactory>(Lifetime.Singleton);
             builder.Register<ViewApplier>(Lifetime.Singleton);
-            builder.Register<DelayedMonoViewApplier>(Lifetime.Singleton);
-            builder.Register<VirtualViewApplier>(Lifetime.Singleton);
+
+            builder.Register<IViewApplyStrategy, DelayedMonoViewApplier>(Lifetime.Singleton).AsSelf();
+            builder.Register<IViewApplyStrategy, VirtualViewApplier>(Lifetime.Singleton).AsSelf();
 
             builder.Register<ViewApplicationStrategiesList>(Lifetime.Singleton);
+
+            builder.Register<ViewPartHandler>(Lifetime.Singleton);
+            builder.Register<ViewContainerHandler>(Lifetime.Singleton);
         }
 
         public override void OnWorldDispose(World world, IObjectResolver resolver)
@@ -56,10 +60,9 @@ namespace ZE.MechBattle
             builder.Register<MeshesDepot>(Lifetime.Singleton);
 
             builder.Register<VirtualRenderer>(Lifetime.Singleton);
-            builder.Register<VirtualViewConfigsList>(Lifetime.Singleton);
+            builder.Register<VirtualViewConfigsList>(Lifetime.Singleton);            
 
-            builder.Register<ViewPartHandler>(Lifetime.Singleton);
-            builder.Register<ViewContainerHandler>(Lifetime.Singleton);
+            builder.Register<ViewProviderFactory>(Lifetime.Singleton);
         }
 
         public async Awaitable<IResourceBinder> LoadSessionResourcesAsync(IObjectResolver resolver)

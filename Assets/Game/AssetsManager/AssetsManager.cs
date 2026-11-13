@@ -72,16 +72,21 @@ namespace ZE.MechBattle
             Addressables.Release(locations);
         }
 
-        public IAssetProvider GetAssetProvider(string assetKey)
+        public IMonoAssetProvider GetMonoAssetProvider(string assetKey)
         {
+            IMonoAssetProvider provider;
             if (!_cachedAssets.TryGetValue(assetKey, out var cachedAsset))
             {
                 var handle = Addressables.LoadAssetAsync<GameObject>(assetKey);
-                cachedAsset = new GameObjectAssetProvider(handle);
-                _cachedAssets.Add(assetKey, cachedAsset);
+                provider = new GameObjectAssetProvider(handle);
+                _cachedAssets.Add(assetKey, provider);
+            }
+            else
+            {
+                provider = cachedAsset as IMonoAssetProvider;
             }
 
-            return cachedAsset;
+            return provider;
         }
 
         public void Dispose()

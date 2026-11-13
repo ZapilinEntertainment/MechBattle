@@ -34,7 +34,13 @@ namespace ZE.MechBattle.Views
             var assetKey = strKey;
             //
 
-            var assetProvider = _assetsManager.GetAssetProvider(assetKey) as IMonoAssetProvider;
+            var assetProvider = _assetsManager.GetMonoAssetProvider(assetKey);
+            if (assetProvider == null)
+            {
+                Debug.LogError($"asset provider for key {assetKey} is not mono or not exists");
+                return default;
+            }
+
             if (assetProvider.IsReadyToProvideProperty.CurrentValue)
             {
                 OnViewLoaded(assetProvider, id);

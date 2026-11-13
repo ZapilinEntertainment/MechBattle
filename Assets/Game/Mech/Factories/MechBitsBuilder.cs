@@ -8,6 +8,7 @@ using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle.MechBuilding
 {
+    //build visual parts
     public class MechBitsBuilder
     {
         public IReadOnlyDictionary<ViewPartKey, Entity> ConstructedParts => _constructedParts;

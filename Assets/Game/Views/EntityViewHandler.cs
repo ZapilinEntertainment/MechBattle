@@ -58,21 +58,21 @@ namespace ZE.MechBattle
 
         public void TransferPartAuthority(int ownerContainerId, Entity subViewEntity, ViewPartKey partKey)
         {
-            if (!_viewContainersManager.TryGetContainer(ownerContainerId, out var viewContainer) || viewContainer is not MonoViewContainer monoContainer)
+            if (!_viewContainersManager.TryGetContainer(ownerContainerId, out var viewContainer) || viewContainer is not MonoViewContainer ownerMonoContainer)
             {
                 UnityEngine.Debug.LogError($"container {ownerContainerId} not found or not monoview");
                 return;
             }
 
-            if (monoContainer.ContainedView is not IComplexMonoView complexMonoView)
+            if (ownerMonoContainer.ContainedView is not ComplexMonoView complexMonoView)
             {
-                UnityEngine.Debug.LogError($"this view does not contain parts: {(monoContainer.ContainedView as MonoBehaviour).name}");
+                UnityEngine.Debug.LogError($"this view does not contain parts: {(ownerMonoContainer.ContainedView as MonoBehaviour).name}");
                 return;
             }
 
             if (!complexMonoView.TryGetMonoPartView(partKey, out var viewPart))
             {
-                UnityEngine.Debug.LogError($"{partKey.ToString()} of {(monoContainer.ContainedView as MonoBehaviour).name}'s view not found");
+                UnityEngine.Debug.LogError($"{partKey.ToString()} of {(ownerMonoContainer.ContainedView as MonoBehaviour).name}'s view not found");
                 return;
             }
 
@@ -82,7 +82,13 @@ namespace ZE.MechBattle
                 return;
             }
 
-            monoContainer.AddContainedView(viewPart);
+            if (partOwnerViewContainer is not MonoViewContainer partMonoContainer)
+            {
+                UnityEngine.Debug.LogError("part owner container is not mono");
+                return;
+            }
+
+            partMonoContainer.AddContainedView(viewPart);            
         }
     }
 }

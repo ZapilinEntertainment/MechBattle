@@ -6,7 +6,7 @@ using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle
 {
-    public class BuildingView : DisposableGameObject, IView, IBuildingView, IMultiColliderView, IViewContainer, IComplexMonoView
+    public class BuildingView : ComplexMonoView, IView, IBuildingView, IMultiColliderView, IViewContainer
     {
         [Serializable]
         public struct SerializedBlockZoneConfig
@@ -45,7 +45,7 @@ namespace ZE.MechBattle
             return true;
         }
 
-        public bool TryGetMonoPartView(ViewPartKey key, out IMonoView viewPart)
+        public override bool TryGetMonoPartView(ViewPartKey key, out IMonoView viewPart)
         {
             if (TryGetComponent<BuildingViewPartsComponent>(out var viewpartsComponent)
                 && viewpartsComponent.TryGetViewPart(key, out viewPart))
@@ -57,22 +57,18 @@ namespace ZE.MechBattle
             return false;
         }
 
-        public bool TryGetPartView(ViewPartKey key, out IView view)
+        public bool TryGetContainedViewAs<T>(out T view) where T : IView
         {
-            // todo: rework if buildings virtual rendering added
-            if (!TryGetMonoPartView(key, out var monoView))
+            if (this is T convertedView)
+            {
+                view = convertedView;
+                return true;
+            }
+            else
             {
                 view = default;
                 return false;
             }
-
-            view = monoView;
-            return true;
-        }
-
-        public void AddContainedView(IView view)
-        {
-            throw new NotImplementedException();
         }
     }
 }

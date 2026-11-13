@@ -7,7 +7,7 @@ namespace ZE.MechBattle
     public class ViewApplicationStrategiesList
     {
         public IViewApplyStrategy this[ViewMode viewType] => _strategies[viewType];
-        private readonly Dictionary<ViewMode, IViewApplyStrategy> _strategies;
+        private readonly Dictionary<ViewMode, IViewApplyStrategy> _strategies = new();
 
         [Inject]
         public ViewApplicationStrategiesList(IEnumerable<IViewApplyStrategy> strategies)

@@ -9,7 +9,7 @@ namespace ZE.MechBattle
         [field:SerializeReference] public IUnitFeatureConfig[] FeatureConfigs { get; private set; }
         [field: SerializeField] public float Health { get; private set; }
         [field:SerializeField] public MovementCollisionAvoidancePriority CollisionAvoidancePriority { get; private set;} = MovementCollisionAvoidancePriority.SmallUnit;
-        [field:SerializeField] public string ViewId { get; private set;}
+        [field:SerializeField] public ViewKey ViewKey { get; private set;}
         [PropertySpace]
         [field:SerializeField] public float TargetSearchRadius { get;private set;}
         [field: SerializeField] public float MinTargetDistance { get; private set; }

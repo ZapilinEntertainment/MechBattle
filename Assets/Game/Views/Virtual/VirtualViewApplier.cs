@@ -33,23 +33,6 @@ namespace ZE.MechBattle.Views
             _viewContainers = world.GetStash<ViewContainerComponent>();
         }
 
-        void IViewApplyStrategy.ApplyView(Entity entity, string rawViewId)
-        {
-            // note: view id here looks like "virtual:ViewId"
-            // yes, duplicating positions for caching (virtual:X and X)
-
-            if (!_viewKeyToComponent.TryGetValue(rawViewId, out var component))
-            {
-                var realId = rawViewId.Substring(ViewConstants.VIRTUAL_VIEW_PREFIX.Length);
-                if (!TryLoadComponentFromConfig(realId, out component))
-                    return;
-
-                _viewKeyToComponent.Add(rawViewId, component);
-            }
-
-            Apply(entity, component);
-        }
-
         public void ApplyView(Entity entity, string viewConfigId)
         {
             if (!_viewKeyToComponent.TryGetValue(viewConfigId, out var component))
