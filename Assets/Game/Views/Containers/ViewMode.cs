@@ -4,7 +4,8 @@ namespace ZE.MechBattle
     {
         None,
         DelayedMono,
-        Virtual
+        Virtual,
+        CompositeVirtual
     
     }
 }

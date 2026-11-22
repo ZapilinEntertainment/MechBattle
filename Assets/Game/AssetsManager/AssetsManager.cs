@@ -39,7 +39,7 @@ namespace ZE.MechBattle
             return AssetRequestResult.AssetNotLoaded;
         }
 
-        public async Awaitable LoadAndCacheAssetsByLabel<T>(params string[] labels) where T : MonoBehaviour
+        public async Awaitable LoadAndCacheAssetsByLabel<T>(params string[] labels)
         {
             var locations = await Addressables.LoadResourceLocationsAsync(labels, Addressables.MergeMode.Union, typeof(T));
             var handles = new List<AsyncOperationHandle>();

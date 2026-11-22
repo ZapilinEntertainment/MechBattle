@@ -66,6 +66,7 @@ namespace ZE.MechBattle
             builder.Register<VirtualViewConfigsList>(Lifetime.Singleton);            
 
             builder.Register<ViewProviderFactory>(Lifetime.Singleton);
+            builder.Register<CompositeVirtualViewConfigsList>(Lifetime.Singleton);
         }
 
         public async Awaitable<IResourceBinder> LoadSessionResourcesAsync(IObjectResolver resolver)
@@ -75,10 +76,21 @@ namespace ZE.MechBattle
                 (material, primaryKey) => materialsDepot.RegisterElement(primaryKey, material),
                 AssetConstants.MATERIAL_LABEL, AssetConstants.SESSION_PRELOAD_LABEL);
 
+
+
+            // simple virtual view stores and caches via both int/string keys
             var virtualViewConfigs = resolver.Resolve<VirtualViewConfigsList>();
             await AssetsManager.LoadAssetsByLabel<VirtualViewConfigurationObject>(
                 (config, primaryKey) => virtualViewConfigs.RegisterElement(primaryKey, config.Data),
                 AssetConstants.VIRTUAL_VIEW_CONFIG_LABEL, AssetConstants.SESSION_PRELOAD_LABEL);
+
+
+            // complex virtual views loads and caches via string keys
+            var compositeVirtualConfigs = resolver.Resolve<CompositeVirtualViewConfigsList>();
+            await AssetsManager.LoadAssetsByLabel<CompositeVirtualViewConfigurationObject>(
+              (config, primaryKey) => compositeVirtualConfigs.Add(primaryKey, config),
+              AssetConstants.VIRTUAL_VIEW_CONFIG_LABEL, AssetConstants.SESSION_PRELOAD_LABEL);
+
 
             var meshDepot = resolver.Resolve<MeshesDepot>();
             LoadPrebuiltMesh(meshDepot, ViewConstants.CUBE_MESH_KEY, "Cube.fbx");
@@ -88,6 +100,7 @@ namespace ZE.MechBattle
                (mesh, primaryKey) => meshDepot.RegisterElement(primaryKey, mesh),
                AssetConstants.MESH_LABEL, AssetConstants.SESSION_PRELOAD_LABEL);
 
+            // replaced by custom cylinder_bullet (z-axis oriented)
             //LoadPrebuiltMesh(meshDepot, ViewConstants.CYLINDER_MESH_KEY, "Cylinder.fbx");
 
             return null;
