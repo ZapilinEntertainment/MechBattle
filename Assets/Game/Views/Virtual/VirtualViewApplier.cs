@@ -66,7 +66,7 @@ namespace ZE.MechBattle.Views
             return true;
         }
 
-        private VirtualViewComponent ConfigToComponent(VirtualViewSetupData data)
+        public VirtualViewComponent ConfigToComponent(VirtualViewSetupData data)
         {
             var meshId = -1;
             if (!string.IsNullOrEmpty(data.MeshKey))

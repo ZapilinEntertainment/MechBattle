@@ -1,9 +1,6 @@
 using Scellecs.Morpeh;
 using VContainer;
 using Unity.Mathematics;
-using ZE.MechBattle.Views;
-using UnityEngine;
-
 namespace ZE.MechBattle.Ecs
 {
     public class ParentingRelationsApplier
@@ -13,16 +10,16 @@ namespace ZE.MechBattle.Ecs
             public Entity ParentEntity;
             public Entity ChildEntity;
             public float3 LocalPos;
-            public quaternion LocalRot;
-            public Entity ViewOwnerEntity;
-            public ViewPartKey ViewPartKey;
+            public quaternion LocalRot;           
             public bool SaveInitLocalPos;
+
+            // todo: remove to discrete functional
+            public Entity ViewOwnerEntity;
+            public ViewPartKey RequestedViewPartKey;
         }
 
         private readonly World _world;
         private readonly TransformAspectHandler _transformHandler;
-        private readonly FinalViewFunctionalApplier _finalViewFunctionalApplier;
-        private readonly ViewApplicationStrategiesList _strategiesList;
 
         private readonly Stash<ParentEntityComponent> _parents;
         private readonly Stash<LocalPositionComponent> _localPositions;
@@ -37,9 +34,7 @@ namespace ZE.MechBattle.Ecs
         [Inject]
         public ParentingRelationsApplier(
             World world, 
-            TransformAspectHandler transformAspectHandler, 
-            FinalViewFunctionalApplier finalViewFunctionalApplier,
-            ViewApplicationStrategiesList strategiesList)
+            TransformAspectHandler transformAspectHandler)
         {
             _world = world;
             _parents = _world.GetStash<ParentEntityComponent>();
@@ -51,8 +46,6 @@ namespace ZE.MechBattle.Ecs
             _viewPartsRequestComponents = _world.GetStash<ViewPartRequestComponent>();
 
             _transformHandler = transformAspectHandler;
-            _finalViewFunctionalApplier = finalViewFunctionalApplier;
-            _strategiesList = strategiesList;
         }
 
         public void Apply(ExecutionProtocol protocol)
@@ -70,8 +63,8 @@ namespace ZE.MechBattle.Ecs
             if (protocol.ViewOwnerEntity != default)
                 _awaitingViewLoadingComponents.Set(childEntity, new(protocol.ViewOwnerEntity));
 
-            if (protocol.ViewPartKey.IsValid)
-                _viewPartsRequestComponents.Set(childEntity, new(protocol.ViewPartKey));
+            if (protocol.RequestedViewPartKey.IsValid)
+                _viewPartsRequestComponents.Set(childEntity, new(protocol.RequestedViewPartKey));
 
             if (protocol.SaveInitLocalPos)
                 _initLocalPositions.Set(childEntity,new(protocol.LocalPos));
@@ -89,60 +82,6 @@ namespace ZE.MechBattle.Ecs
 
             _parents.Set(childEntity, new(parentEntity));
             return true;
-        }
-
-        public Entity CreateChildEntityForViewPart(RigidTransform point, Entity parent, Entity viewOwner, ViewPartKey viewPartKey, ViewMode viewMode)
-        {
-            var entity = _world.CreateEntity();
-            if (viewMode != ViewMode.None)
-                _strategiesList[viewMode].AddEmptyViewContainer(entity);
-
-            Apply(new()
-            {
-                ParentEntity = parent,
-                ChildEntity = entity,
-
-                ViewOwnerEntity = viewOwner,
-                ViewPartKey = viewPartKey,
-
-                LocalPos = point.pos,
-                LocalRot = point.rot,
-            });
-            return entity;
-        }
-
-        public void SetViewParent(Entity viewEntity, IView view, IViewContainer container)
-        {
-            if (view is IMonoView monoView)
-            {
-                if (container is MonoBehaviour monoBehaviour)
-                {
-                    monoView.SetParent(monoBehaviour.transform);
-
-                    // note: there is difference with viewSyncApplier:
-                    // at this moment view is already applied to entity, but it is container view
-                    _finalViewFunctionalApplier.CheckAndApply(viewEntity, monoView);
-                }
-                else
-                {
-                    throw new System.NotImplementedException("container type switch not implemented");
-                }
-                return;
-            }
-
-            if (view is IVirtualView virtualView)
-            {
-                if (container is VirtualViewContainer virtualViewContainer)
-                {
-
-                }
-                else
-                {
-                    throw new System.NotImplementedException("container type not suitable");
-                }
-            }
-
-            throw new System.NotImplementedException();
         }
     }
 }

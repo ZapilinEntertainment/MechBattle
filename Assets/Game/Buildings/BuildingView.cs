@@ -6,7 +6,7 @@ using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle
 {
-    public class BuildingView : ComplexMonoView, IView, IBuildingView, IMultiColliderView, IViewContainer
+    public class BuildingView : ComplexMonoView, IView, IBuildingView, IMultiColliderView, IViewContainer, IComplexView
     {
         [Serializable]
         public struct SerializedBlockZoneConfig
@@ -22,6 +22,8 @@ namespace ZE.MechBattle
         [SerializeField] private BuildingFunctionFlags _functionFlags;
         [SerializeField] private SerializedBlockZoneConfig _blockConfig;
         public BuildingFunctionFlags FunctionFlags => _functionFlags;
+
+        public ViewMode ViewMode => ViewMode.InstantMono;
 
         public void FillCollidersList(ICollection<int> colliderInstanceIds)
         {
@@ -45,30 +47,22 @@ namespace ZE.MechBattle
             return true;
         }
 
-        public override bool TryGetMonoPartView(ViewPartKey key, out IMonoView viewPart)
+        public bool TryGetComplexView(out IComplexView complexView)
+        {
+            complexView = this;
+            return true;
+        }
+
+        public override bool TryGetPartView(ViewPartKey key, out IMonoView viewPart)
         {
             if (TryGetComponent<BuildingViewPartsComponent>(out var viewpartsComponent)
-                && viewpartsComponent.TryGetViewPart(key, out viewPart))
+               && viewpartsComponent.TryGetViewPart(key, out viewPart))
             {
                 return true;
             }
 
             viewPart = default;
             return false;
-        }
-
-        public bool TryGetContainedViewAs<T>(out T view) where T : IView
-        {
-            if (this is T convertedView)
-            {
-                view = convertedView;
-                return true;
-            }
-            else
-            {
-                view = default;
-                return false;
-            }
         }
     }
 }

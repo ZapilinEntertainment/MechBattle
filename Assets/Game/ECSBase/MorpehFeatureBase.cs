@@ -19,8 +19,7 @@ namespace ZE.MechBattle
             builder.Register<TriangularPositionApplier>(Lifetime.Singleton);
             builder.Register<MoveTargetApplier>(Lifetime.Singleton);
             builder.Register<DisposeTagApplier>(Lifetime.Singleton);
-            builder.Register<ParentingRelationsApplier>(Lifetime.Singleton);
-            builder.Register<ViewSynchronizationApplier>(Lifetime.Singleton);            
+            builder.Register<ParentingRelationsApplier>(Lifetime.Singleton);                      
 
             builder.Register<MorpehSystemInstallHandler>(Lifetime.Singleton);
             builder.Register<LifetimeTrackingManager>(Lifetime.Singleton);

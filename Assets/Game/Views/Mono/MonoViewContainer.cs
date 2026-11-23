@@ -16,6 +16,9 @@ namespace ZE.MechBattle.Views
     {
         public IMonoView ContainedView { get; private set; }
         [ShowInInspector] private MonoBehaviour ViewAsMono => ContainedView as MonoBehaviour;
+
+        public ViewMode ViewMode => ViewMode.DelayedMono;
+
         private IPoolElementReleaser<MonoViewContainer> _releaser;
 
         protected override void OnDisposed()
@@ -36,18 +39,6 @@ namespace ZE.MechBattle.Views
 
         public void OnGet() { }
 
-        public bool TryGetPartView(ViewPartKey key, out IView view)
-        {
-            if (ContainedView != null && ContainedView is ComplexMonoView complexMonoView && complexMonoView.TryGetMonoPartView(key, out var partView))
-            {
-                view = partView;
-                return true;
-            }
-
-            view = default;
-            return false;
-        }
-
         public void AddContainedView(IMonoView monoView)
         {
             if (ContainedView != null)
@@ -60,20 +51,6 @@ namespace ZE.MechBattle.Views
 
             ContainedView = monoView;
             ContainedView.SetParent(transform);
-        }
-
-        public bool TryGetContainedViewAs<T>(out T view) where T : IView
-        {
-            if (ContainedView is T convertedView)
-            {
-                view = convertedView;
-                return true;
-            }
-            else
-            {
-                view = default;
-                return false;
-            }
         }
     }
 }

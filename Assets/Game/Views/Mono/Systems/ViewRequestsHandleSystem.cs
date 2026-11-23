@@ -102,7 +102,7 @@ namespace ZE.MechBattle.Ecs
 
             var containerId = _viewContainerComponents.Get(request.ReceiveEntity).Id;
             var view = request.Provider.GetView();
-            _viewContainerHandler.AddViewToContainer(request.ReceiveEntity, view, containerId);
+            _viewContainerHandler.AddViewToContainer(request.ReceiveEntity, view, containerId, doFinalCheck: true);
         }
     }
 }

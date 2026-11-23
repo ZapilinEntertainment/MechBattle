@@ -1,8 +1,9 @@
-namespace ZE.MechBattle.Views
+namespace ZE.MechBattle
 {
-    public interface IComplexView : IView
+    public interface IComplexView
     {
-        bool TryGetViewPart<T>(ViewPartKey key, out T view) where T : IView;
-    
+        bool TryGetPartView(ViewPartKey key, out IView partView);
+
+
     }
 }

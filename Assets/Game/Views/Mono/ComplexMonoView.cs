@@ -1,20 +1,18 @@
-using ZE.MechBattle.Views;
-
 namespace ZE.MechBattle
 {
     public abstract class ComplexMonoView : SimpleView, IComplexView
     {
-        abstract public bool TryGetMonoPartView(ViewPartKey key, out IMonoView viewPart);
+        public abstract bool TryGetPartView(ViewPartKey key, out IMonoView viewPart);
 
-        public bool TryGetViewPart<T>(ViewPartKey key, out T view) where T : IView
+        bool IComplexView.TryGetPartView(ViewPartKey key, out IView partView)
         {
-            if (TryGetMonoPartView(key, out var monoPartView) && monoPartView is T convertedView)
+            if (TryGetPartView(key, out var view))
             {
-                view = convertedView;
+                partView = view;
                 return true;
             }
 
-            view = default;
+            partView = default;
             return false;
         }
     }

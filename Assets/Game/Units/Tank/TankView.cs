@@ -10,7 +10,12 @@ namespace ZE.MechBattle
         [SerializeField] private Collider _collider;
         [SerializeField] private Renderer _renderer;
 
-        public override bool TryGetMonoPartView(ViewPartKey key, out IMonoView viewPart)
+        public void ApplyFactionMaterial(Material material)
+        {
+            _renderer.sharedMaterial = material;
+        }
+
+        public override bool TryGetPartView(ViewPartKey key, out IMonoView viewPart)
         {
             if (key.Type == ViewPartType.Tower)
             {
@@ -26,11 +31,6 @@ namespace ZE.MechBattle
 
             viewPart = null;
             return false;
-        }
-
-        public void ApplyFactionMaterial(Material material)
-        {
-            _renderer.sharedMaterial = material;
         }
 
         public float Health => _unitConfig.Health;

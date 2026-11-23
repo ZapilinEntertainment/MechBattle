@@ -11,13 +11,11 @@ namespace ZE.MechBattle
         private readonly Stash<ViewContainerComponent> _viewContainers;
         private readonly Stash<ViewPartRequestComponent> _viewPartRequestComponents;
         private readonly IViewContainersManager _viewContainersManager;
-        private readonly ParentingRelationsApplier _parentingRelationsApplier;
 
         [Inject]
-        public EntityViewHandler(World world, IViewContainersManager viewContainersList, ParentingRelationsApplier parentingRelationsApplier )
+        public EntityViewHandler(World world, IViewContainersManager viewContainersList)
         {
             _viewContainersManager = viewContainersList;
-            _parentingRelationsApplier = parentingRelationsApplier;
 
             _viewContainers = world.GetStash<ViewContainerComponent>();
             _viewPartRequestComponents = world.GetStash<ViewPartRequestComponent>();
@@ -70,7 +68,7 @@ namespace ZE.MechBattle
                 return;
             }
 
-            if (!complexMonoView.TryGetMonoPartView(partKey, out var viewPart))
+            if (!complexMonoView.TryGetPartView(partKey, out var viewPart))
             {
                 UnityEngine.Debug.LogError($"{partKey.ToString()} of {(ownerMonoContainer.ContainedView as MonoBehaviour).name}'s view not found");
                 return;

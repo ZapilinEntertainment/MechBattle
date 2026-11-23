@@ -14,22 +14,27 @@ namespace ZE.MechBattle
         public override void SceneScopeInstall(IContainerBuilder builder)
         {
             base.SceneScopeInstall(builder);
-            builder.Register<FinalViewFunctionalApplier>(Lifetime.Singleton);
-            builder.Register<EntityViewHandler>(Lifetime.Singleton);
+            builder.Register<FinalViewFunctionalApplier>(Lifetime.Singleton);         
             builder.Register<ViewPartsConnectionHandler>(Lifetime.Singleton);
             
             builder.Register<ColouredMaterialsDepot>(Lifetime.Singleton);
 
+            // abstract view creation
+
             builder.Register<ViewFactory>(Lifetime.Singleton);
             builder.Register<ViewApplier>(Lifetime.Singleton);
 
-            builder.Register<IViewApplyStrategy, DelayedMonoViewApplier>(Lifetime.Singleton).AsSelf();
-            builder.Register<IViewApplyStrategy, VirtualViewApplier>(Lifetime.Singleton).AsSelf();
+            // abstract view handling
+            builder.Register<IViewContainerHandler, ViewContainerHandler>(Lifetime.Singleton);
+            builder.Register<ViewSynchronizationApplier>(Lifetime.Singleton);            
+            builder.Register<EntityViewHandler>(Lifetime.Singleton);
 
+            // view strategies
             builder.Register<ViewApplicationStrategiesList>(Lifetime.Singleton);
-
-            builder.Register<ViewPartHandler>(Lifetime.Singleton);
-            builder.Register<ViewContainerHandler>(Lifetime.Singleton);
+            RegisterViewMode<DelayedMonoViewApplier, DelayedMonoViewContainerHandler>(builder);
+            RegisterViewMode<VirtualViewApplier, VirtualViewContainerHandler>(builder);
+            RegisterViewMode<ComplexVirtualViewApplier, ComplexVirtualViewContainerHandler>(builder);
+            //
 
             builder.Register<SceneViewsCleaner>(Lifetime.Transient);
             builder.RegisterDisposeCallback(container => container.Resolve<SceneViewsCleaner>().Execute());
@@ -66,7 +71,7 @@ namespace ZE.MechBattle
             builder.Register<VirtualViewConfigsList>(Lifetime.Singleton);            
 
             builder.Register<ViewProviderFactory>(Lifetime.Singleton);
-            builder.Register<CompositeVirtualViewConfigsList>(Lifetime.Singleton);
+            builder.Register<ComplexVirtualViewConfigsList>(Lifetime.Singleton);
         }
 
         public async Awaitable<IResourceBinder> LoadSessionResourcesAsync(IObjectResolver resolver)
@@ -86,8 +91,8 @@ namespace ZE.MechBattle
 
 
             // complex virtual views loads and caches via string keys
-            var compositeVirtualConfigs = resolver.Resolve<CompositeVirtualViewConfigsList>();
-            await AssetsManager.LoadAssetsByLabel<CompositeVirtualViewConfigurationObject>(
+            var compositeVirtualConfigs = resolver.Resolve<ComplexVirtualViewConfigsList>();
+            await AssetsManager.LoadAssetsByLabel<ComplexVirtualViewConfigurationObject>(
               (config, primaryKey) => compositeVirtualConfigs.Add(primaryKey, config),
               AssetConstants.VIRTUAL_VIEW_CONFIG_LABEL, AssetConstants.SESSION_PRELOAD_LABEL);
 
@@ -110,6 +115,14 @@ namespace ZE.MechBattle
         {
             var mesh = Resources.GetBuiltinResource<Mesh>(resourceName);
             meshesDepot.RegisterElement(assetName, mesh);
+        }
+
+        private void RegisterViewMode<ViewApplyStrategy, SpecifiedContainerHandler>(IContainerBuilder builder)
+            where ViewApplyStrategy : IViewApplyStrategy
+            where SpecifiedContainerHandler : ISpecifiedViewContainerHandler
+        {
+            builder.Register<IViewApplyStrategy, ViewApplyStrategy>(Lifetime.Singleton).AsSelf();
+            builder.Register<ISpecifiedViewContainerHandler, SpecifiedContainerHandler>(Lifetime.Singleton).AsSelf();
         }
     }
 }

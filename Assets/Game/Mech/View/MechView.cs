@@ -23,7 +23,7 @@ namespace ZE.MechBattle
                 cinCamera.enabled = true;
         }
 
-        public override bool TryGetMonoPartView(ViewPartKey key, out IMonoView viewPart)
+        public override bool TryGetPartView(ViewPartKey key, out IMonoView viewPart)
         {
             //UnityEngine.Debug.Log($"{key.Type} : {key.Index}");
 
@@ -33,7 +33,7 @@ namespace ZE.MechBattle
                 return false;
             }
 
-            switch(key.Type) 
+            switch (key.Type)
             {
                 case ViewPartType.UpperPart:
                     {
@@ -45,7 +45,7 @@ namespace ZE.MechBattle
                         viewPart = new ViewPartContainer(ChassisRoot);
                         return true;
                     }
-                    case ViewPartType.Hip:
+                case ViewPartType.Hip:
                     {
                         viewPart = new ViewPartContainer(key.Index == 1 ? RightLeg.Hip : LeftLeg.Hip);
                         return true;
@@ -67,7 +67,7 @@ namespace ZE.MechBattle
                     }
                 case ViewPartType.Eye:
                     {
-                        viewPart = new ViewPartContainer(key.Index == 1 ? _rightEye :_leftEye);
+                        viewPart = new ViewPartContainer(key.Index == 1 ? _rightEye : _leftEye);
                         return true;
                     }
                 default:

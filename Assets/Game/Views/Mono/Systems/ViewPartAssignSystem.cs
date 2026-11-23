@@ -1,6 +1,7 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
 using VContainer;
+using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle.Ecs {
 
@@ -14,6 +15,7 @@ namespace ZE.MechBattle.Ecs {
         public World World { get; set;}
         protected Stash<ViewPartRequestComponent> Requests;
         protected readonly ViewSynchronizationApplier ViewSyncApplier;
+        private readonly DelayedMonoViewContainerHandler _delayedMonoContainerHandler;
 
         private Filter _filter;
         private Stash<ViewContainerComponent> _viewContainers;
@@ -21,10 +23,14 @@ namespace ZE.MechBattle.Ecs {
         private readonly IViewContainersManager _viewContainersList;
 
         [Inject]
-        public ViewPartAssignSystem(ViewSynchronizationApplier viewSynchronizationApplier, IViewContainersManager viewContainersList)
+        public ViewPartAssignSystem(
+            ViewSynchronizationApplier viewSynchronizationApplier, 
+            IViewContainersManager viewContainersList,
+            DelayedMonoViewContainerHandler delayedMonoViewContainerHandler)
         {
             ViewSyncApplier = viewSynchronizationApplier;
             _viewContainersList = viewContainersList;
+            _delayedMonoContainerHandler = delayedMonoViewContainerHandler;
         }
 
         public virtual void OnAwake() 
@@ -55,8 +61,7 @@ namespace ZE.MechBattle.Ecs {
                 }
                 else
                 {
-                    var key = Requests.Get(entity).Key;
-                    ViewSyncApplier.BindEntityToViewPart(entity, viewContainerComponent.Id, key);
+                    _delayedMonoContainerHandler.BindEntityToViewPart(entity, viewContainer as MonoViewContainer, Requests.Get(entity).Key);
                 }
 
                 Requests.Remove(entity);
