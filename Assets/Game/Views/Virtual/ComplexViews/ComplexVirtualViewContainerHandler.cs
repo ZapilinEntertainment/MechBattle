@@ -15,6 +15,7 @@ namespace ZE.MechBattle.Views
         public ComplexVirtualViewContainerHandler(ComplexVirtualViewApplier virtualViewApplier, World world)
         {
             _viewApplier = virtualViewApplier;
+
             _viewPartKeys = world.GetStash<ViewPartKeyComponent>();
             _virtualViews = world.GetStash<VirtualViewComponent>();
         }
@@ -44,7 +45,7 @@ namespace ZE.MechBattle.Views
 
         public void BindEntityToViewPart(Entity entity, IViewContainer viewContainer, ViewPartKey key)
         {
-            throw new System.NotImplementedException();
+            // no action required
         }
     }
 }

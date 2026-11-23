@@ -8,7 +8,7 @@ namespace ZE.MechBattle.Views
     {
         public IReadOnlyList<Entity> Parts => _parts;
 
-        public ViewMode ViewMode => ViewMode.Virtual;
+        public ViewMode ViewMode => ViewMode.ComplexVirtual;
 
         private IPoolElementReleaser<VirtualViewContainer> _releaser;
         private List<Entity> _parts = new(4);
