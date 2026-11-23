@@ -18,7 +18,7 @@ MonoBehaviour:
   <Health>k__BackingField: 4
   <CollisionAvoidancePriority>k__BackingField: 1
   <ViewKey>k__BackingField:
-    Mode: 1
+    Mode: 2
     AssetKey: tank_view
   <TargetSearchRadius>k__BackingField: 600
   <MinTargetDistance>k__BackingField: 0

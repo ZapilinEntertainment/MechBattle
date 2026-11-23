@@ -22,7 +22,7 @@ MonoBehaviour:
         Lifetime: 5
         UseGravity: 0
         ViewKey:
-          Mode: 2
+          Mode: 3
           AssetKey: mech_cannon_projectile_vview
     - Key: artillery_projectile
       Value:
@@ -32,7 +32,7 @@ MonoBehaviour:
         Lifetime: 30
         UseGravity: 1
         ViewKey:
-          Mode: 2
+          Mode: 3
           AssetKey: tank_projectile_vview
     - Key: tank_projectile
       Value:
@@ -42,5 +42,5 @@ MonoBehaviour:
         Lifetime: 3
         UseGravity: 0
         ViewKey:
-          Mode: 2
+          Mode: 3
           AssetKey: tank_projectile_vview

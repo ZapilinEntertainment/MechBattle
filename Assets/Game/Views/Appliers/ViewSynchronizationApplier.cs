@@ -1,8 +1,8 @@
 using Scellecs.Morpeh;
 using VContainer;
-using ZE.MechBattle.Views;
+using ZE.MechBattle.Ecs;
 
-namespace ZE.MechBattle.Ecs
+namespace ZE.MechBattle.Views
 {
     // binds view and entity
     public class ViewSynchronizationApplier

@@ -1,23 +1,18 @@
 using Scellecs.Morpeh;
 using System;
 using System.Collections.Generic;
-using ZE.MechBattle.Ecs;
-
 namespace ZE.MechBattle.Views
 {
     public class ViewContainerHandler : IViewContainerHandler
     {
         private readonly IViewContainersManager _viewContainersManager;
-        private readonly VirtualViewContainerHandler _virtualViewHandler;
         private readonly Dictionary<ViewMode, ISpecifiedViewContainerHandler> _specifiedHandlers = new();
 
         public ViewContainerHandler(
             IViewContainersManager viewContainersManager,
-            VirtualViewContainerHandler virtualViewHandler,
             IEnumerable<ISpecifiedViewContainerHandler> specifiedHandlers)
         {
             _viewContainersManager = viewContainersManager;
-            _virtualViewHandler = virtualViewHandler;
 
             foreach (var specifiedHandler in specifiedHandlers)
             {
@@ -47,7 +42,13 @@ namespace ZE.MechBattle.Views
             if (!_specifiedHandlers.TryGetValue(viewContainer.ViewMode, out var handler))
                 throw new NotImplementedException();
 
-            handler.AddViewToContainer(viewEntity, view, viewContainer, doFinalCheck);
+            handler.AddViewToContainer(new()
+            {
+                ViewEntity = viewEntity,
+                View = view,
+                ViewContainer = viewContainer,
+                DoFinalCheck = doFinalCheck
+            });
         }
 
         private bool TryGetViewContainer(int containerId, out IViewContainer viewContainer)
@@ -61,6 +62,14 @@ namespace ZE.MechBattle.Views
             }
 
             return true;
+        }
+
+        public void BindEntityToViewPart(Entity entity, int containerId, ViewPartKey key)
+        {
+            if (!TryGetViewContainer(containerId, out var container))
+                return;
+
+            _specifiedHandlers[container.ViewMode].BindEntityToViewPart(entity, container, key);
         }
     }
 }

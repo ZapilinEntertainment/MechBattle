@@ -23,7 +23,7 @@ namespace ZE.MechBattle
         [SerializeField] private SerializedBlockZoneConfig _blockConfig;
         public BuildingFunctionFlags FunctionFlags => _functionFlags;
 
-        public ViewMode ViewMode => ViewMode.InstantMono;
+        public ViewMode ViewMode => ViewMode.SceneMono;
 
         public void FillCollidersList(ICollection<int> colliderInstanceIds)
         {

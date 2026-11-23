@@ -30,5 +30,10 @@ namespace ZE.MechBattle.Views
             // single virtual views have no containers
             throw new System.NotImplementedException();
         }
+
+        public void BindEntityToViewPart(Entity entity, IViewContainer viewContainer, ViewPartKey key)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

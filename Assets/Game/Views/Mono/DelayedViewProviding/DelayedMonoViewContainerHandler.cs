@@ -46,9 +46,10 @@ namespace ZE.MechBattle.Views
                 _finalViewFunctionalApplier.CheckAndApply(protocol.ViewEntity, monoView);
         }
 
-        public void BindEntityToViewPart(Entity entity, MonoViewContainer monoViewContainer, ViewPartKey key)
+        public void BindEntityToViewPart(Entity entity, IViewContainer viewContainer, ViewPartKey key)
         {
-            if (monoViewContainer.ContainedView is IComplexView complexView 
+            var monoContainer = viewContainer as MonoViewContainer;
+            if (monoContainer.ContainedView is IComplexView complexView
                 && complexView.TryGetPartView(key, out var partView)
                 && partView is IMonoView monoView)
             {

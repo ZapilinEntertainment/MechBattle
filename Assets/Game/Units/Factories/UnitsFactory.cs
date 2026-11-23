@@ -4,6 +4,7 @@ using Scellecs.Morpeh;
 using ZE.MechBattle.Ecs;
 using Unity.Mathematics;
 using ZE.MechBattle.Units;
+using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle
 {

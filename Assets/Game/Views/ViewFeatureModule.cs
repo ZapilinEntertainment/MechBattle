@@ -34,6 +34,7 @@ namespace ZE.MechBattle
             RegisterViewMode<DelayedMonoViewApplier, DelayedMonoViewContainerHandler>(builder);
             RegisterViewMode<VirtualViewApplier, VirtualViewContainerHandler>(builder);
             RegisterViewMode<ComplexVirtualViewApplier, ComplexVirtualViewContainerHandler>(builder);
+            RegisterViewMode<SceneMonoViewApplier, SceneViewsContainerHandler>(builder);
             //
 
             builder.Register<SceneViewsCleaner>(Lifetime.Transient);

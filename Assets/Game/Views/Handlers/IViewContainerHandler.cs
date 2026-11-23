@@ -7,6 +7,7 @@ namespace ZE.MechBattle.Views
     public interface IViewContainerHandler
     {
         void AddViewToContainer(Entity viewEntity, IView view, int containerId, bool doFinalCheck);
+        void BindEntityToViewPart(Entity entity, int containerId, ViewPartKey key);
         bool TryGetViewPart(int containerId, ViewPartKey viewPartKey, out IView viewPart);
     }
 
@@ -25,6 +26,7 @@ namespace ZE.MechBattle.Views
             public quaternion LocalRot;
         }
         void AddViewToContainer(ViewAdditionProtocol protocol);
+        void BindEntityToViewPart(Entity entity, IViewContainer viewContainer, ViewPartKey key);
         bool TryGetViewPart(IViewContainer viewContainer, ViewPartKey viewPartKey, out IView viewPart);
     }
 }

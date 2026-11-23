@@ -41,5 +41,10 @@ namespace ZE.MechBattle.Views
             viewPart = default;
             return false;
         }
+
+        public void BindEntityToViewPart(Entity entity, IViewContainer viewContainer, ViewPartKey key)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

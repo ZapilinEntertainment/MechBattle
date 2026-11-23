@@ -4,6 +4,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using VContainer;
 using ZE.MechBattle.Ecs;
+using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle.Develop
 {

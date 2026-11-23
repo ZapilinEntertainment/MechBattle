@@ -54,7 +54,7 @@ MonoBehaviour:
     AdrenalineLevelsCount: 7
     HealthPoints: 500
   <ViewKey>k__BackingField:
-    Mode: 1
+    Mode: 2
     AssetKey: default_mech_view
   _mechParts:
   - Key:

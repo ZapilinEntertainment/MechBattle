@@ -15,7 +15,7 @@ namespace ZE.MechBattle.Ecs {
         public World World { get; set;}
         protected Stash<ViewPartRequestComponent> Requests;
         protected readonly ViewSynchronizationApplier ViewSyncApplier;
-        private readonly DelayedMonoViewContainerHandler _delayedMonoContainerHandler;
+        private readonly IViewContainerHandler _viewContainerHandler;
 
         private Filter _filter;
         private Stash<ViewContainerComponent> _viewContainers;
@@ -26,11 +26,11 @@ namespace ZE.MechBattle.Ecs {
         public ViewPartAssignSystem(
             ViewSynchronizationApplier viewSynchronizationApplier, 
             IViewContainersManager viewContainersList,
-            DelayedMonoViewContainerHandler delayedMonoViewContainerHandler)
+            IViewContainerHandler viewContainerHandler)
         {
             ViewSyncApplier = viewSynchronizationApplier;
             _viewContainersList = viewContainersList;
-            _delayedMonoContainerHandler = delayedMonoViewContainerHandler;
+            _viewContainerHandler = viewContainerHandler;
         }
 
         public virtual void OnAwake() 
@@ -52,18 +52,9 @@ namespace ZE.MechBattle.Ecs {
 
             foreach (var entity in _filter)
             {
-                var viewContainerComponent = _viewContainers.Get(entity);
-                if (!_viewContainersList.TryGetContainer(viewContainerComponent.Id, out var viewContainer))
-                {
-                    #if UNITY_EDITOR
-                    UnityEngine.Debug.LogWarning($"container {viewContainerComponent.Id} not found for entity {entity.Id}");
-                    #endif
-                }
-                else
-                {
-                    _delayedMonoContainerHandler.BindEntityToViewPart(entity, viewContainer as MonoViewContainer, Requests.Get(entity).Key);
-                }
-
+                var requestedPartKey = Requests.Get(entity).Key;
+                var containerId = _viewContainers.Get(entity).Id;
+                _viewContainerHandler.BindEntityToViewPart(entity, containerId, requestedPartKey);
                 Requests.Remove(entity);
             }
         }

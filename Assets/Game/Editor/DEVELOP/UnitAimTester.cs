@@ -5,6 +5,7 @@ using Scellecs.Morpeh;
 using ZE.MechBattle.Ecs;
 using ZE.MechBattle.Ecs.States;
 using TriInspector;
+using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle.Develop
 {
