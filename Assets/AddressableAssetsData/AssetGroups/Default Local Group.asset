@@ -76,6 +76,13 @@ MonoBehaviour:
     - Material
     - SessionPreload
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 67a257f3190310a45a877ea11b37556b
+    m_Address: tank_view_2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Mesh
+    - SessionPreload
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6cbede1961a239642b2412e4eed550ea
     m_Address: laser_eyes_weapon_config
     m_ReadOnly: 0
@@ -85,6 +92,13 @@ MonoBehaviour:
     m_Address: default_mech_view
     m_ReadOnly: 0
     m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 91b482afdd77d0d4f8e5321f9fe183a0
+    m_Address: multimaterial
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Material
+    - SessionPreload
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a1b3b67b4ce60394ebcf287ffb9eca5c
     m_Address: default_mech_chassis_data

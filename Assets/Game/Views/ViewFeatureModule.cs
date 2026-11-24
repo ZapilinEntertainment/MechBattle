@@ -98,25 +98,12 @@ namespace ZE.MechBattle
               AssetConstants.VIRTUAL_VIEW_CONFIG_LABEL, AssetConstants.SESSION_PRELOAD_LABEL);
 
 
-            var meshDepot = resolver.Resolve<MeshesDepot>();
-            LoadPrebuiltMesh(meshDepot, ViewConstants.CUBE_MESH_KEY, "Cube.fbx");
-            LoadPrebuiltMesh(meshDepot, ViewConstants.SPHERE_MESH_KEY, "Sphere.fbx");
-
-            await AssetsManager.LoadAssetsByLabel<Mesh>(
-               (mesh, primaryKey) => meshDepot.RegisterElement(primaryKey, mesh),
-               AssetConstants.MESH_LABEL, AssetConstants.SESSION_PRELOAD_LABEL);
-
-            // replaced by custom cylinder_bullet (z-axis oriented)
-            //LoadPrebuiltMesh(meshDepot, ViewConstants.CYLINDER_MESH_KEY, "Cylinder.fbx");
+            await MeshesLoadingLogic.LoadSessionMeshes(resolver);
 
             return null;
         }
 
-        private void LoadPrebuiltMesh(MeshesDepot meshesDepot, string assetName, string resourceName)
-        {
-            var mesh = Resources.GetBuiltinResource<Mesh>(resourceName);
-            meshesDepot.RegisterElement(assetName, mesh);
-        }
+       
 
         private void RegisterViewMode<ViewApplyStrategy, SpecifiedContainerHandler>(IContainerBuilder builder)
             where ViewApplyStrategy : IViewApplyStrategy

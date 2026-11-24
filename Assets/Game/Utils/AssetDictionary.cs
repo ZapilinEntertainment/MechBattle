@@ -17,6 +17,7 @@ namespace ZE.Utils
 
         public virtual int RegisterElement(string key, T element)
         {
+            //UnityEngine.Debug.Log($"register {typeof(T).Name}: " + key);
             _assetsList.Add(element);
             var index = _assetsList.Count - 1;
             _dict.Add(key, index);
