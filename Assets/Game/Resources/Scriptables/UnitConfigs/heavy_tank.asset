@@ -44,7 +44,7 @@ MonoBehaviour:
         AttachmentProtocol:
           LocalPosition:
             x: 0
-            y: 0
+            y: 0.2
             z: 0
           LocalRotationDegrees:
             x: 0
