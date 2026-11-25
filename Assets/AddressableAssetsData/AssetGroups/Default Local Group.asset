@@ -48,7 +48,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3b7a53119bb15984991400677a1a64c9
-    m_Address: heavy_tank_view
+    m_Address: tank_view
     m_ReadOnly: 0
     m_SerializedLabels:
     - SessionPreload

@@ -10,9 +10,32 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 35e1940968bc8ff48b3c616037f0dd98, type: 3}
-  m_Name: HeavyTankViewConfig
+  m_Name: TankViewConfig
   m_EditorClassIdentifier: MechBattle::ZE.MechBattle.Views.ComplexVirtualViewConfigurationObject
   <ViewPartsData>k__BackingField:
+  - PartKey:
+      Type: 10
+      Index: 1
+    ParentKey:
+      Type: 0
+      Index: 0
+    ViewData:
+      <Position>k__BackingField:
+        x: 0
+        y: 0
+        z: 0
+      _eulerAngles:
+        x: -90
+        y: 0
+        z: 0
+      <MeshKey>k__BackingField: 'tank_view_2[body]'
+      <SubmeshIndex>k__BackingField: 1
+      <MaterialKey>k__BackingField: multimaterial
+      <Scale>k__BackingField:
+        x: 1
+        y: 1
+        z: 1
+      <VisibilityLimit>k__BackingField: 0.001
   - PartKey:
       Type: 10
       Index: 0
@@ -22,15 +45,15 @@ MonoBehaviour:
     ViewData:
       <Position>k__BackingField:
         x: 0
-        y: 0.5
+        y: 0
         z: 0
       _eulerAngles:
-        x: 0
+        x: -90
         y: 0
         z: 0
       <MeshKey>k__BackingField: 'tank_view_2[body]'
       <SubmeshIndex>k__BackingField: 0
-      <MaterialKey>k__BackingField: multimaterial
+      <MaterialKey>k__BackingField: faction_colouring_material
       <Scale>k__BackingField:
         x: 1
         y: 1
@@ -40,7 +63,7 @@ MonoBehaviour:
       Type: 1
       Index: 0
     ParentKey:
-      Type: 10
+      Type: 0
       Index: 0
     ViewData:
       <Position>k__BackingField:
@@ -48,7 +71,7 @@ MonoBehaviour:
         y: 0
         z: 0
       _eulerAngles:
-        x: 0
+        x: -90
         y: 0
         z: 0
       <MeshKey>k__BackingField: 'tank_view_2[tower]'
@@ -63,7 +86,7 @@ MonoBehaviour:
       Type: 2
       Index: 0
     ParentKey:
-      Type: 1
+      Type: 0
       Index: 0
     ViewData:
       <Position>k__BackingField:
@@ -71,7 +94,7 @@ MonoBehaviour:
         y: 0
         z: 0
       _eulerAngles:
-        x: 0
+        x: -90
         y: 0
         z: 0
       <MeshKey>k__BackingField: 'tank_view_2[barrel]'

@@ -64,32 +64,37 @@ namespace ZE.MechBattle.Views
             {
                 var data = preset.SortedData[i];
                 var parentEntity = data.ParentKey.IsValid ? entities[data.ParentIndex] : baseEntity;
-                entities[i] = AddPartView(baseEntity, data.PartKey, data.ViewData, data.LocalPosition, data.LocalRotation, viewContainerData.container);
+                entities[i] = AddPartView(parentEntity, data.PartKey, data.ApplyData, viewContainerData.container);
             }
         }
 
-        public Entity AddPartView(
-            Entity parentEntity, 
-            ViewPartKey viewPartKey, 
-            VirtualViewComponent viewData, 
-            float3 localPos,
-            quaternion localRot,
-            VirtualViewContainer container)
+        private Entity AddPartView(Entity parentEntity, ViewPartKey viewPartKey, VirtualViewApplier.VirtualViewApplyData applyData, VirtualViewContainer container)
         {
             var partEntity = _world.CreateEntity();
-            _virtualViewApplier.Apply(partEntity, viewData);
+            _virtualViewApplier.Apply(partEntity, applyData);
+
             if (viewPartKey.IsValid)
                 _viewPartKeys.Add(partEntity, new(viewPartKey));
+
             _parentingRelationsApplier.Apply(new()
             {
                 ParentEntity = parentEntity,
                 ChildEntity = partEntity,
-                LocalPos = localPos,
-                LocalRot = localRot,
+                LocalPos = applyData.LocalPosition,
+                LocalRot = applyData.LocalRotation,
             });
 
             container.AddPartEntity(partEntity);
             return partEntity;
         }
+
+        public Entity AddPartView(
+            Entity parentEntity,
+            ViewPartKey viewPartKey,
+            VirtualViewComponent viewData,
+            float3 localPos,
+            quaternion localRot,
+            VirtualViewContainer container) =>
+            AddPartView(parentEntity, viewPartKey, new VirtualViewApplier.VirtualViewApplyData(viewData, localPos, localRot), container);
     }
 }

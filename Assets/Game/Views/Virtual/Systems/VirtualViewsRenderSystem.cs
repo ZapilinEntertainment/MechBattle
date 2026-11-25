@@ -48,7 +48,7 @@ namespace ZE.MechBattle.Ecs {
             foreach (var entity in _filter)
             {
                 var viewComponent = _virtualViews.Get(entity);
-                var viewKey = new DrawInstanceGroupKey(viewComponent.MaterialId, viewComponent.MeshId);
+                var viewKey = new DrawInstanceGroupKey(viewComponent.MaterialId, viewComponent.MeshId, viewComponent.SubmeshIndex);
                 if (!_groupedEntities.TryGetValue(viewKey, out var list))
                 {
                     list = new();

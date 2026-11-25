@@ -8,11 +8,11 @@ namespace ZE.MechBattle.Views
         public readonly int MeshId;
         public readonly int SubmeshIndex;
 
-        public DrawInstanceGroupKey(int materialId, int meshId, int submeshIndex = 0)
+        public DrawInstanceGroupKey(int materialId, int meshId, int submeshIndex)
         {
             MaterialId = materialId;
             MeshId = meshId;
-            SubmeshIndex = 0;
+            SubmeshIndex = submeshIndex;
         }
 
         public bool Equals(DrawInstanceGroupKey other)

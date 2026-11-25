@@ -26,6 +26,9 @@ MonoBehaviour:
     x: 0
     y: 0
     z: 2.1
+  ViewKey:
+    Mode: 0
+    AssetKey: 
   _muzzleEffectId: tank_shot
   references:
     version: 2
@@ -37,7 +40,7 @@ MonoBehaviour:
         <RotationSpeedDegrees>k__BackingField: 90
         <LocalPosition>k__BackingField:
           x: 0
-          y: 0.923
+          y: 0
           z: 0
         <ViewPartKey>k__BackingField:
           Type: 1

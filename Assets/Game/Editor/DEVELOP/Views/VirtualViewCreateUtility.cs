@@ -38,9 +38,21 @@ namespace ZE.MechBattle.Develop
 
             var entity = _world.CreateEntity();
             _virtualViewApplier.Apply(entity, _config);
-            _transformAspectHandler.SetPosition(entity, transform.position);
-            _transformAspectHandler.SetRotation(entity, transform.rotation);
+            _transformAspectHandler.SetPosition(entity, _config.Position);
+            _transformAspectHandler.SetRotation(entity, _config.Rotation);
             _createdEntities.Add(entity);
+        }
+
+        [EnableInPlayMode, Button("Clear")]
+        public void Clear()
+        {
+            if (_createdEntities.Count == 0)
+                return;
+            foreach (var entity in _createdEntities)
+            {
+                _world.RemoveEntity(entity);
+            }
+            _createdEntities.Clear();
         }
     }
 }

@@ -93,7 +93,7 @@ namespace ZE.MechBattle.Views
 
                     readIndex += handlingElementsCount;
 
-                    Graphics.DrawMeshInstanced(mesh, 0, material, _matrixArgumentsList);
+                    Graphics.DrawMeshInstanced(mesh, submeshIndex, material, _matrixArgumentsList);
                     _matrixArgumentsList.Clear();
                 }
                 while (readIndex < length);

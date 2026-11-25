@@ -10,7 +10,7 @@ namespace ZE.MechBattle.Views
     {
         [field: SerializeField] public float3 Position { get; private set; }
         [SerializeField] private float3 _eulerAngles;
-        public Quaternion Rotation => Quaternion.Euler(math.radians(_eulerAngles));
+        public quaternion Rotation => quaternion.Euler(math.radians(_eulerAngles));
 
         [PropertySpace]
         [field: SerializeField] public string MeshKey { get; private set; }

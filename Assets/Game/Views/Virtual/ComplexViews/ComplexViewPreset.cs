@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Unity.Mathematics;
-using ZE.MechBattle.Ecs;
 using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle
@@ -12,9 +11,10 @@ namespace ZE.MechBattle
             public ViewPartKey PartKey;
             public ViewPartKey ParentKey;
             public int ParentIndex;            
-            public VirtualViewComponent ViewData;
-            public float3 LocalPosition;
-            public quaternion LocalRotation;
+            public VirtualViewApplier.VirtualViewApplyData ApplyData;
+
+            public float3 LocalPosition => ApplyData.LocalPositionComponent.Value;
+            public quaternion LocalRotation => ApplyData.LocalRotationComponent.Value;
         }
 
         public readonly SortedViewPartData[] SortedData;
@@ -106,9 +106,7 @@ namespace ZE.MechBattle
             PartKey = element.PartKey,
             ParentKey = element.ParentKey,
             ParentIndex = -1,
-            ViewData = _viewApplier.ConfigToComponent( element.ViewData),
-            LocalPosition = element.ViewData.Position,
-            LocalRotation = element.ViewData.Rotation
+            ApplyData = _viewApplier.ConfigToApplyData( element.ViewData),
         };
     }
 }
