@@ -16,13 +16,12 @@ namespace ZE.MechBattle
             base.SceneScopeInstall(builder);
             builder.Register<FinalViewFunctionalApplier>(Lifetime.Singleton);         
             builder.Register<ViewPartsConnectionHandler>(Lifetime.Singleton);
-            
-            builder.Register<ColouredMaterialsDepot>(Lifetime.Singleton);
 
             // abstract view creation
 
             builder.Register<ViewFactory>(Lifetime.Singleton);
             builder.Register<ViewApplier>(Lifetime.Singleton);
+            builder.Register<ColouredMaterialsDepot>(Lifetime.Singleton);
 
             // abstract view handling
             builder.Register<IViewContainerHandler, ViewContainerHandler>(Lifetime.Singleton);
@@ -66,7 +65,7 @@ namespace ZE.MechBattle
             builder.Register<VirtualViewContainersFactory>(Lifetime.Singleton);
 
             builder.Register<MaterialsDepot>(Lifetime.Singleton);
-            builder.Register<MeshesDepot>(Lifetime.Singleton);
+            builder.Register<MeshesDepot>(Lifetime.Singleton);            
 
             builder.Register<VirtualRenderer>(Lifetime.Singleton);
             builder.Register<VirtualViewConfigsList>(Lifetime.Singleton);            

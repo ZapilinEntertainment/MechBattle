@@ -12,7 +12,7 @@ namespace ZE.MechBattle.Views
         public ViewMode RealizingViewType => ViewMode.ComplexVirtual;
         private readonly IViewContainersManager _containersManager;
         private readonly Stash<ViewPartKeyComponent> _viewPartKeys;
-        private readonly Stash<ViewContainerComponent> _viewContainers;
+        private readonly Stash<ViewContainerComponent> _viewContainers;      
         private readonly ComplexVirtualViewConfigsList _complexConfigs;
         private readonly VirtualViewApplier _virtualViewApplier;
         private readonly Dictionary<string, ComplexViewPreset> _presets = new(4);
@@ -34,7 +34,7 @@ namespace ZE.MechBattle.Views
             _world = world;
 
             _viewPartKeys = _world.GetStash<ViewPartKeyComponent>();
-            _viewContainers = _world.GetStash<ViewContainerComponent>();
+            _viewContainers = _world.GetStash<ViewContainerComponent>();            
         }
 
         public IViewContainer AddEmptyViewContainer(Entity entity) => _containersManager.GetVirtualContainer().container;
@@ -95,6 +95,6 @@ namespace ZE.MechBattle.Views
             float3 localPos,
             quaternion localRot,
             VirtualViewContainer container) =>
-            AddPartView(parentEntity, viewPartKey, new VirtualViewApplier.VirtualViewApplyData(viewData, localPos, localRot), container);
+            AddPartView(parentEntity, viewPartKey, new VirtualViewApplier.VirtualViewApplyData(viewData, localPos, localRot, false), container);
     }
 }

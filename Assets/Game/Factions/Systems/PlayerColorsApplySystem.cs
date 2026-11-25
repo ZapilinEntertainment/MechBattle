@@ -9,20 +9,18 @@ namespace ZE.MechBattle.Ecs {
     public sealed class PlayerColorsApplySystem : ISystem 
     {
         public World World { get; set;}
-        private Filter _disposableViewsFilter;
+        private Filter _filter;
         private readonly FactionVisibleMarksApplier _factionVisibleMarksApplier;
-        private readonly EntityViewHandler _viewHandler;
 
         [Inject]
-        public PlayerColorsApplySystem(FactionVisibleMarksApplier factionVisibleMarksApplier, EntityViewHandler viewHandler)
+        public PlayerColorsApplySystem(FactionVisibleMarksApplier factionVisibleMarksApplier)
         {
             _factionVisibleMarksApplier = factionVisibleMarksApplier;
-            _viewHandler = viewHandler;
         }
 
         public void OnAwake() 
         {
-            _disposableViewsFilter = World.Filter
+            _filter = World.Filter
                 .With<ViewContainerComponent>()
                 .With<PlayerAffinityChangedTag>()
                 .Build();
@@ -30,10 +28,9 @@ namespace ZE.MechBattle.Ecs {
 
         public void OnUpdate(float deltaTime) 
         {
-            foreach (var entity in _disposableViewsFilter)
+            foreach (var entity in _filter)
             {
-                if (_viewHandler.TryGetEntityMonoView(entity, out var view))
-                    _factionVisibleMarksApplier.CheckView(entity, view);
+                _factionVisibleMarksApplier.CheckView(entity);
             }
         }
 

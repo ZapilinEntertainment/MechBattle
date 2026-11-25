@@ -53,7 +53,7 @@ namespace ZE.MechBattle.Views
         {
             var (container, id) = _viewContainersPool.GetMonoContainer();
             _viewContainers.Add(entity, new(id));
-            _viewSyncApplier.Apply(entity, container, applyViewPosition: false, doViewChecks: false);
+            _viewSyncApplier.Apply(entity, container, applyViewPosition: false);
             return container;
         }
     }

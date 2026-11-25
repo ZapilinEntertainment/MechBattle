@@ -1,37 +1,42 @@
 using Scellecs.Morpeh;
-using VContainer;
-using ZE.MechBattle.Ecs;
+using UnityEngine;
 
 namespace ZE.MechBattle.Views
 {
     public class VirtualViewContainerHandler : ISpecifiedViewContainerHandler
     {
         public ViewMode ViewMode => ViewMode.Virtual;
-        private Stash<ViewPartKeyComponent> _viewPartKeys;
-        private Stash<VirtualViewComponent> _virtualViews;
 
-        [Inject]
-        public VirtualViewContainerHandler(World world)
-        {
-            _viewPartKeys = world.GetStash<ViewPartKeyComponent>();
-            _virtualViews = world.GetStash<VirtualViewComponent>();
-        }
-
-      
+        // todo: atm single virtual views have no containers, and no regular functional
+        // it should be changed if any need appears
 
         public void AddViewToContainer(ISpecifiedViewContainerHandler.ViewAdditionProtocol protocol)
         {
-            // single virtual views have no containers
             throw new System.NotImplementedException();
         }
 
         public bool TryGetViewPart(IViewContainer viewContainer, ViewPartKey viewPartKey, out IView viewPart)
         {
-            // single virtual views have no containers
+            
             throw new System.NotImplementedException();
         }
 
         public void BindEntityToViewPart(Entity entity, IViewContainer viewContainer, ViewPartKey key)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void ChangeFactionColor(Entity entity, IViewContainer viewContainer, Color color)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void RegisterOneShotViewContainer(Entity entity, IViewContainer viewContainer)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        bool ISpecifiedViewContainerHandler.TryGetView<T>(Entity entity, IViewContainer viewContainer, out T view)
         {
             throw new System.NotImplementedException();
         }

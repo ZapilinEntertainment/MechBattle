@@ -18,7 +18,7 @@ namespace ZE.MechBattle
         public ColouredMaterialsDepot(MaterialsDepot depot)
         {
             _materialsDepot = depot;
-            _materialsDepot.TryGetElementIndex(AssetConstants.FACTION_COLOURING_MATERIAL, out var idKey);
+            _materialsDepot.TryGetElementIndex(ViewConstants.FACTION_COLOURING_MATERIAL, out var idKey);
             _materialsList.Add((ColouredMaterialType.FactionColour, Color.white), idKey);
         }
 
@@ -32,14 +32,29 @@ namespace ZE.MechBattle
             if (_materialsList.TryGetValue((type, color), out var materialId))
                 return _materialsDepot[materialId];
 
+            CreateNewColouredMaterial(type, color, out _, out var colouredMaterial);
+            return colouredMaterial;
+        }
+
+        public int GetColouredMaterialId(ColouredMaterialType type, Color color)
+        {
+            if (_materialsList.TryGetValue((type, color), out var materialId))
+                return materialId;
+
+            CreateNewColouredMaterial(type, color, out var colouredMaterialId, out _);
+            return colouredMaterialId;
+        }
+
+        private void CreateNewColouredMaterial(ColouredMaterialType type, Color color, out int colouredIdKey, out Material colouredMaterial)
+        {
             var original = _materialsDepot[_materialsList[(type, Color.white)]];
-            var colouredCopy = GameObject.Instantiate(original);
-            colouredCopy.color = color;
+            colouredMaterial = GameObject.Instantiate(original);
+            colouredMaterial.color = color;
+
             _materialsDepot
-                .RegisterTemporalMaterial(colouredCopy, out var colouredIdKey)
-                .AddTo(_compositeDisposable);
-            _materialsList.Add((type,color), colouredIdKey);
-            return colouredCopy;
+               .RegisterTemporalMaterial(colouredMaterial, out colouredIdKey)
+               .AddTo(_compositeDisposable);
+            _materialsList.Add((type, color), colouredIdKey);
         }
     
     }

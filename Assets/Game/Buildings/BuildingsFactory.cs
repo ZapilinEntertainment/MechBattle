@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Scellecs.Morpeh;
 using VContainer;
 using ZE.MechBattle.Ecs;
-using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle
 {
@@ -11,9 +10,10 @@ namespace ZE.MechBattle
         private readonly World _world;
         private readonly ViewSynchronizationApplier _viewSyncApplier;
         private readonly TransformAspectHandler _transformAspectHandler;
-        private readonly EntityViewHandler _viewHandler;
+        private readonly FinalViewFunctionalApplier _finalViewFunctionalApplier;
         private readonly List<IBuildingFeatureApplier> _featureAppliers;
-      
+        private readonly IViewContainerHandler _viewContainerHandler;
+
         private readonly Stash<BlockZoneConfigComponent> _blockConfigs;
 
         [Inject]
@@ -21,13 +21,15 @@ namespace ZE.MechBattle
             World world, 
             ViewSynchronizationApplier viewSyncApplier, 
             TransformAspectHandler transformAspectHandler,
-            EntityViewHandler viewHandler,
-            IEnumerable<IBuildingFeatureApplier> featureAppliers)
+            FinalViewFunctionalApplier finalViewFunctionalApplier,
+            IEnumerable<IBuildingFeatureApplier> featureAppliers,
+            IViewContainerHandler viewContainerHandler)
         {
             _world = world;
             _viewSyncApplier = viewSyncApplier;
             _transformAspectHandler = transformAspectHandler;
-            _viewHandler = viewHandler;
+            _finalViewFunctionalApplier = finalViewFunctionalApplier;
+            _viewContainerHandler = viewContainerHandler;
 
             
             if (featureAppliers != null)
@@ -52,16 +54,7 @@ namespace ZE.MechBattle
             var entity = _world.CreateEntity();
             _transformAspectHandler.InitializeTriangularAndHexPositions(entity, view.Transform.position);
 
-            if (view is IViewContainer viewContainer)
-            {
-                _viewHandler.AddOneShotViewAsViewContainer(entity, viewContainer);
-            }
-#if UNITY_EDITOR
-            else
-            {
-                UnityEngine.Debug.LogWarning($"entity {entity.Id} cannot be added as container");
-            }
-#endif
+            _viewContainerHandler.RegisterOneShotViewContainer(entity, view);
 
             if (view.TryGetBlockZoneConfig(out var blockComponent))
                 _blockConfigs.Add(entity, blockComponent);
@@ -75,6 +68,8 @@ namespace ZE.MechBattle
 
             // should be last for correct entity components check
             _viewSyncApplier.Apply(entity, view, applyViewPosition: true);
+            if (view is IMonoView monoView)
+                _finalViewFunctionalApplier.CheckAndApply(entity, monoView);
 
             return entity;
         }

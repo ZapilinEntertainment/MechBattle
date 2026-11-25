@@ -1,6 +1,6 @@
 using Scellecs.Morpeh;
+using UnityEngine;
 using VContainer;
-using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle.Views
 {
@@ -9,13 +9,19 @@ namespace ZE.MechBattle.Views
         public ViewMode ViewMode => ViewMode.DelayedMono;
         private readonly FinalViewFunctionalApplier _finalViewFunctionalApplier;
         private readonly ViewSynchronizationApplier _viewSyncApplier;
+        private readonly ColouredMaterialsDepot _colouredMaterialsDepot;
 
 
         [Inject]
-        public DelayedMonoViewContainerHandler(FinalViewFunctionalApplier finalViewFunctionalApplier, ViewSynchronizationApplier viewSynchronizationApplier)
+        public DelayedMonoViewContainerHandler(
+            FinalViewFunctionalApplier finalViewFunctionalApplier,
+            ViewSynchronizationApplier viewSynchronizationApplier,
+            ColouredMaterialsDepot colouredMaterialsDepot
+            )
         {
             _finalViewFunctionalApplier = finalViewFunctionalApplier;
             _viewSyncApplier = viewSynchronizationApplier;
+            _colouredMaterialsDepot = colouredMaterialsDepot;
         }
 
         public bool TryGetViewPart(IViewContainer viewContainer, ViewPartKey viewPartKey, out IView viewPart)
@@ -53,12 +59,38 @@ namespace ZE.MechBattle.Views
                 && complexView.TryGetPartView(key, out var partView)
                 && partView is IMonoView monoView)
             {
-                _viewSyncApplier.Apply(entity, monoView, applyViewPosition: false, doViewChecks: false);
+                _viewSyncApplier.Apply(entity, monoView, applyViewPosition: false);
             }
             else
             {
                 UnityEngine.Debug.LogError($"cannot bind entity {entity.Id} to part key {key}");
             }
+        }
+
+        public void ChangeFactionColor(Entity entity, IViewContainer viewContainer, Color color)
+        {
+            if ((viewContainer as MonoViewContainer).ContainedView is IFactionableView factionableView)
+            {
+                var material = _colouredMaterialsDepot.GetColouredMaterial(ColouredMaterialType.FactionColour, color);
+                factionableView.ApplyFactionMaterial(material);
+            }
+        }
+
+        public void RegisterOneShotViewContainer(Entity entity, IViewContainer viewContainer)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        bool ISpecifiedViewContainerHandler.TryGetView<T>(Entity entity, IViewContainer viewContainer, out T view)
+        {
+            if (viewContainer is MonoViewContainer monoViewContainer && monoViewContainer.ContainedView is T suitableView)
+            {
+                view = suitableView;
+                return true;
+            }
+
+            view = default;
+            return false;
         }
     }
 }

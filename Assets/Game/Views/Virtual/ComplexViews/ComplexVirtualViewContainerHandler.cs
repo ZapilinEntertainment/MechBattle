@@ -1,5 +1,5 @@
 using Scellecs.Morpeh;
-using Unity.Mathematics;
+using UnityEngine;
 using VContainer;
 using ZE.MechBattle.Ecs;
 
@@ -12,17 +12,23 @@ namespace ZE.MechBattle.Views
         private readonly Stash<ViewPartKeyComponent> _viewPartKeys;
         private readonly Stash<VirtualViewComponent> _virtualViews;
         private readonly Stash<ParentEntityComponent> _parents;
+        private readonly Stash<FactionColorApplicableTag> _colorTags;
+        private readonly ColouredMaterialsDepot _colouredMaterialsDepot;
 
         [Inject]
         public ComplexVirtualViewContainerHandler(
             ComplexVirtualViewApplier virtualViewApplier, 
-            World world)
+            World world,
+            MaterialsDepot materialsDepot,
+            ColouredMaterialsDepot colouredMaterialsDepot)
         {
             _viewApplier = virtualViewApplier;
+            _colouredMaterialsDepot = colouredMaterialsDepot;
 
             _viewPartKeys = world.GetStash<ViewPartKeyComponent>();
             _virtualViews = world.GetStash<VirtualViewComponent>();
             _parents = world.GetStash<ParentEntityComponent>();
+            _colorTags = world.GetStash<FactionColorApplicableTag>();
         }
 
         public void AddViewToContainer(ISpecifiedViewContainerHandler.ViewAdditionProtocol protocol)
@@ -68,6 +74,31 @@ namespace ZE.MechBattle.Views
 
             viewPart = default;
             return false;
+        }
+
+        public void ChangeFactionColor(Entity entity, IViewContainer viewContainer, Color color)
+        {
+            var container = viewContainer as VirtualViewContainer;
+            var colouredMaterialId = _colouredMaterialsDepot.GetColouredMaterialId(ColouredMaterialType.FactionColour, color);
+            
+            foreach (var viewEntity in container.Parts)
+            {
+                if (!_colorTags.Has(viewEntity))
+                    continue;
+                UnityEngine.Debug.Log($"{viewEntity.Id} : {colouredMaterialId}");
+                ref var viewComponent = ref _virtualViews.Get(viewEntity);
+                viewComponent.MaterialId = colouredMaterialId;
+            }
+        }
+
+        public void RegisterOneShotViewContainer(Entity entity, IViewContainer viewContainer)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        bool ISpecifiedViewContainerHandler.TryGetView<T>(Entity entity, IViewContainer viewContainer, out T view)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

@@ -13,11 +13,9 @@ namespace ZE.MechBattle
         private enum CachedResultMode : byte { Undefined, NoConfigPresented, CachedConfig }
         private readonly Dictionary<UnitKey, CachedUnitCompositeApplier> _compositeCachedAppliers = new();
 
-        private readonly World _world;
         private readonly TransformAspectHandler _transformAspectHandler;
         private readonly ViewFactory _viewFactory;
         private readonly StringDataDictionary _stringDataDictionary;
-        private readonly ViewSynchronizationApplier _viewSyncApplier;
         private readonly IUnitConfigsList _unitConfigs;
 
         private readonly List<IUnitFeatureApplier> _unitFeatureAppliers;
@@ -37,16 +35,13 @@ namespace ZE.MechBattle
             TransformAspectHandler transformAspectHandler,
             ViewFactory viewFactory,
             StringDataDictionary stringDataDictionary,
-            ViewSynchronizationApplier viewSyncApplier,
             IUnitConfigsList unitConfigsList,
             IEnumerable<IUnitFeatureApplier> unitFeatureAppliers)
         {
-            _world = world;
             _transformAspectHandler = transformAspectHandler;
             _unitConfigs = unitConfigsList;
             _viewFactory = viewFactory;
             _stringDataDictionary = stringDataDictionary;
-            _viewSyncApplier = viewSyncApplier;
 
             
             if (unitFeatureAppliers != null)
@@ -69,18 +64,6 @@ namespace ZE.MechBattle
             _unitKeys = world.GetStash<UnitKeyComponent>();
             _calculateTrianglePosTags = world.GetStash<CalculateTrianglePositionTag>();
             _targetData = world.GetStash<TargetDataComponent>();
-        }
-
-        // todo: rework to generic version for scene-place views
-        // todo: update required - not working properly
-        [System.Obsolete]
-        public Entity Build(TankView view)
-        {
-            var entity = _world.CreateEntity();
-            _viewSyncApplier.Apply(entity, view, applyViewPosition: true);
-            Setup(entity, view, new(_stringDataDictionary.StringToKey("tank")));
-
-            return entity;
         }
 
         public Entity Build(string unitId, RigidTransform point)

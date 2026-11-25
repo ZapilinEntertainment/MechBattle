@@ -30,7 +30,9 @@ MonoBehaviour:
         z: 0
       <MeshKey>k__BackingField: 'tank_view_2[body]'
       <SubmeshIndex>k__BackingField: 1
-      <MaterialKey>k__BackingField: multimaterial
+      <MaterialSetupData>k__BackingField:
+        <MaterialKey>k__BackingField: multimaterial
+        <ApplyFactionColor>k__BackingField: 0
       <Scale>k__BackingField:
         x: 1
         y: 1
@@ -53,7 +55,9 @@ MonoBehaviour:
         z: 0
       <MeshKey>k__BackingField: 'tank_view_2[body]'
       <SubmeshIndex>k__BackingField: 0
-      <MaterialKey>k__BackingField: faction_colouring_material
+      <MaterialSetupData>k__BackingField:
+        <MaterialKey>k__BackingField: faction_colouring_material
+        <ApplyFactionColor>k__BackingField: 1
       <Scale>k__BackingField:
         x: 1
         y: 1
@@ -76,7 +80,9 @@ MonoBehaviour:
         z: 0
       <MeshKey>k__BackingField: 'tank_view_2[tower]'
       <SubmeshIndex>k__BackingField: 0
-      <MaterialKey>k__BackingField: multimaterial
+      <MaterialSetupData>k__BackingField:
+        <MaterialKey>k__BackingField: multimaterial
+        <ApplyFactionColor>k__BackingField: 0
       <Scale>k__BackingField:
         x: 1
         y: 1
@@ -99,7 +105,9 @@ MonoBehaviour:
         z: 0
       <MeshKey>k__BackingField: 'tank_view_2[barrel]'
       <SubmeshIndex>k__BackingField: 0
-      <MaterialKey>k__BackingField: multimaterial
+      <MaterialSetupData>k__BackingField:
+        <MaterialKey>k__BackingField: multimaterial
+        <ApplyFactionColor>k__BackingField: 0
       <Scale>k__BackingField:
         x: 1
         y: 1

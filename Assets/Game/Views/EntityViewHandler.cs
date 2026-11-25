@@ -1,4 +1,5 @@
 using Scellecs.Morpeh;
+using System;
 using UnityEngine;
 using VContainer;
 using ZE.MechBattle.Ecs;
@@ -6,6 +7,7 @@ using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle
 {
+    [Obsolete]
     public class EntityViewHandler
     {
         private readonly Stash<ViewContainerComponent> _viewContainers;
@@ -19,37 +21,6 @@ namespace ZE.MechBattle
 
             _viewContainers = world.GetStash<ViewContainerComponent>();
             _viewPartRequestComponents = world.GetStash<ViewPartRequestComponent>();
-        }
-
-        public void AddOneShotViewAsViewContainer(Entity entity, IViewContainer view)
-        {
-            var id = _viewContainersManager.RegisterOneShotContainer(view);
-            _viewContainers.Add(entity, new(id));
-        }
-
-        public bool TryGetEntityView<T>(Entity entity, out T view) where T : class, IView
-        {
-            if (!TryGetEntityMonoView(entity, out var containedView))
-            {
-                view = default;
-                return false;
-            }
-
-            view = containedView as T;            
-            return view != null;
-        }
-
-        public bool TryGetEntityMonoView(Entity entity, out IMonoView view)
-        {
-            view = default;
-            var viewContainerComponent = _viewContainers.Get(entity, out var viewContainerExists);
-            if (!viewContainerExists 
-                || !_viewContainersManager.TryGetContainer(viewContainerComponent.Id, out var viewContainer)
-                ||  viewContainer is not MonoViewContainer monoViewContainer)
-                return false;
-
-            view = monoViewContainer.ContainedView;
-            return view != null;
         }
 
         public void OverrideViewRequestKey(Entity entity, ViewPartKey viewPartKey) => _viewPartRequestComponents.Set(entity, new(viewPartKey));

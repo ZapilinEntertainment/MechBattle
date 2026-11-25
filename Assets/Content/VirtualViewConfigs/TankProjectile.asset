@@ -23,7 +23,9 @@ MonoBehaviour:
       z: 0
     <MeshKey>k__BackingField: cylinder_bullet
     <SubmeshIndex>k__BackingField: 0
-    <MaterialKey>k__BackingField: yellow_unlit
+    <MaterialSetupData>k__BackingField:
+      <MaterialKey>k__BackingField: yellow_unlit
+      <ApplyFactionColor>k__BackingField: 0
     <Scale>k__BackingField:
       x: 0.5
       y: 0.5

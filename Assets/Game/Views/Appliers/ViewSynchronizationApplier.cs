@@ -2,7 +2,7 @@ using Scellecs.Morpeh;
 using VContainer;
 using ZE.MechBattle.Ecs;
 
-namespace ZE.MechBattle.Views
+namespace ZE.MechBattle
 {
     // binds view and entity
     public class ViewSynchronizationApplier
@@ -10,27 +10,24 @@ namespace ZE.MechBattle.Views
         private readonly World _world;
         private readonly TransformAccessManager _transformAccessManager;
         private readonly Stash<TransformUpdatedTag> _transformUpdatedTags;
-        private readonly TransformAspectHandler _transformAspectHandler;
-        private readonly FinalViewFunctionalApplier _finalViewFunctionalApplier;        
+        private readonly TransformAspectHandler _transformAspectHandler;     
 
         [Inject]
         public ViewSynchronizationApplier(
             TransformAccessManager accessManager, 
             World world, 
             TransformAspectHandler transformAspectHandler,
-            ColliderOwnityApplier colliderOwnityApplier,
-            FinalViewFunctionalApplier finalViewFunctionalApplier
+            ColliderOwnityApplier colliderOwnityApplier
             )
         {
             _world = world;
             _transformAccessManager = accessManager;
             _transformAspectHandler = transformAspectHandler;
-            _finalViewFunctionalApplier = finalViewFunctionalApplier;
 
             _transformUpdatedTags = _world.GetStash<TransformUpdatedTag>();
         }
 
-        public void Apply(Entity entity, IMonoView view, bool applyViewPosition, bool doViewChecks = true)
+        public void Apply(Entity entity, IMonoView view, bool applyViewPosition)
         {
             var transform = view.Transform;
             _transformAccessManager.RegisterTransform(entity, transform);
@@ -43,9 +40,6 @@ namespace ZE.MechBattle.Views
             //UnityEngine.Debug.Log($"bind transform {key} to entity {entity.Id}");
             view.GameObject.name = $"entity {entity.Id}";
 #endif
-
-           if (doViewChecks)
-                _finalViewFunctionalApplier.CheckAndApply(entity, view);
         }
     }
 }

@@ -15,7 +15,7 @@ namespace ZE.MechBattle.Views
         [PropertySpace]
         [field: SerializeField] public string MeshKey { get; private set; }
         [field: SerializeField] public int SubmeshIndex { get; private set; } = 0;
-        [field: SerializeField] public string MaterialKey { get; private set; }
+        [field: SerializeField] public VirtualViewMaterialSetupData MaterialSetupData { get; private set; }
         [field: SerializeField] public float3 Scale { get; private set; } = new float3(1f);
         [field: SerializeField] public float VisibilityLimit { get; private set; } = 0f;
 
