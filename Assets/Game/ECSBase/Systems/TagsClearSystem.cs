@@ -9,16 +9,16 @@ namespace ZE.MechBattle.Ecs {
         where TagComponent : struct, IOneFrameComponent
     {
         public World World { get; set;}
-        private Stash<TagComponent> _tags;
+        protected Stash<TagComponent> Tags;
 
-        public void OnAwake() 
+        public virtual void OnAwake() 
         {
-            _tags = World.GetStash<TagComponent>();
+            Tags = World.GetStash<TagComponent>();
         }
 
         public virtual void OnUpdate(float deltaTime) 
         {
-            _tags.RemoveAll();
+            Tags.RemoveAll();
         }
 
         public void Dispose() { }

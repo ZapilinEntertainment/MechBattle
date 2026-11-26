@@ -12,7 +12,8 @@ namespace ZE.MechBattle.Views
         public ViewMode RealizingViewType => ViewMode.ComplexVirtual;
         private readonly IViewContainersManager _containersManager;
         private readonly Stash<ViewPartKeyComponent> _viewPartKeys;
-        private readonly Stash<ViewContainerComponent> _viewContainers;      
+        private readonly Stash<ViewContainerComponent> _viewContainers;
+        private readonly Stash<FinalViewApplicationRequiredTag> _finalViewApplicationRequiredTags;
         private readonly ComplexVirtualViewConfigsList _complexConfigs;
         private readonly VirtualViewApplier _virtualViewApplier;
         private readonly Dictionary<string, ComplexViewPreset> _presets = new(4);
@@ -34,7 +35,8 @@ namespace ZE.MechBattle.Views
             _world = world;
 
             _viewPartKeys = _world.GetStash<ViewPartKeyComponent>();
-            _viewContainers = _world.GetStash<ViewContainerComponent>();            
+            _viewContainers = _world.GetStash<ViewContainerComponent>();
+            _finalViewApplicationRequiredTags = _world.GetStash<FinalViewApplicationRequiredTag>();
         }
 
         public IViewContainer AddEmptyViewContainer(Entity entity) => _containersManager.GetVirtualContainer().container;
@@ -66,6 +68,8 @@ namespace ZE.MechBattle.Views
                 var parentEntity = data.ParentKey.IsValid ? entities[data.ParentIndex] : baseEntity;
                 entities[i] = AddPartView(parentEntity, data.PartKey, data.ApplyData, viewContainerData.container);
             }
+
+            _finalViewApplicationRequiredTags.Add(baseEntity);
         }
 
         private Entity AddPartView(Entity parentEntity, ViewPartKey viewPartKey, VirtualViewApplier.VirtualViewApplyData applyData, VirtualViewContainer container)

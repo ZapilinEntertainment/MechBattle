@@ -13,22 +13,27 @@ namespace ZE.MechBattle.Views
         private readonly Stash<VirtualViewComponent> _virtualViews;
         private readonly Stash<ParentEntityComponent> _parents;
         private readonly Stash<FactionColorApplicableTag> _colorTags;
+        private readonly Stash<PlayerAffinityChangedTag> _playerAffinityChangedTags;
         private readonly ColouredMaterialsDepot _colouredMaterialsDepot;
+        private readonly FinalViewFunctionalApplier _finalViewFunctionalApplier;
 
         [Inject]
         public ComplexVirtualViewContainerHandler(
             ComplexVirtualViewApplier virtualViewApplier, 
             World world,
             MaterialsDepot materialsDepot,
-            ColouredMaterialsDepot colouredMaterialsDepot)
+            ColouredMaterialsDepot colouredMaterialsDepot,
+            FinalViewFunctionalApplier finalViewFunctionalApplier)
         {
             _viewApplier = virtualViewApplier;
             _colouredMaterialsDepot = colouredMaterialsDepot;
+            _finalViewFunctionalApplier = finalViewFunctionalApplier;
 
             _viewPartKeys = world.GetStash<ViewPartKeyComponent>();
             _virtualViews = world.GetStash<VirtualViewComponent>();
             _parents = world.GetStash<ParentEntityComponent>();
             _colorTags = world.GetStash<FactionColorApplicableTag>();
+            _playerAffinityChangedTags = world.GetStash<PlayerAffinityChangedTag>();
         }
 
         public void AddViewToContainer(ISpecifiedViewContainerHandler.ViewAdditionProtocol protocol)
@@ -85,7 +90,6 @@ namespace ZE.MechBattle.Views
             {
                 if (!_colorTags.Has(viewEntity))
                     continue;
-                UnityEngine.Debug.Log($"{viewEntity.Id} : {colouredMaterialId}");
                 ref var viewComponent = ref _virtualViews.Get(viewEntity);
                 viewComponent.MaterialId = colouredMaterialId;
             }
@@ -99,6 +103,16 @@ namespace ZE.MechBattle.Views
         bool ISpecifiedViewContainerHandler.TryGetView<T>(Entity entity, IViewContainer viewContainer, out T view)
         {
             throw new System.NotImplementedException();
+        }
+
+        public void OnFinalViewApplied(Entity entity, IViewContainer view)
+        {
+            var container = view as VirtualViewContainer;
+            foreach (var viewEntity in container.Parts)
+            {
+                _finalViewFunctionalApplier.CheckVirtualViewAndApply(entity, viewEntity);
+            }
+            _playerAffinityChangedTags.Set(entity);
         }
     }
 }

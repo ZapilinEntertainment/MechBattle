@@ -8,9 +8,10 @@ namespace ZE.MechBattle
     public class ViewSynchronizationApplier
     {
         private readonly World _world;
-        private readonly TransformAccessManager _transformAccessManager;
+        private readonly TransformAccessManager _transformAccessManager;        
+        private readonly TransformAspectHandler _transformAspectHandler;
         private readonly Stash<TransformUpdatedTag> _transformUpdatedTags;
-        private readonly TransformAspectHandler _transformAspectHandler;     
+        private readonly Stash<FinalViewApplicationRequiredTag> _finalApplicationTags;
 
         [Inject]
         public ViewSynchronizationApplier(
@@ -25,9 +26,10 @@ namespace ZE.MechBattle
             _transformAspectHandler = transformAspectHandler;
 
             _transformUpdatedTags = _world.GetStash<TransformUpdatedTag>();
+            _finalApplicationTags = _world.GetStash<FinalViewApplicationRequiredTag>();
         }
 
-        public void Apply(Entity entity, IMonoView view, bool applyViewPosition)
+        public void Apply(Entity entity, IMonoView view, bool applyViewPosition, bool finalViewApplicationRequired)
         {
             var transform = view.Transform;
             _transformAccessManager.RegisterTransform(entity, transform);
@@ -35,6 +37,9 @@ namespace ZE.MechBattle
                 _transformAspectHandler.ApplyViewPositionToEntity(entity, transform);
             else
                 _transformUpdatedTags.Set(entity);
+
+            if (finalViewApplicationRequired)
+                _finalApplicationTags.Set(entity);
 
 #if UNITY_EDITOR
             //UnityEngine.Debug.Log($"bind transform {key} to entity {entity.Id}");

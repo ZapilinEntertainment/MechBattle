@@ -11,8 +11,8 @@ namespace ZE.MechBattle
         public ViewMode ViewMode => ViewMode.SceneMono;
         private readonly ViewSynchronizationApplier _viewSyncApplier;
         private readonly ColouredMaterialsDepot _colouredMaterialsDepot;
-        private readonly FinalViewFunctionalApplier _finalViewFunctionalApplier;
         private readonly IViewContainersManager _viewContainersManager;
+        private readonly FinalViewFunctionalApplier _finalViewFunctionalApplier;
         private readonly Stash<ViewContainerComponent> _viewContainers;
 
         [Inject]
@@ -20,8 +20,8 @@ namespace ZE.MechBattle
             ViewSynchronizationApplier viewSynchronizationApplier,
             ColouredMaterialsDepot colouredMaterialsDepot,
             World world,
-            FinalViewFunctionalApplier finalViewFunctionalApplier,
-            IViewContainersManager viewContainersManager)
+            IViewContainersManager viewContainersManager,
+            FinalViewFunctionalApplier finalViewFunctionalApplier)
         {
             _viewSyncApplier = viewSynchronizationApplier;
             _colouredMaterialsDepot = colouredMaterialsDepot;
@@ -40,8 +40,7 @@ namespace ZE.MechBattle
             if (TryGetViewPart(viewContainer, key, out var viewPart))
             {
                 var monoView = viewPart as IMonoView;
-                _viewSyncApplier.Apply(entity, monoView, applyViewPosition: true);
-                _finalViewFunctionalApplier.CheckAndApply(entity, monoView);
+                _viewSyncApplier.Apply(entity, monoView, applyViewPosition: true, finalViewApplicationRequired: false);
             }                  
         }
 
@@ -79,6 +78,11 @@ namespace ZE.MechBattle
 
             view = default;
             return false;
+        }
+
+        public void OnFinalViewApplied(Entity entity, IViewContainer view)
+        {
+            _finalViewFunctionalApplier.CheckMonoViewAndApply(entity, view as IMonoView);
         }
     }
 }

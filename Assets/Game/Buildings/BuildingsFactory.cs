@@ -10,7 +10,6 @@ namespace ZE.MechBattle
         private readonly World _world;
         private readonly ViewSynchronizationApplier _viewSyncApplier;
         private readonly TransformAspectHandler _transformAspectHandler;
-        private readonly FinalViewFunctionalApplier _finalViewFunctionalApplier;
         private readonly List<IBuildingFeatureApplier> _featureAppliers;
         private readonly IViewContainerHandler _viewContainerHandler;
 
@@ -21,14 +20,12 @@ namespace ZE.MechBattle
             World world, 
             ViewSynchronizationApplier viewSyncApplier, 
             TransformAspectHandler transformAspectHandler,
-            FinalViewFunctionalApplier finalViewFunctionalApplier,
             IEnumerable<IBuildingFeatureApplier> featureAppliers,
             IViewContainerHandler viewContainerHandler)
         {
             _world = world;
             _viewSyncApplier = viewSyncApplier;
             _transformAspectHandler = transformAspectHandler;
-            _finalViewFunctionalApplier = finalViewFunctionalApplier;
             _viewContainerHandler = viewContainerHandler;
 
             
@@ -66,10 +63,7 @@ namespace ZE.MechBattle
                     applier.ApplyBuildingFeature(entity, view);
             }          
 
-            // should be last for correct entity components check
-            _viewSyncApplier.Apply(entity, view, applyViewPosition: true);
-            if (view is IMonoView monoView)
-                _finalViewFunctionalApplier.CheckAndApply(entity, monoView);
+            _viewSyncApplier.Apply(entity, view, applyViewPosition: true, finalViewApplicationRequired: true);
 
             return entity;
         }

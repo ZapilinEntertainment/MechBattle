@@ -1,6 +1,7 @@
 using Scellecs.Morpeh;
 using Unity.Mathematics;
 using UnityEngine;
+using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle
 {
@@ -12,6 +13,7 @@ namespace ZE.MechBattle
         bool TryGetViewPart(int containerId, ViewPartKey viewPartKey, out IView viewPart);
         void RegisterOneShotViewContainer(Entity entity, IView view);
         bool TryGetView<T>(Entity entity, out T view) where T : class, IView;
+        void OnFinalViewApplied(Entity entity, int containerId);
     }
 }
 
@@ -27,7 +29,6 @@ namespace ZE.MechBattle.Views
             public Entity ViewEntity;
             public IView View;
             public IViewContainer ViewContainer;
-            public bool DoFinalCheck;
             public float3 LocalPos;
             public quaternion LocalRot;
         }
@@ -37,5 +38,6 @@ namespace ZE.MechBattle.Views
         bool TryGetViewPart(IViewContainer viewContainer, ViewPartKey viewPartKey, out IView viewPart);
         void RegisterOneShotViewContainer(Entity entity, IViewContainer viewContainer);
         bool TryGetView<T>(Entity entity, IViewContainer viewContainer, out T view) where T : class,IView;
+        void OnFinalViewApplied(Entity entity, IViewContainer view);
     }
 }

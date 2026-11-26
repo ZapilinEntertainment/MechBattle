@@ -258,6 +258,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: sentryGun (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 5223354835488535148, guid: 6d1bd324437a39b40aa41a8c723d6bad, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6026063181213756455, guid: 6d1bd324437a39b40aa41a8c723d6bad, type: 3}
       propertyPath: m_LocalPosition.x
       value: -71.79562
@@ -795,7 +799,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1259888751}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a9dbedc102f2b554eb9f8f682b22ecf8, type: 3}
   m_Name: 
@@ -1107,6 +1111,10 @@ PrefabInstance:
     - target: {fileID: 5149245156577988752, guid: 2bc1da035ae63e249910b5b9e39931b3, type: 3}
       propertyPath: m_Name
       value: artilleryTower (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5149245156577988752, guid: 2bc1da035ae63e249910b5b9e39931b3, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

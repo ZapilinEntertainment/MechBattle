@@ -57,8 +57,6 @@ namespace ZE.MechBattle.Ecs {
 
                 list.Add(entity);
             }
-                
-
 
             foreach (var kvp in _groupedEntities)
             {

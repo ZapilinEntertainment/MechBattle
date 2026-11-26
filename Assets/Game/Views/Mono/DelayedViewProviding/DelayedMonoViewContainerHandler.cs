@@ -1,27 +1,31 @@
 using Scellecs.Morpeh;
 using UnityEngine;
 using VContainer;
+using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle.Views
 {
     public class DelayedMonoViewContainerHandler : ISpecifiedViewContainerHandler
     {
         public ViewMode ViewMode => ViewMode.DelayedMono;
-        private readonly FinalViewFunctionalApplier _finalViewFunctionalApplier;
         private readonly ViewSynchronizationApplier _viewSyncApplier;
         private readonly ColouredMaterialsDepot _colouredMaterialsDepot;
+        private readonly FinalViewFunctionalApplier _finalViewFunctionalApplier;
+        private readonly Stash<FinalViewApplicationRequiredTag> _finalApplicationTags;
 
 
         [Inject]
         public DelayedMonoViewContainerHandler(
-            FinalViewFunctionalApplier finalViewFunctionalApplier,
             ViewSynchronizationApplier viewSynchronizationApplier,
-            ColouredMaterialsDepot colouredMaterialsDepot
-            )
+            ColouredMaterialsDepot colouredMaterialsDepot,
+            FinalViewFunctionalApplier finalViewFunctionalApplier,
+            World world)
         {
-            _finalViewFunctionalApplier = finalViewFunctionalApplier;
             _viewSyncApplier = viewSynchronizationApplier;
             _colouredMaterialsDepot = colouredMaterialsDepot;
+            _finalViewFunctionalApplier = finalViewFunctionalApplier;
+
+            _finalApplicationTags = world.GetStash<FinalViewApplicationRequiredTag>();
         }
 
         public bool TryGetViewPart(IViewContainer viewContainer, ViewPartKey viewPartKey, out IView viewPart)
@@ -46,10 +50,7 @@ namespace ZE.MechBattle.Views
             monoView.Transform.localPosition = protocol.LocalPos;
             monoView.Transform.localRotation = protocol.LocalRot;
 
-            // note: there is difference with viewSyncApplier:
-            // at this moment view is already applied to entity, but it is container view
-            if (protocol.DoFinalCheck)
-                _finalViewFunctionalApplier.CheckAndApply(protocol.ViewEntity, monoView);
+            _finalApplicationTags.Set(protocol.ViewEntity);
         }
 
         public void BindEntityToViewPart(Entity entity, IViewContainer viewContainer, ViewPartKey key)
@@ -59,7 +60,7 @@ namespace ZE.MechBattle.Views
                 && complexView.TryGetPartView(key, out var partView)
                 && partView is IMonoView monoView)
             {
-                _viewSyncApplier.Apply(entity, monoView, applyViewPosition: false);
+                _viewSyncApplier.Apply(entity, monoView, applyViewPosition: false, finalViewApplicationRequired: false);
             }
             else
             {
@@ -91,6 +92,11 @@ namespace ZE.MechBattle.Views
 
             view = default;
             return false;
+        }
+
+        public void OnFinalViewApplied(Entity entity, IViewContainer view)
+        {
+            _finalViewFunctionalApplier.CheckMonoViewAndApply(entity, (view as MonoViewContainer).ContainedView);
         }
     }
 }

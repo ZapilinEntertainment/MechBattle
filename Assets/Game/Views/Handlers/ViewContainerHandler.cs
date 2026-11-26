@@ -48,7 +48,6 @@ namespace ZE.MechBattle.Views
                 ViewEntity = viewEntity,
                 View = view,
                 ViewContainer = viewContainer,
-                DoFinalCheck = doFinalCheck
             });
         }
 
@@ -126,6 +125,14 @@ namespace ZE.MechBattle.Views
 
             view = default;
             return false;
+        }
+
+        public void OnFinalViewApplied(Entity entity, int containerId)
+        {
+            if (!TryGetSpecifiedHandler(containerId, out var viewContainer, out var specifiedViewContainerHandler))
+                return;
+
+            specifiedViewContainerHandler.OnFinalViewApplied(entity, viewContainer);
         }
     }
 }

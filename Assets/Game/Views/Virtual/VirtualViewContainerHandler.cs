@@ -40,5 +40,10 @@ namespace ZE.MechBattle.Views
         {
             throw new System.NotImplementedException();
         }
+
+        public void OnFinalViewApplied(Entity entity, IViewContainer view)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

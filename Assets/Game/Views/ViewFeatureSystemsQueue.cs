@@ -15,6 +15,8 @@ namespace ZE.MechBattle.Views
 
             installer.AddSystem<VirtualViewsCheckSystem>(SystemGroupOrder.Default);
             installer.AddSystem<VirtualViewsRenderSystem>(SystemGroupOrder.Default);
+
+            installer.AddSystem<FinalViewApplicationSystem>(SystemGroupOrder.AfterDispose);
         }
     }
 }
