@@ -8,17 +8,18 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-    public sealed class VirtualViewsCheckSystem : ISystem 
+    public sealed class VisibilityLimitCheckSystem : ISystem 
     {
         public World World { get; set;}
         private Filter _filter;
         private Stash<VirtualViewComponent> _virtualViews;
-        private Stash<VisibleVirtualViewTag> _visibilityTags;
+        private Stash<ViewVisibilityStateComponent> _visibilities;
         private readonly CameraController _cameraController;
         private readonly TransformAspectHandler _transformAspectHandler;
+        private const VisibilityStateFlag VISIBILITY_LIMIT_REACHED_MASK = ~VisibilityStateFlag.InVisibilityLimit;
 
         [Inject]
-        public VirtualViewsCheckSystem(CameraController cameraController, TransformAspectHandler transformAspectHandler)
+        public VisibilityLimitCheckSystem(CameraController cameraController, TransformAspectHandler transformAspectHandler)
         {
             _cameraController = cameraController;
             _transformAspectHandler = transformAspectHandler;
@@ -26,10 +27,14 @@ namespace ZE.MechBattle.Ecs {
 
         public void OnAwake() 
         {
-            _filter = World.Filter.With<VirtualViewComponent>().Without<EntityDisposeTag>().Build();
+            _filter = World.Filter
+                .With<VirtualViewComponent>()
+                .With<ViewVisibilityStateComponent>()
+                .Without<EntityDisposeTag>()
+                .Build();
 
             _virtualViews = World.GetStash<VirtualViewComponent>();
-            _visibilityTags = World.GetStash<VisibleVirtualViewTag>();
+            _visibilities = World.GetStash<ViewVisibilityStateComponent>();
         }
 
         public void OnUpdate(float deltaTime) 
@@ -39,9 +44,11 @@ namespace ZE.MechBattle.Ecs {
             {
                 var virtualViewComponent = _virtualViews.Get(entity);
                 var limit = virtualViewComponent.VisibilityLimit;
+                ref var visibilityComponent = ref _visibilities.Get(entity);
+
                 if (limit == 0f)
                 {
-                    _visibilityTags.Set(entity);
+                    visibilityComponent.Value |= VisibilityStateFlag.InVisibilityLimit;
                     continue;
                 }
                    
@@ -52,9 +59,9 @@ namespace ZE.MechBattle.Ecs {
                 var distance = math.distance(position, cameraPosition);
                 var viewCf = size / distance;
                 if (viewCf > virtualViewComponent.VisibilityLimit)
-                    _visibilityTags.Set(entity);
+                    visibilityComponent.Value |= VisibilityStateFlag.InVisibilityLimit;
                 else
-                    _visibilityTags.Remove(entity);
+                    visibilityComponent.Value &= VISIBILITY_LIMIT_REACHED_MASK;
             }
         }
 

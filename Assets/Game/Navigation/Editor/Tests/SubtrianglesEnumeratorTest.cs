@@ -33,7 +33,7 @@ namespace ZE.MechBattle.Navigation.Tests
             var triangleHeight = HEX_EDGE / hexRadius * NavigationConstants.SQRT_OF_THREE_HALVED;
             foreach (var pos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, hexRadius))
             {
-                var sectorIndex = (int)TriangularMath.DefineSector(pos, HEX_EDGE, hexRadius, triangleHeight);
+                var sectorIndex = (int)HexMath.DefineSector(pos, HEX_EDGE, hexRadius, triangleHeight);
                 tris[sectorIndex].Add(pos, false);
             }
 

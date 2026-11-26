@@ -5,10 +5,10 @@
   <Project Path="ZE.MechBattle.Navigation.DebugOverlay.csproj" />
   <Project Path="AYellowpaper.SerializedCollections.csproj" />
   <Project Path="ZE.FlagService.csproj" />
+  <Project Path="ZE.MechBattle.Develop.csproj" />
   <Project Path="ZE.Utils.csproj" />
   <Project Path="ZE.Navigation.EditorTests.csproj" />
   <Project Path="UnityUIExtensions.editor.csproj" />
-  <Project Path="ZE.MechBattle.Develop.csproj" />
   <Project Path="AYellowpaper.SerializedCollections.Editor.csproj" />
   <Project Path="ZE.UiService.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />

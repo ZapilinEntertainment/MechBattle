@@ -153,6 +153,71 @@ namespace ZE.MechBattle.Navigation
             return new float2(x, y);
         }
 
+
+        [BurstCompile]
+        public static HexSector DefineSector(IntTriangularPos pos, float hexEdgeLength, int hexRadius, float triangleHeight)
+        {
+            var hexCoord = TriangularMath.TriangularToHex(pos, triangleHeight, hexEdgeLength);
+            var hexPos = new NavigationHexPosition(hexCoord, hexEdgeLength, hexRadius);
+
+            var hexCenter = hexPos.TriangularCenterPos;
+            var isPeak = pos.IsPeak;
+            var peakMask = new bool3(isPeak, isPeak, isPeak);
+
+            /*  original logic
+            var xDivision = pos.X == hexCenter.X ? (isPeak ? 1 : -1) : (pos.X > hexCenter.X ? 1 : -1);
+            var yDivision = pos.Y == hexCenter.Y ? (isPeak ? 1 : -1) : (pos.Y > hexCenter.Y ? 1 : -1);
+            var zDivision = pos.Z == hexCenter.Z ? (isPeak ? 1: -1) : (pos.Z > hexCenter.Z ? 1 : -1);
+
+            if (xDivision == 1)
+            {
+                if (yDivision == 1)
+                {
+                    return HexSector.TopLeft;
+                }
+                else
+                {
+                    return zDivision == 1 ? HexSector.Bottom : HexSector.BottomLeft;
+                }
+            }
+            else
+            {
+                if (yDivision == 1)
+                    return zDivision == 1 ? HexSector.TopRight : HexSector.Top;
+                else
+                    return HexSector.BottomRight;
+            }
+            */
+
+            // burst logic optimized by Google AI
+            var p = pos.ToInt3();
+            var c = hexCenter.ToInt3();
+            bool3 isGreater = p > c;
+            bool3 isEqual = p == c;
+
+            bool3 mask = (isEqual & isPeak) | (!isEqual & isGreater);
+            int3 maskInt = math.select(new int3(0), new int3(4, 2, 1), mask);
+            int index = maskInt.x + maskInt.y + maskInt.z;
+
+            //return index switch
+            //{
+            //    0b110 => HexSector.TopLeft,
+            //    0b111 => HexSector.TopLeft,
+            //    0b101 => HexSector.Bottom,      // X=1, Y=0, Z=1
+            //    0b100 => HexSector.BottomLeft,  // X=1, Y=0, Z=0
+            //    0b011 => HexSector.TopRight,    // X=0, Y=1, Z=1
+            //    0b010 => HexSector.Top,         // X=0, Y=1, Z=0
+            //    0b000 => HexSector.BottomRight, // X=0, Y=0, Z=0
+            //    _ => HexSector.BottomRight
+            //};
+            const ulong packedLut = 0x55341022;
+
+            // shift (index * 4) bit and get last 4 bits
+            int sectorValue = (int)((packedLut >> (index * 4)) & 0xF);
+
+            return (HexSector)sectorValue;
+        }
+
         //chatgpt generated
         [BurstCompile]
         private static int2 AxialRound(float q, float r)

@@ -38,11 +38,14 @@ namespace ZE.MechBattle.Views
         private readonly VirtualViewConfigsList _configsList;
         private readonly MeshesDepot _meshesDepot;
         private readonly MaterialsDepot _materialsDepot;
+
         private readonly Stash<VirtualViewComponent> _virtualViews;
         private readonly Stash<ViewContainerComponent> _viewContainers;
         private readonly Stash<LocalPositionComponent> _localPositions;
         private readonly Stash<LocalRotationComponent> _localRotations;
         private readonly Stash<FactionColorApplicableTag> _factionColorTags;
+        private readonly Stash<ViewVisibilityStateComponent> _visibilityStates;
+
         private readonly Dictionary<string, VirtualViewApplyData> _viewKeyToApplyData = new();
         private readonly IViewContainersManager _viewContainersManager;
         public ViewMode RealizingViewType => ViewMode.Virtual;
@@ -65,6 +68,7 @@ namespace ZE.MechBattle.Views
             _localPositions = world.GetStash<LocalPositionComponent>();
             _localRotations = world.GetStash<LocalRotationComponent>();
             _factionColorTags = world.GetStash<FactionColorApplicableTag>();
+            _visibilityStates = world.GetStash<ViewVisibilityStateComponent>();
         }
 
         public void ApplyView(Entity entity, string viewConfigId)
@@ -87,6 +91,8 @@ namespace ZE.MechBattle.Views
             _virtualViews.Add(entity, applyData.ViewComponent);
             _localPositions.Set(entity, applyData.LocalPositionComponent);
             _localRotations.Set(entity, applyData.LocalRotationComponent);
+            _visibilityStates.Add(entity);
+
             if (applyData.ContainFactionColorMaterial)
             {
                 _factionColorTags.Set(entity);
