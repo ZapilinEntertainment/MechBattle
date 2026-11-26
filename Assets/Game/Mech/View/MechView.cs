@@ -5,7 +5,7 @@ using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle
 {
-    public class MechView : SimpleView, IComplexMonoView, ICameraPointView
+    public class MechView : ComplexMonoView, ICameraPointView
     {
         [field:SerializeField] public Transform ChassisRoot { get; private set; }
         [field:SerializeField] public LegDataContainer<Transform> LeftLeg { get; private set; }
@@ -23,15 +23,17 @@ namespace ZE.MechBattle
                 cinCamera.enabled = true;
         }
 
-        public bool TryGetPartByKey(ViewPartKey key, out IViewPart viewPart)
+        public override bool TryGetPartView(ViewPartKey key, out IMonoView viewPart)
         {
+            //UnityEngine.Debug.Log($"{key.Type} : {key.Index}");
+
             if (key.Index < 0 || key.Index > 1)
             {
                 viewPart = null;
                 return false;
             }
 
-            switch(key.Type) 
+            switch (key.Type)
             {
                 case ViewPartType.UpperPart:
                     {
@@ -43,7 +45,7 @@ namespace ZE.MechBattle
                         viewPart = new ViewPartContainer(ChassisRoot);
                         return true;
                     }
-                    case ViewPartType.Hip:
+                case ViewPartType.Hip:
                     {
                         viewPart = new ViewPartContainer(key.Index == 1 ? RightLeg.Hip : LeftLeg.Hip);
                         return true;
@@ -65,7 +67,7 @@ namespace ZE.MechBattle
                     }
                 case ViewPartType.Eye:
                     {
-                        viewPart = new ViewPartContainer(key.Index == 1 ? _rightEye :_leftEye);
+                        viewPart = new ViewPartContainer(key.Index == 1 ? _rightEye : _leftEye);
                         return true;
                     }
                 default:

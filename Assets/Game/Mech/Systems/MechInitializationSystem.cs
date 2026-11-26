@@ -12,7 +12,7 @@ namespace ZE.MechBattle.Ecs {
         private Stash<MechChassisComponent> _chassisComponents;
         private Stash<MechChassisInitializedTag> _initTags;
         private Stash<ChildTransformLastSyncStampComponent> _transformSyncStamps;
-        private Stash<ViewLoadRequestTag> _viewLoadRequests;
+        private Stash<ViewLoadRequestComponent> _viewLoadRequests;
         private Stash<ChassisSettingsComponent> _chassisSettings;
 
         public void OnAwake() 
@@ -25,7 +25,7 @@ namespace ZE.MechBattle.Ecs {
             _chassisComponents = World.GetStash<MechChassisComponent>();
             _initTags = World.GetStash<MechChassisInitializedTag>();
             _transformSyncStamps = World.GetStash<ChildTransformLastSyncStampComponent>();
-            _viewLoadRequests = World.GetStash<ViewLoadRequestTag>();
+            _viewLoadRequests = World.GetStash<ViewLoadRequestComponent>();
             _chassisSettings = World.GetStash<ChassisSettingsComponent>();
         }
 

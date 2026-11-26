@@ -24,11 +24,12 @@ namespace ZE.MechBattle.Ecs {
 
         public void Initialize()
         {
-            var tanks = GameObject.FindObjectsByType<TankView>(FindObjectsSortMode.None);
-            foreach (var tankView in tanks)
-            {
-                _unitsFactory.Build(tankView);
-            }
+            // deprecated, bu will be needed in future (in generic version)
+            //var tanks = GameObject.FindObjectsByType<TankView>(FindObjectsSortMode.None);
+            //foreach (var tankView in tanks)
+            //{
+            //    _unitsFactory.Build(tankView);
+            //}
 
             var sceneSpawners = GameObject.FindObjectsByType<UnitsSpawnerMono>(FindObjectsSortMode.None);
             foreach (var spawner in sceneSpawners)

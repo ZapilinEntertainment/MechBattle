@@ -1,7 +1,6 @@
 using Scellecs.Morpeh;
 using VContainer;
 using Unity.Mathematics;
-
 namespace ZE.MechBattle.Ecs
 {
     public class ParentingRelationsApplier
@@ -11,15 +10,16 @@ namespace ZE.MechBattle.Ecs
             public Entity ParentEntity;
             public Entity ChildEntity;
             public float3 LocalPos;
-            public quaternion LocalRot;
-            public Entity ViewOwnerEntity;
-            public ViewPartKey ViewPartKey;
+            public quaternion LocalRot;           
             public bool SaveInitLocalPos;
+
+            // todo: remove to discrete functional
+            public Entity ViewOwnerEntity;
+            public ViewPartKey RequestedViewPartKey;
         }
 
         private readonly World _world;
         private readonly TransformAspectHandler _transformHandler;
-        private readonly MonoViewFactory _monoViewFactory;
 
         private readonly Stash<ParentEntityComponent> _parents;
         private readonly Stash<LocalPositionComponent> _localPositions;
@@ -32,7 +32,9 @@ namespace ZE.MechBattle.Ecs
         
 
         [Inject]
-        public ParentingRelationsApplier(World world, TransformAspectHandler transformAspectHandler, MonoViewFactory monoViewFactory)
+        public ParentingRelationsApplier(
+            World world, 
+            TransformAspectHandler transformAspectHandler)
         {
             _world = world;
             _parents = _world.GetStash<ParentEntityComponent>();
@@ -44,7 +46,6 @@ namespace ZE.MechBattle.Ecs
             _viewPartsRequestComponents = _world.GetStash<ViewPartRequestComponent>();
 
             _transformHandler = transformAspectHandler;
-            _monoViewFactory = monoViewFactory;
         }
 
         public void Apply(ExecutionProtocol protocol)
@@ -62,8 +63,8 @@ namespace ZE.MechBattle.Ecs
             if (protocol.ViewOwnerEntity != default)
                 _awaitingViewLoadingComponents.Set(childEntity, new(protocol.ViewOwnerEntity));
 
-            if (protocol.ViewPartKey.IsValid)
-                _viewPartsRequestComponents.Set(childEntity, new(protocol.ViewPartKey));
+            if (protocol.RequestedViewPartKey.IsValid)
+                _viewPartsRequestComponents.Set(childEntity, new(protocol.RequestedViewPartKey));
 
             if (protocol.SaveInitLocalPos)
                 _initLocalPositions.Set(childEntity,new(protocol.LocalPos));
@@ -82,23 +83,5 @@ namespace ZE.MechBattle.Ecs
             _parents.Set(childEntity, new(parentEntity));
             return true;
         }
-
-        public Entity CreateChildEntityForViewPart(RigidTransform point, Entity parent, Entity viewOwner, ViewPartKey viewPartKey, bool separateViewObject = false)
-        {
-            var entity = separateViewObject ? _monoViewFactory.CreateViewContainer() : _world.CreateEntity();
-            Apply(new()
-            {
-                ParentEntity = parent,
-                ChildEntity = entity,
-
-                ViewOwnerEntity = viewOwner,
-                ViewPartKey = viewPartKey,
-
-                LocalPos = point.pos,
-                LocalRot = point.rot,
-            });
-            return entity;
-        }
-
     }
 }

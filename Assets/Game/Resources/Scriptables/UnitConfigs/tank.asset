@@ -17,8 +17,12 @@ MonoBehaviour:
   - rid: 2151671185847091272
   <Health>k__BackingField: 4
   <CollisionAvoidancePriority>k__BackingField: 1
-  <ViewId>k__BackingField: tank_view
+  <ViewKey>k__BackingField:
+    Mode: 4
+    AssetKey: tank_view
   <TargetSearchRadius>k__BackingField: 600
+  <MinTargetDistance>k__BackingField: 0
+  <TargetSearchCooldown>k__BackingField: 3
   <BehaviourKey>k__BackingField: 1
   <MoveSpeed>k__BackingField: 10
   <CapturePower>k__BackingField: 1
@@ -40,7 +44,7 @@ MonoBehaviour:
         AttachmentProtocol:
           LocalPosition:
             x: 0
-            y: 0
+            y: 1.6
             z: 0
           LocalRotationDegrees:
             x: 0

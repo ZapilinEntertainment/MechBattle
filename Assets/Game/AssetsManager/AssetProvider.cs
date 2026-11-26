@@ -1,21 +1,18 @@
 using R3;
-using System;
-using UnityEngine;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace ZE.MechBattle.AssetsManagement
 {
     // reactive asset handle wrapper
-    public class AssetProvider : IAssetProvider
+    public class AssetProvider<T> : IAssetProvider
     {
         public ReadOnlyReactiveProperty<bool> IsReadyToProvideProperty => _isReadyToProvideProperty;
+        protected readonly AsyncOperationHandle<T> _handle;
 
         private readonly ReactiveProperty<bool> _isReadyToProvideProperty = new(false);
-        private readonly AsyncOperationHandle<GameObject> _handle;
+       
 
-        public T GetValue<T>() where T : MonoBehaviour => _handle.Result.GetComponent<T>();
-
-        public AssetProvider(AsyncOperationHandle<GameObject> handle)
+        public AssetProvider(AsyncOperationHandle<T> handle)
         {
             _handle = handle;
 
@@ -35,6 +32,18 @@ namespace ZE.MechBattle.AssetsManagement
             if (_handle.IsValid()) 
                 _handle.Release();
             _isReadyToProvideProperty.Dispose();
+        }
+
+        public bool TryGetValue<T1>(out T1 value)
+        {
+            if (_isReadyToProvideProperty.Value && _handle.Result is T1 converted)
+            {
+                value = converted;
+                return true;
+            }
+
+            value = default;
+            return false;
         }
     }
 }

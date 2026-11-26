@@ -1,3 +1,4 @@
+using TriInspector;
 using Unity.Mathematics;
 using UnityEngine;
 using ZE.MechBattle.Weapons;
@@ -30,8 +31,9 @@ namespace ZE.MechBattle
         [field: SerializeField] public float MaxRange { get; private set; }
         [field: SerializeField, Range(0, 1)] public float RecommendedRangePc { get; private set; } = 0.8f;
         [field: SerializeField] public float Cooldown { get; private set; }
+        [PropertySpace]
         [field: SerializeField] public float3 ShotPoint { get; private set; }
-
+        [field: SerializeField] public ViewKey ViewKey;
         [SerializeField] private string _muzzleEffectId;
         public float RecommendedRange => math.lerp(MinRange, MaxRange, RecommendedRangePc);
 

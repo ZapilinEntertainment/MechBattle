@@ -10,7 +10,7 @@ namespace ZE.MechBattle.MechBuilding
         private readonly WeaponFactory _weaponFactory;
         private readonly WeaponHandler _weaponHandler;
         private readonly EntityViewHandler _viewHandler;
-        private readonly MonoViewFactory _viewFactory;
+        private readonly ViewApplier _viewApplier;
         private readonly MechWeaponsManager _weaponsManager;
         private readonly AimMethodApplier _aimMethodApplier;
 
@@ -36,7 +36,7 @@ namespace ZE.MechBattle.MechBuilding
             WeaponFactory weaponFactory, 
             WeaponHandler weaponHandler,
             EntityViewHandler viewHandler,
-            MonoViewFactory viewFactory,
+            ViewApplier viewApplier,
             MechWeaponsManager weaponsManager,
             AimMethodApplier aimMethodApplier
             )
@@ -44,7 +44,7 @@ namespace ZE.MechBattle.MechBuilding
             _weaponFactory = weaponFactory;
             _viewHandler = viewHandler;
             _weaponHandler = weaponHandler;
-            _viewFactory = viewFactory;
+            _viewApplier = viewApplier;
             _weaponsManager = weaponsManager;
             _aimMethodApplier = aimMethodApplier;
 
@@ -81,11 +81,11 @@ namespace ZE.MechBattle.MechBuilding
         private void InstallMainWeapons()
         {
             var upperPartEntity = _mainBuilder.UpperPartEntity;
-            var mainWeaponLeft = BuildSlotEquipment(upperPartEntity, MechSlot.MainWeaponLeft, DevelopConstants.DEFAULT_MECH_GUN_ID, _mainWeaponConfigLeft);
+            var mainWeaponLeft = BuildSlotEquipment(upperPartEntity, MechSlot.MainWeaponLeft, _mainWeaponConfigLeft);
             var leftWeaponKey = new MechWeaponKey(MechWeaponGroup.Primary, 0);
             _weaponKeyComponents.Set(mainWeaponLeft, new(leftWeaponKey));
 
-            var mainWeaponRight = BuildSlotEquipment(upperPartEntity, MechSlot.MainWeaponRight, DevelopConstants.DEFAULT_MECH_GUN_ID, _mainWeaponConfigRight);
+            var mainWeaponRight = BuildSlotEquipment(upperPartEntity, MechSlot.MainWeaponRight, _mainWeaponConfigRight);
             var rightWeaponKey = new MechWeaponKey(MechWeaponGroup.Primary, 1);
             _weaponKeyComponents.Set(mainWeaponLeft, new(rightWeaponKey));
 
@@ -94,7 +94,7 @@ namespace ZE.MechBattle.MechBuilding
             _weaponsManager.AddWeapon(mechEntity, mainWeaponRight, rightWeaponKey);
         }
 
-        private Entity BuildSlotEquipment(Entity parent, MechSlot slot, string equipmentId, WeaponConfig weaponConfig)
+        private Entity BuildSlotEquipment(Entity parent, MechSlot slot, WeaponConfig weaponConfig)
         {
             // todo: different types of equipment, not only weapons
             if (!_mechConfig.TryGetSlotInfo(slot, out var slotInfo))
@@ -103,10 +103,10 @@ namespace ZE.MechBattle.MechBuilding
                 return default;
             }
 
-            return BuildMechWeapon(parent, equipmentId, weaponConfig, slotInfo.AttachmentProtocol);
+            return BuildMechWeapon(parent, weaponConfig, slotInfo.AttachmentProtocol);
         }
 
-        private Entity BuildMechWeapon(Entity parent, string weaponId, WeaponConfig weaponConfig, ViewPartAttachmentProtocol partAttachmentProtocol)
+        private Entity BuildMechWeapon(Entity parent, WeaponConfig weaponConfig, ViewPartAttachmentProtocol partAttachmentProtocol)
         {
             var weaponEntity = _weaponFactory.CreateWeapon(new()
             {
@@ -120,7 +120,9 @@ namespace ZE.MechBattle.MechBuilding
 
                 DamageParameters = new(weaponConfig.DamageType, DevelopConstants.TEMP_MainGunDamage),
             });
-            _viewFactory.MakeViewReceiver(weaponEntity, weaponId + "_view");
+
+            // todo: rework to discrete weapon applier (with shot point)
+            _viewApplier.ApplyView(weaponEntity, weaponConfig.ViewKey);
 
             AddMechSpecificComponents(weaponEntity);
 

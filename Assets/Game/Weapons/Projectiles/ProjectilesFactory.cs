@@ -8,7 +8,7 @@ namespace ZE.MechBattle.Ecs
     public class ProjectilesFactory : IEntityCreationFactory
     {
         private readonly World _world;
-        private readonly MonoViewFactory _viewFactory;
+        private readonly ViewFactory _viewFactory;
         private readonly StringDataDictionary _stringDict;
         private readonly IProjectileDataList _projectileData;
         private readonly TransformAspectHandler _transformAspectHandler;
@@ -25,7 +25,7 @@ namespace ZE.MechBattle.Ecs
         [Inject]
         public ProjectilesFactory(
             World world, 
-            MonoViewFactory viewBuilder, 
+            ViewFactory viewBuilder, 
             StringDataDictionary stringDict,
             IProjectileDataList projectileData,
             TransformAspectHandler transformAspectHandler)
@@ -53,9 +53,9 @@ namespace ZE.MechBattle.Ecs
         public Entity Build(int idkey, RigidTransform point, Entity weaponEntity, Entity shooterEntity)
         {
             if (_world.IsDisposed(shooterEntity) || !_projectileData.TryGetProjectileData(idkey, out var projectileData))
-                return default;        
+                return default;
 
-            var projectileEntity = _viewFactory.CreateViewReceiver(projectileData.ViewId);
+            var projectileEntity = _viewFactory.CreateViewEntity(projectileData.ViewKey);
             _transformAspectHandler.MoveToPoint(projectileEntity, point);
 
             _speed.Set(projectileEntity,new() { Value = projectileData.Speed});

@@ -6,7 +6,7 @@ namespace ZE.MechBattle
         public const float SQRT_OF_THREE = 1.73205f;
 
         public const int MAX_VIEW_INSTANTIATIONS_PER_FRAME = 16;
-        public const int MAX_VIEWS_COUNT = 16000;
+        public const int MAX_MONO_VIEWS_COUNT = 16000;
         public const int MAX_EXPLOSIONS_PER_FRAME = 64;
 
         public static readonly PlayerKey LOCAL_PLAYER_KEY = new(1);

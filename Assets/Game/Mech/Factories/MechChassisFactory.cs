@@ -17,8 +17,8 @@ namespace ZE.MechBattle.MechBuilding
         private Entity _mechEntity;
 
         private readonly World _world;
-        private readonly ParentingRelationsApplier _parentingRelationsApplier;
         private readonly MechChassisData _mechChassisData;
+        private readonly ViewFactory _viewFactory;
 
         private readonly Stash<MechChassisComponent> _chassisComponents;
         private readonly Stash<ChassisSettingsComponent> _stepSettingsComponents;
@@ -27,14 +27,14 @@ namespace ZE.MechBattle.MechBuilding
 
         [Inject]
         public MechChassisFactory(
-            World world, 
-            ParentingRelationsApplier parentingRelationsApplier,
+            World world,
+            ViewFactory viewFactory,
             [Key(DevelopConstants.DEFAULT_MECH_ID)] MechChassisData mechChassisData)
         {
             _world = world;
             
             _mechChassisData = mechChassisData;
-            _parentingRelationsApplier = parentingRelationsApplier;
+            _viewFactory = viewFactory;
 
             _chassisComponents = _world.GetStash<MechChassisComponent>();
             _stepSettingsComponents = _world.GetStash<ChassisSettingsComponent>();
@@ -47,12 +47,13 @@ namespace ZE.MechBattle.MechBuilding
             _mechEntity = mechEntity;
 
             var rootKey = ViewPartKey.Chassis;
-            var chassisRootEntity = _parentingRelationsApplier.CreateChildEntityForViewPart(
+            var chassisRootEntity = 
+                _viewFactory.CreateChildEntityForViewPart(
                 _mechChassisData.ChassisRootLocalPoint,
                 _mechEntity,
                 _mechEntity,
                 rootKey,
-                separateViewObject: separatedPartKeys.Contains(rootKey));
+                viewMode: GetPartViewMode(separatedPartKeys.Contains(rootKey)));
 
             var leftLegContainer = CreateLeg(_mechChassisData, chassisRootEntity, isRight: false, separatedPartKeys);
             var rightLegContainer = CreateLeg(_mechChassisData, chassisRootEntity, isRight: true, separatedPartKeys);
@@ -88,28 +89,28 @@ namespace ZE.MechBattle.MechBuilding
             var legData = isRight ? chassisData.RightLegLocalPoints : chassisData.LeftLegLocalPoints;
 
             var hipKey = ViewPartKey.GetHipKey(isRight);
-            var hipEntity = _parentingRelationsApplier.CreateChildEntityForViewPart(
+            var hipEntity = _viewFactory.CreateChildEntityForViewPart(
                 legData.Hip, 
                 chassisRootEntity, 
                 _mechEntity,
-                hipKey, 
-                separatedPartKeys.Contains(hipKey));
+                hipKey,
+                viewMode: GetPartViewMode(separatedPartKeys.Contains(hipKey)));
 
             var ankleKey = ViewPartKey.GetAnkleKey(isRight);
-            var ankleEntity = _parentingRelationsApplier.CreateChildEntityForViewPart(
+            var ankleEntity = _viewFactory.CreateChildEntityForViewPart(
                 legData.Ankle, 
                 hipEntity, 
                 _mechEntity, 
                 ankleKey,
-                separatedPartKeys.Contains(ankleKey));
+                viewMode: GetPartViewMode(separatedPartKeys.Contains(ankleKey)));
 
             var footKey = ViewPartKey.GetFootKey(isRight);
-            var footEntity = _parentingRelationsApplier.CreateChildEntityForViewPart(
+            var footEntity = _viewFactory.CreateChildEntityForViewPart(
                 legData.Foot, 
                 ankleEntity, 
                 _mechEntity,
                 footKey,
-                separatedPartKeys.Contains(footKey));
+               viewMode: GetPartViewMode(separatedPartKeys.Contains(footKey)));
 
             return new()
             {
@@ -118,5 +119,8 @@ namespace ZE.MechBattle.MechBuilding
                 Foot = footEntity
             };
         }
+
+        private ViewMode GetPartViewMode(bool separated) =>
+            separated ? ViewMode.DelayedMono : ViewMode.None;
     }
 }

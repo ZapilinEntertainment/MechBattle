@@ -115,6 +115,7 @@ namespace ZE.MechBattle.Navigation
         {
             _calculateDistancesProcess.Dispose();
             _resultingPath.Dispose();
+            Output.Dispose();
         }
 
         protected override async Awaitable ExecuteAsync(PortalConstructionProcessInput input)

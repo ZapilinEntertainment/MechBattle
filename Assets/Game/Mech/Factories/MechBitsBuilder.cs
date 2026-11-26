@@ -8,6 +8,7 @@ using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle.MechBuilding
 {
+    //build visual parts
     public class MechBitsBuilder
     {
         public IReadOnlyDictionary<ViewPartKey, Entity> ConstructedParts => _constructedParts;
@@ -20,16 +21,16 @@ namespace ZE.MechBattle.MechBuilding
         private readonly Dictionary<ViewPartKey, Entity> _constructedParts = new();
         private readonly Dictionary<ViewPartKey, MechPartSettings> _settings = new();
         private readonly HashSet<ViewPartKey> _processingPartsSet = new();
-        private readonly ParentingRelationsApplier _parentingRelationsApplier;
+        private readonly ViewFactory _viewFactory;
 
         private readonly Stash<RotationSpeedComponent> _rotationSpeed;
         private readonly Stash<LocalRotationLimitComponent> _localRotationLimits;
         
 
         [Inject]
-        public MechBitsBuilder(ParentingRelationsApplier parentingRelationsApplier, World world)
+        public MechBitsBuilder(ViewFactory viewFactory, World world)
         {
-            _parentingRelationsApplier = parentingRelationsApplier;
+            _viewFactory = viewFactory;
             _world = world;
 
             _rotationSpeed = _world.GetStash<RotationSpeedComponent>();
@@ -127,12 +128,12 @@ namespace ZE.MechBattle.MechBuilding
                 if (!key.IsValid)
                     throw new System.Exception("view part key invalid");
 
-                entity = _parentingRelationsApplier.CreateChildEntityForViewPart(
+                entity = _viewFactory.CreateChildEntityForViewPart(
                     settings.AttachProtocol.ToPoint(),
                     parent,
                     viewOwner,
                     key,
-                    separateViewObject: _separatingKeys.Contains(key));
+                    viewMode: _separatingKeys.Contains(key) ? ViewMode.DelayedMono : ViewMode.None);
             }
             else
             {

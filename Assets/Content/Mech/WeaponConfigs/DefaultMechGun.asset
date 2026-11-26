@@ -26,6 +26,9 @@ MonoBehaviour:
     x: 0
     y: 0
     z: 15
+  ViewKey:
+    Mode: 2
+    AssetKey: default_mech_gun_view
   _muzzleEffectId: tank_shot
   references:
     version: 2

@@ -5,6 +5,7 @@ using Scellecs.Morpeh;
 using ZE.MechBattle.Ecs;
 using ZE.MechBattle.Ecs.States;
 using TriInspector;
+using ZE.MechBattle.Views;
 
 namespace ZE.MechBattle.Develop
 {
@@ -98,7 +99,7 @@ namespace ZE.MechBattle.Develop
 
             //
             _targetEntity = _world.CreateEntity();
-            _viewSyncApplier.Apply(_targetEntity, new ViewPartContainer(_target), applyViewPosition: false);
+            _viewSyncApplier.Apply(_targetEntity, new ViewPartContainer(_target), applyViewPosition: false, finalViewApplicationRequired: false);
         }
 
         private void Update()

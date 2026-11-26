@@ -58,7 +58,7 @@ namespace ZE.MechBattle.Ecs
                     _progression.Remove(entity);
                     _completedPathTags.Add(entity);
 #if ZE_NAVIGATION_DEBUG
-                    if (ZE.MechBattle.Navigation.NavigationLogger.Settings.HasFlag(Navigation.NavigationLogEvents.TripathProgression))
+                    if (Navigation.NavigationLogger.Settings.HasFlag(Navigation.NavigationLogEvents.TripathProgression))
                         UnityEngine.Debug.Log($"triangle path completed for entity {entity.Id}");
 #endif
                     continue;

@@ -6,17 +6,18 @@ namespace ZE.MechBattle
     public class PlayerCameraInitializer : IDisposable
     {
         private readonly CameraController _cameraController;
-        private readonly EntityViewHandler _viewHandler;
         private readonly SceneFlagsManager _sceneFlags;
+        private readonly IViewContainerHandler _viewContainerHandler;
         private IDisposable _subscription;
         private bool _isDisposed = false;
 
-        public PlayerCameraInitializer(CameraController cameraController, SceneFlagsManager flags, EntityViewHandler viewHandler)
+        public PlayerCameraInitializer(CameraController cameraController, SceneFlagsManager flags, IViewContainerHandler viewContainerHandler)
         {
             _sceneFlags = flags;
             _cameraController = cameraController;
+            _viewContainerHandler = viewContainerHandler;
+
             _subscription = _sceneFlags.Subscribe<LocalPlayerVehicleAssignedFlag>(OnPlayerViewInstanced);
-            _viewHandler = viewHandler;
         }
 
         public void Dispose()
@@ -27,7 +28,7 @@ namespace ZE.MechBattle
 
         private async void OnPlayerViewInstanced(LocalPlayerVehicleAssignedFlag flag)
         {
-            if (!_viewHandler.TryGetEntityView<ICameraPointView>(flag.VehicleEntity, out var cameraHostView))
+            if (!_viewContainerHandler.TryGetView<ICameraPointView>(flag.VehicleEntity, out var cameraHostView))
             {
                 UnityEngine.Debug.LogError("player vehicle camera hosting not implemented");
                 return;

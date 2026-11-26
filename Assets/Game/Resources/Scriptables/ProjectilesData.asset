@@ -17,24 +17,30 @@ MonoBehaviour:
     - Key: mech_cannon_projectile
       Value:
         Speed: 250
-        ViewId: mech_cannon_projectile
         ExplosionEffectKey: test_explosion
         ExplosionRadius: 8
         Lifetime: 5
         UseGravity: 0
+        ViewKey:
+          Mode: 3
+          AssetKey: mech_cannon_projectile_vview
     - Key: artillery_projectile
       Value:
         Speed: 60
-        ViewId: tank_projectile
         ExplosionEffectKey: test_explosion
         ExplosionRadius: 8
         Lifetime: 30
         UseGravity: 1
+        ViewKey:
+          Mode: 3
+          AssetKey: tank_projectile_vview
     - Key: tank_projectile
       Value:
         Speed: 250
-        ViewId: tank_projectile
         ExplosionEffectKey: test_explosion
         ExplosionRadius: 0
         Lifetime: 3
         UseGravity: 0
+        ViewKey:
+          Mode: 3
+          AssetKey: tank_projectile_vview

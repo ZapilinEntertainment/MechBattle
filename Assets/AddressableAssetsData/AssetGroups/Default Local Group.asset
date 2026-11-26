@@ -30,6 +30,13 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 139a850f5ba8dcc438e2d75e09fb9059
+    m_Address: mech_cannon_projectile_vview
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - SessionPreload
+    - VirtualViewConfig
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2c24fc279a891b046a5193334c988ee2
     m_Address: ui_mech_interface_window
     m_ReadOnly: 0
@@ -39,6 +46,13 @@ MonoBehaviour:
     m_Address: default_mech_gun_view
     m_ReadOnly: 0
     m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3b7a53119bb15984991400677a1a64c9
+    m_Address: tank_view
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - SessionPreload
+    - VirtualViewConfig
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 40ead1c56a4dded4490555d1477c5031
     m_Address: ui_fail_window
@@ -55,16 +69,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 59dee270a0342cf439c0a694a2c30d5d
-    m_Address: tank_projectile
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5e52cfedf7af6a34ba7cad148a3ac56b
     m_Address: faction_colouring_material
     m_ReadOnly: 0
     m_SerializedLabels:
     - Material
+    - SessionPreload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 67a257f3190310a45a877ea11b37556b
+    m_Address: tank_view_2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Mesh
     - SessionPreload
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6cbede1961a239642b2412e4eed550ea
@@ -77,10 +93,12 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 884b77fd17c19ef44836c2453c91908a
-    m_Address: mech_cannon_projectile
+  - m_GUID: 91b482afdd77d0d4f8e5321f9fe183a0
+    m_Address: multimaterial
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - Material
+    - SessionPreload
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a1b3b67b4ce60394ebcf287ffb9eca5c
     m_Address: default_mech_chassis_data
@@ -91,6 +109,13 @@ MonoBehaviour:
     m_Address: energy_cell_ui_view
     m_ReadOnly: 0
     m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a496c14cd47174348924d2c155545fad
+    m_Address: cylinder_bullet
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Mesh
+    - SessionPreload
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: adeca2a169eb98e418dbbada755dae66
     m_Address: tank_view
@@ -106,6 +131,20 @@ MonoBehaviour:
     m_Address: ui_partitions_window
     m_ReadOnly: 0
     m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ce4fd8cd0f60ee94c9825163a455e9b0
+    m_Address: yellow_unlit
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Material
+    - SessionPreload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: df3775a601cf7fa4fa93587957d03007
+    m_Address: tank_projectile_vview
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - SessionPreload
+    - VirtualViewConfig
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f16bd8e08285042478e1e4b03ecc0a3a
     m_Address: ui_aim_window

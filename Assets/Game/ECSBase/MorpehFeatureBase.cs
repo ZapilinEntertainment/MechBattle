@@ -13,16 +13,13 @@ namespace ZE.MechBattle
             base.SceneScopeInstall(builder);
 
             builder.Register<WorldDisposer>(Lifetime.Transient).As<IDisposable>();
-            builder.Register<World>(_ => CreateWorld(), Lifetime.Singleton);
-                     
-            builder.Register<MonoViewFactory>(Lifetime.Singleton);              
+            builder.Register<World>(_ => CreateWorld(), Lifetime.Singleton);        
 
             builder.Register<DelayApplier>(Lifetime.Singleton);
             builder.Register<TriangularPositionApplier>(Lifetime.Singleton);
             builder.Register<MoveTargetApplier>(Lifetime.Singleton);
             builder.Register<DisposeTagApplier>(Lifetime.Singleton);
-            builder.Register<ParentingRelationsApplier>(Lifetime.Singleton);
-            builder.Register<ViewSynchronizationApplier>(Lifetime.Singleton);            
+            builder.Register<ParentingRelationsApplier>(Lifetime.Singleton);                      
 
             builder.Register<MorpehSystemInstallHandler>(Lifetime.Singleton);
             builder.Register<LifetimeTrackingManager>(Lifetime.Singleton);

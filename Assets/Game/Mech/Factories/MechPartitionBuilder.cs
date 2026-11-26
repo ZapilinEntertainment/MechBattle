@@ -6,6 +6,7 @@ using ZE.MechBattle.Ecs;
 
 namespace ZE.MechBattle.MechBuilding
 {
+    // build logic mech parts
     public class MechPartitionBuilder
     {
         public IPartitionsList PartitionsList { get; private set; }
