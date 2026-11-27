@@ -22,6 +22,6 @@ MonoBehaviour:
     y: 0
   <TopRightCorner>k__BackingField:
     x: 500
-    y: 500
+    y: 700
   <UnscannedSurfacesArePassable>k__BackingField: 0
   <MaxElevationDifference>k__BackingField: 5

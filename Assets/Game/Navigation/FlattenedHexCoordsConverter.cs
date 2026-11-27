@@ -75,7 +75,7 @@ namespace ZE.MechBattle.Navigation
 
         public int TriangularToIndex(IntTriangularPos pos)
         {
-            var sector = TriangularMath.DefineSector(pos, _hexEdgeLength, _hexRadius, _triangleHeight);
+            var sector = HexMath.DefineSectorByTripos(pos, _hexEdgeLength, _hexRadius, _triangleHeight);
             switch (sector)
             {
                 case HexSector.TopRight: return TopRightConverter.TriangularToIndex(pos) + GetIndexOffset(sector);
@@ -89,7 +89,7 @@ namespace ZE.MechBattle.Navigation
 
         public bool TryGetIndex(IntTriangularPos pos, out int index)
         {
-            var sector = TriangularMath.DefineSector(pos, _hexEdgeLength, _hexRadius, _triangleHeight);
+            var sector = HexMath.DefineSectorByTripos(pos, _hexEdgeLength, _hexRadius, _triangleHeight);
             index = -1;
             var isSuccess = false;
             switch (sector)

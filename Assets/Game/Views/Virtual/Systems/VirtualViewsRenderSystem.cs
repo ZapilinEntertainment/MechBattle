@@ -15,8 +15,11 @@ namespace ZE.MechBattle.Ecs {
     {
 
         public World World { get; set;}
-        private Filter _filter;
+        private Filter _virtualViewsFilter;        
         private Stash<VirtualViewComponent> _virtualViews;
+        private Stash<ViewVisibilityStateComponent> _visibilityStates;
+       
+
         private readonly Dictionary<DrawInstanceGroupKey, List<Entity>> _groupedEntities = new();
         private readonly List<Matrix4x4> _matricesBuffer = new();
         private readonly TransformAspectHandler _transformAspectHandler;
@@ -31,22 +34,27 @@ namespace ZE.MechBattle.Ecs {
 
         public void OnAwake() 
         {
-            _filter = World.Filter
+            _virtualViewsFilter = World.Filter
                 .With<VirtualViewComponent>()
-                .With<VisibleVirtualViewTag>()
+                .With<ViewVisibilityStateComponent>()
                 .Without<EntityDisposeTag>()
                 .Build();
 
             _virtualViews = World.GetStash<VirtualViewComponent>();
+            _visibilityStates = World.GetStash<ViewVisibilityStateComponent>();
         }
 
         public void OnUpdate(float deltaTime) 
         {
-            if (_filter.IsEmpty())
+            if (_virtualViewsFilter.IsEmpty())
                 return;
 
-            foreach (var entity in _filter)
+            foreach (var entity in _virtualViewsFilter)
             {
+                var visibilityState = _visibilityStates.Get(entity);
+                if (!visibilityState.Value.HasFlag(VisibilityStateFlag.IsVisible))
+                    continue;
+
                 var viewComponent = _virtualViews.Get(entity);
                 var viewKey = new DrawInstanceGroupKey(viewComponent.MaterialId, viewComponent.MeshId, viewComponent.SubmeshIndex);
                 if (!_groupedEntities.TryGetValue(viewKey, out var list))

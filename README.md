@@ -27,11 +27,9 @@ Tech demo about controlling titan-class battle mech on battlefield contains thou
 
 ### Units
 - destroyed units hull views
-- capturing strategy points with squads
-- additional unit types: artillery, small mechs
+- additional unit types: small mechs
 - aviation (also will use triangle grid height data for navigation) and counter-aviation units
 - flying and underground squad reinforcement transporters
-- unit-buildings - bunkers, artillery towers, shield complexes
 
 ### Environment
 - destructible environment and debris terrain layer - units hulls and terrain objects splits in simple forms (cubes/spheres) on destruction and bakes into terrain. It changes terrain cells texture and height (also using triangle grid). Use of destructible maps for complex objects, where every voxel encoding durability & material
