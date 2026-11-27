@@ -37,7 +37,7 @@ namespace ZE.MechBattle
         public static void InstallSystems(FeatureSystemsInstallQueue.ISystemsOperator installer)
         {
             installer.AddSystem<SquadUpdateSystem>(SystemGroupOrder.SquadUpdates);
-            installer.AddLateSystem<SquadPositionCalculationSystem>(TriangularPosUpdateSystem.GroupOrder - 1);
+            installer.AddSystemWithJobScheduling<SquadPositionCalculationSystem>(TriangularPosUpdateSystem.GroupOrder - 1);
 
 
             installer.AddSystem<SquadLossesUpdateSystem>(SystemGroupOrder.DisposedObjectsOperations);

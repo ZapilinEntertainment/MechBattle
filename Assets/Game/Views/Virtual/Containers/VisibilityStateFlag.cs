@@ -7,7 +7,7 @@ namespace ZE.MechBattle
     {
         None = 0,
         InVisibilityLimit = 1 << 0,
-        InFrustrumPlane = 1 << 1,
-        IsVisible = InVisibilityLimit | InFrustrumPlane
+        HexSectorVisible = 1 << 1,
+        IsVisible = InVisibilityLimit | HexSectorVisible
     }
 }

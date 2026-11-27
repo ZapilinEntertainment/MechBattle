@@ -20,7 +20,7 @@ namespace ZE.MechBattle.Ecs
             /// <summary>
             /// use for regular ISystems with job scheduling
             /// </summary>
-            void AddLateSystem<T>(SystemGroupOrder order)
+            void AddSystemWithJobScheduling<T>(SystemGroupOrder order)
                 where T : class, ISystem;
         }
 
@@ -67,7 +67,7 @@ namespace ZE.MechBattle.Ecs
 
 
             // no differences for binding:
-            void ISystemsOperator.AddLateSystem<T>(SystemGroupOrder order) => AddSystem<T>(order);
+            void ISystemsOperator.AddSystemWithJobScheduling<T>(SystemGroupOrder order) => AddSystem<T>(order);
         }
 
         internal sealed class SystemsInitializer : ISystemsOperator
@@ -89,7 +89,7 @@ namespace ZE.MechBattle.Ecs
                 resolver.AddSystem<T>(order);
             }
 
-            void ISystemsOperator.AddLateSystem<T>(SystemGroupOrder order) =>
+            void ISystemsOperator.AddSystemWithJobScheduling<T>(SystemGroupOrder order) =>
                 resolver.AddLateSystem<T>(order);
         }
 

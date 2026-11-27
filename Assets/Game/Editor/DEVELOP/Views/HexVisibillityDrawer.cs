@@ -19,24 +19,24 @@ namespace ZE.MechBattle.Develop
         [SerializeField] private KeyCode _redrawKey = KeyCode.Space;
         private HexVerticesPreset _preset;
         private INavigationMap _map;
+        private IVisibleHexList _visibleHexList;
         private List<int3> _visibilityMasks = new();
 
         private bool _isInjected = false;
         private Filter _hexesFilter;
         private Stash<HexComponent> _hexComponents;
-        private Stash<HexSectorsVisibilityMaskComponent> _hexSectorsVisibility;
 
 
         [Inject]
-        public void Inject(INavigationMap navigationMap, World world)
+        public void Inject(INavigationMap navigationMap, World world, IVisibleHexList visibleHexList)
         {
-            _map = navigationMap;            
+            _map = navigationMap;
+            _visibleHexList = visibleHexList;
 
             _preset = new(_map.HexEdgeLength);
 
             _hexesFilter = world.Filter.With<HexComponent>().With<HexSectorsVisibilityMaskComponent>().Build();
             _hexComponents = world.GetStash<HexComponent>();
-            _hexSectorsVisibility = world.GetStash<HexSectorsVisibilityMaskComponent>();
 
             _isInjected = true;
         }
@@ -61,8 +61,10 @@ namespace ZE.MechBattle.Develop
             foreach (var hexEntity in _hexesFilter)
             {
                 var hexCoord = _hexComponents.Get(hexEntity).Coord;
-                var visibilityMask = _hexSectorsVisibility.Get(hexEntity).Value;
-                _visibilityMasks.Add(new int3(hexCoord, visibilityMask));
+                if (!_visibleHexList.IsHexVisible(hexCoord, out var hexMask))
+                    continue;
+
+                _visibilityMasks.Add(new int3(hexCoord, hexMask));
             }
         }
 

@@ -72,7 +72,7 @@ namespace ZE.MechBattle.Navigation.Tests
             {
                 Assert.IsTrue(data.ContainsKey(pos), $"no {pos} presented");
 
-                var definedSector = HexMath.DefineSector(pos, hexEdge, radius, triangleHeight);
+                var definedSector = HexMath.DefineSectorByTripos(pos, hexEdge, radius, triangleHeight);
                 Assert.AreEqual(data[pos], definedSector, $"error at {pos}");
             }
         }

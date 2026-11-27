@@ -8,6 +8,7 @@ namespace ZE.MechBattle.Ecs {
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public struct ViewVisibilityStateComponent : IComponent 
     {
-        public VisibilityStateFlag Value;    
+        public VisibilityStateFlag Value;
+        public int IntValue => (int)Value;
     }
 }

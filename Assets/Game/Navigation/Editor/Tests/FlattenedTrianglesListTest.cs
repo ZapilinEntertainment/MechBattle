@@ -76,7 +76,7 @@ namespace ZE.MechBattle.Navigation.Tests
             var triangleHeight = HEX_EDGE / radius * NavigationConstants.SQRT_OF_THREE_HALVED;
             foreach (var pos in new HexTrianglesEnumerator(hexPos.TriangularCenterPos, radius))
             {
-                var sector = HexMath.DefineSector(pos, HEX_EDGE, radius, triangleHeight);
+                var sector = HexMath.DefineSectorByTripos(pos, HEX_EDGE, radius, triangleHeight);
                 var sectorIndex = (int)sector;
                 Assert.IsTrue(sectorIndex >=0 & sectorIndex < 6, "invalid sector index");
                 var converter = converters[sectorIndex];

@@ -155,13 +155,13 @@ namespace ZE.MechBattle.Navigation
 
 
         [BurstCompile]
-        public static HexSector DefineSector(IntTriangularPos pos, float hexEdgeLength, int hexRadius, float triangleHeight)
+        public static HexSector DefineSectorByTripos(IntTriangularPos tripos, float hexEdgeLength, int hexRadius, float triangleHeight)
         {
-            var hexCoord = TriangularMath.TriangularToHex(pos, triangleHeight, hexEdgeLength);
+            var hexCoord = TriangularMath.TriangularToHex(tripos, triangleHeight, hexEdgeLength);
             var hexPos = new NavigationHexPosition(hexCoord, hexEdgeLength, hexRadius);
 
             var hexCenter = hexPos.TriangularCenterPos;
-            var isPeak = pos.IsPeak;
+            var isPeak = tripos.IsPeak;
             var peakMask = new bool3(isPeak, isPeak, isPeak);
 
             /*  original logic
@@ -190,7 +190,7 @@ namespace ZE.MechBattle.Navigation
             */
 
             // burst logic optimized by Google AI
-            var p = pos.ToInt3();
+            var p = tripos.ToInt3();
             var c = hexCenter.ToInt3();
             bool3 isGreater = p > c;
             bool3 isEqual = p == c;
