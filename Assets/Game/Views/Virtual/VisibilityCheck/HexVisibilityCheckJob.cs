@@ -14,29 +14,35 @@ namespace ZE.MechBattle.Views
     public struct HexVisibilityCheckJob : IJob
     {
         [ReadOnly] public NativeFilter HexesFilter;
-        [ReadOnly] public NativeArray<float2> HexVertices;
         [ReadOnly] public CameraFrustrum2D CameraData;
         [ReadOnly] public NativeStash<HexComponent> HexComponents;
-
-        [WriteOnly]public NativeArray<int> VisibilityMasks;
+        public NativeStash<HexSectorsVisibilityMaskComponent> HexVisibilityMasks;
 
         public float HexEdge;
 
         public void Execute()
         {
+            var verticesPreset = new HexVerticesPreset(HexEdge);
+            var offset0 = verticesPreset[0];
+            var offset1 = verticesPreset[1];
+            var offset2 = verticesPreset[2];
+            var offset3 = verticesPreset[3];
+            var offset4 = verticesPreset[4];
+            var offset5 = verticesPreset[5];
 
             for (int i = 0; i < HexesFilter.length; i++)
             {
-                var hexCoord = HexComponents.Get(HexesFilter[i]).Coord;
+                var hexEntity = HexesFilter[i];
+                var hexCoord = HexComponents.Get(hexEntity).Coord;
                 float2 center = HexMath.HexToWorld(hexCoord, HexEdge);
 
                 // 1. Вычисляем видимость 6 вершин как 0 или 1 (строго без ветвлений)
-                int v0 = IsVisibleInt(center + HexVertices[0]);
-                int v1 = IsVisibleInt(center + HexVertices[1]);
-                int v2 = IsVisibleInt(center + HexVertices[2]);
-                int v3 = IsVisibleInt(center + HexVertices[3]);
-                int v4 = IsVisibleInt(center + HexVertices[4]);
-                int v5 = IsVisibleInt(center + HexVertices[5]);
+                int v0 = IsVisibleInt(center + offset0);
+                int v1 = IsVisibleInt(center + offset1);
+                int v2 = IsVisibleInt(center + offset2);
+                int v3 = IsVisibleInt(center + offset3);
+                int v4 = IsVisibleInt(center + offset4);
+                int v5 = IsVisibleInt(center + offset5);
 
                 // 2. Упаковываем в 6-битное число: бит i = 1, если вершина i видна
                 int V = v0 | (v1 << 1) | (v2 << 2) | (v3 << 3) | (v4 << 4) | (v5 << 5);
@@ -51,7 +57,7 @@ namespace ZE.MechBattle.Views
                 int centerVis = IsVisibleInt(center);
                 int mask = edgeMask | (centerVis * 63);
 
-                VisibilityMasks[i] = mask;
+                HexVisibilityMasks.Get(hexEntity).Value = mask;
             }
         }
 

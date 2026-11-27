@@ -17,6 +17,9 @@ namespace ZE.MechBattle.Views
             installer.AddSystem<VirtualViewsRenderSystem>(SystemGroupOrder.Default);
 
             installer.AddSystem<FinalViewApplicationSystem>(SystemGroupOrder.AfterDispose);
+
+            // ILateSystem
+            installer.AddSystem<HexSectorsVisibilityRecalculationSystem>(SystemGroupOrder.Default);
         }
     }
 }

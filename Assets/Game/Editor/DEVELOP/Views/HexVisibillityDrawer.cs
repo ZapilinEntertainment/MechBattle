@@ -17,26 +17,26 @@ namespace ZE.MechBattle.Develop
     public class HexVisibilityDrawer : MonoBehaviour
     {
         [SerializeField] private KeyCode _redrawKey = KeyCode.Space;
-        private HexPointsPreset _preset;
-        private CameraController _cameraController;
+        private HexVerticesPreset _preset;
         private INavigationMap _map;
         private List<int3> _visibilityMasks = new();
 
         private bool _isInjected = false;
         private Filter _hexesFilter;
         private Stash<HexComponent> _hexComponents;
+        private Stash<HexSectorsVisibilityMaskComponent> _hexSectorsVisibility;
 
 
         [Inject]
-        public void Inject(INavigationMap navigationMap, CameraController cameraController, World world)
+        public void Inject(INavigationMap navigationMap, World world)
         {
             _map = navigationMap;            
-            _cameraController = cameraController;
 
             _preset = new(_map.HexEdgeLength);
 
-            _hexesFilter = world.Filter.With<HexComponent>().Build();
+            _hexesFilter = world.Filter.With<HexComponent>().With<HexSectorsVisibilityMaskComponent>().Build();
             _hexComponents = world.GetStash<HexComponent>();
+            _hexSectorsVisibility = world.GetStash<HexSectorsVisibilityMaskComponent>();
 
             _isInjected = true;
         }
@@ -57,39 +57,13 @@ namespace ZE.MechBattle.Develop
 
         private void RecalculateVisibility()
         {
-            var nativeFilter = _hexesFilter.AsNative();
-            var nativeHexStash = _hexComponents.AsNative();
-            using var sectorVisibilityMasks = new NativeArray<int>(nativeFilter.length, Allocator.TempJob);
-
-            var vertices = new NativeArray<float2>(6, Allocator.TempJob);
-            vertices[0] = _preset.TopLeft;
-            vertices[1] = _preset.TopRight;
-            vertices[2] = _preset.Right;
-            vertices[3] = _preset.BottomRight;
-            vertices[4] = _preset.BottomLeft;
-            vertices[5] = _preset.Left;
-            
-
-            var job = new HexVisibilityCheckJob()
-            {
-                CameraData = new(_cameraController.Camera, _map.HexEdgeLength * 1.5f),
-                HexesFilter = nativeFilter,
-                HexVertices = vertices,
-                HexComponents = nativeHexStash,
-                HexEdge = _map.HexEdgeLength,
-                VisibilityMasks = sectorVisibilityMasks
-            };
-            job.Run();
-
             _visibilityMasks.Clear();
-            for (var i = 0; i < nativeFilter.length; i++)
+            foreach (var hexEntity in _hexesFilter)
             {
-                var hexEntity = nativeFilter[i];
                 var hexCoord = _hexComponents.Get(hexEntity).Coord;
-                _visibilityMasks.Add(new int3(hexCoord, sectorVisibilityMasks[i]));
+                var visibilityMask = _hexSectorsVisibility.Get(hexEntity).Value;
+                _visibilityMasks.Add(new int3(hexCoord, visibilityMask));
             }
-
-            vertices.Dispose();
         }
 
 
