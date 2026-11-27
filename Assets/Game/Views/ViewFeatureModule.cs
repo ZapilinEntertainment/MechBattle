@@ -38,6 +38,9 @@ namespace ZE.MechBattle
 
             builder.Register<SceneViewsCleaner>(Lifetime.Transient);
             builder.RegisterDisposeCallback(container => container.Resolve<SceneViewsCleaner>().Execute());
+            //
+
+            builder.Register<INavigationHexCreationApplier, HexVisibilityComponentApplier>(Lifetime.Singleton);
         }
 
         public override void OnWorldDispose(World world, IObjectResolver resolver)

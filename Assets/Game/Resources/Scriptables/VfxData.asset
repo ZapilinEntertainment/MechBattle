@@ -30,9 +30,9 @@ MonoBehaviour:
         PlayDuration: 2
     - Key: test_explosion
       Value:
-        Mode: 0
+        Mode: 1
         Prefab: {fileID: 9049331492345619795, guid: 2a4bd604ec878714b9f603e57d62ac84, type: 3}
-        EmitCount: 0
+        EmitCount: 30
         MaxInstancesCount: 0
         PlayDuration: 0
     - Key: test_building_destruction

@@ -13,10 +13,15 @@ namespace ZE.MechBattle.Views
             installer.AddSystem<ViewPartsDisconnectionSystem>(SystemGroupOrder.DisposedObjectsOperations);
             installer.AddSystem<ViewsDisposeSystem>(SystemGroupOrder.DisposedObjectsOperations);
 
-            installer.AddSystem<VirtualViewsCheckSystem>(SystemGroupOrder.Default);
-            installer.AddSystem<VirtualViewsRenderSystem>(SystemGroupOrder.Default);
+            installer.AddSystem<VisibilityLimitCheckSystem>(SystemGroupOrder.Default);
+            installer.AddSystemWithJobScheduling<ViewVisibilityHexSectorCheckSystem>(SystemGroupOrder.Default);
+            installer.AddSystem<VirtualViewsRenderSystem>(SystemGroupOrder.Default+1);
 
             installer.AddSystem<FinalViewApplicationSystem>(SystemGroupOrder.AfterDispose);
+
+            // ILateSystem-s:
+            installer.AddSystem<HexSectorsVisibilityRecalculationSystem>(SystemGroupOrder.EarlyUpdate);
+            installer.AddSystemWithInterface<HexSectorsVisibilityCheckSystem, IVisibleHexList>(SystemGroupOrder.EarlyUpdate + 1);
         }
     }
 }

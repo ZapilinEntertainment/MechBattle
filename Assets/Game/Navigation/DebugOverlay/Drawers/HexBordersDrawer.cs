@@ -7,7 +7,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
 {
     public readonly struct HexBordersDrawer
     {
-        private readonly HexPointsPreset _hexPointsPreset;
+        private readonly HexVerticesPreset _hexPointsPreset;
         private readonly float _hexEdgeSize;
         private readonly float _triangleHeight;
 
@@ -17,7 +17,7 @@ namespace ZE.MechBattle.Navigation.DebugOverlay
         {
             _hexEdgeSize = hexEdgeSize;
             _triangleHeight = triangleHeight;
-            _hexPointsPreset = new HexPointsPreset(_hexEdgeSize);
+            _hexPointsPreset = new HexVerticesPreset(_hexEdgeSize);
         }
 
         public readonly void DrawHex(int2 hexCoord)
